@@ -110,6 +110,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
   List<WorkoutEditorExercise> _catalog = const [];
   String? _libraryScope;
   String? _libraryLabel;
+  bool _preferencesRebuildQueued = false;
   bool _running = true;
   bool _busy = false;
   bool _creatingExercise = false;
@@ -469,6 +470,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     _exercisePreferences = widget.exercisePreferences == null
         ? null
         : ExercisePreferencesController(widget.exercisePreferences!);
+    _connectExercisePreferences();
     if (widget.originalTemplate case final original?) _populate(original);
     if (widget.initialEditorState case final raw?) _restoreRaw(raw);
     if (widget.fixedRunningMode != null &&
@@ -546,7 +548,27 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
       _exercisePreferences = widget.exercisePreferences == null
           ? null
           : ExercisePreferencesController(widget.exercisePreferences!);
+      _libraryLabel = null;
+      _connectExercisePreferences();
     }
+  }
+
+  void _connectExercisePreferences() {
+    // El panel lateral no abre el buscador: carga su organización al entrar y
+    // escucha los cambios de etiquetas realizados desde cualquiera de los dos.
+    _exercisePreferences?.addListener(_exercisePreferencesChanged);
+    _exercisePreferences?.load();
+  }
+
+  void _exercisePreferencesChanged() {
+    if (!mounted || _preferencesRebuildQueued) return;
+    _preferencesRebuildQueued = true;
+    // El buscador puede pedir preferencias mientras construye su diálogo.
+    // Agrupar las notificaciones evita reconstruir la ruta durante ese build.
+    scheduleMicrotask(() {
+      _preferencesRebuildQueued = false;
+      if (mounted) setState(() {});
+    });
   }
 
   void _populate(WorkoutTemplate template) {
@@ -1319,6 +1341,11 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
             labels: _catalog.expand((e) => _exercisePreferences!.labels(e.id)),
             selected: _libraryLabel,
             onChanged: (value) => setState(() => _libraryLabel = value),
+          ),
+        if (_exercisePreferences?.labelsError case final error?)
+          TextButton(
+            onPressed: _exercisePreferences!.load,
+            child: Text('$error Reintentar'),
           ),
       ],
     ),

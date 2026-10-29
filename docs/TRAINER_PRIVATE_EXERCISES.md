@@ -31,6 +31,11 @@ raíz correctas (una omitida), 303 de Trainer, 317 de ADMIN (dos omitidas) y 219
 del editor compartido. Incluye miniaturas y filtro de origen en la biblioteca
 lateral, agrupación y vista sin colección, conservación de la receta y los
 recorridos existentes de arrastre y guardado.
+La comprobación de la web detectó que las preferencias se cargaban solo al
+abrir el buscador. El editor las solicita también al entrar y escucha sus
+cambios; agrupa las notificaciones fuera de la construcción del diálogo para
+no provocar reconstrucciones durante su apertura. La regresión exige que el
+filtro de colecciones esté visible sin abrir primero el buscador.
 
 ## Biblioteca visual y catálogo oficial · 29/10/2026
 

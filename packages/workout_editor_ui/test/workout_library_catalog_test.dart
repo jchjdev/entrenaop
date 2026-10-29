@@ -6,6 +6,8 @@ import 'package:workout_editor_ui/workout_editor_page.dart';
 import 'package:workout_editor_ui/workout_editor_exercise.dart';
 import 'package:workout_editor_ui/exercise_search_list.dart';
 
+import 'exercise_labels_test.dart' show LabelsSource;
+
 void main() {
   testWidgets(
     'la biblioteca lateral muestra foto y filtra origen sin abandonar la receta',
@@ -19,6 +21,7 @@ void main() {
           home: ProfessionalWorkspaceScope(
             desktop: true,
             child: WorkoutEditorPage(
+              exercisePreferences: LabelsSource(),
               title: 'Sesión',
               heading: 'Receta',
               instructions: 'Planificar',
@@ -26,9 +29,9 @@ void main() {
               originalTemplate: const WorkoutTemplate(
                 id: 'draft',
                 name: 'Mi sesión',
-              description: null,
-              estimatedDurationMinutes: 30,
-              version: 1,
+                description: null,
+                estimatedDurationMinutes: 30,
+                version: 1,
                 blocks: [
                   WorkoutBlock(
                     id: 'block',
@@ -65,6 +68,10 @@ void main() {
         ProfessionalLibraryPane<WorkoutEditorExercise>,
       );
       expect(library, findsOneWidget);
+      expect(
+        find.descendant(of: library, matching: find.text('Mis colecciones')),
+        findsOneWidget,
+      );
       expect(
         find.descendant(of: library, matching: find.byType(ExerciseThumbnail)),
         findsNWidgets(2),
