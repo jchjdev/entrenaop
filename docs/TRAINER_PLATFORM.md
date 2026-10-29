@@ -1,5 +1,56 @@
 # Plataforma para preparadores · alcance acordado · 21/10/2026
 
+## Inventario y siguiente bloque · 29/10/2026
+
+Javier pide el estado de los dieciséis puntos y añade gestión de borrado de
+sesiones, programas y ejercicios en ambos portales. Se contrasta el mapa del
+22/10 con las entregas posteriores y el código de los catálogos. Esta revisión
+no vuelve a certificar físicamente cada recorrido ni convierte ampliaciones
+opcionales en funciones obligatorias nuevas. Un guion indica que no se añade
+otra carencia funcional básica en este inventario.
+
+| Punto original | Base disponible | Pendiente principal |
+| --- | --- | --- |
+| 1. Inicio profesional | Resumen de alumnos, planificación y revisión | — |
+| 2. Ficha del alumno | Notas, objetivos de oposición, resultados y calendario conjunto autorizado | — |
+| 3. Calendario editable | Mes/semana/día/lista, fichas arrastrables, sesiones y citas con avisos | Sincronización Google Calendar aplazada; no es parte del recorrido interno ya implementado |
+| 4. Adaptación individual | Receta individual manual y recuperación persistente | La adaptación automática profesional pertenece al motor pendiente |
+| 5. Creador ágil | Editores compartidos, arrastre y recuperación de biblioteca, hijos y adaptaciones | — |
+| 6. Biblioteca eficiente | Fotos, origen oficial/propio, colecciones, búsqueda interna y formatos | Papelera/restauración/borrado de los tres catálogos privados; filtros actuales sobre filas cargadas |
+| 7. Grupos y envío conjunto | Grupos, asignación conjunta y copia semanal | Aceptación completa con varios alumnos y revisión por destinatario |
+| 8. Evolución | Métricas por periodo y evolución del servicio | — |
+| 9. Bandeja de revisión | Resultados, revisión persistente y correcciones | — |
+| 10. Vídeos en ambas direcciones | Archivos propios, enlaces externos, demostraciones y técnica; aviso Android aceptado | Completar la gestión de medios/reservas dentro del futuro ciclo de limpieza, protegiendo usos históricos |
+| 11. Formularios | Plantillas, asignación y respuestas en el espacio Preparador | — |
+| 12. Comunicación | Chat con refresco, globos y push profesional Android aceptada en beta.3 | Apple/APNs y pruebas físicas extendidas de descanso/cuentas/recordatorios |
+| 13. Automatizaciones controladas | Recurrencias finitas | Automatización adaptativa profesional y sus reglas; no se presenta como motor ya entregado |
+| 14. Cobros y servicio | Registro/recuperación web, acceso manual y contratación EntrenaOP→preparador ensayada con Stripe sandbox | Tarifas y políticas finales, operación de cobros reales y circuito alumno→preparador |
+| 15. Informes | Resumen por periodo y CSV | Otros formatos serían ampliaciones, no un requisito básico acreditado como ausente |
+| 16. Oposición y dispositivos | Metas, marcas y pruebas privadas; integraciones con su contrato propio | Cierre de los recorridos deportivos/oficiales y de dispositivos según sus bloques; este inventario no reaudita Garmin |
+
+### Próximo bloque recomendado: gestión de la biblioteca
+
+La eliminación de una pauta del calendario no elimina su plantilla reutilizable.
+El botón de descartar trabajo tampoco elimina una sesión o programa ya guardado.
+Trainer carece del ciclo de catálogo para ejercicios, sesiones y programas.
+ADMIN sí dispone de papelera y borrado protegido de sesiones/programas; la
+llamada `delete()` hallada en creación de ejercicios limpia una alta fallida,
+no proporciona una acción de borrado al administrador.
+
+La propuesta para desarrollar es usar el mismo vocabulario y componentes:
+**Mover a papelera → restaurar → borrar definitivamente**, con permisos propios
+de cada contexto. El contenido oficial de EntrenaOP sigue siendo de consulta
+para Trainer. La purga debe comprobar en servidor referencias de programas,
+trabajos guardados, asignaciones, resultados, medios y operaciones externas;
+una referencia protegida conserva el contenido y explica el bloqueo. Los datos
+de una ejecución no se borran para permitir limpiar una biblioteca.
+
+Antes de implementarlo se concretará el contrato de versiones y referencias
+sobre el esquema real, reutilizando el de ADMIN donde corresponda. No se
+ejecuta ningún borrado por esta petición ni se declara creado ese circuito.
+La prueba física de invitaciones por enlace sigue pendiente; los cobros reales
+no se activan por completar la limpieza de contenido.
+
 **TRN-028 · 24/10/2026:** dos preparadores activos por alumno en el piloto,
 con calendario y pauta compartidos solo si lo habilita el alumno. Cada
 preparador conserva su cupo, cartera, biblioteca, notas, resultados y

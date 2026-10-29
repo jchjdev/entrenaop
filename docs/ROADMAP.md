@@ -94,8 +94,10 @@ la beta corregida abre conversación en caliente y técnica sin proceso previo.
 Análisis raíz limpio y 1.446 pruebas correctas (una omisión previa); cero trabajos
 profesionales pendientes al cerrar. Apple/APNs y ensayos físicos extendidos de
 descanso/cuentas/recordatorios no se dan por aceptados por este recorrido.
-**Único siguiente bloque recomendado:** aceptación física de la invitación por
-enlace TRN-038 con cuenta destinataria confirmada y cuenta equivocada.
+**Actualización tras la revisión de los dieciséis puntos, 29/10:** el siguiente
+bloque recomendado es el ciclo de papelera/restauración/borrado de la biblioteca
+profesional y el hueco de ejercicios en ADMIN (petición TRN-045). La aceptación
+física del enlace TRN-038 conserva su comprobación pendiente.
 Apple/APNs, cobros reales y la oferta militar siguen pendientes. COM-021 fija
 la referencia anual general en 39,99 €; catálogo Test Store EUR actualizado
 y releído el 28/10 (mensual 3,99 €).

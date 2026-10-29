@@ -1,5 +1,16 @@
 # Registro de decisiones vigentes
 
+**TRN-045 · gestión y borrado de contenido · petición del 29/10/2026:** Javier
+pide poder eliminar sesiones, ejercicios y programas de Trainer, y disponer de
+esa capacidad en ADMIN. El inventario distingue biblioteca de asignaciones:
+Trainer ya retira/archiva/borra pautas bajo protección, pero no ofrece un ciclo
+equivalente para su catálogo privado. ADMIN tiene papelera/restauración/borrado
+protegido de sesiones y programas; en ejercicios no se identifica un control de
+borrado para el usuario. La propuesta siguiente es un ciclo coherente de
+papelera y restauración, con purga solo cuando no existan referencias protegidas.
+Es alcance pendiente de implementar, no una orden para borrar datos actuales.
+[Inventario de los dieciséis puntos y propuesta](TRAINER_PLATFORM.md#inventario-y-siguiente-bloque--29102026).
+
 **TRN-044 · filtros por contenido de las sesiones · 29/10/2026:** Javier pide
 agrupar por fuerza/carrera y encontrar sesiones por sus formatos internos
 (AMRAP, Tabata, EMOM, etc.), sin depender del título. Trainer añade filtros
