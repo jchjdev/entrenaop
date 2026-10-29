@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_core/exercise_draft.dart';
 import 'package:workout_editor_ui/exercise_form.dart';
+import 'package:workout_editor_ui/exercise_search_list.dart';
 import 'package:workout_editor_ui/exercise_image_draft.dart';
 
 import '../../packages/trainer_access/test_support/fake_trainer_repository.dart';
@@ -25,6 +26,14 @@ class ExerciseFixture extends TrainerExerciseRepository {
         })
       >[];
   List<TrainerExercise> rows = [];
+  List<TrainerExercise> officialRows = [];
+  bool failOfficial = false;
+  @override
+  Future<List<TrainerExercise>> officialCatalog() async {
+    if (failOfficial) throw StateError('Conexión interrumpida');
+    return officialRows;
+  }
+
   @override
   Future<List<TrainerExercise>> list() async => rows;
   @override
@@ -76,6 +85,97 @@ Future<void> open(WidgetTester tester, ExerciseFixture repository) async {
 }
 
 void main() {
+  testWidgets(
+    'fotos privadas y oficiales consultables sin editar ni consumir cuota',
+    (tester) async {
+      tester.view.physicalSize = const Size(1400, 1000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final repo = ExerciseFixture()
+        ..limit = 1
+        ..rows = [
+          TrainerExercise.fromJson({
+            'id': 'private',
+            'name': 'A-skips',
+            'version': 2,
+            'current': true,
+            'thumbnail_url':
+                'https://fixture.example.com/private.jpg?token=signed',
+            'muscle_groups': ['piernas'],
+            'equipment': [],
+            'difficulty': 'inicial',
+            'exercise_type': 'repeticiones',
+          }),
+        ]
+        ..officialRows = [
+          TrainerExercise.fromJson({
+            'id': 'official',
+            'name': 'Dominada oficial',
+            'version': 1,
+            'current': true,
+            'thumbnail_url': 'https://fixture.example.com/public.jpg',
+            'description': 'Sube sin balancearte.',
+            'muscle_groups': ['espalda'],
+            'equipment': ['barra'],
+            'difficulty': 'intermedio',
+            'exercise_type': 'repeticiones',
+          }, official: true),
+        ];
+      await open(tester, repo);
+      expect(
+        tester.widget<ExerciseThumbnail>(find.byType(ExerciseThumbnail)).url,
+        contains('token=signed'),
+      );
+      await tester.tap(find.text('A-skips'));
+      await tester.pumpAndSettle();
+      expect(find.byType(InteractiveViewer), findsOneWidget);
+      expect(find.text('Editar ejercicio'), findsNothing);
+      await tester.tap(find.text('Cerrar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('EntrenaOP'));
+      await tester.pumpAndSettle();
+      expect(find.text('Crear ejercicio privado'), findsNothing);
+      expect(find.text('A-skips'), findsNothing);
+      await tester.enterText(find.byType(TextField), 'barra');
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<ExerciseThumbnail>(find.byType(ExerciseThumbnail)).url,
+        endsWith('public.jpg'),
+      );
+      await tester.tap(find.text('Dominada oficial'));
+      await tester.pumpAndSettle();
+      expect(find.text('Sube sin balancearte.'), findsOneWidget);
+      expect(
+        find.text('Catálogo de EntrenaOP · Solo consulta'),
+        findsOneWidget,
+      );
+      expect(find.byType(ExerciseForm), findsNothing);
+      expect(find.text('Editar ejercicio'), findsNothing);
+      expect(repo.saves, isEmpty);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('fallo del catálogo permite reintentar y volver a privados', (
+    tester,
+  ) async {
+    final repo = ExerciseFixture()
+      ..rows = [entry('Propio')]
+      ..failOfficial = true;
+    await open(tester, repo);
+    await tester.tap(find.text('EntrenaOP'));
+    await tester.pumpAndSettle();
+    expect(find.text('Reintentar'), findsOneWidget);
+    repo.failOfficial = false;
+    repo.officialRows = [entry('Catálogo')];
+    await tester.tap(find.text('Reintentar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Catálogo'), findsOneWidget);
+    await tester.tap(find.text('Mis ejercicios'));
+    await tester.pumpAndSettle();
+    expect(find.text('Propio'), findsOneWidget);
+  });
+
   testWidgets('la biblioteca propia encuentra ejercicios por etiquetas', (
     tester,
   ) async {

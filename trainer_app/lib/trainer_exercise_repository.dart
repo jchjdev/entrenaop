@@ -21,7 +21,7 @@ String trainerExerciseError(Object error) {
 }
 
 class TrainerExercise {
-  TrainerExercise.fromJson(Map<String, dynamic> row)
+  TrainerExercise.fromJson(Map<String, dynamic> row, {this.official = false})
     : id = row['id'] as String,
       version = row['version'] as int,
       current = row['current'] == true,
@@ -41,6 +41,7 @@ class TrainerExercise {
   final bool current;
   final String? imagePath, imageUrl;
   final ExerciseDraft draft;
+  final bool official;
 }
 
 class TrainerExerciseUsage {
@@ -54,6 +55,7 @@ class TrainerExerciseUsage {
 
 abstract class TrainerExerciseRepository {
   Future<List<TrainerExercise>> list();
+  Future<List<TrainerExercise>> officialCatalog();
   Future<TrainerExerciseUsage> usage();
   Future<String> save(
     String operationId,
@@ -122,6 +124,44 @@ class SupabaseTrainerExerciseRepository implements TrainerExerciseRepository {
   }
 
   @override
+  Future<List<TrainerExercise>> officialCatalog() async {
+    final result = <TrainerExercise>[];
+    for (var offset = 0; ; offset += 500) {
+      _identity();
+      final rows = await client
+          .from('exercises')
+          .select(
+            'id,name,description,video_url,muscle_groups,equipment,difficulty,exercise_type,thumbnail_url,image_path',
+          )
+          .eq('is_public', true)
+          .eq('origin', 'system')
+          .order('id')
+          .range(offset, offset + 499);
+      _identity();
+      for (final row in rows) {
+        result.add(
+          TrainerExercise.fromJson({
+            ...row,
+            'version': 1,
+            'current': true,
+            'thumbnail_url': row['image_path'] == null
+                ? row['thumbnail_url']
+                : client.storage
+                      .from('exercise-images-public')
+                      .getPublicUrl(row['image_path'] as String),
+          }, official: true),
+        );
+      }
+      if (rows.length < 500) break;
+    }
+    result.sort(
+      (a, b) =>
+          a.draft.name.toLowerCase().compareTo(b.draft.name.toLowerCase()),
+    );
+    return result;
+  }
+
+  @override
   Future<TrainerExerciseUsage> usage() async => TrainerExerciseUsage.fromJson(
     Map<String, dynamic>.from(await _rpc('get_trainer_exercise_usage') as Map),
   );
@@ -132,6 +172,9 @@ class SupabaseTrainerExerciseRepository implements TrainerExerciseRepository {
     ExerciseFormSubmission<ExerciseDraft> submission, {
     TrainerExercise? previous,
   }) async {
+    if (previous?.official == true) {
+      throw StateError('El catálogo de EntrenaOP es de solo consulta.');
+    }
     final draft = ExerciseDraftValidator.normalizeAndValidate(submission.draft);
     String? path = submission.removeExistingImage ? null : previous?.imagePath;
     final image = submission.image;

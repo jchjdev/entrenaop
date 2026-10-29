@@ -1,5 +1,15 @@
 # Registro de decisiones vigentes
 
+**TRN-042 · catálogo y fotografías en Trainer · 29/10/2026:** Javier pide ver
+las fotos en la biblioteca profesional y consultar también los ejercicios de
+EntrenaOP para evitar creaciones duplicadas. Dos vistas separan ejercicios
+privados y catálogo oficial publicado; las fichas muestran técnica, foto
+ampliable, material y vídeo bajo demanda. Los oficiales son de solo consulta y
+se reutilizan por su ID en sesiones/programas sin copiarlos ni consumir cuota
+privada. Se conserva la edición versionada de los propios y no se amplían
+permisos de ADMIN, datos de otros profesionales ni catálogos sin publicar.
+[Implementación](TRAINER_PRIVATE_EXERCISES.md#biblioteca-visual-y-catalogo-oficial--29102026).
+
 **COM-022 · contratación del panel en sandbox · 28/10/2026:** Javier autoriza
 continuar servidor y contratación de Trainer, activando el acceso tras pago
 confirmado exclusivamente en pruebas. Se aplica un catálogo privado de ensayo

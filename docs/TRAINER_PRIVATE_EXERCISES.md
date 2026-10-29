@@ -1,5 +1,31 @@
 # Ejercicios privados profesionales · TRN-019 · 21/10/2026
 
+## Biblioteca visual y catálogo oficial · 29/10/2026
+
+TRN-042 añade las vistas «Mis ejercicios» y «EntrenaOP» en el portal.
+Las tarjetas muestran la fotografía existente y un icono si no hay imagen o no
+se puede descargar. Al pulsar se abre una ficha con imagen ampliable, técnica,
+grupos musculares, material, dificultad y vídeo bajo demanda. El botón de
+edición solo aparece en ejercicios privados y conserva el guardado versionado;
+alcanzar la cuota no impide consultar las fichas.
+
+El catálogo se carga al abrir su vista, paginado de 500 en 500, exclusivamente
+con `origin='system'` e `is_public=true`, bajo los permisos existentes. Fotos
+oficiales usan el bucket público; las privadas conservan firmas por lotes de
+quince minutos y se renuevan con «Actualizar». No se persisten URL firmadas.
+La búsqueda incluye nombre, músculos y material; las etiquetas privadas solo
+se muestran en la biblioteca propia. Fallar el catálogo oficial permite
+reintentar y volver al contenido propio sin perderlo.
+
+El creador de sesiones utiliza el mismo lector del catálogo y referencias
+oficiales existentes, sin copiar ejercicios ni alterar cuotas, asignaciones o
+versiones históricas. ADMIN y la app del deportista no cambian. No se añaden
+dependencias, migraciones ni permisos. Comprobación de Dev: 73 ejercicios
+oficiales publicados, uno con foto; el cambio no inventa imágenes para el resto.
+Análisis de Trainer limpio y 302 pruebas correctas, incluida paginación de 501
+entradas, cambio de cuenta, separación de bibliotecas, lectura con cuota agotada,
+conservación de las fotos y reutilización en el selector de sesiones.
+
 ## Contrato
 
 Javier autoriza continuar ejercicios propios reutilizando el creador de ADMIN,

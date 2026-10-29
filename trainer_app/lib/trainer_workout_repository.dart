@@ -176,36 +176,22 @@ class SupabaseTrainerWorkoutRepository implements TrainerWorkoutRepository {
     Set<String> retainedIds = const {},
   }) async {
     final result = <WorkoutEditorExercise>[];
-    for (var offset = 0; ; offset += 500) {
-      _identity();
-      final rows = await client
-          .from('exercises')
-          .select('id,name,muscle_groups,equipment,thumbnail_url,image_path')
-          .eq('is_public', true)
-          .order('id')
-          .range(offset, offset + 499);
-      _identity();
-      result.addAll(
-        rows
-            .where((row) => row['id'] != runningExerciseId)
-            .map(
-              (row) => WorkoutEditorExercise(
-                id: row['id'] as String,
-                name: row['name'] as String,
-                muscleGroups: (row['muscle_groups'] as List? ?? [])
-                    .cast<String>(),
-                equipment: (row['equipment'] as List? ?? []).cast<String>(),
-                thumbnailUrl: row['image_path'] == null
-                    ? row['thumbnail_url'] as String?
-                    : client.storage
-                          .from('exercise-images-public')
-                          .getPublicUrl(row['image_path'] as String),
-              ),
+    final repository = SupabaseTrainerExerciseRepository(client, userId);
+    final official = await repository.officialCatalog();
+    result.addAll(
+      official
+          .where((e) => e.id != runningExerciseId)
+          .map(
+            (e) => WorkoutEditorExercise(
+              id: e.id,
+              name: e.draft.name,
+              muscleGroups: e.draft.muscleGroups,
+              equipment: e.draft.equipment,
+              thumbnailUrl: e.imageUrl,
             ),
-      );
-      if (rows.length < 500) break;
-    }
-    final own = await SupabaseTrainerExerciseRepository(client, userId).list();
+          ),
+    );
+    final own = await repository.list();
     result.addAll(
       own
           .where((e) => e.current || retainedIds.contains(e.id))

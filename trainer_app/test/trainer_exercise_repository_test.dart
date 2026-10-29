@@ -40,6 +40,17 @@ class ServerFixture {
   bool failSave = true;
   bool failUploadOnce = false;
   int uploads = 0;
+  List<Map<String, dynamic>> officialRows = [
+    {
+      'id': 'official',
+      'name': 'Oficial',
+      'muscle_groups': ['espalda'],
+      'equipment': [],
+      'difficulty': 'inicial',
+      'exercise_type': 'repeticiones',
+      'image_path': null,
+    },
+  ];
   late final client = SupabaseClient(
     'https://trainer-fixture.example.com',
     'fixture',
@@ -58,6 +69,7 @@ class ServerFixture {
   Future<http.Response> handle(http.Request request) async {
     requests.add(request);
     final path = request.url.path;
+    if (path == '/auth/v1/logout') return json(request, {});
     if (path == '/auth/v1/token') {
       final payload = base64Url
           .encode(utf8.encode(jsonEncode({'sub': owner, 'exp': 4102444800})))
@@ -94,15 +106,9 @@ class ServerFixture {
       return json(request, [row('current'), row('old', current: false)]);
     }
     if (path == '/rest/v1/exercises') {
-      return json(request, [
-        {
-          'id': 'official',
-          'name': 'Oficial',
-          'muscle_groups': ['espalda'],
-          'equipment': [],
-          'image_path': null,
-        },
-      ]);
+      final offset =
+          int.tryParse(request.url.queryParameters['offset'] ?? '') ?? 0;
+      return json(request, officialRows.skip(offset).take(500).toList());
     }
     if (path.endsWith('/object/sign/trainer-exercise-images')) {
       final paths = (jsonDecode(request.body) as Map)['paths'] as List;
@@ -151,6 +157,61 @@ class ServerFixture {
 }
 
 void main() {
+  test(
+    'catálogo público paginado mantiene fotos y origen sin firmar ni copiar',
+    () async {
+      final server = ServerFixture();
+      server.officialRows = List.generate(
+        501,
+        (i) => {
+          ...server.officialRows.first,
+          'id': 'official-$i',
+          'image_path': i == 0 ? 'official/photo.jpg' : null,
+          'description': 'Técnica oficial',
+        },
+      );
+      addTearDown(server.client.dispose);
+      await server.login();
+      final repository = SupabaseTrainerExerciseRepository(
+        server.client,
+        owner,
+      );
+      final items = await repository.officialCatalog();
+      expect(items, hasLength(501));
+      expect(items.every((e) => e.official), isTrue);
+      expect(items.first.draft.description, 'Técnica oficial');
+      expect(
+        items.singleWhere((e) => e.id == 'official-0').imageUrl,
+        contains('/object/public/exercise-images-public/official/photo.jpg'),
+      );
+      final requests = server.requests
+          .where((r) => r.url.path == '/rest/v1/exercises')
+          .toList();
+      expect(requests, hasLength(2));
+      for (final request in requests) {
+        expect(request.url.queryParameters['origin'], 'eq.system');
+        expect(request.url.queryParameters['is_public'], 'eq.true');
+        expect(request.method, 'GET');
+      }
+      await expectLater(
+        repository.save(
+          operation,
+          const ExerciseFormSubmission(draft: draft),
+          previous: items.first,
+        ),
+        throwsStateError,
+      );
+      expect(server.payloads, isEmpty);
+      expect(server.uploads, 0);
+      expect(
+        server.requests.where((r) => r.url.path.contains('/object/sign/')),
+        isEmpty,
+      );
+      await server.client.auth.signOut(scope: SignOutScope.local);
+      await expectLater(repository.officialCatalog(), throwsStateError);
+    },
+  );
+
   test(
     'una subida confirmada tarde se recupera sin sobrescribir la imagen',
     () async {
