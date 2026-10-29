@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:entrenaop_trainer/main.dart';
 import 'package:entrenaop_trainer/trainer_catalog_trash_page.dart';
@@ -15,6 +16,10 @@ import 'package:workout_editor_ui/guided_program_editor_page.dart';
 const _owner = '10000000-0000-4000-8000-000000000001';
 
 class _PortalFixture {
+  TrainerCatalogKind? catalogKind;
+  bool catalogRestored = false;
+  Completer<void>? pendingCatalogRead;
+  int catalogReads = 0;
   Map<String, dynamic>? work;
   int workReads = 0;
   final requests = <String>[];
@@ -71,6 +76,46 @@ class _PortalFixture {
           };
         case 'list_trainer_program_work':
           result = work == null ? [] : [work];
+        case 'list_trainer_catalog_trash':
+          result = catalogKind == null || catalogRestored
+              ? []
+              : [
+                  {
+                    'id': 'restored',
+                    'kind': catalogKind!.name,
+                    'name': 'Recuperado ${catalogKind!.label}',
+                    'trashed_at': '2026-10-29T12:00:00.123456Z',
+                  },
+                ];
+        case 'restore_trainer_catalog_item':
+          catalogRestored = true;
+          result = {
+            'id': params['p_id'],
+            'kind': params['p_kind'],
+            'status': 'restored',
+            'trashed_at': null,
+          };
+        case 'list_trainer_workouts':
+        case 'list_trainer_programs':
+        case 'list_trainer_exercises':
+          final snapshot = catalogKind == null ? [] : catalogRows();
+          catalogReads++;
+          if (catalogReads == 1) await pendingCatalogRead?.future;
+          result = snapshot;
+        case 'workout_templates':
+          result = catalogKind == null
+              ? []
+              : [
+                  for (final row in catalogRows())
+                    {...row, 'workout_blocks': []},
+                ];
+        case 'get_trainer_exercise_usage':
+          result = {
+            'exercise_used': 1,
+            'exercise_limit': 500,
+            'image_used': 0,
+            'image_limit': 1000,
+          };
         default:
           result = [];
       }
@@ -82,6 +127,29 @@ class _PortalFixture {
       );
     }),
   );
+
+  List<Map<String, dynamic>> catalogRows() => [
+    catalogRow('other', 'Otra referencia'),
+    if (catalogRestored)
+      catalogRow('restored', 'Recuperado ${catalogKind!.label}'),
+  ];
+
+  Map<String, dynamic> catalogRow(String id, String name) => {
+    'id': id,
+    'name': name,
+    'version': 1,
+    'family_id': id,
+    'status': 'published',
+    'created_at': '2026-10-29T10:00:00Z',
+    'current': true,
+    'is_running': false,
+    'image_path': null,
+    'muscle_groups': ['espalda'],
+    'equipment': [],
+    'difficulty': 'inicial',
+    'exercise_type': 'repeticiones',
+    'content': {'name': name, 'mode': 'guide', 'phases': []},
+  };
 
   Map<String, dynamic> sessionData(String suffix) {
     final claims = base64Url
@@ -108,6 +176,93 @@ class _PortalFixture {
 }
 
 void main() {
+  for (final kind in TrainerCatalogKind.values) {
+    for (final delayed in [false, true]) {
+      testWidgets(
+        'entrada directa a papelera de ${kind.label} actualiza biblioteca y conserva búsqueda visible · carga pendiente=$delayed',
+        (tester) async {
+          final fixture = _PortalFixture()
+            ..catalogKind = kind
+            ..pendingCatalogRead = delayed ? Completer<void>() : null;
+          await tester.runAsync(() => fixture.session('initial'));
+          addTearDown(() => tester.runAsync(fixture.client.dispose));
+          tester.binding.platformDispatcher.defaultRouteNameTestValue =
+              '${kind.libraryPath}/trash';
+          addTearDown(
+            tester.binding.platformDispatcher.clearDefaultRouteNameTestValue,
+          );
+          await tester.binding.setSurfaceSize(const Size(1440, 1100));
+          addTearDown(() => tester.binding.setSurfaceSize(null));
+          await tester.pumpWidget(TrainerApp(client: fixture.client));
+          await tester.pumpAndSettle();
+          expect(find.byType(TrainerCatalogTrashPage), findsOneWidget);
+          final router = GoRouter.of(tester.element(find.byType(TrainerShell)));
+          expect(
+            router.routeInformationProvider.value.uri.path,
+            '${kind.libraryPath}/trash',
+          );
+          await tester.tap(find.text('Recuperar ${kind.label}'));
+          await tester.pumpAndSettle();
+          await tester.tap(find.widgetWithText(FilledButton, 'Recuperar'));
+          await tester.pumpAndSettle();
+          await tester.tap(find.text('Volver a la biblioteca'));
+          await tester.pump();
+          fixture.pendingCatalogRead?.complete();
+          await tester.pumpAndSettle();
+          expect(
+            router.routeInformationProvider.value.uri.path,
+            kind.libraryPath,
+          );
+          expect(find.text('Recuperado ${kind.label}'), findsOneWidget);
+          expect(find.text('Otra referencia'), findsOneWidget);
+
+          final search = find.byWidgetPredicate(
+            (widget) =>
+                widget is TextField &&
+                widget.decoration?.labelText?.startsWith('Buscar') == true,
+          );
+          await tester.enterText(search, 'Recuperado');
+          await tester.pumpAndSettle();
+          expect(find.text('Otra referencia'), findsNothing);
+          await tester.tap(find.byTooltip('Actualizar').last);
+          await tester.pumpAndSettle();
+          expect(
+            tester.widget<TextField>(search).controller!.text,
+            'Recuperado',
+          );
+          expect(find.text('Recuperado ${kind.label}'), findsOneWidget);
+          expect(find.text('Otra referencia'), findsNothing);
+
+          // La ida desde el botón también conserva el campo y no exige recarga manual.
+          await tester.tap(
+            find.byTooltip(switch (kind) {
+              TrainerCatalogKind.session => 'Papelera de sesiones',
+              TrainerCatalogKind.program => 'Papelera de programas',
+              TrainerCatalogKind.exercise => 'Papelera de ejercicios propios',
+            }),
+          );
+          await tester.pumpAndSettle();
+          await tester.tap(find.text('Volver a la biblioteca'));
+          await tester.pumpAndSettle();
+          expect(
+            tester.widget<TextField>(search).controller!.text,
+            'Recuperado',
+          );
+          expect(find.text('Otra referencia'), findsNothing);
+          expect(tester.takeException(), isNull);
+          expect(
+            fixture.catalogReads,
+            4,
+            reason:
+                'Un refresco por retorno, sin duplicarlo con el await de push.',
+          );
+          await tester.pumpWidget(const SizedBox.shrink());
+          await tester.pumpAndSettle();
+        },
+      );
+    }
+  }
+
   testWidgets(
     'las tres papeleras reales no se confunden con el detalle por id',
     (tester) async {

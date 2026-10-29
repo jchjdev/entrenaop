@@ -25,11 +25,13 @@ class TrainerWorkoutLibraryPage extends StatefulWidget {
     required this.accessRepository,
     this.workRepository,
     this.trashRepository,
+    this.trashOpen = false,
   });
   final TrainerWorkoutRepository repository;
   final TrainerRepository accessRepository;
   final WorkoutEditorWorkRepository? workRepository;
   final TrainerCatalogTrashRepository? trashRepository;
+  final bool trashOpen;
   @override
   State<TrainerWorkoutLibraryPage> createState() =>
       _TrainerWorkoutLibraryPageState();
@@ -37,11 +39,13 @@ class TrainerWorkoutLibraryPage extends StatefulWidget {
 
 class _TrainerWorkoutLibraryPageState extends State<TrainerWorkoutLibraryPage> {
   String _query = '';
+  final _search = TextEditingController();
   bool? _runningFilter;
   String? _formatFilter;
   List<TrainerWorkout> _items = [];
   List<WorkoutEditorWork> _works = [];
   bool _busy = true, _more = false, _canCreate = false;
+  bool _reloadAfterTrash = false;
   String? _error;
   String? _workError, _discardError;
   bool _discardBusy = false;
@@ -50,6 +54,25 @@ class _TrainerWorkoutLibraryPageState extends State<TrainerWorkoutLibraryPage> {
   void initState() {
     super.initState();
     _load();
+  }
+
+  @override
+  void didUpdateWidget(covariant TrainerWorkoutLibraryPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // También al entrar directamente en la papelera: no hay un push pendiente.
+    if (oldWidget.trashOpen && !widget.trashOpen) {
+      if (_busy) {
+        _reloadAfterTrash = true;
+      } else {
+        _load();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
   }
 
   Future<void> _load({bool more = false}) async {
@@ -86,7 +109,14 @@ class _TrainerWorkoutLibraryPageState extends State<TrainerWorkoutLibraryPage> {
           if (mounted) setState(() => _workError = trainerError(error));
         }
       }
-      if (mounted) setState(() => _busy = false);
+      if (mounted) {
+        if (_reloadAfterTrash) {
+          _reloadAfterTrash = false;
+          await _load();
+        } else {
+          setState(() => _busy = false);
+        }
+      }
     }
   }
 
@@ -278,6 +308,7 @@ class _TrainerWorkoutLibraryPageState extends State<TrainerWorkoutLibraryPage> {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 640),
           child: TextField(
+            controller: _search,
             decoration: const InputDecoration(
               labelText: 'Buscar en sesiones, bloques y ejercicios cargados',
               prefixIcon: Icon(Icons.search),

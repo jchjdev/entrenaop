@@ -68,6 +68,7 @@ class TrainerExercisePage extends StatefulWidget {
     this.mediaRepository,
     this.preferences,
     this.trashRepository,
+    this.trashOpen = false,
   });
   final TrainerExerciseRepository repository;
   final TrainerRepository access;
@@ -75,6 +76,7 @@ class TrainerExercisePage extends StatefulWidget {
   final TrainerMediaRepository? mediaRepository;
   final ExerciseCatalogPreferences? preferences;
   final TrainerCatalogTrashRepository? trashRepository;
+  final bool trashOpen;
   @override
   State<TrainerExercisePage> createState() => _TrainerExercisePageState();
 }
@@ -86,8 +88,10 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
   String? _officialError;
   TrainerExerciseUsage? _usage;
   bool _busy = true, _enabled = false;
+  bool _reloadAfterTrash = false;
   bool _canOrganize = false;
   String _query = '';
+  final _search = TextEditingController();
   String? _label;
   late final _preferences = widget.preferences == null
       ? null
@@ -106,7 +110,20 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
   }
 
   @override
+  void didUpdateWidget(covariant TrainerExercisePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.trashOpen && !widget.trashOpen) {
+      if (_busy) {
+        _reloadAfterTrash = true;
+      } else {
+        _load();
+      }
+    }
+  }
+
+  @override
   void dispose() {
+    _search.dispose();
     _preferences?.dispose();
     super.dispose();
   }
@@ -132,7 +149,14 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
     } catch (e) {
       if (mounted) setState(() => _error = trainerExerciseError(e));
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (mounted) {
+        if (_reloadAfterTrash) {
+          _reloadAfterTrash = false;
+          await _load();
+        } else {
+          setState(() => _busy = false);
+        }
+      }
     }
   }
 
@@ -287,6 +311,7 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 640),
                 child: TextField(
+                  controller: _search,
                   decoration: InputDecoration(
                     labelText: _showOfficial
                         ? 'Buscar en EntrenaOP'

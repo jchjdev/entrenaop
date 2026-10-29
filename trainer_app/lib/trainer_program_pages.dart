@@ -168,11 +168,13 @@ class TrainerProgramLibraryPage extends StatefulWidget {
     required this.access,
     this.workRepository,
     this.trashRepository,
+    this.trashOpen = false,
   });
   final TrainerProgramRepository repository;
   final TrainerRepository access;
   final GuidedWorkRepository? workRepository;
   final TrainerCatalogTrashRepository? trashRepository;
+  final bool trashOpen;
   @override
   State<TrainerProgramLibraryPage> createState() =>
       _TrainerProgramLibraryPageState();
@@ -180,9 +182,11 @@ class TrainerProgramLibraryPage extends StatefulWidget {
 
 class _TrainerProgramLibraryPageState extends State<TrainerProgramLibraryPage> {
   String _query = '';
+  final _search = TextEditingController();
   List<TrainerProgram> _items = [];
   List<GuidedWork> _works = [];
   bool _busy = true, _more = false, _canCreate = false;
+  bool _reloadAfterTrash = false;
   bool _discardBusy = false;
   GuidedWork? _discardAttempt;
   String? _error, _workError, _discardError;
@@ -190,6 +194,24 @@ class _TrainerProgramLibraryPageState extends State<TrainerProgramLibraryPage> {
   void initState() {
     super.initState();
     _load();
+  }
+
+  @override
+  void didUpdateWidget(covariant TrainerProgramLibraryPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.trashOpen && !widget.trashOpen) {
+      if (_busy) {
+        _reloadAfterTrash = true;
+      } else {
+        _load();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
   }
 
   Future<void> _load({bool more = false}) async {
@@ -223,7 +245,14 @@ class _TrainerProgramLibraryPageState extends State<TrainerProgramLibraryPage> {
     } catch (e) {
       if (mounted) setState(() => _error = trainerError(e));
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (mounted) {
+        if (_reloadAfterTrash) {
+          _reloadAfterTrash = false;
+          await _load();
+        } else {
+          setState(() => _busy = false);
+        }
+      }
     }
   }
 
@@ -402,6 +431,7 @@ class _TrainerProgramLibraryPageState extends State<TrainerProgramLibraryPage> {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 640),
           child: TextField(
+            controller: _search,
             decoration: const InputDecoration(
               labelText: 'Buscar entre los programas cargados',
               prefixIcon: Icon(Icons.search),

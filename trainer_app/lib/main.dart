@@ -818,6 +818,7 @@ class _TrainerAppState extends State<TrainerApp> {
                 state,
                 TrainerExercisePage(
                   key: ValueKey('trainer-exercises-$identity'),
+                  trashOpen: state.uri.path == '/exercises/trash',
                   trashRepository: catalogTrashRepository,
                   preferences: exercisePreferences,
                   repository: SupabaseTrainerExerciseRepository(
@@ -896,7 +897,8 @@ class _TrainerAppState extends State<TrainerApp> {
             ),
             GoRoute(
               path: '/programs',
-              builder: (_, _) => TrainerProgramLibraryPage(
+              builder: (_, state) => TrainerProgramLibraryPage(
+                trashOpen: state.uri.path == '/programs/trash',
                 repository: programs(),
                 trashRepository: catalogTrashRepository,
                 access: access(),
@@ -973,7 +975,8 @@ class _TrainerAppState extends State<TrainerApp> {
             ),
             GoRoute(
               path: '/workouts',
-              builder: (_, _) => TrainerWorkoutLibraryPage(
+              builder: (_, state) => TrainerWorkoutLibraryPage(
+                trashOpen: state.uri.path == '/workouts/trash',
                 repository: workouts(),
                 trashRepository: catalogTrashRepository,
                 accessRepository: access(),

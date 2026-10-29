@@ -80,13 +80,18 @@ Las reservas/ficheros de imágenes y vídeos se conservan y siguen contando seg�
 su contrato: este bloque no añade limpieza remota de medios ni vaciado automático.
 
 **Verificación al cierre:** análisis limpios y baterías completas: raíz 1.446
-pruebas (una omisión previa), Trainer 317, editor compartido 223 y `entrena_ui` 41.
+pruebas (una omisión previa), Trainer 323, editor compartido 223 y `entrena_ui` 41.
 ADMIN 358 (dos omisiones previas). Las tres papeleras y el listado de ejercicios
 administrativos están conectados a la guarda real del router: confirmación y
 envío bloquean salida; una respuesta incierta conserva el recurso/UUID y ofrece
-reintento incluso después de refrescar. Total: 2.385 pruebas correctas. La revisión
+reintento incluso después de refrescar. Total: 2.391 pruebas correctas. La revisión
 visual elimina la cabecera duplicada; los recorridos de papelera afectados vuelven
-a pasar tras el ajuste, sin modificar sus acciones.
+a pasar tras el ajuste, sin modificar sus acciones. Seis regresiones del router
+real cubren el regreso de las tres papeleras tras entrada directa/recarga, con
+carga inicial terminada o pendiente. El padre se actualiza al volver sin exigir
+Actualizar, conserva búsqueda visible/filtros y no duplica la consulta del
+recorrido normal por push. La señal de ruta es local a Trainer; no reconstruye
+la biblioteca ni añade sondeo.
 Dos contratos SQL nuevos y diez regresiones correctos, todos con ROLLBACK: catálogos
 privados, vídeos, recuperación de sesiones/programas/contextos y operaciones/
 papelera editorial ADMIN. Dos conexiones reales comprueban que una asignación
@@ -98,8 +103,10 @@ aislamiento, versiones y cursores. Historial Dev local/remoto coincidente.
 Advisors del alcance: cuatro INFO intencionales por RLS sin políticas/grants en
 tablas privadas; ningún WARN/ERROR nuevo del ciclo. La inspección de JSON de
 dispositivos sigue siendo global porque pertenece al alumno y puede sobrevivir
-al vínculo; no es una prueba de carga a gran escala. Fuentes validadas y listas
-para publicación automática en Dev, pendiente de acreditar la versión servida.
+al vínculo; no es una prueba de carga a gran escala. La publicación automática
+de ambos portales y sus recursos HTTPS está acreditada en `249e472f`, solo Dev
+(`sxbxfjqgoddzhtcyhalw`, árbol de fuente limpio). ADMIN ya está comprobado en
+navegador. Queda acreditar la última entrega de Trainer con el regreso corregido.
 
 **Siguiente recorrido recomendado:** aceptación de invitaciones por enlace con
 la beta instalada y un alumno real, incluyendo apertura con/sin sesión sin

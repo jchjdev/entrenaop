@@ -8,12 +8,15 @@ y los reintentos no resucitan recetas borradas. Recuperar oficiales no publica.
 Dos migraciones aplicadas solo en Dev; dos contratos y diez regresiones SQL correctos
 con ROLLBACK. Concurrencia comprobada entre dos conexiones: mismo recurso
 excluido y familia ajena disponible. Raíz 1.446 pruebas (una omisión previa),
-Trainer 317, ADMIN 358 (dos omisiones previas), editor compartido 223 y UI común
+Trainer 323, ADMIN 358 (dos omisiones previas), editor compartido 223 y UI común
 41, análisis limpios. ADMIN restringe su papelera a oficiales incluso cuando hay
 familias privadas retiradas; se verifica la mezcla en una misma transacción.
 Rutas de papelera y traslado administrativo protegidos ante
-salida incierta y doble confirmación. Fuentes listas para publicación automática
-en Dev; pendiente acreditar versión servida tras el ajuste de cabeceras. No se vacían bibliotecas ni se
+salida incierta y doble confirmación. Seis regresiones reales cubren el regreso
+de papelera tras entrada directa, con carga pendiente y texto de búsqueda
+conservado. Ambos portales publicados automáticamente en `249e472f` y verificados
+por HTTPS en Dev; ADMIN contrastado en navegador. Pendiente acreditar la última
+entrega de Trainer con el regreso corregido. No se vacían bibliotecas ni se
 purgan medios remotos.
 **Único siguiente recorrido recomendado tras cerrar:** aceptación del enlace de
 invitación en la beta móvil con alumno real; no requiere otra APK por este bloque.
