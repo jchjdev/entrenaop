@@ -444,19 +444,23 @@ Tras la corrección pasan las 46 pruebas de herramientas ADMIN y las 17 de
 Trainer, incluidas cobertura de esquemas, rechazo de producción e integridad
 del publicador. No se ejecuta una copia real ni una restauración remota.
 
-**Publicación y apertura pública · 30/10/2026:** `d871ecd7` queda publicado
-correctamente en Dev por [Trainer 41135166720](https://github.com/jchjdev/entrenaop/actions/runs/41135166720)
-y [ADMIN 41135166825](https://github.com/jchjdev/entrenaop/actions/runs/41135166825).
+**Publicación y apertura pública · 30/10/2026:** `366bb341` queda publicado
+correctamente en Dev por [Trainer 41137424169](https://github.com/jchjdev/entrenaop/actions/runs/41137424169)
+y [ADMIN 41137424137](https://github.com/jchjdev/entrenaop/actions/runs/41137424137).
 Verificación HTTPS independiente: revisión y fuentes guardadas, proyecto Dev,
 SHA-256 del JavaScript, entrada activa, cabeceras y MIME WebAssembly correctos.
 
-La apertura en navegador detecta un 404 en `/directory`: el portal conserva las
-rutas en el fragmento, como las invitaciones. Se centraliza la base pública
+La apertura de la primera publicación `d871ecd7` detectó un 404 en `/directory`:
+el portal conserva las rutas en el fragmento, como las invitaciones.
+Se centraliza la base pública
 `https://trainer.entrenaop.es/#/directory` en `directory/links.dart`, utilizada
 por app y Trainer, y se añade una regresión del enlace que copia una ficha web.
-El buscador abre sin iniciar sesión; un identificador inexistente muestra ficha
-no disponible, sin datos. La revisión con los enlaces corregidos supera los tres
-análisis y las baterías completas; queda pendiente de publicar y contrastar.
+El [buscador público](https://trainer.entrenaop.es/#/directory) abre sin iniciar
+sesión; un identificador inexistente muestra ficha no disponible, sin datos.
+Tras recargar el navegador se comprueba que JavaScript y bootstrap proceden de
+la revisión nueva. La corrección supera los tres análisis y las baterías
+completas y queda publicada y contrastada. Se cierra este recorrido técnico
+inicial, con el piloto comercial y la aceptación física pendientes.
 Lectura final en Dev:
 publicación deshabilitada, cero ofertas elegibles y cero fichas publicadas.
 

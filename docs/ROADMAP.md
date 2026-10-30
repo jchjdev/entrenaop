@@ -9,15 +9,17 @@ visibilidad y fotos comprobados en servidor. Migración aplicada en Dev,
 contrato SQL con ROLLBACK e historial de 253 revisiones coincidentes.
 Análisis limpios y baterías completas correctas: raíz 1.510 (una omisión previa),
 Trainer 360 y ADMIN 365 (dos omisiones previas). Capturas móvil/escritorio
-revisadas. Primera publicación de ambos portales verificada por HTTPS desde
-`d871ecd7`, incluidos los gráficos y el cierre documental del chat de Arquitectura.
+revisadas. Ambos portales publicados y verificados por HTTPS desde `366bb341`,
+incluidos los gráficos y el cierre documental del chat de Arquitectura.
 CI detectó y permitió corregir el estilo del script de capturas y la cobertura
 de copias de `directory_private`, conservando todas las comprobaciones.
 El ensayo aislado de recuperación también pasa. La apertura pública confirma
 que los enlaces deben usar `/#/directory`, como las invitaciones; se corrige
 la base compartida de app/Trainer y se añade una regresión del botón de copiar.
-La corrección supera de nuevo los tres análisis y las baterías completas;
-queda pendiente de publicar y contrastar tras la subida.
+La corrección supera de nuevo los tres análisis y las baterías completas,
+se publica y se contrasta en navegador: buscador sin sesión y ficha inexistente
+con aviso, cargando los archivos de la revisión nueva. Queda cerrado este
+recorrido técnico inicial en Dev, con los límites siguientes.
 **Límite:** publicación deshabilitada y ofertas sin derecho de anuncio; no se
 habilitan cuentas ni se inventa un plan pagado para el piloto.
 **Siguiente recorrido:** validar catálogo elegible y textos de publicación →
