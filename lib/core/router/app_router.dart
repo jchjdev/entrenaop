@@ -14,6 +14,7 @@ import 'package:entrenaop/features/trainers/presentation/pages/student_appointme
 import 'dart:async';
 
 import 'package:trainer_access/directory/data.dart';
+import 'package:trainer_access/directory/links.dart';
 import 'package:trainer_access/directory/presentation.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -222,7 +223,7 @@ class AppRouter {
                   onOpen: (id) => config.push('/directory/$id'),
                   onContact: (uri) =>
                       launchUrl(uri, mode: LaunchMode.externalApplication),
-                  publicBase: Uri.https('trainer.entrenaop.es', '/directory'),
+                  publicBase: trainerDirectoryPublicBase,
                 );
               },
             ),

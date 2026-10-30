@@ -1,8 +1,8 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trainer_access/directory/domain.dart';
+import 'package:trainer_access/directory/links.dart';
 import 'package:trainer_access/directory/presentation.dart';
 
 DirectoryProfile sampleDirectoryProfile({
@@ -30,6 +30,7 @@ DirectoryProfile sampleDirectoryProfile({
 class FakeDirectory implements DirectoryRepository {
   @override
   bool signedIn = true;
+  DirectoryVisibility visibility = DirectoryVisibility.app;
   bool saved = false, fail = false;
   int calls = 0, reportsSent = 0;
   @override
@@ -50,7 +51,7 @@ class FakeDirectory implements DirectoryRepository {
 
   @override
   Future<DirectoryProfile> profile(String id) async =>
-      FakeDirectoryProfile.make(saved);
+      sampleDirectoryProfile(favorite: saved, visibility: visibility);
   @override
   Future<void> favorite(String id, bool value) async {
     saved = value;
@@ -84,11 +85,6 @@ class FakeDirectory implements DirectoryRepository {
   }) async {}
 }
 
-class FakeDirectoryProfile {
-  static DirectoryProfile make(bool saved) =>
-      sampleDirectoryProfile(favorite: saved);
-}
-
 Widget directory(FakeDirectory repository, {String? id}) => MaterialApp(
   home: TrainerDirectoryPage(
     repository: repository,
@@ -96,11 +92,44 @@ Widget directory(FakeDirectory repository, {String? id}) => MaterialApp(
     loadPhoto: (_) async => Uint8List(0),
     onOpen: (_) {},
     onContact: (_) async => true,
-    publicBase: Uri.parse('https://trainer.example.test/directory'),
+    publicBase: trainerDirectoryPublicBase,
   ),
 );
 
 void main() {
+  testWidgets('copiar ficha web conserva la ruta pública del portal', (
+    tester,
+  ) async {
+    final copied = <String>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'Clipboard.setData') {
+          copied.add(
+            (call.arguments as Map<Object?, Object?>)['text'] as String,
+          );
+        }
+        return null;
+      },
+    );
+    addTearDown(() {
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      );
+    });
+    final repository = FakeDirectory()..visibility = DirectoryVisibility.web;
+    await tester.pumpWidget(directory(repository, id: 'one'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Copiar enlace de la ficha'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Copiar enlace de la ficha'));
+    await tester.pumpAndSettle();
+    expect(copied, ['https://trainer.entrenaop.es/#/directory/one']);
+    final uri = Uri.parse(copied.single);
+    expect(uri.path, '/');
+    expect(Uri.parse(uri.fragment).path, '/directory/one');
+  });
   test('publicar exige foto y aceptación; guardar borrador no publica', () {
     expect(
       sampleDirectoryProfile().validate(publishing: true, consent: false),

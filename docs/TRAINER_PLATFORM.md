@@ -420,20 +420,18 @@ La migración se aplica solo en `entrenaop-dev` y el contrato
 `supabase/tests/trainer_directory.sql` termina con ROLLBACK. El historial reúne
 253 migraciones coincidentes. El asesor de seguridad conserva sus avisos WARN;
 solo se añaden cinco INFO esperados por las tablas privadas con RLS y sin acceso
-directo. Análisis limpios en raíz, Trainer y ADMIN; baterías completas de 1.509,
+directo. Análisis limpios en raíz, Trainer y ADMIN; baterías completas de 1.510,
 360 y 365 pruebas correctas, con una omisión previa en raíz y dos en ADMIN.
-Veintitrés comprobaciones focalizadas de navegación/directorio y dos recorridos
+Veinticuatro comprobaciones de navegación/directorio y dos recorridos
 visuales a 320/1200 píxeles (texto 2× en móvil) pasan; capturas con fuentes reales
-revisadas. La publicación web automática se verifica por separado tras subir el
-commit. No se da por cerrado el directorio ni su aceptación física.
+revisadas. No se da por cerrado el directorio ni su aceptación física.
 
 **Corrección de CI · 30/10/2026:** los primeros procesos de ADMIN/Trainer para
 `22b8d554` se detienen en el análisis de la raíz: el ajuste final de fuentes del
 script `tools/directory_visual_test.dart` tenía un `if` sin llaves, añadido
 después del análisis local anterior. Se corrige el estilo sin cambiar el
-comportamiento ni reducir comprobaciones. Ambos portales conservan mientras
-tanto `df772e09`, que ya contiene los gráficos del otro chat. La nueva ejecución
-se lanzará sobre main incluyendo también su cierre documental `3d9466ab`.
+comportamiento ni reducir comprobaciones. La publicación posterior conserva los
+gráficos `df772e09` del otro chat y su cierre documental `3d9466ab`.
 
 Al superar el análisis, la comprobación de copias detecta además que faltaba
 `directory_private` en `BACKUP_SCHEMAS`. Se incorpora al inventario común de
@@ -445,6 +443,22 @@ ni cambia la política de copias existente.
 Tras la corrección pasan las 46 pruebas de herramientas ADMIN y las 17 de
 Trainer, incluidas cobertura de esquemas, rechazo de producción e integridad
 del publicador. No se ejecuta una copia real ni una restauración remota.
+
+**Publicación y apertura pública · 30/10/2026:** `d871ecd7` queda publicado
+correctamente en Dev por [Trainer 41135166720](https://github.com/jchjdev/entrenaop/actions/runs/41135166720)
+y [ADMIN 41135166825](https://github.com/jchjdev/entrenaop/actions/runs/41135166825).
+Verificación HTTPS independiente: revisión y fuentes guardadas, proyecto Dev,
+SHA-256 del JavaScript, entrada activa, cabeceras y MIME WebAssembly correctos.
+
+La apertura en navegador detecta un 404 en `/directory`: el portal conserva las
+rutas en el fragmento, como las invitaciones. Se centraliza la base pública
+`https://trainer.entrenaop.es/#/directory` en `directory/links.dart`, utilizada
+por app y Trainer, y se añade una regresión del enlace que copia una ficha web.
+El buscador abre sin iniciar sesión; un identificador inexistente muestra ficha
+no disponible, sin datos. La revisión con los enlaces corregidos supera los tres
+análisis y las baterías completas; queda pendiente de publicar y contrastar.
+Lectura final en Dev:
+publicación deshabilitada, cero ofertas elegibles y cero fichas publicadas.
 
 ## Dos circuitos comerciales
 

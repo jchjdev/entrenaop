@@ -2,6 +2,7 @@ import 'trainer_invitation_landing.dart';
 import 'trainer_directory_editor.dart';
 
 import 'package:trainer_access/directory/data.dart';
+import 'package:trainer_access/directory/links.dart';
 import 'package:trainer_access/directory/presentation.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -423,7 +424,7 @@ class _TrainerAppState extends State<TrainerApp> {
                 onOpen: (id) => _router.push('/directory/$id'),
                 onContact: (uri) =>
                     launchUrl(uri, mode: LaunchMode.externalApplication),
-                publicBase: Uri.https('trainer.entrenaop.es', '/directory'),
+                publicBase: trainerDirectoryPublicBase,
               );
             },
           ),

@@ -54,6 +54,10 @@ su omisión fue detectada por esa prueba al publicar el directorio. El inventari
 dinámico de Storage ya incluye el bucket privado `trainer-directory`, sin añadir
 otra lista de buckets. Esta corrección no ejecuta una copia real ni una
 restauración sobre Dev/producción y no cambia destino, cifrado o retención.
+El proceso [41135166749](https://github.com/jchjdev/entrenaop/actions/runs/41135166749)
+del 30/10/2026 supera las 46 pruebas de herramientas y el ensayo sintético
+aislado con el inventario ampliado. En este evento push no se ejecuta la
+operación real de copia ni se conecta el ensayo a una base remota.
 Las conexiones Garmin se incluyen con sus campos ya cifrados; su clave de Edge
 sigue excluida y debe conservarse por separado.
 
