@@ -1,5 +1,15 @@
 # Arquitectura de EntrenaOP
 
+**TRN-047 · 30/10/2026 · presentación móvil profesional:**
+`coach_mobile_style.dart` concentra la densidad y tarjetas de consulta. AppShell
+aplica el tema únicamente a su rama profesional y adapta el selector de espacio
+sin modificar la escala del sistema. No importa Trainer web ni añade transporte.
+El lector común `TrainerWorkoutResultContent` acepta una cabecera opcional en
+su propia lista, evitando dos zonas de desplazamiento en móvil; los consumidores
+web conservan su composición por defecto. Los fixtures están fuera de `lib/` y
+el target local de revisión no utiliza cuentas ni se publica.
+[Contrato y límites](TRAINER_MOBILE_WORKSPACE.md#ajuste-de-consulta-movil--trn-047--30102026).
+
 **TRN-046 · 29/10/2026 · limpieza protegida de archivos:**
 `entrena_ui` aporta la vista de mantenimiento; cada portal conserva su adaptador
 y contexto. Una cola transaccional por archivo comprueba referencias y bloquea

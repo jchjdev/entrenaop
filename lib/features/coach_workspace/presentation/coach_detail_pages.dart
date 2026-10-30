@@ -30,92 +30,91 @@ class CoachAssignmentPage extends StatelessWidget {
           final result = data.$2;
           final revision = (result?['result_revision'] as num?)?.toInt() ?? 0;
           final review = result?['review'] as Map?;
-          return Column(
+          final header = Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  children: [
-                    Text(
-                      assignment.clientName,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    Text(
-                      '${assignment.name} · ${coachDate(assignment.date)} · ${assignment.statusLabel}',
-                    ),
-                    Wrap(
-                      alignment: WrapAlignment.center,
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        OutlinedButton.icon(
-                          onPressed: () => context.push(
-                            '/coach/technique/${Uri.encodeComponent(assignmentId)}',
-                          ),
-                          icon: const Icon(Icons.video_library_outlined),
-                          label: const Text('Vídeos de técnica'),
-                        ),
-                        if (assignment.relationId case final relation?)
-                          OutlinedButton.icon(
-                            onPressed: () => context.push(
-                              '/coach/messages/${Uri.encodeComponent(relation)}',
-                            ),
-                            icon: const Icon(Icons.chat_bubble_outline),
-                            label: const Text('Conversación'),
-                          ),
-                        if (result != null &&
-                            [
-                              'completed',
-                              'abandoned',
-                            ].contains(result['status']))
-                          FilledButton.icon(
-                            onPressed: () async {
-                              await coachTextAction(
-                                context,
-                                title: 'Marcar resultado revisado',
-                                label: 'Nota interna opcional',
-                                explanation: 'Esta nota es privada. Para dar indicaciones al alumno utiliza la conversación.',
-                                initial:
-                                    review?['private_note'] as String? ?? '',
-                                allowEmpty: true,
-                                save: (operation, text, _) => repo.review(
-                                  operation,
-                                  assignmentId,
-                                  revision,
-                                  text,
-                                ),
-                              );
-                              if (context.mounted) {
-                                refresh();
-                                scope.controller.refresh();
-                              }
-                            },
-                            icon: const Icon(Icons.fact_check_outlined),
-                            label: Text(
-                              review?['result_revision'] == revision
-                                  ? 'Actualizar revisión'
-                                  : 'Marcar revisado',
-                            ),
-                          ),
-                      ],
-                    ),
-                  ],
-                ),
+              Text(
+                assignment.clientName,
+                style: Theme.of(context).textTheme.titleLarge,
               ),
-              Expanded(
-                child: result == null
-                    ? const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(24),
-                          child: Text(
-                            'Todavía no hay resultados de esta sesión. Puedes consultar sus vídeos compartidos.',
+              const SizedBox(height: 6),
+              if (result == null)
+                Text(
+                  assignment.name,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              Text(
+                '${coachDate(assignment.date)} · ${assignment.statusLabel}',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: () => context.push(
+                      '/coach/technique/${Uri.encodeComponent(assignmentId)}',
+                    ),
+                    icon: const Icon(Icons.video_library_outlined),
+                    label: const Text('Vídeos de técnica'),
+                  ),
+                  if (assignment.relationId case final relation?)
+                    OutlinedButton.icon(
+                      onPressed: () => context.push(
+                        '/coach/messages/${Uri.encodeComponent(relation)}',
+                      ),
+                      icon: const Icon(Icons.chat_bubble_outline),
+                      label: const Text('Conversación'),
+                    ),
+                  if (result != null &&
+                      ['completed', 'abandoned'].contains(result['status']))
+                    FilledButton.icon(
+                      onPressed: () async {
+                        await coachTextAction(
+                          context,
+                          title: 'Marcar resultado revisado',
+                          label: 'Nota interna opcional',
+                          explanation: 'Esta nota es privada. Para dar indicaciones al alumno utiliza la conversación.',
+                          initial: review?['private_note'] as String? ?? '',
+                          allowEmpty: true,
+                          save: (operation, text, _) => repo.review(
+                            operation,
+                            assignmentId,
+                            revision,
+                            text,
                           ),
-                        ),
-                      )
-                    : TrainerWorkoutResultContent(result: result),
+                        );
+                        if (context.mounted) {
+                          refresh();
+                          scope.controller.refresh();
+                        }
+                      },
+                      icon: const Icon(Icons.fact_check_outlined),
+                      label: Text(
+                        review?['result_revision'] == revision
+                            ? 'Actualizar revisión'
+                            : 'Marcar revisado',
+                      ),
+                    ),
+                ],
               ),
             ],
           );
+          // Una sola lista permite alcanzar el resultado incluso con nombres
+          // largos, teclado abierto o texto ampliado en un teléfono pequeño.
+          return result != null
+              ? TrainerWorkoutResultContent(result: result, header: header)
+              : ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    header,
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Todavía no hay resultados de esta sesión. Puedes consultar sus vídeos compartidos.',
+                    ),
+                  ],
+                );
         },
       ),
     );
@@ -280,7 +279,13 @@ class CoachTechniquePage extends StatelessWidget {
                               : null,
                         )
                       else
-                        Text('Vídeo en preparación: ${clip['status']}'),
+                        Text(switch (clip['status']) {
+                          'failed' ||
+                          'rejected' => 'El vídeo no está disponible.',
+                          'ready' =>
+                            'Abre esta pantalla para reproducir el vídeo.',
+                          _ => 'El vídeo se está preparando.',
+                        }),
                       if (visible &&
                           clip['can_feedback'] == true &&
                           scope.notifications != null)

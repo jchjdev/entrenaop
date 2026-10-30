@@ -1,5 +1,19 @@
 # Roadmap de EntrenaOP
 
+**TRN-047 · 30/10/2026 · consulta móvil pulida y validada en código:**
+Resumen compacto, tarjetas flexibles, ficha con acciones y objetivos, resultado
+con desplazamiento único y selector de espacios adaptable. Conserva MFA,
+permisos, avisos y navegación personal. Nueve pruebas de disposición cubren doce
+pantallas a 320/390/430 px y texto 1×/1,3×/2×, zonas seguras de iPhone, cambio de
+espacio y acceso al control final del resultado. Raíz 1.455 pruebas correctas
+(una omisión previa), Trainer 332, ADMIN 364 (dos omisiones previas) y editor
+común 223; análisis limpios. Capturas renderizadas con Flutter y datos simulados;
+no equivalen a aceptación física de iOS. Sin APK ni uso del Samsung, por petición
+de Javier. **Único siguiente recorrido recomendado:** instalar su compilación
+en iPhone y comprobar invitación → planificación → ejecución → mensaje/revisión,
+incluyendo varios alumnos; no abrir otro bloque de funciones antes de esa prueba.
+[Alcance y evidencia](TRAINER_MOBILE_WORKSPACE.md#ajuste-de-consulta-movil--trn-047--30102026).
+
 **TRN-046 · 29/10/2026 · limpieza protegida cerrada en Dev:** cola durable,
 confirmación externa y reintentos para imágenes y demostraciones gestionadas.
 La papelera, versiones, trabajos abiertos e historial protegen sus referencias;

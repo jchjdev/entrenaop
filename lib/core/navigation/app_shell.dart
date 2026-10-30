@@ -1,4 +1,5 @@
 import '../../features/coach_workspace/presentation/coach_workspace_scope.dart';
+import '../../features/coach_workspace/presentation/coach_mobile_style.dart';
 
 import 'package:entrenaop/core/presentation/widgets/entrena_wordmark.dart';
 import 'package:flutter/material.dart';
@@ -45,30 +46,13 @@ class AppShell extends StatelessWidget {
                 child: Row(
                   children: [
                     Expanded(
-                      child: SegmentedButton<bool>(
-                        segments: [
-                          const ButtonSegment(
-                            value: false,
-                            label: Text('Mi entrenamiento'),
-                          ),
-                          ButtonSegment(
-                            value: true,
-                            label: Badge.count(
-                              count: workspace.unread,
-                              isLabelVisible: workspace.unread > 0,
-                              child: const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 8),
-                                child: Text('Entrenador'),
-                              ),
-                            ),
-                          ),
-                        ],
-                        selected: {professional},
-                        showSelectedIcon: false,
-                        onSelectionChanged: (selection) {
-                          if (selection.single == professional) return;
+                      child: _WorkspaceSwitcher(
+                        professional: professional,
+                        unread: workspace.unread,
+                        onSelected: (selected) {
+                          if (selected == professional) return;
                           navigationShell.goBranch(
-                            selection.single ? 5 : workspace.athleteIndex,
+                            selected ? 5 : workspace.athleteIndex,
                           );
                         },
                       ),
@@ -89,7 +73,12 @@ class AppShell extends StatelessWidget {
       );
     }
 
-    if (professional) return frame(navigationShell);
+    if (professional) {
+      return Theme(
+        data: coachMobileTheme(Theme.of(context)),
+        child: frame(navigationShell),
+      );
+    }
     final showTrainer =
         StudentNavigationScope.maybeOf(context)?.hasTrainer == true ||
         navigationShell.currentIndex == 4;
@@ -156,6 +145,85 @@ class AppShell extends StatelessWidget {
       },
     );
   }
+}
+
+class _WorkspaceSwitcher extends StatelessWidget {
+  const _WorkspaceSwitcher({
+    required this.professional,
+    required this.unread,
+    required this.onSelected,
+  });
+  final bool professional;
+  final int unread;
+  final ValueChanged<bool> onSelected;
+  @override
+  Widget build(BuildContext context) => Material(
+    key: const ValueKey('app-workspace-switcher'),
+    color: Colors.transparent,
+    child: LayoutBuilder(
+      builder: (context, size) {
+        // Con texto grande se cambia el patrón, no la preferencia de accesibilidad.
+        // El menú conserva los nombres completos sin partirlos entre segmentos.
+        if (size.maxWidth < 280 ||
+            MediaQuery.textScalerOf(context).scale(1) > 1.15) {
+          return PopupMenuButton<bool>(
+            tooltip: 'Cambiar espacio',
+            initialValue: professional,
+            onSelected: onSelected,
+            itemBuilder: (_) => const [
+              PopupMenuItem(value: false, child: Text('Mi entrenamiento')),
+              PopupMenuItem(value: true, child: Text('Entrenador')),
+            ],
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outlineVariant,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      professional ? 'Entrenador' : 'Personal',
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
+                  ),
+                  if (unread > 0) ...[
+                    const SizedBox(width: 8),
+                    Badge.count(count: unread),
+                  ],
+                  const SizedBox(width: 8),
+                  const Icon(Icons.expand_more, size: 22),
+                ],
+              ),
+            ),
+          );
+        }
+        return SegmentedButton<bool>(
+          segments: [
+            const ButtonSegment(value: false, label: Text('Mi entrenamiento')),
+            ButtonSegment(
+              value: true,
+              label: Badge.count(
+                count: unread,
+                isLabelVisible: unread > 0,
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8),
+                  child: Text('Entrenador'),
+                ),
+              ),
+            ),
+          ],
+          selected: {professional},
+          showSelectedIcon: false,
+          onSelectionChanged: (selection) => onSelected(selection.single),
+        );
+      },
+    ),
+  );
 }
 
 WidgetStateProperty<TextStyle> _barLabelStyle(

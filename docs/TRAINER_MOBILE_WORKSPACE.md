@@ -131,3 +131,56 @@ Siguiente recorrido de aceptación: instalar la app → entrar con la cuenta
 profesional → verificar autenticador → alternar ambos espacios → leer/responder
 un mensaje de un alumno → revisar resultado/vídeo → volver al entrenamiento
 personal y comprobar que «Preparador» sigue mostrando a Ervi.
+
+
+## Ajuste de consulta móvil · TRN-047 · 30/10/2026
+
+La consulta utiliza su propia densidad, sin cambiar el tema del entrenamiento
+personal ni limitar el tamaño de texto elegido en el teléfono. Los segmentos de
+cambio de espacio pasan a un menú cuando no caben; conservan el contexto y el
+globo profesional. La navegación inferior y el acceso a Perfil permanecen.
+
+- Resumen reúne los mensajes sin leer y las muestras cargadas de resultados y
+  vídeos pendientes. Estas dos últimas cifras no son un total de servidor.
+  Muestra una selección corta, oculta secciones vacías y conserva el acceso a sus
+  listados paginados; las preferencias de avisos son desplegables.
+- Alumnos, conversaciones, agenda, resultados y vídeos comparten tarjetas
+  pulsables sin alturas rígidas, con títulos que pueden ocupar varias líneas.
+- La ficha destaca Mensaje, Calendario, objetivo y marcas; conserva el historial
+  del servicio y la lectura autorizada del calendario conjunto.
+- El resultado usa una sola lista para la cabecera y la presentación compartida.
+  Se puede llegar al final y operar la revisión incluso con texto 2×.
+- El estado de preparación del vídeo se presenta en castellano. Reproducir,
+  corregir y marcar revisado mantienen sus contratos y reintentos anteriores.
+
+No se modifican modelos, permisos, MFA, refresco de mensajes, acuses, algoritmo,
+precios ni servidor. El lector compartido recibe solo una cabecera opcional y
+padding estrecho; se verifican sus consumidores de ADMIN y Trainer.
+
+### Evidencia y límites
+
+Nueve pruebas de disposición recorren doce pantallas a 320/390/430 px y texto
+1×/1,3×/2×: resumen, agenda, alumnos, mensajes, ficha, resultado, pauta pendiente,
+calendario conjunto, técnica, conversación, revisiones y vídeos. Se configura
+plataforma iOS y zonas seguras de 47/34 px, se verifica ausencia de desbordamientos,
+la operación del control final de resultados y el regreso a la misma ruta al
+alternar entrenamiento personal/profesional. Los datos incluyen nombres largos,
+marcas, mensajes, resultados y técnica; no hay transporte a cuentas reales.
+
+Batería raíz: 1.455 pruebas correctas y una omisión previa. ADMIN: 364 y dos
+omisiones previas. Trainer: 332. Editor común: 223. Análisis de las cuatro unidades
+limpios. Se mantienen las regresiones de guardia, revocación, borradores, pausas,
+lectura y desmontaje del vídeo al ocultar el contexto.
+
+`tools/coach_mobile_preview.dart` permite compilar las pantallas reales en un
+target local aislado con fixtures de `test/support/`; no se usa en entregas de
+la app. Las capturas opcionales del test usan fuentes de Windows para que sean
+legibles; no acreditan la tipografía exacta ni el comportamiento nativo de iOS.
+El control interactivo del navegador se detuvo al no poder determinar su URL.
+Javier descarta el Samsung; no se usa ese teléfono, no se prepara APK y no se
+acredita aceptación física del iPhone ni APNs. La nueva compilación e instalación
+móvil sigue a cargo de Javier.
+
+El siguiente recorrido es aceptar una invitación en iPhone, alternar ambos
+espacios y completar planificación, ejecución y revisión con mensaje y vídeo,
+comprobando además que el servicio recibido de otro preparador permanece.

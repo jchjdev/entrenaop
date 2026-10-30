@@ -1,4 +1,5 @@
 import 'coach_notification_settings.dart';
+import 'coach_mobile_style.dart';
 
 import 'package:trainer_access/trainer_calendar.dart';
 import 'package:workout_core/performance_time.dart';
@@ -145,7 +146,7 @@ class _CoachPagedListState<T> extends State<CoachPagedList<T>> {
     if (widget.embedded) return content;
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(widget.title, maxLines: 2, overflow: TextOverflow.ellipsis),
         actions: [
           IconButton(
             onPressed: _loading ? null : () => _load(refresh: true),
@@ -209,85 +210,168 @@ class CoachSummaryPage extends StatelessWidget {
           repo.reviews(),
           repo.pendingTechnique(),
         ).wait,
-        builder: (context, data, refresh) => ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            Text(
-              'Hoy · ${coachDate(today)}',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 12),
-            Card(
-              child: ListTile(
-                leading: Badge.count(
-                  count: scope.controller.unread,
-                  isLabelVisible: scope.controller.unread > 0,
-                  child: const Icon(Icons.chat_bubble_outline),
+        builder: (context, data, refresh) => RefreshIndicator(
+          onRefresh: () async => refresh(),
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+            children: [
+              Text(
+                'Hoy · ${coachDate(today)}',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 16),
+              LayoutBuilder(
+                builder: (context, size) {
+                  final stacked =
+                      size.maxWidth < 340 ||
+                      MediaQuery.textScalerOf(context).scale(1) > 1.3;
+                  final cards = [
+                    _CoachMetric(
+                      label: 'Sin leer',
+                      count: scope.controller.unread,
+                      icon: Icons.chat_bubble_outline,
+                      stacked: stacked,
+                      onTap: () => context.go('/coach/messages'),
+                    ),
+                    _CoachMetric(
+                      label: 'Resultados',
+                      count: data.$2.length,
+                      icon: Icons.fact_check_outlined,
+                      stacked: stacked,
+                      onTap: () => context.push('/coach/reviews'),
+                    ),
+                    _CoachMetric(
+                      label: 'Vídeos',
+                      count: data.$3.length,
+                      icon: Icons.video_library_outlined,
+                      stacked: stacked,
+                      onTap: () => context.push('/coach/videos'),
+                    ),
+                  ];
+                  return stacked
+                      ? Column(
+                          children: [
+                            for (final card in cards)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: card,
+                              ),
+                          ],
+                        )
+                      : Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            for (var i = 0; i < cards.length; i++) ...[
+                              if (i > 0) const SizedBox(width: 8),
+                              Expanded(child: cards[i]),
+                            ],
+                          ],
+                        );
+                },
+              ),
+              CoachSectionHeading(
+                title: 'Entrenamientos de hoy',
+                action: 'Ver agenda',
+                onAction: () => context.go('/coach/agenda'),
+              ),
+              if (data.$1.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Text('No tienes entrenamientos pautados para hoy.'),
                 ),
-                title: const Text('Mensajes de tus alumnos'),
-                subtitle: Text(
-                  scope.controller.unread > 0
-                      ? '${scope.controller.unread} sin leer'
-                      : 'Sin mensajes pendientes',
+              for (final item in data.$1.take(3))
+                CoachAssignmentTile(item: item),
+              if (data.$2.isNotEmpty) ...[
+                CoachSectionHeading(
+                  title: 'Resultados por revisar',
+                  action: 'Ver todos',
+                  onAction: () => context.push('/coach/reviews'),
                 ),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => context.go('/coach/messages'),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Entrenamientos de hoy',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            if (data.$1.isEmpty)
-              const Padding(
-                padding: EdgeInsets.all(16),
-                child: Text('No tienes pautas para hoy.'),
-              ),
-            for (final item in data.$1.take(5)) CoachAssignmentTile(item: item),
-            TextButton(
-              onPressed: () => context.go('/coach/agenda'),
-              child: const Text('Abrir agenda completa'),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Resultados pendientes de revisar',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            if (data.$2.isEmpty)
-              const Padding(
-                padding: EdgeInsets.all(16),
-                child: Text('No hay resultados pendientes.'),
-              ),
-            for (final item in data.$2.take(5)) CoachAssignmentTile(item: item),
-            TextButton(
-              onPressed: () => context.push('/coach/reviews'),
-              child: const Text('Ver todas las revisiones'),
-            ),
-            Text(
-              'Vídeos sin corrección',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            if (data.$3.isEmpty)
-              const Padding(
-                padding: EdgeInsets.all(16),
-                child: Text(
-                  'No hay vídeos compartidos pendientes de una primera corrección.',
+                for (final item in data.$2.take(2))
+                  CoachAssignmentTile(item: item),
+              ],
+              if (data.$3.isNotEmpty) ...[
+                CoachSectionHeading(
+                  title: 'Técnica por revisar',
+                  action: 'Ver vídeos',
+                  onAction: () => context.push('/coach/videos'),
                 ),
+                for (final clip in data.$3.take(2))
+                  CoachTechniqueTile(item: clip),
+              ],
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                onPressed: refresh,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Actualizar resumen'),
               ),
-            for (final clip in data.$3.take(5)) CoachTechniqueTile(item: clip),
-            TextButton(
-              onPressed: () => context.push('/coach/videos'),
-              child: const Text('Ver todos los vídeos sin corrección'),
-            ),
-            TextButton.icon(
-              onPressed: refresh,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Actualizar resumen'),
-            ),
-            if (scope.notifications case final notifications?)
-              CoachNotificationSettings(repository: notifications),
-          ],
+              if (scope.notifications case final notifications?) ...[
+                const SizedBox(height: 12),
+                ExpansionTile(
+                  leading: const Icon(Icons.notifications_outlined),
+                  title: const Text('Avisos de mis alumnos'),
+                  tilePadding: const EdgeInsets.symmetric(horizontal: 12),
+                  children: [
+                    CoachNotificationSettings(repository: notifications),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CoachMetric extends StatelessWidget {
+  const _CoachMetric({
+    required this.label,
+    required this.count,
+    required this.icon,
+    required this.onTap,
+    required this.stacked,
+  });
+  final String label;
+  final int count;
+  final IconData icon;
+  final VoidCallback onTap;
+  final bool stacked;
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final caption = Text(label, style: theme.textTheme.labelMedium);
+    final number = Text('$count', style: theme.textTheme.titleLarge);
+    return Semantics(
+      label: '$label: $count pendientes',
+      button: true,
+      child: Card(
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: stacked
+                ? Row(
+                    children: [
+                      Icon(icon, size: 20, color: theme.colorScheme.primary),
+                      const SizedBox(width: 12),
+                      Expanded(child: caption),
+                      number,
+                    ],
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(icon, size: 20, color: theme.colorScheme.primary),
+                      const SizedBox(height: 8),
+                      number,
+                      const SizedBox(height: 4),
+                      caption,
+                    ],
+                  ),
+          ),
         ),
       ),
     );
@@ -298,18 +382,14 @@ class CoachAssignmentTile extends StatelessWidget {
   const CoachAssignmentTile({super.key, required this.item});
   final CoachAssignment item;
   @override
-  Widget build(BuildContext context) => Card(
-    child: ListTile(
-      leading: Icon(
-        item.status == 'completed' ? Icons.task_alt : Icons.fitness_center,
-      ),
-      title: Text(item.name),
-      subtitle: Text(
+  Widget build(BuildContext context) => CoachNavigationCard(
+    title: item.name,
+    subtitle:
         '${item.clientName.isEmpty ? '' : '${item.clientName} · '}${coachDate(item.date)} · ${item.statusLabel}',
-      ),
-      trailing: const Icon(Icons.chevron_right),
-      onTap: () => context.push(coachAssignmentRoute(item.id)),
-    ),
+    icon: item.status == 'completed'
+        ? Icons.task_alt
+        : Icons.event_note_outlined,
+    onTap: () => context.push(coachAssignmentRoute(item.id)),
   );
 }
 
@@ -433,37 +513,35 @@ class _CoachClientsPageState extends State<CoachClientsPage> {
       ),
       row: (context, item) {
         final unread = scope.controller.inbox?.clients[item.personId];
-        return Card(
-          child: ListTile(
-            leading: Badge.count(
-              count: unread?.unreadCount ?? 0,
-              isLabelVisible: (unread?.unreadCount ?? 0) > 0,
-              child: Icon(
-                widget.messages
-                    ? Icons.chat_bubble_outline
-                    : Icons.person_outline,
-              ),
-            ),
-            title: Text(item.name),
-            subtitle: Text(
-              (unread?.unreadCount ?? 0) > 0
-                  ? '${unread!.unreadCount} mensajes sin leer'
-                  : item.active
-                  ? 'Servicio activo'
-                  : 'Servicio inactivo',
-            ),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              final relation = unread?.relationId ?? item.activeRelationId;
-              if (widget.messages && relation != null) {
-                context.push(
-                  '/coach/messages/${Uri.encodeComponent(relation)}',
-                );
-              } else {
-                context.push(coachClientRoute(item.personId));
-              }
-            },
-          ),
+        return CoachNavigationCard(
+          title: item.name,
+          subtitle: (unread?.unreadCount ?? 0) > 0
+              ? '${unread!.unreadCount} mensajes sin leer'
+              : item.active
+              ? 'Servicio activo'
+              : 'Servicio inactivo',
+          icon: widget.messages
+              ? Icons.chat_bubble_outline
+              : Icons.person_outline,
+          initials: widget.messages
+              ? null
+              : item.name
+                    .trim()
+                    .split(RegExp(r'\s+'))
+                    .where((part) => part.isNotEmpty)
+                    .take(2)
+                    .map((part) => part.characters.first)
+                    .join()
+                    .toUpperCase(),
+          unread: unread?.unreadCount ?? 0,
+          onTap: () {
+            final relation = unread?.relationId ?? item.activeRelationId;
+            if (widget.messages && relation != null) {
+              context.push('/coach/messages/${Uri.encodeComponent(relation)}');
+            } else {
+              context.push(coachClientRoute(item.personId));
+            }
+          },
         );
       },
     );
@@ -487,58 +565,88 @@ class CoachClientPage extends StatelessWidget {
         header: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (data.client.activeRelationId case final relation?)
-              FilledButton.icon(
-                onPressed: () => context.push(
-                  '/coach/messages/${Uri.encodeComponent(relation)}',
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                if (data.client.activeRelationId case final relation?)
+                  FilledButton.icon(
+                    onPressed: () => context.push(
+                      '/coach/messages/${Uri.encodeComponent(relation)}',
+                    ),
+                    icon: const Icon(Icons.chat_bubble_outline),
+                    label: const Text('Mensaje'),
+                  ),
+                OutlinedButton.icon(
+                  onPressed: () => context.push(
+                    '/coach/calendar/${Uri.encodeComponent(clientId)}',
+                  ),
+                  icon: const Icon(Icons.calendar_month_outlined),
+                  label: const Text('Calendario'),
                 ),
-                icon: const Icon(Icons.chat_bubble_outline),
-                label: const Text('Conversación'),
+              ],
+            ),
+            const CoachSectionHeading(title: 'Objetivo de oposición'),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      data.goal.title.isEmpty
+                          ? 'Objetivo pendiente'
+                          : data.goal.title,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    if (data.goal.targetDate != null)
+                      Text(
+                        'Fecha objetivo: ${coachDate(data.goal.targetDate!)}',
+                      ),
+                    if (data.goal.targets.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 8),
+                        child: Text(
+                          'Configura el objetivo y las marcas desde Trainer web.',
+                        ),
+                      ),
+                    for (final target in data.goal.targets)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              target.protocol.name,
+                              style: Theme.of(context).textTheme.titleSmall,
+                            ),
+                            Text(
+                              'Objetivo: ${_goalMark(target.value, target.protocol.unit)}',
+                            ),
+                            Text(
+                              'Última: ${target.hasLatestEvidence && target.latest != null ? _goalMark(target.latest!, target.protocol.unit) : 'Sin marca compatible'}',
+                            ),
+                            if (target.reached != null)
+                              Text(
+                                target.reached!
+                                    ? 'Objetivo alcanzado'
+                                    : 'En progreso',
+                              ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
               ),
+            ),
             TextButton.icon(
               onPressed: () => context.push(
                 '/coach/client-history/${Uri.encodeComponent(clientId)}',
               ),
               icon: const Icon(Icons.history),
-              label: const Text('Conversaciones de etapas anteriores'),
+              label: const Text('Historial del servicio'),
             ),
-            const SizedBox(height: 16),
-            OutlinedButton.icon(
-              onPressed: () => context.push(
-                '/coach/calendar/${Uri.encodeComponent(clientId)}',
-              ),
-              icon: const Icon(Icons.calendar_month_outlined),
-              label: const Text('Calendario compartido'),
-            ),
-            Text(
-              'Objetivo de oposición',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            Text(
-              data.goal.title.isEmpty
-                  ? 'Todavía no has definido un objetivo en Trainer web.'
-                  : data.goal.title,
-            ),
-            if (data.goal.targetDate != null)
-              Text('Fecha objetivo: ${coachDate(data.goal.targetDate!)}'),
-            for (final target in data.goal.targets)
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(target.protocol.name),
-                subtitle: Text(
-                  'Objetivo: ${_goalMark(target.value, target.protocol.unit)} · Última: ${target.hasLatestEvidence && target.latest != null ? _goalMark(target.latest!, target.protocol.unit) : 'Sin marca compatible'}',
-                ),
-                trailing: target.reached == null
-                    ? null
-                    : Icon(
-                        target.reached! ? Icons.task_alt : Icons.flag_outlined,
-                      ),
-              ),
-            const SizedBox(height: 16),
-            Text(
-              'Planificación y resultados',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
+            const CoachSectionHeading(title: 'Planificación y resultados'),
             TextButton(
               onPressed: refresh,
               child: const Text('Actualizar ficha'),
@@ -576,15 +684,12 @@ class CoachTechniqueTile extends StatelessWidget {
   const CoachTechniqueTile({super.key, required this.item});
   final CoachTechniquePending item;
   @override
-  Widget build(BuildContext context) => Card(
-    child: ListTile(
-      leading: const Icon(Icons.video_library_outlined),
-      title: Text(item.clientName),
-      subtitle: Text('${item.name} · ${coachDate(item.createdAt.toLocal())}'),
-      trailing: const Icon(Icons.chevron_right),
-      onTap: () => context.push(
-        '/coach/technique/${Uri.encodeComponent(item.assignmentId)}',
-      ),
+  Widget build(BuildContext context) => CoachNavigationCard(
+    title: item.clientName,
+    subtitle: '${item.name} · ${coachDate(item.createdAt.toLocal())}',
+    icon: Icons.video_library_outlined,
+    onTap: () => context.push(
+      '/coach/technique/${Uri.encodeComponent(item.assignmentId)}',
     ),
   );
 }

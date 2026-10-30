@@ -15,9 +15,13 @@ class TrainerWorkoutResultContent extends StatefulWidget {
     super.key,
     required this.result,
     this.loadHistory,
+    this.header,
   });
   final Map<String, dynamic> result;
   final ReviewHistoryLoader? loadHistory;
+
+  /// Cabecera integrada en el mismo desplazamiento, útil en consulta móvil.
+  final Widget? header;
   @override
   State<TrainerWorkoutResultContent> createState() =>
       _TrainerWorkoutResultContentState();
@@ -63,8 +67,14 @@ class _TrainerWorkoutResultContentState
           maxWidth: 1000,
         ),
         child: ListView(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(
+            MediaQuery.sizeOf(context).width < 600 ? 16 : 24,
+          ),
           children: [
+            if (widget.header != null) ...[
+              widget.header!,
+              const SizedBox(height: 16),
+            ],
             Text(
               result['template_name'] as String,
               style: Theme.of(context).textTheme.headlineSmall,

@@ -1,5 +1,18 @@
 # Registro de decisiones vigentes
 
+**TRN-047 · consulta profesional móvil · 30/10/2026:** Javier pide revisar y
+pulir el espacio Entrenador de la app porque en iPhone los textos y proporciones
+no encajan. Se mantiene la consulta rápida y el seguimiento en móvil; los
+creadores y la gestión completa siguen en web. El ajuste es de presentación:
+tema local al espacio profesional, tarjetas flexibles, resumen breve, ficha con
+acciones directas y una sola lista para cabecera y resultados. El selector entre
+espacios usa un menú si la anchura o el texto ampliado no permiten los segmentos;
+conserva ambas rutas y los avisos, sin recortar la escala de accesibilidad.
+No cambia cuentas, MFA, permisos, contratos de datos ni cuotas. Javier descarta
+usar el Samsung en esta revisión; no se genera APK y queda pendiente comprobar
+la nueva compilación en el iPhone físico.
+[Alcance y evidencia](TRAINER_MOBILE_WORKSPACE.md#ajuste-de-consulta-movil--trn-047--30102026).
+
 **TRN-046 · limpieza protegida de medios · 29/10/2026:** Javier autoriza
 eliminar imágenes y vídeos que ya no tengan usos para recuperar cuota, incluida
 la imagen de un ejercicio propio que ya ha purgado. La papelera conserva los
