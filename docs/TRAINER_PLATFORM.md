@@ -558,3 +558,20 @@ cubren fases, huecos, precisión, correcciones, teclado, toque y detalle con tex
 medida del dispositivo, datos incompletos y agrupación. Capturas del componente
 real revisadas en escritorio claro/oscuro y móvil. La app necesita una nueva
 compilación para recibir el gráfico; no se genera APK en este bloque.
+
+### Publicación del análisis de carrera · 30/10/2026
+
+Revisión `df772e09` publicada automáticamente en Dev:
+[Trainer 41104213468](https://github.com/jchjdev/entrenaop/actions/runs/41104213468)
+y [ADMIN 41104213480](https://github.com/jchjdev/entrenaop/actions/runs/41104213480),
+ambos correctos en validación y despliegue. La verificación Garmin de la misma
+revisión termina correctamente sin publicar Garmin. Comprobación HTTPS
+independiente: revisión y proyecto Dev correctos, entrada activa, integridad del
+JavaScript, cabeceras sin caché y MIME WebAssembly verificados en ambos portales.
+
+- Trainer: `c56007ee5c94f4e5e10b1161946f8236af129169f720cf94974b8041f38342cb`.
+- ADMIN: `14f9a674a54eb0caac82c9a974a7d0b393c5096fe40bbecb1063985b46210b7c`.
+
+El código móvil está guardado en main; esta publicación no instala una nueva
+versión de iOS o Android. La aceptación con el iPhone queda para su siguiente
+compilación, a cargo de Javier conforme a lo acordado.
