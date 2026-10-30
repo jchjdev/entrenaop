@@ -268,9 +268,10 @@ papelera y gestión completa continúan en web.
 también se ofrece en «Opciones de la sesión» (⋮) de cada pauta pendiente de la
 agenda. Reutiliza la confirmación y operación existentes, refresca el calendario
 al volver y mantiene las protecciones por estado y ejecución. No borra la
-plantilla ni el historial. Este acceso directo es posterior a la beta.4 instalada;
-se incorpora en la siguiente compilación habitual, sin generar otra APK por este
-ajuste visual. Cuatro pruebas cubren confirmación, refresco y rechazo de sesiones
+plantilla ni el historial. Este acceso directo es posterior a la beta.4 instalada.
+A petición expresa durante las pruebas se actualiza el Samsung A13 a beta.5+3
+con su firma compatible, conservando datos y comprobando el arranque nativo.
+Cuatro pruebas cubren confirmación, refresco y rechazo de sesiones
 en curso, completadas o con ejecución. Tras el ajuste pasan las 1.485 pruebas de
 la raíz, con una omisión previa, y el análisis queda limpio.
 

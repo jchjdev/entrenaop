@@ -1,5 +1,16 @@
 # Beta Android privada
 
+**Actualización del 30/10/2026 · beta.5+3 instalada:** tras la petición expresa
+de Javier durante sus pruebas, se actualiza el mismo Samsung A13 con el acceso
+directo a retirada de sesiones desde el menú de la agenda (`c1c538b6`). Variante
+debug compatible con su firma antigua, Supabase/Firebase Dev, firma y versión
+verificadas antes del reemplazo. Android confirma instalación correcta y
+arranque nativo, conservando la fecha de primera instalación; no se desinstala
+ni se borran datos. APK `EntrenaOP-1.0.0-beta.5-3-legacy-debug.apk`, SHA-256
+`bb150b1ef5c54c6a9ee6b16da3142423cf7465fca1baa4ddad18724059751cea`.
+El código está publicado en main para compilar iOS; esta instalación no acredita
+el recorrido físico en iPhone.
+
 **Instalación del 30/10/2026 · planificación móvil TRN-048:** a petición de
 Javier se compila `1.0.0-beta.4+3`, desde `5b6fca4a`, con Supabase/Firebase Dev.
 La release conserva la firma beta estable y supera su verificación, pero el
