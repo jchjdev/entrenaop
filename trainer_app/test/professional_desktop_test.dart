@@ -365,19 +365,18 @@ void main() {
     final source = find.widgetWithText(ListTile, privateRecipe.name);
     final target = find.byKey(const ValueKey('agenda-drop-2026-10-22'));
     await dragTo(t, source, t.getCenter(target), settle: false);
-    expect(find.text('Elegir alumno para la pauta'), findsOneWidget);
+    expect(find.text('Asignar sesión privada'), findsOneWidget);
     expect(workouts.assigned, isEmpty);
-    await t.tap(find.text('Cancelar'));
+    await t.tap(find.text('Volver'));
     await t.pumpAndSettle();
     expect(workouts.assigned, isEmpty);
     expect(moves, isEmpty);
     final libraryReads = workouts.libraryReads;
     await dragTo(t, source, t.getCenter(target), settle: false);
-    await t.tap(find.text('Ana'));
-    // La agenda mantiene el indicador de operación mientras el diálogo está abierto.
     await t.pump(const Duration(milliseconds: 350));
-    await t.tap(find.text('Revisar pauta'));
+    await t.tap(find.byType(DropdownButtonFormField<String>).last);
     await t.pump(const Duration(milliseconds: 350));
+    await t.tap(find.text('Ana').last);
     await t.pump(const Duration(milliseconds: 350));
     expect(workouts.libraryReads, libraryReads);
     expect(find.byType(RadioListTile<String>), findsNothing);

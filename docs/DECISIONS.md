@@ -1,5 +1,15 @@
 # Registro de decisiones vigentes
 
+**Agenda y seguimiento directo · 31/10/2026:** Javier confirma unificar la
+asignación de sesión, alumno y fecha en una confirmación, sin volver a elegir
+la sesión arrastrada ni el alumno ya filtrado. La sesión del calendario abre
+un panel lateral en escritorio y una hoja de consulta en pantallas estrechas,
+con receta, resultados y las acciones existentes. Al cerrar o volver desde la
+ficha/resultados se conserva periodo, filtros y posición. Se reutilizan lectores,
+operaciones, protección de reintentos y permisos; las pautas de otros preparadores
+siguen siendo de consulta. Sin cambios de esquema, derechos ni dependencias.
+[Contrato](TRAINER_PLATFORM.md#agenda-y-seguimiento-directo--31102026).
+
 **Análisis visual de carrera · 30/10/2026:** Javier aprueba gráfico por repetición
 frente a la franja pautada, consulta al tocar/pasar el ratón y resumen de ritmo
 medio, extremos y regularidad. Se comparte cálculo en `workout_core` y presentación

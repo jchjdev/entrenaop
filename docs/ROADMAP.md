@@ -1,5 +1,19 @@
 # Roadmap de EntrenaOP
 
+**31/10/2026 · Agenda → alumno → resultados, pulido localizado de Trainer:**
+asignación en una confirmación con sesión/fecha elegidas y alumno filtrado
+preseleccionado tras verificar el vínculo. Detalle lateral de receta/resultados
+con los lectores compartidos y acciones existentes; pautas recibidas en solo
+lectura. Cerrar o regresar desde ficha/resultados mantiene periodo, filtros y
+desplazamiento. Cancelar no escribe ni recarga; las respuestas inciertas mantienen
+datos/UUID. Sin cambios en ADMIN, app del deportista, SQL o dependencias.
+Análisis limpio y 374 pruebas Trainer correctas; 12 regresiones nuevas y capturas
+de escritorio/móvil, claro/oscuro y texto 2× revisadas.
+**Siguiente recorrido de este pulido:** aceptación con Javier en Trainer Dev de
+arrastrar → confirmar → abrir receta/resultados → volver a la misma semana.
+El directorio profesional y sus condiciones siguen en su recorrido propio.
+[Contrato y límites](TRAINER_PLATFORM.md#agenda-y-seguimiento-directo--31102026).
+
 **TRN-040 · 30/10/2026 · primera entrega técnica del directorio en Dev:**
 Javier autoriza comenzar, preservando el trabajo paralelo de Arquitectura.
 Preparador siempre visible, búsqueda/ficha común para web/app, favoritos,

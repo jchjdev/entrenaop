@@ -1,6 +1,7 @@
 import 'trainer_assignment_lifecycle_actions.dart';
 import 'trainer_catalog_trash_page.dart';
 import 'trainer_catalog_trash_repository.dart';
+import 'trainer_assignment_client_field.dart';
 
 import 'package:workout_core/exercise_catalog_preferences.dart';
 import 'package:entrena_ui/entrena_ui.dart';
@@ -866,12 +867,16 @@ class TrainerAssignmentDialog extends StatefulWidget {
   const TrainerAssignmentDialog({
     super.key,
     required this.repository,
-    required this.relationId,
+    this.relationId,
+    this.accessRepository,
+    this.initialClientId,
     this.initialWorkout,
     this.initialDate,
-  });
+  }) : assert(relationId != null || accessRepository != null);
   final TrainerWorkoutRepository repository;
-  final String relationId;
+  final String? relationId;
+  final TrainerRepository? accessRepository;
+  final String? initialClientId;
   final TrainerWorkout? initialWorkout;
   final DateTime? initialDate;
   @override
@@ -880,6 +885,7 @@ class TrainerAssignmentDialog extends StatefulWidget {
 }
 
 class _TrainerAssignmentDialogState extends State<TrainerAssignmentDialog> {
+  String? _relationId;
   bool? _runningFilter;
   String? _formatFilter;
   String _sessionQuery = '';
@@ -895,6 +901,7 @@ class _TrainerAssignmentDialogState extends State<TrainerAssignmentDialog> {
   void initState() {
     super.initState();
     _selected = widget.initialWorkout;
+    _relationId = widget.relationId;
     _date = DateUtils.dateOnly(widget.initialDate ?? DateTime.now());
     _choosingWorkout = _selected == null;
     // Arrastrar desde la biblioteca ya aporta la sesión y su versión. No
@@ -953,7 +960,7 @@ class _TrainerAssignmentDialogState extends State<TrainerAssignmentDialog> {
     try {
       await widget.repository.assign(
         id: _operationId!,
-        relationId: widget.relationId,
+        relationId: _relationId!,
         templateId: _selected!.id,
         date: _date,
         note: _note.text.trim(),
@@ -1017,6 +1024,16 @@ class _TrainerAssignmentDialogState extends State<TrainerAssignmentDialog> {
             'El alumno recibirá esta versión en su agenda. Su plan automático se conserva.',
           ),
           const SizedBox(height: 16),
+          if (widget.accessRepository != null) ...[
+            TrainerAssignmentClientField(
+              repository: widget.accessRepository!,
+              initialClientId: widget.initialClientId,
+              enabled: !_busy && _operationId == null,
+              onChanged: (client) =>
+                  setState(() => _relationId = client?.relationId),
+            ),
+            const SizedBox(height: 16),
+          ],
           if (_selected != null) ...[
             Text(
               'Sesión seleccionada',
@@ -1140,7 +1157,11 @@ class _TrainerAssignmentDialogState extends State<TrainerAssignmentDialog> {
           primaryLabel: _operationId == null
               ? 'Asignar sesión'
               : 'Reintentar asignación',
-          onPrimary: _busy || _selected == null || _choosingWorkout
+          onPrimary:
+              _busy ||
+                  _selected == null ||
+                  _choosingWorkout ||
+                  _relationId == null
               ? null
               : _assign,
           secondary: [

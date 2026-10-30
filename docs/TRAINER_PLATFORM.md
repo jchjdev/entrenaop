@@ -2,6 +2,43 @@
 
 ## Inventario y siguiente bloque · 29/10/2026
 
+### Agenda y seguimiento directo · 31/10/2026
+
+Javier aprueba pulir Agenda → alumno → resultados empezando por la asignación
+directa y el detalle lateral. El recorrido de biblioteca/arrastre reúne alumno,
+sesión seleccionada, fecha e indicaciones en una sola confirmación. Si Agenda
+está filtrada por alumno, se verifica su vínculo activo y se preselecciona sin
+abrir otro selector. No se cambia silenciosamente a otro alumno si ese vínculo
+terminó. La selección mantiene paginación explícita y búsqueda entre los alumnos
+cargados; «Para mí» usa el vínculo existente, sin crear otro ni ocupar plaza.
+La sesión/versión elegida no vuelve a consultar la biblioteca salvo al pulsar
+«Cambiar sesión». Una respuesta incierta congela los datos y conserva el UUID
+para reintentar. Cancelar no escribe ni recarga Agenda.
+
+Las sesiones del calendario abren un panel a la derecha, con receta de la
+versión asignada y resultados cargados bajo demanda mediante los lectores
+existentes. En pantallas estrechas se presenta como hoja inferior. Se conserva
+el detalle completo para revisión, técnica y conversación. Mover, adaptar y
+retirar mantienen sus operaciones y confirmaciones; no se ofrecen para sesiones
+ya iniciadas. Las sesiones recibidas de otro preparador utilizan el mismo panel
+en solo lectura y su lector autorizado, sin acciones de edición.
+
+La agenda queda montada bajo el panel. Cerrar no reinicia su periodo, filtros ni
+desplazamiento. Abrir ficha o resultado completo usa navegación apilada; al
+volver se actualizan los datos conservando el contexto. La ficha de la lista
+también ofrece «Ver detalle». No se modifican ADMIN, la app del deportista,
+datos, permisos, dependencias ni algoritmos en este tramo.
+
+Validación local del 31/10: análisis Trainer limpio y 374 pruebas correctas,
+incluidas 12 regresiones del recorrido. Se comprueban cancelación sin escritura
+ni recarga, destinatario inactivo, reintento con el mismo UUID, retirada con
+confirmación, receta/resultados dentro del panel y vuelta a la misma semana,
+filtros y scroll. Las capturas de los componentes reales se revisan en claro y
+oscuro, 320/1440 px y texto 2×; ambas pestañas caben sin desbordamientos. La
+aceptación de Javier en el portal publicado queda como siguiente comprobación.
+
+### Inventario de los dieciséis puntos · 29/10/2026
+
 Javier pide el estado de los dieciséis puntos y añade gestión de borrado de
 sesiones, programas y ejercicios en ambos portales. Se contrasta el mapa del
 22/10 con las entregas posteriores y el código de los catálogos. Esta revisión

@@ -7,7 +7,6 @@ import 'package:trainer_access/trainer_access.dart';
 import 'package:trainer_access/trainer_appointments.dart';
 import 'package:trainer_access/trainer_calendar.dart';
 import 'package:workout_core/workout_template_model.dart';
-import 'package:workout_editor_ui/workout_template_content.dart';
 
 import 'trainer_appointment_dialog.dart';
 import 'trainer_appointment_week.dart';
@@ -15,10 +14,10 @@ import 'trainer_appointment_week.dart';
 import 'trainer_workout_repository.dart';
 import 'trainer_workout_filters.dart';
 import 'trainer_workout_pages.dart';
-import 'trainer_agenda_client_picker.dart';
 import 'trainer_month_calendar.dart';
 import 'trainer_pointer_drag.dart';
 import 'trainer_assignment_lifecycle_actions.dart';
+import 'trainer_agenda_session_panel.dart';
 
 import 'package:workout_core/professional_assessment.dart';
 
@@ -159,6 +158,7 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
   String? _clientFilter, _statusFilter, _error;
   TrainerAssignmentVisibility _visibility = TrainerAssignmentVisibility.current;
   bool _busy = true, _more = false, _mutating = false;
+  bool _assignmentOpen = false;
   int _request = 0;
   final _libraryOwner = Object();
   List<TrainerWorkout> _library = [];
@@ -273,30 +273,34 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
 
   Future<void> _assignFromLibrary(TrainerWorkout workout, DateTime date) async {
     if (_locked ||
+        _assignmentOpen ||
         widget.access == null ||
         widget.workouts == null ||
         !_library.any((s) => s.id == workout.id)) {
       return;
     }
-    await _mutation(() async {
-      final client = await showDialog<TrainerClient>(
-        context: context,
-        builder: (_) => TrainerAgendaClientPicker(
-          repository: widget.access!,
-          selectedId: _clientFilter,
-        ),
-      );
-      if (!mounted || client?.activeRelationId == null) return;
-      await showDialog<bool>(
+    _assignmentOpen = true;
+    try {
+      final saved = await showDialog<bool>(
         context: context,
         builder: (_) => TrainerAssignmentDialog(
           repository: widget.workouts!,
-          relationId: client!.activeRelationId!,
+          accessRepository: widget.access!,
+          initialClientId: _clientFilter,
           initialWorkout: workout,
           initialDate: date,
         ),
       );
-    });
+      if (mounted && saved == true) {
+        await _load();
+        if (mounted) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text('Sesión asignada.')));
+        }
+      }
+    } finally {
+      _assignmentOpen = false;
+    }
   }
 
   bool _canMoveRow(TrainerAgendaItem row, DateTime date) =>
@@ -513,6 +517,7 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
 
   Widget _boardCard(TrainerAgendaItem row) {
     final child = Padding(
+      key: ValueKey('agenda-board-entry-${row.assignment.id}'),
       padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 4),
       child: TrainerCalendarEntryTile(entry: _calendarEntry(row)),
     );
@@ -524,80 +529,81 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
   Future<void> _showCalendarEntry(TrainerAgendaItem row) async {
     if (_locked) return;
     final assignment = row.assignment;
-    final action = await showDialog<_AgendaEntryAction>(
-      context: context,
-      builder: (dialogContext) => EntrenaDialog(
-        title: Text(assignment.name),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              row.clientName,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              '${_dayLabel(assignment.date)} · ${assignment.statusLabel} · Versión ${assignment.version}',
-            ),
-            if (assignment.archived) const Text('Asignación archivada'),
-            if (assignment.note?.isNotEmpty == true) ...[
-              const SizedBox(height: 12),
-              Text(assignment.note!),
-            ],
-            const SizedBox(height: 12),
+    final action = await showTrainerAgendaPanel<_AgendaEntryAction>(
+      context,
+      builder: (dialogContext) => TrainerAgendaSessionPanel(
+        name: assignment.name,
+        personName: row.clientName,
+        metadata:
+            '${_dayLabel(assignment.date)} · ${assignment.statusLabel} · Versión ${assignment.version}${assignment.archived ? ' · Archivada' : ''}',
+        note: assignment.note,
+        repository: widget.workouts,
+        assignmentId: assignment.id,
+        hasResult: assignment.executionId != null,
+        loadRecipe: widget.workouts == null
+            ? null
+            : () async {
+                final recipe = await widget.workouts!.template(
+                  assignment.templateId,
+                );
+                // Se consulta la versión asignada, nunca la última de la biblioteca.
+                if (recipe != null &&
+                    (recipe.id != assignment.templateId ||
+                        recipe.version != assignment.version)) {
+                  throw StateError(
+                    'La receta ha cambiado. Actualiza la agenda.',
+                  );
+                }
+                return recipe;
+              },
+        actions: (dialogContext) => [
+          TextButton.icon(
+            onPressed: () =>
+                Navigator.pop(dialogContext, _AgendaEntryAction.planning),
+            icon: const Icon(Icons.person_outline),
+            label: const Text('Planificación del alumno'),
+          ),
+          if (assignment.executionId != null)
             TextButton.icon(
               onPressed: () =>
-                  Navigator.pop(dialogContext, _AgendaEntryAction.planning),
-              icon: const Icon(Icons.person_outline),
-              label: const Text('Planificación del alumno'),
+                  Navigator.pop(dialogContext, _AgendaEntryAction.result),
+              icon: const Icon(Icons.analytics_outlined),
+              label: const Text('Ver resultados'),
             ),
-            if (assignment.executionId != null)
-              TextButton.icon(
-                onPressed: () =>
-                    Navigator.pop(dialogContext, _AgendaEntryAction.result),
-                icon: const Icon(Icons.analytics_outlined),
-                label: const Text('Ver resultados'),
-              ),
-            if (_editable(assignment) && widget.onMove != null)
-              TextButton.icon(
-                onPressed: () =>
-                    Navigator.pop(dialogContext, _AgendaEntryAction.move),
-                icon: const Icon(Icons.event_outlined),
-                label: const Text('Mover fecha'),
-              ),
-            if (_editable(assignment) && widget.workouts != null)
-              TextButton.icon(
-                onPressed: () =>
-                    Navigator.pop(dialogContext, _AgendaEntryAction.withdraw),
-                icon: const Icon(Icons.event_busy_outlined),
-                label: const Text('Retirar sesión'),
-              ),
-            if (_editable(assignment) && widget.onAdapt != null)
-              TextButton.icon(
-                onPressed: () =>
-                    Navigator.pop(dialogContext, _AgendaEntryAction.adapt),
-                icon: const Icon(Icons.tune),
-                label: const Text('Adaptar pauta'),
-              ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cerrar'),
-          ),
+          if (_editable(assignment) && widget.onMove != null)
+            TextButton.icon(
+              onPressed: () =>
+                  Navigator.pop(dialogContext, _AgendaEntryAction.move),
+              icon: const Icon(Icons.event_outlined),
+              label: const Text('Mover fecha'),
+            ),
+          if (_editable(assignment) && widget.workouts != null)
+            TextButton.icon(
+              onPressed: () =>
+                  Navigator.pop(dialogContext, _AgendaEntryAction.withdraw),
+              icon: const Icon(Icons.event_busy_outlined),
+              label: const Text('Retirar sesión'),
+            ),
+          if (_editable(assignment) && widget.onAdapt != null)
+            TextButton.icon(
+              onPressed: () =>
+                  Navigator.pop(dialogContext, _AgendaEntryAction.adapt),
+              icon: const Icon(Icons.tune),
+              label: const Text('Adaptar pauta'),
+            ),
         ],
       ),
     );
     if (!mounted || _locked) return;
     switch (action) {
       case _AgendaEntryAction.planning:
-        context.push('/clients/${row.clientId}/workouts');
+        await context.push('/clients/${row.clientId}/workouts');
+        if (mounted) await _load();
       case _AgendaEntryAction.result:
-        context.push(
+        await context.push(
           '/clients/${row.clientId}/workouts/${assignment.id}/result',
         );
+        if (mounted) await _load();
       case _AgendaEntryAction.move:
         await _proposeMove(assignment);
       case _AgendaEntryAction.withdraw:
@@ -766,58 +772,29 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
   );
 
   Future<void> _openReceived(SharedCalendarEntry entry) async {
-    final generation = _request;
-    setState(() => _mutating = true);
-    try {
-      final json = await widget.personalCalendar!.workout(
-        widget.personalClientId!,
-        entry.id,
-      );
-      if (!mounted || generation != _request) return;
-      final template = WorkoutTemplateModel.fromJson(json);
-      setState(() => _mutating = false);
-      await showDialog<void>(
-        context: context,
-        builder: (dialogContext) => Dialog(
-          child: ConstrainedBox(
-            constraints: ProfessionalWorkspaceScope.pageConstraints(
-              dialogContext,
-              maxWidth: 760,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  title: Text(entry.name),
-                  subtitle: Text(
-                    '${entry.trainerName ?? 'Preparador'} · Solo lectura',
-                  ),
-                  trailing: IconButton(
-                    tooltip: 'Cerrar pauta',
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(dialogContext),
-                  ),
-                ),
-                Flexible(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: WorkoutTemplateContent(template: template),
-                  ),
-                ),
-              ],
-            ),
+    if (_locked) return;
+    await showTrainerAgendaPanel<void>(
+      context,
+      builder: (_) => TrainerAgendaSessionPanel(
+        name: entry.name,
+        personName: 'Para mí',
+        metadata: '${entry.trainerName ?? 'Preparador'} · Solo lectura',
+        note: '${_dayLabel(entry.date)} · ${_receivedState(entry)}',
+        readOnly: true,
+        loadRecipe: () async => WorkoutTemplateModel.fromJson(
+          await widget.personalCalendar!.workout(
+            widget.personalClientId!,
+            entry.id,
           ),
         ),
-      );
-    } catch (_) {
-      if (mounted && generation == _request) {
-        setState(
-          () => _personalError = 'No se pudo abrir la sesión recibida. Actualiza la agenda e inténtalo de nuevo.',
-        );
-      }
-    } finally {
-      if (mounted && generation == _request) setState(() => _mutating = false);
-    }
+        actions: (panelContext) => [
+          TextButton(
+            onPressed: () => Navigator.pop(panelContext),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _loadAssessments({bool more = false, int? request}) async {
@@ -1375,6 +1352,7 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
               maxWidth: 1050,
             ),
             child: ListView(
+              key: const PageStorageKey('trainer-agenda-scroll'),
               padding: const EdgeInsets.all(16),
               children: [
                 const Text(
@@ -1819,6 +1797,11 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            TextButton.icon(
+              onPressed: _locked ? null : () => _showCalendarEntry(row),
+              icon: const Icon(Icons.open_in_new),
+              label: const Text('Ver detalle'),
+            ),
             Text(
               row.clientName,
               style: Theme.of(context).textTheme.titleMedium,
@@ -1835,16 +1818,24 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
                 TextButton(
                   onPressed: _locked
                       ? null
-                      : () => context.go('/clients/${row.clientId}/workouts'),
+                      : () async {
+                          await context.push(
+                            '/clients/${row.clientId}/workouts',
+                          );
+                          if (mounted) await _load();
+                        },
                   child: const Text('Planificación del alumno'),
                 ),
                 if (assignment.executionId != null)
                   FilledButton.tonal(
                     onPressed: _locked
                         ? null
-                        : () => context.push(
-                            '/clients/${row.clientId}/workouts/${assignment.id}/result',
-                          ),
+                        : () async {
+                            await context.push(
+                              '/clients/${row.clientId}/workouts/${assignment.id}/result',
+                            );
+                            if (mounted) await _load();
+                          },
                     child: const Text('Ver resultados'),
                   ),
                 if (_editable(assignment) && widget.onMove != null)

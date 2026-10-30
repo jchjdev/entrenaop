@@ -264,7 +264,7 @@ void main() {
       await t.ensureVisible(event);
       await t.tap(event);
       await t.pumpAndSettle();
-      final dialog = find.byType(AlertDialog);
+      final dialog = find.byKey(const ValueKey('agenda-session-panel'));
       expect(
         find.descendant(of: dialog, matching: find.text('Ana de prueba')),
         findsOneWidget,
