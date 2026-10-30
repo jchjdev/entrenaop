@@ -10,6 +10,9 @@ contrato SQL con ROLLBACK e historial de 253 revisiones coincidentes.
 Análisis limpios y baterías completas correctas: raíz 1.509 (una omisión previa),
 Trainer 360 y ADMIN 365 (dos omisiones previas). Capturas móvil/escritorio
 revisadas; publicación automática pendiente de contrastar tras la subida.
+Los primeros procesos de CI se detuvieron por un aviso de estilo en el script
+de capturas añadido al final; corrección y nueva publicación en curso. Los
+portales mantienen mientras tanto la versión anterior con los gráficos.
 **Límite:** publicación deshabilitada y ofertas sin derecho de anuncio; no se
 habilitan cuentas ni se inventa un plan pagado para el piloto.
 **Siguiente recorrido:** validar catálogo elegible y textos de publicación →

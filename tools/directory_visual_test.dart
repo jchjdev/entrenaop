@@ -19,10 +19,11 @@ void main() {
       ('MaterialIcons', 'materialicons-regular.otf'),
     ]) {
       final file = File('$fontRoot/${font.$2}');
-      if (!file.existsSync())
+      if (!file.existsSync()) {
         throw StateError(
           'Configura DIRECTORY_REVIEW_FONT_DIR con las fuentes del SDK.',
         );
+      }
       final loader = FontLoader(font.$1)
         ..addFont(file.readAsBytes().then(ByteData.sublistView));
       await loader.load();

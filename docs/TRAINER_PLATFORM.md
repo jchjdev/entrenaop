@@ -427,6 +427,14 @@ visuales a 320/1200 píxeles (texto 2× en móvil) pasan; capturas con fuentes r
 revisadas. La publicación web automática se verifica por separado tras subir el
 commit. No se da por cerrado el directorio ni su aceptación física.
 
+**Corrección de CI · 30/10/2026:** los primeros procesos de ADMIN/Trainer para
+`22b8d554` se detienen en el análisis de la raíz: el ajuste final de fuentes del
+script `tools/directory_visual_test.dart` tenía un `if` sin llaves, añadido
+después del análisis local anterior. Se corrige el estilo sin cambiar el
+comportamiento ni reducir comprobaciones. Ambos portales conservan mientras
+tanto `df772e09`, que ya contiene los gráficos del otro chat. La nueva ejecución
+se lanzará sobre main incluyendo también su cierre documental `3d9466ab`.
+
 ## Dos circuitos comerciales
 
 1. El preparador contrata EntrenaOP con un cupo de alumnos activos. Los tramos
