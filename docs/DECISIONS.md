@@ -8,7 +8,6 @@ no adquieren acciones de arrastre, adaptación o retirada. Las autoasignaciones
 no se duplican y los otros alumnos no reciben acceso a esta planificación.
 [Alcance](TRAINER_SELF_TRAINING.md#agenda-general-y-pautas-recibidas--30102026).
 
-
 **Tema claro profesional · 30/10/2026:** Javier pide modo claro en Trainer y
 ADMIN para trabajar con mucha luz, con selector junto a la calculadora y la
 misma identidad visual. Oscuro sigue siendo el valor inicial; la elección se

@@ -164,3 +164,18 @@ día y lista. Once regresiones de calendario cubren también filtros, duplicados
 consulta sin autoría, paginación, fallos y cambio de cuenta. La prueba SQL
 transaccional vuelve a pasar en Dev con ROLLBACK. El editor compartido conserva
 sus 223 pruebas correctas; diez regresiones verifican el ritmo realizado.
+
+Publicación automática Dev comprobada el 30/10/2026: revisión `76572fe9`,
+[Trainer 41093480231](https://github.com/jchjdev/entrenaop/actions/runs/41093480231)
+y [ADMIN 41093480183](https://github.com/jchjdev/entrenaop/actions/runs/41093480183)
+correctos en validación y despliegue. La verificación Garmin de esa revisión
+termina también correctamente, sin publicar Garmin. Comprobación HTTPS posterior:
+ambos portales sirven la revisión prevista, proyecto y entorno Dev, entrada de
+recursos activa, cabeceras sin caché y MIME WebAssembly correctos. JavaScript:
+
+- Trainer: `0476bbb242eb147dba1237f08b69082d2de0714645455270f4f5e758f418f355`.
+- ADMIN: `4033924b2810bd20779c74f04c6c496024fa7ae3f7b06e53228b2f2ad012138e`.
+
+La comprobación publicada acredita identidad e integridad de los recursos;
+queda para Javier la aceptación visual con su cuenta tras recargar Agenda.
+No se ha generado ni instalado una APK para esta corrección.
