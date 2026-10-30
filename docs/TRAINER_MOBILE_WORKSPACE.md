@@ -256,7 +256,10 @@ al alternar espacios se conserva el borrador sin enviar automáticamente.
 
 No se alteran el modelo, RLS, grants, funciones SQL, preferencias de avisos,
 pagos o dependencias. No se han usado cuentas reales para crear asignaciones
-ni se ha generado una APK. Creadores, composición de programas, envíos masivos,
+como parte de la validación automatizada. El 30/10, a petición de Javier, se
+instala beta.4+3 en su Samsung A13 mediante una variante debug compatible con
+su firma antigua, conservando los datos y verificando el arranque nativo.
+[Detalle de instalación y límites](ANDROID_BETA.md). Creadores, composición de programas, envíos masivos,
 papelera y gestión completa continúan en web.
 
 ### Verificación

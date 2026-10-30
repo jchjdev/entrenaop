@@ -1,5 +1,26 @@
 # Beta Android privada
 
+**Instalación del 30/10/2026 · planificación móvil TRN-048:** a petición de
+Javier se compila `1.0.0-beta.4+3`, desde `5b6fca4a`, con Supabase/Firebase Dev.
+La release conserva la firma beta estable y supera su verificación, pero el
+Samsung A13 (SM-A137F, Android 12) tenía `1.0.0+1` firmada con la antigua clave
+debug. Android rechaza correctamente reemplazarla por la release de otra firma.
+
+Se comprueba que la clave debug local coincide con la instalación antigua y se
+compila una variante **debug de compatibilidad**, sin cambiar la firma de
+distribución ni su configuración. Esta variante se instala mediante reemplazo:
+Android confirma éxito, `beta.4+3` y la misma fecha de primera instalación del
+09/10. No se desinstala ni se borran datos. Arranque nativo correcto y proceso
+activo, sin errores de arranque detectados; los recorridos funcionales en ese
+teléfono quedan para la prueba de Javier.
+
+La APK instalada es `EntrenaOP-1.0.0-beta.4-3-legacy-debug.apk`, SHA-256
+`05911e1ad4d0719b28bbb0345a921e07b29fe0b7c8529f507fb116ce93f45e91`.
+No equivale a una release firmada con la identidad beta estable. Las siguientes
+actualizaciones de este A13 deben contemplar esa firma antigua; esta excepción
+no modifica el circuito de distribución estable ni acredita push o enlaces en
+este dispositivo.
+
 **Actualización del 29/10/2026 · beta.3+3 instalada:** Javier pide preparar e
 instalar esta APK para cerrar la prueba de avisos profesionales. La release Dev
 `560d9021` conserva firma, sesión y datos de beta.2 mediante reemplazo, con
