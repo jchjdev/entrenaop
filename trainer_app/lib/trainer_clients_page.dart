@@ -314,7 +314,7 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
     appBar: ProfessionalWorkspaceScope.isDesktop(context)
         ? null
         : AppBar(
-            title: const EntrenaWordmark(),
+            title: const EntrenaWordmark.adaptive(),
             actions: [
               IconButton(
                 onPressed: _busy ? null : _refresh,

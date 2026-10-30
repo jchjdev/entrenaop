@@ -1,3 +1,4 @@
+import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:workout_core/device_training_progress.dart';
 
@@ -83,7 +84,9 @@ class DeviceTrainingProgressTile extends StatelessWidget {
         key: PageStorageKey('delivery-${p.id}'),
         leading: Icon(
           attention ? Icons.info_outline : Icons.watch_outlined,
-          color: attention ? const Color(0xffffab70) : null,
+          color: attention
+              ? context.readableAccent(const Color(0xffffab70))
+              : null,
         ),
         title: Text(showName ? p.name : 'Garmin'),
         subtitle: Text(_label),

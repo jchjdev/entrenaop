@@ -47,6 +47,20 @@ class EntrenaVisuals extends ThemeExtension<EntrenaVisuals> {
     info: Color(0xFF7CC5FF),
   );
 
+  static const light = EntrenaVisuals(
+    surfaceLow: Color(0xFFF4F6F9),
+    surface: Color(0xFFFFFFFF),
+    surfaceHigh: Color(0xFFE9EEF4),
+    surfaceWarm: Color(0xFFFFF1E8),
+    outline: Color(0xFFD4DAE3),
+    outlineStrong: Color(0xFF8793A3),
+    accentSoft: Color(0xFFFFE9DC),
+    textMuted: Color(0xFF4D5B6B),
+    success: Color(0xFF17663F),
+    warning: Color(0xFF805000),
+    info: Color(0xFF155B87),
+  );
+
   @override
   EntrenaVisuals copyWith({
     Color? surfaceLow,
@@ -95,7 +109,30 @@ class EntrenaVisuals extends ThemeExtension<EntrenaVisuals> {
 
 extension EntrenaThemeContext on BuildContext {
   EntrenaVisuals get visuals =>
-      Theme.of(this).extension<EntrenaVisuals>() ?? EntrenaVisuals.dark;
+      Theme.of(this).extension<EntrenaVisuals>() ??
+      (Theme.of(this).brightness == Brightness.dark
+          ? EntrenaVisuals.dark
+          : EntrenaVisuals.light);
+
+  /// Mantiene el matiz del calendario/formato y oscurece solo los acentos claros.
+  Color readableAccent(Color color) {
+    final theme = Theme.of(this);
+    if (theme.brightness == Brightness.dark) return color;
+    final background = theme.colorScheme.surface.computeLuminance();
+    final hsl = HSLColor.fromColor(color);
+    var result = color;
+    for (var step = 0; step < 30; step++) {
+      final ink = result.computeLuminance();
+      final ratio = background > ink
+          ? (background + .05) / (ink + .05)
+          : (ink + .05) / (background + .05);
+      if (ratio >= 5.5) break;
+      result = hsl
+          .withLightness((hsl.lightness - (step + 1) * .03).clamp(0.0, 1.0))
+          .toColor();
+    }
+    return result;
+  }
 }
 
 abstract final class EntrenaTheme {
@@ -105,31 +142,46 @@ abstract final class EntrenaTheme {
   static const ink = Color(0xFF17191D);
   static const textPrimary = Color(0xFFF5F3F0);
 
-  static ThemeData get dark {
-    final base = ThemeData(brightness: Brightness.dark, useMaterial3: true);
+  static ThemeData get dark => _build(Brightness.dark);
+  static ThemeData get light => _build(Brightness.light);
+
+  static ThemeData _build(Brightness brightness) {
+    final isDark = brightness == Brightness.dark;
+    final visuals = isDark ? EntrenaVisuals.dark : EntrenaVisuals.light;
+    final background = isDark ? canvas : visuals.surfaceLow;
+    final textColor = isDark ? textPrimary : const Color(0xFF17212F);
+    final accentForeground = isDark
+        ? brandOrangeLight
+        : const Color(0xFFAE350A);
+    final iconColor = isDark ? const Color(0xFFD8D6D2) : visuals.textMuted;
+    final highest = isDark ? const Color(0xFF242A32) : const Color(0xFFE0E7EF);
+    final dialogSurface = isDark ? const Color(0xFF15181D) : visuals.surface;
+    final dialogOutline = isDark ? const Color(0xFF343A44) : visuals.outline;
+    final progressTrack = isDark ? const Color(0xFF2A1A14) : visuals.accentSoft;
+    final base = ThemeData(brightness: brightness, useMaterial3: true);
     final colorScheme =
         ColorScheme.fromSeed(
           seedColor: brandOrange,
-          brightness: Brightness.dark,
+          brightness: brightness,
         ).copyWith(
-          primary: brandOrange,
-          onPrimary: const Color(0xFF220B03),
-          secondary: brandOrangeLight,
-          onSecondary: const Color(0xFF220B03),
-          primaryContainer: EntrenaVisuals.dark.accentSoft,
-          onPrimaryContainer: brandOrangeLight,
-          secondaryContainer: EntrenaVisuals.dark.accentSoft,
-          onSecondaryContainer: textPrimary,
-          surface: EntrenaVisuals.dark.surface,
-          surfaceContainerLowest: canvas,
-          surfaceContainerLow: EntrenaVisuals.dark.surfaceLow,
-          surfaceContainer: EntrenaVisuals.dark.surface,
-          surfaceContainerHigh: EntrenaVisuals.dark.surfaceHigh,
-          surfaceContainerHighest: const Color(0xFF242A32),
-          onSurface: textPrimary,
-          onSurfaceVariant: EntrenaVisuals.dark.textMuted,
-          outline: EntrenaVisuals.dark.outlineStrong,
-          outlineVariant: EntrenaVisuals.dark.outline,
+          primary: isDark ? brandOrange : accentForeground,
+          onPrimary: isDark ? const Color(0xFF220B03) : Colors.white,
+          secondary: accentForeground,
+          onSecondary: isDark ? const Color(0xFF220B03) : Colors.white,
+          primaryContainer: visuals.accentSoft,
+          onPrimaryContainer: accentForeground,
+          secondaryContainer: visuals.accentSoft,
+          onSecondaryContainer: textColor,
+          surface: visuals.surface,
+          surfaceContainerLowest: background,
+          surfaceContainerLow: visuals.surfaceLow,
+          surfaceContainer: visuals.surface,
+          surfaceContainerHigh: visuals.surfaceHigh,
+          surfaceContainerHighest: highest,
+          onSurface: textColor,
+          onSurfaceVariant: visuals.textMuted,
+          outline: visuals.outlineStrong,
+          outlineVariant: visuals.outline,
           surfaceTint: Colors.transparent,
         );
 
@@ -159,31 +211,34 @@ abstract final class EntrenaTheme {
             letterSpacing: 0.1,
           ),
         )
-        .apply(bodyColor: textPrimary, displayColor: textPrimary);
+        .apply(bodyColor: textColor, displayColor: textColor);
 
-    const roundedCard = RoundedRectangleBorder(
-      borderRadius: BorderRadius.all(Radius.circular(20)),
-      side: BorderSide(color: Color(0xFF2A2F37)),
+    final roundedCard = RoundedRectangleBorder(
+      borderRadius: const BorderRadius.all(Radius.circular(20)),
+      side: BorderSide(color: visuals.outline),
     );
 
     return base.copyWith(
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: canvas,
-      canvasColor: canvas,
-      dividerColor: EntrenaVisuals.dark.outline,
+      scaffoldBackgroundColor: background,
+      canvasColor: background,
+      dividerColor: visuals.outline,
+      shadowColor: isDark
+          ? base.shadowColor
+          : Colors.black.withValues(alpha: .14),
       textTheme: textTheme,
-      iconTheme: const IconThemeData(color: Color(0xFFD8D6D2)),
-      extensions: const <ThemeExtension<dynamic>>[EntrenaVisuals.dark],
-      appBarTheme: const AppBarTheme(
+      iconTheme: IconThemeData(color: iconColor),
+      extensions: <ThemeExtension<dynamic>>[visuals],
+      appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
-        foregroundColor: textPrimary,
+        foregroundColor: textColor,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
       ),
-      cardTheme: const CardThemeData(
-        color: Color(0xFF13161B),
+      cardTheme: CardThemeData(
+        color: visuals.surface,
         surfaceTintColor: Colors.transparent,
         shadowColor: Colors.transparent,
         elevation: 0,
@@ -193,9 +248,9 @@ abstract final class EntrenaTheme {
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: brandOrange,
-          foregroundColor: colorScheme.onPrimary,
-          disabledBackgroundColor: EntrenaVisuals.dark.surfaceHigh,
-          disabledForegroundColor: textPrimary.withValues(alpha: 0.38),
+          foregroundColor: const Color(0xFF220B03),
+          disabledBackgroundColor: visuals.surfaceHigh,
+          disabledForegroundColor: textColor.withValues(alpha: 0.38),
           minimumSize: const Size(48, 48),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           textStyle: textTheme.labelLarge?.copyWith(
@@ -210,15 +265,15 @@ abstract final class EntrenaTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: EntrenaVisuals.dark.surfaceHigh,
-          foregroundColor: textPrimary,
+          backgroundColor: visuals.surfaceHigh,
+          foregroundColor: textColor,
           surfaceTintColor: Colors.transparent,
           elevation: 0,
           minimumSize: const Size(48, 48),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           textStyle: textTheme.labelLarge?.copyWith(fontSize: 15),
           iconSize: 20,
-          side: const BorderSide(color: Color(0xFF3A414C)),
+          side: BorderSide(color: visuals.outlineStrong),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -235,9 +290,9 @@ abstract final class EntrenaTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style:
             OutlinedButton.styleFrom(
-              foregroundColor: textPrimary,
-              backgroundColor: EntrenaVisuals.dark.surfaceHigh,
-              disabledForegroundColor: textPrimary.withValues(alpha: 0.38),
+              foregroundColor: textColor,
+              backgroundColor: visuals.surfaceHigh,
+              disabledForegroundColor: textColor.withValues(alpha: 0.38),
               minimumSize: const Size(48, 48),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               textStyle: textTheme.labelLarge?.copyWith(fontSize: 15),
@@ -249,17 +304,17 @@ abstract final class EntrenaTheme {
               side: WidgetStateProperty.resolveWith(
                 (states) => BorderSide(
                   color: states.contains(WidgetState.disabled)
-                      ? EntrenaVisuals.dark.outline
+                      ? visuals.outline
                       : states.contains(WidgetState.focused)
-                      ? brandOrangeLight
-                      : EntrenaVisuals.dark.outline,
+                      ? accentForeground
+                      : visuals.outline,
                 ),
               ),
             ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: textPrimary,
+          foregroundColor: textColor,
           minimumSize: const Size(48, 48),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           textStyle: textTheme.labelLarge,
@@ -272,13 +327,13 @@ abstract final class EntrenaTheme {
       inputDecorationTheme: InputDecorationTheme(
         isDense: true,
         floatingLabelBehavior: FloatingLabelBehavior.always,
-        labelStyle: const TextStyle(fontSize: 14, color: Color(0xFFA9A6A3)),
+        labelStyle: TextStyle(fontSize: 14, color: visuals.textMuted),
         floatingLabelStyle: const TextStyle(fontSize: 14),
-        helperStyle: const TextStyle(fontSize: 12, color: Color(0xFFA9A6A3)),
+        helperStyle: TextStyle(fontSize: 12, color: visuals.textMuted),
         helperMaxLines: 6,
         errorMaxLines: 4,
         filled: true,
-        fillColor: EntrenaVisuals.dark.surfaceHigh,
+        fillColor: visuals.surfaceHigh,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 12,
           vertical: 12,
@@ -297,7 +352,10 @@ abstract final class EntrenaTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: brandOrange, width: 1.5),
+          borderSide: BorderSide(
+            color: isDark ? brandOrange : accentForeground,
+            width: 1.5,
+          ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
@@ -309,16 +367,16 @@ abstract final class EntrenaTheme {
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: EntrenaVisuals.dark.surfaceLow,
+        backgroundColor: visuals.surfaceLow,
         surfaceTintColor: Colors.transparent,
-        indicatorColor: EntrenaVisuals.dark.accentSoft,
+        indicatorColor: visuals.accentSoft,
         elevation: 0,
         height: 72,
         labelTextStyle: WidgetStateProperty.resolveWith(
           (states) => TextStyle(
             color: states.contains(WidgetState.selected)
-                ? textPrimary
-                : EntrenaVisuals.dark.textMuted,
+                ? textColor
+                : visuals.textMuted,
             fontWeight: states.contains(WidgetState.selected)
                 ? FontWeight.w700
                 : FontWeight.w600,
@@ -328,36 +386,36 @@ abstract final class EntrenaTheme {
         iconTheme: WidgetStateProperty.resolveWith(
           (states) => IconThemeData(
             color: states.contains(WidgetState.selected)
-                ? brandOrangeLight
-                : EntrenaVisuals.dark.textMuted,
+                ? accentForeground
+                : visuals.textMuted,
           ),
         ),
       ),
-      navigationRailTheme: const NavigationRailThemeData(
-        backgroundColor: Color(0xFF0D0F12),
-        indicatorColor: Color(0xFF3A1B10),
-        selectedIconTheme: IconThemeData(color: brandOrangeLight),
-        unselectedIconTheme: IconThemeData(color: Color(0xFFA9A6A3)),
-        selectedLabelTextStyle: TextStyle(fontWeight: FontWeight.w800),
+      navigationRailTheme: NavigationRailThemeData(
+        backgroundColor: visuals.surfaceLow,
+        indicatorColor: visuals.accentSoft,
+        selectedIconTheme: IconThemeData(color: accentForeground),
+        unselectedIconTheme: IconThemeData(color: visuals.textMuted),
+        selectedLabelTextStyle: const TextStyle(fontWeight: FontWeight.w800),
       ),
-      tabBarTheme: const TabBarThemeData(
-        labelColor: brandOrangeLight,
-        unselectedLabelColor: Color(0xFFA9A6A3),
-        labelStyle: TextStyle(fontWeight: FontWeight.w800),
+      tabBarTheme: TabBarThemeData(
+        labelColor: accentForeground,
+        unselectedLabelColor: visuals.textMuted,
+        labelStyle: const TextStyle(fontWeight: FontWeight.w800),
         indicatorColor: brandOrange,
-        dividerColor: Color(0xFF2A2F37),
+        dividerColor: visuals.outline,
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: EntrenaVisuals.dark.surfaceHigh,
-        selectedColor: EntrenaVisuals.dark.accentSoft,
+        backgroundColor: visuals.surfaceHigh,
+        selectedColor: visuals.accentSoft,
         surfaceTintColor: Colors.transparent,
-        side: const BorderSide(color: Color(0xFF3A414C)),
+        side: BorderSide(color: visuals.outlineStrong),
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(10)),
         ),
         labelStyle: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
         secondaryLabelStyle: textTheme.labelLarge,
-        checkmarkColor: brandOrangeLight,
+        checkmarkColor: accentForeground,
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       ),
       segmentedButtonTheme: SegmentedButtonThemeData(
@@ -366,14 +424,14 @@ abstract final class EntrenaTheme {
           backgroundColor: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.disabled)) return null;
             return states.contains(WidgetState.selected)
-                ? EntrenaVisuals.dark.accentSoft
-                : EntrenaVisuals.dark.surface;
+                ? visuals.accentSoft
+                : visuals.surface;
           }),
           foregroundColor: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.disabled)) return null;
             return states.contains(WidgetState.selected)
-                ? brandOrangeLight
-                : EntrenaVisuals.dark.textMuted;
+                ? accentForeground
+                : visuals.textMuted;
           }),
           shape: const WidgetStatePropertyAll(
             RoundedRectangleBorder(
@@ -382,68 +440,68 @@ abstract final class EntrenaTheme {
           ),
         ),
       ),
-      popupMenuTheme: const PopupMenuThemeData(
-        color: Color(0xFF1A1E24),
+      popupMenuTheme: PopupMenuThemeData(
+        color: visuals.surfaceHigh,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(14)),
-          side: BorderSide(color: Color(0xFF3A414C)),
+          borderRadius: const BorderRadius.all(Radius.circular(14)),
+          side: BorderSide(color: visuals.outlineStrong),
         ),
       ),
-      dataTableTheme: const DataTableThemeData(
-        headingRowColor: WidgetStatePropertyAll(Color(0xFF1A1E24)),
+      dataTableTheme: DataTableThemeData(
+        headingRowColor: WidgetStatePropertyAll(visuals.surfaceHigh),
         headingTextStyle: TextStyle(
-          color: textPrimary,
+          color: textColor,
           fontWeight: FontWeight.w700,
         ),
         dividerThickness: 1,
       ),
-      expansionTileTheme: const ExpansionTileThemeData(
-        shape: RoundedRectangleBorder(
+      expansionTileTheme: ExpansionTileThemeData(
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(20)),
         ),
-        collapsedShape: RoundedRectangleBorder(
+        collapsedShape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(20)),
         ),
-        iconColor: brandOrangeLight,
-        collapsedIconColor: Color(0xFFA9A6A3),
-        textColor: textPrimary,
-        collapsedTextColor: textPrimary,
+        iconColor: accentForeground,
+        collapsedIconColor: visuals.textMuted,
+        textColor: textColor,
+        collapsedTextColor: textColor,
       ),
-      dividerTheme: const DividerThemeData(
-        color: Color(0xFF2A2F37),
+      dividerTheme: DividerThemeData(
+        color: visuals.outline,
         thickness: 1,
         space: 1,
       ),
-      progressIndicatorTheme: const ProgressIndicatorThemeData(
+      progressIndicatorTheme: ProgressIndicatorThemeData(
         color: brandOrange,
-        linearTrackColor: Color(0xFF2A1A14),
+        linearTrackColor: progressTrack,
       ),
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: EntrenaVisuals.dark.surfaceHigh,
-        contentTextStyle: const TextStyle(color: textPrimary),
+        backgroundColor: visuals.surfaceHigh,
+        contentTextStyle: TextStyle(color: textColor),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
-      dialogTheme: const DialogThemeData(
-        backgroundColor: Color(0xFF15181D),
+      dialogTheme: DialogThemeData(
+        backgroundColor: dialogSurface,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(24)),
-          side: BorderSide(color: Color(0xFF343A44)),
+          borderRadius: const BorderRadius.all(Radius.circular(24)),
+          side: BorderSide(color: dialogOutline),
         ),
       ),
-      bottomSheetTheme: const BottomSheetThemeData(
-        backgroundColor: Color(0xFF15181D),
-        modalBackgroundColor: Color(0xFF15181D),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: dialogSurface,
+        modalBackgroundColor: dialogSurface,
         surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
         ),
       ),
-      listTileTheme: const ListTileThemeData(
-        iconColor: Color(0xFFFF8A50),
-        contentPadding: EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+      listTileTheme: ListTileThemeData(
+        iconColor: accentForeground,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
       ),
     );
   }

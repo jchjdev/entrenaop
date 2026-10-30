@@ -261,8 +261,11 @@ class TrainerAppointmentWeek extends StatelessWidget {
                     message:
                         '${item.appointment.clientName} · ${item.appointment.title} · ${item.appointment.timeLabel} · ${item.appointment.durationMinutes} min · ${item.appointment.timezone}',
                     child: Material(
-                      color: trainerCalendarColor(item.appointment.clientId)
-                          .withValues(
+                      color:
+                          trainerCalendarDisplayColor(
+                            context,
+                            item.appointment.clientId,
+                          ).withValues(
                             alpha: item.appointment.cancelled ? .08 : .2,
                           ),
                       borderRadius: BorderRadius.circular(4),
@@ -281,7 +284,8 @@ class TrainerAppointmentWeek extends StatelessWidget {
                             decoration: BoxDecoration(
                               border: Border(
                                 left: BorderSide(
-                                  color: trainerCalendarColor(
+                                  color: trainerCalendarDisplayColor(
+                                    context,
                                     item.appointment.clientId,
                                   ),
                                   width: 3,

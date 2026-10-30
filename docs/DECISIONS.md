@@ -1,5 +1,13 @@
 # Registro de decisiones vigentes
 
+**Tema claro profesional · 30/10/2026:** Javier pide modo claro en Trainer y
+ADMIN para trabajar con mucha luz, con selector junto a la calculadora y la
+misma identidad visual. Oscuro sigue siendo el valor inicial; la elección se
+guarda por navegador y origen, fuera de la cuenta y de los permisos. Ambos
+portales reutilizan paletas, preferencia y botón en `entrena_ui`; los creadores
+y la calculadora compartidos adaptan sus colores sin duplicarse. El deportista
+conserva su modo actual. [Diseño y contrato](VISUAL_DESIGN.md#tema-claro-profesional--30102026).
+
 **TRN-033 · ajuste de «Para mí» · 30/10/2026:** Javier confirma consultar en
 Trainer también las sesiones que le pauta su preparador y navegar por otras
 semanas. Se reutiliza el calendario propio completo, con autor visible y las

@@ -79,7 +79,7 @@ class _TrainerSecurityPageState extends State<TrainerSecurityPage> {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
-      title: const EntrenaWordmark(),
+      title: const EntrenaWordmark.adaptive(),
       actions: [
         IconButton(
           onPressed: _busy ? null : () => _run(widget.onSignOut),

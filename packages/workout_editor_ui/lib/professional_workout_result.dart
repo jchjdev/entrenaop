@@ -339,7 +339,8 @@ class _ResultBlockHeading extends StatelessWidget {
   final _ResultBlock block;
   @override
   Widget build(BuildContext context) {
-    final (label, color) = _blockStyle(block.format);
+    final (label, rawColor) = _blockStyle(block.format);
+    final color = context.readableAccent(rawColor);
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 24, 4, 8),
       child: Wrap(
@@ -453,11 +454,12 @@ class _ResultSeriesRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final (icon, color) = switch (set['status']) {
+    final (icon, rawColor) = switch (set['status']) {
       'completed' => (Icons.check_circle_outline, const Color(0xff80cbc4)),
       'skipped' => (Icons.remove_circle_outline, const Color(0xffffb74d)),
       _ => (Icons.schedule, scheme.onSurfaceVariant),
     };
+    final color = context.readableAccent(rawColor);
     final target = Text(
       'Pautado: ${_measures(set, 'target_')}',
       style: TextStyle(color: scheme.onSurfaceVariant),

@@ -24,13 +24,16 @@ class ProfessionalAppearance extends StatelessWidget {
   final Widget child;
 
   static ThemeData desktop(ThemeData base) {
-    const background = Color(0xFF0B0E12),
-        surface = Color(0xFF151A21),
-        raised = Color(0xFF202833);
-    const line = Color(0xFF2B333F),
-        text = Color(0xFFEEF1F5),
-        muted = Color(0xFFAAB5C4);
-    const orange = Color(0xFFFF6A32), tint = Color(0xFF30221C);
+    final isDark = base.brightness == Brightness.dark;
+    final visuals = isDark ? EntrenaVisuals.dark : EntrenaVisuals.light;
+    final background = isDark ? const Color(0xFF0B0E12) : visuals.surfaceLow;
+    final surface = isDark ? const Color(0xFF151A21) : visuals.surface;
+    final raised = isDark ? const Color(0xFF202833) : visuals.surfaceHigh;
+    final line = isDark ? const Color(0xFF2B333F) : visuals.outline;
+    final text = isDark ? const Color(0xFFEEF1F5) : base.colorScheme.onSurface;
+    final muted = isDark ? const Color(0xFFAAB5C4) : visuals.textMuted;
+    final orange = isDark ? const Color(0xFFFF6A32) : base.colorScheme.primary;
+    final tint = isDark ? const Color(0xFF30221C) : visuals.accentSoft;
     final scheme = base.colorScheme.copyWith(
       primary: orange,
       secondary: orange,
@@ -120,7 +123,7 @@ class ProfessionalAppearance extends StatelessWidget {
     );
     final input = OutlineInputBorder(
       borderRadius: BorderRadius.circular(6),
-      borderSide: const BorderSide(color: line),
+      borderSide: BorderSide(color: line),
     );
     return base.copyWith(
       scaffoldBackgroundColor: background,
@@ -128,13 +131,13 @@ class ProfessionalAppearance extends StatelessWidget {
       colorScheme: scheme,
       textTheme: typography,
       dividerColor: line,
-      iconTheme: const IconThemeData(size: 18, color: muted),
+      iconTheme: IconThemeData(size: 18, color: muted),
       extensions: [
         for (final extension in base.extensions.values)
           if (extension is! EntrenaVisuals &&
               extension is! ProfessionalSurfaceStyle)
             extension,
-        EntrenaVisuals.dark.copyWith(
+        visuals.copyWith(
           surfaceLow: background,
           surface: surface,
           surfaceHigh: raised,
@@ -155,13 +158,16 @@ class ProfessionalAppearance extends StatelessWidget {
       cardTheme: base.cardTheme.copyWith(
         color: surface,
         margin: const EdgeInsets.symmetric(vertical: 4),
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(8)),
+        shape: RoundedRectangleBorder(
+          borderRadius: const BorderRadius.all(Radius.circular(8)),
           side: BorderSide(color: line),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
-        style: button(scheme.onPrimary, orange),
+        style: button(
+          isDark ? scheme.onPrimary : const Color(0xFF220B03),
+          isDark ? orange : EntrenaTheme.brandOrange,
+        ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: button(
@@ -173,7 +179,7 @@ class ProfessionalAppearance extends StatelessWidget {
         style: button(
           text,
           surface,
-        ).copyWith(side: const WidgetStatePropertyAll(BorderSide(color: line))),
+        ).copyWith(side: WidgetStatePropertyAll(BorderSide(color: line))),
       ),
       textButtonTheme: TextButtonThemeData(
         style: button(text, Colors.transparent),
@@ -206,9 +212,7 @@ class ProfessionalAppearance extends StatelessWidget {
         ),
         border: input,
         enabledBorder: input,
-        focusedBorder: input.copyWith(
-          borderSide: const BorderSide(color: orange),
-        ),
+        focusedBorder: input.copyWith(borderSide: BorderSide(color: orange)),
       ),
       chipTheme: base.chipTheme.copyWith(
         backgroundColor: raised,

@@ -1775,12 +1775,13 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
               : 'Trote'}${group.omitLastRecovery ? ' · sin última rec.' : ''}';
   }
 
-  Color _runningColor(RunningStepKind kind) => switch (kind) {
-    RunningStepKind.warmup => Colors.orange.shade300,
-    RunningStepKind.cooldown => Colors.teal.shade300,
-    RunningStepKind.run => Theme.of(context).colorScheme.primary,
-    _ => Theme.of(context).colorScheme.outline,
-  };
+  Color _runningColor(RunningStepKind kind) =>
+      context.readableAccent(switch (kind) {
+        RunningStepKind.warmup => Colors.orange.shade300,
+        RunningStepKind.cooldown => Colors.teal.shade300,
+        RunningStepKind.run => Theme.of(context).colorScheme.primary,
+        _ => Theme.of(context).colorScheme.outline,
+      });
 
   Widget _runningFields(RunningEditorGroup group, {bool recovery = false}) {
     final indices = recovery ? group.recovery : group.work;
@@ -2218,18 +2219,19 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     WorkoutBlockFormat.running => 'Carrera',
   };
 
-  Color _strengthColor(WorkoutBlockFormat format) => switch (format) {
-    WorkoutBlockFormat.straightSets => const Color(0xff82b1ff),
-    WorkoutBlockFormat.superset => const Color(0xffce93d8),
-    WorkoutBlockFormat.circuit => const Color(0xff80cbc4),
-    WorkoutBlockFormat.intervals => const Color(0xffffb74d),
-    WorkoutBlockFormat.emom => const Color(0xff81d4fa),
-    WorkoutBlockFormat.amrap => const Color(0xffffd54f),
-    WorkoutBlockFormat.tabata => const Color(0xffef9a9a),
-    WorkoutBlockFormat.warmUp => const Color(0xffffb74d),
-    WorkoutBlockFormat.coolDown => const Color(0xff80cbc4),
-    WorkoutBlockFormat.running => Theme.of(context).colorScheme.primary,
-  };
+  Color _strengthColor(WorkoutBlockFormat format) =>
+      context.readableAccent(switch (format) {
+        WorkoutBlockFormat.straightSets => const Color(0xff82b1ff),
+        WorkoutBlockFormat.superset => const Color(0xffce93d8),
+        WorkoutBlockFormat.circuit => const Color(0xff80cbc4),
+        WorkoutBlockFormat.intervals => const Color(0xffffb74d),
+        WorkoutBlockFormat.emom => const Color(0xff81d4fa),
+        WorkoutBlockFormat.amrap => const Color(0xffffd54f),
+        WorkoutBlockFormat.tabata => const Color(0xffef9a9a),
+        WorkoutBlockFormat.warmUp => const Color(0xffffb74d),
+        WorkoutBlockFormat.coolDown => const Color(0xff80cbc4),
+        WorkoutBlockFormat.running => Theme.of(context).colorScheme.primary,
+      });
 
   String _strengthSummary(_StrengthBlock block) {
     final names = block.exercises.map(

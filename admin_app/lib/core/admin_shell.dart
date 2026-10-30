@@ -93,8 +93,9 @@ class _AdminShellState extends State<AdminShell> {
                   '${section.group} / ${section.label}',
                   style: Theme.of(context).textTheme.titleSmall,
                 )
-              : const EntrenaWordmark(width: 132),
+              : const EntrenaWordmark.adaptive(width: 132),
           actions: [
+            const ProfessionalThemeButton(),
             const ProfessionalToolsButton(iconOnly: true),
             if (wide)
               Padding(
@@ -127,7 +128,7 @@ class _AdminShellState extends State<AdminShell> {
             padding: EdgeInsets.fromLTRB(18, 20, 18, 8),
             child: Align(
               alignment: Alignment.centerLeft,
-              child: EntrenaWordmark(width: 132),
+              child: EntrenaWordmark.adaptive(width: 132),
             ),
           ),
           Padding(

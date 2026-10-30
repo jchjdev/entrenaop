@@ -7,12 +7,17 @@ class EntrenaWordmark extends StatelessWidget {
     this.forDarkSurface = true,
   });
 
+  const EntrenaWordmark.adaptive({super.key, this.width = 148})
+    : forDarkSurface = null;
+
   final double width;
-  final bool forDarkSurface;
+  final bool? forDarkSurface;
 
   @override
   Widget build(BuildContext context) {
-    final asset = forDarkSurface
+    final dark =
+        forDarkSurface ?? Theme.of(context).brightness == Brightness.dark;
+    final asset = dark
         ? 'assets/branding/entrenaop_wordmark_on_dark.png'
         : 'assets/branding/entrenaop_wordmark_on_light.png';
     final height = width / 7.3;

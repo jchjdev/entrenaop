@@ -138,20 +138,32 @@ Future<GoRouter> _mount(
   String path = '/programs',
   bool authenticated = true,
   double textScale = 1,
+  ProfessionalThemeController? appearance,
 }) async {
+  final theme =
+      appearance ??
+      ProfessionalThemeController(read: () => 'dark', write: (_) {});
+  if (appearance == null) addTearDown(theme.dispose);
   final router = fixture.router(path: path, authenticated: authenticated);
   addTearDown(router.dispose);
   await tester.pumpWidget(
     RepaintBoundary(
       key: const ValueKey('admin-review'),
-      child: MaterialApp.router(
-        debugShowCheckedModeBanner: false,
-        theme: EntrenaTheme.dark,
-        routerConfig: router,
-        builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(context)
-              .copyWith(textScaler: TextScaler.linear(textScale)),
-          child: child!,
+      child: ProfessionalThemeScope(
+        controller: theme,
+        child: Builder(
+          builder: (context) => MaterialApp.router(
+            debugShowCheckedModeBanner: false,
+            theme: EntrenaTheme.light,
+            darkTheme: EntrenaTheme.dark,
+            themeMode: ProfessionalThemeScope.maybeOf(context)!.value,
+            routerConfig: router,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: TextScaler.linear(textScale)),
+              child: child!,
+            ),
+          ),
         ),
       ),
     ),
@@ -169,6 +181,37 @@ Future<void> _select(WidgetTester tester, String path) async {
 }
 
 void main() {
+  testWidgets('el selector de ADMIN cambia el tema y lo conserva al navegar', (
+    t,
+  ) async {
+    _size(t, const Size(1440, 1000));
+    final theme = ProfessionalThemeController(
+      read: () => 'dark',
+      write: (_) {},
+    );
+    addTearDown(theme.dispose);
+    final router = await _mount(t, _Fixture(), appearance: theme);
+    await t.tap(find.byTooltip('Cambiar a modo claro'));
+    await t.pumpAndSettle();
+    expect(router.routeInformationProvider.value.uri.path, '/programs');
+    expect(
+      Theme.of(t.element(find.byType(AdminProgramsPage))).brightness,
+      Brightness.light,
+    );
+    await _select(t, '/sessions');
+    expect(
+      Theme.of(t.element(find.byType(AdminProgramWorkoutsPage))).brightness,
+      Brightness.light,
+    );
+    await t.tap(find.byTooltip('Cambiar a modo oscuro'));
+    await t.pumpAndSettle();
+    expect(
+      Theme.of(t.element(find.byType(AdminProgramWorkoutsPage))).brightness,
+      Brightness.dark,
+    );
+    expect(t.takeException(), isNull);
+  });
+
   testWidgets(
     'el menú conecta todos los catálogos y ambos laboratorios con las rutas reales',
     (tester) async {

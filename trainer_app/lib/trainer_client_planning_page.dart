@@ -892,9 +892,9 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
   }
 
   Widget _entryCard(TrainerPlanningEntry entry, bool inlineInspector) {
-    final color = entry.running
-        ? const Color(0xffff9c68)
-        : const Color(0xff82b1ff);
+    final color = context.readableAccent(
+      entry.running ? const Color(0xffff9c68) : const Color(0xff82b1ff),
+    );
     final card = Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(

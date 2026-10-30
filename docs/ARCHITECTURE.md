@@ -240,6 +240,12 @@ y recurso al navegar. No cambia RPC, RLS ni el esquema.
 `ProfessionalAppearance` acota los tokens de escritorio al marco y sus editores;
 las superficies del deportista no heredan esa densidad. `EntrenaCard` conserva
 portadas y acciones al aplicar su variante plana profesional.
+Desde el 30/10, ambos portales envuelven su `MaterialApp` con
+`ProfessionalThemeScope`: preferencia claro/oscuro local y controlador de
+presentación en `entrena_ui`, con adaptador web condicional. Reutilizan las
+paletas y el mismo botón; el router permanece estable al alternar. No se añade
+estado de dominio ni persistencia en servidor. El deportista no activa esta
+preferencia. [Contrato visual](VISUAL_DESIGN.md#tema-claro-profesional--30102026).
 El lienzo y las propiedades del creador usan los mismos modelos y controladores;
 no hay dos formularios montados para una posición. La selección tiene identidad
 propia para no reutilizar los valores internos de otra posición. Las fases

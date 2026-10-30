@@ -37,7 +37,7 @@ class TrainerAccountFrame extends StatelessWidget {
           children: [
             const Align(
               alignment: Alignment.centerLeft,
-              child: EntrenaWordmark(width: 190),
+              child: EntrenaWordmark.adaptive(width: 190),
             ),
             const SizedBox(height: 28),
             Text(title, style: Theme.of(context).textTheme.headlineMedium),

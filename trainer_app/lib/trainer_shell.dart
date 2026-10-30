@@ -222,6 +222,7 @@ class _TrainerShellState extends State<TrainerShell>
                 leading: const Icon(Icons.speed),
                 title: const Text('Calculadora de ritmos'),
                 subtitle: const Text('Herramientas'),
+                trailing: const ProfessionalThemeButton(),
                 onTap: () => Navigator.pop(sheetContext, -1),
               ),
               for (final i in [
@@ -262,7 +263,7 @@ class _TrainerShellState extends State<TrainerShell>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    EntrenaWordmark(width: 132),
+                    EntrenaWordmark.adaptive(width: 132),
                     SizedBox(height: 8),
                     Text(
                       'PREPARADORES',
@@ -293,10 +294,12 @@ class _TrainerShellState extends State<TrainerShell>
                               10: 'ORGANIZACIÓN',
                               13: 'SERVICIO',
                             }[i]!,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 10,
                               letterSpacing: .9,
-                              color: Color(0xFFAAB5C4),
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
                             ),
                           ),
                         ),
@@ -342,6 +345,7 @@ class _TrainerShellState extends State<TrainerShell>
               ),
               actions: [
                 if (_unread > 0 || _checkFailed) _noticeButton(),
+                const ProfessionalThemeButton(),
                 const ProfessionalToolsButton(iconOnly: true),
                 const SizedBox(width: 12),
               ],

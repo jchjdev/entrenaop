@@ -54,6 +54,8 @@ class AdminApp extends StatefulWidget {
 }
 
 class _AdminAppState extends State<AdminApp> {
+  final _appearance = ProfessionalThemeController();
+
   late final AdminErrorReporter _errorReporter;
   final _authChanges = ValueNotifier<int>(0);
   late GoRouter _router;
@@ -174,6 +176,7 @@ class _AdminAppState extends State<AdminApp> {
 
   @override
   void dispose() {
+    _appearance.dispose();
     _errorReporter.dispose();
     unawaited(_authSubscription.cancel());
     _router.dispose();
@@ -182,14 +185,21 @@ class _AdminAppState extends State<AdminApp> {
   }
 
   @override
-  Widget build(BuildContext context) => MaterialApp.router(
-    locale: const Locale('es', 'ES'),
-    supportedLocales: const [Locale('es', 'ES')],
-    localizationsDelegates: GlobalMaterialLocalizations.delegates,
-    title: 'EntrenaOP · Administración',
-    debugShowCheckedModeBanner: false,
-    theme: EntrenaTheme.dark,
-    builder: (context, child) => EntrenaInputPolicy(child: child!),
-    routerConfig: _router,
+  Widget build(BuildContext context) => ProfessionalThemeScope(
+    controller: _appearance,
+    child: Builder(
+      builder: (context) => MaterialApp.router(
+        locale: const Locale('es', 'ES'),
+        supportedLocales: const [Locale('es', 'ES')],
+        localizationsDelegates: GlobalMaterialLocalizations.delegates,
+        title: 'EntrenaOP · Administración',
+        debugShowCheckedModeBanner: false,
+        theme: EntrenaTheme.light,
+        darkTheme: EntrenaTheme.dark,
+        themeMode: ProfessionalThemeScope.maybeOf(context)!.value,
+        builder: (context, child) => EntrenaInputPolicy(child: child!),
+        routerConfig: _router,
+      ),
+    ),
   );
 }

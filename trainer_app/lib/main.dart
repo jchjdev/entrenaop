@@ -142,6 +142,8 @@ class TrainerApp extends StatefulWidget {
 }
 
 class _TrainerAppState extends State<TrainerApp> {
+  final _appearance = ProfessionalThemeController();
+
   late GoRouter _router;
   late final StreamSubscription<AuthState> _subscription;
   String? _identity;
@@ -1158,6 +1160,7 @@ class _TrainerAppState extends State<TrainerApp> {
 
   @override
   void dispose() {
+    _appearance.dispose();
     unawaited(_subscription.cancel());
     _router.dispose();
     _messageChanges.dispose();
@@ -1168,16 +1171,23 @@ class _TrainerAppState extends State<TrainerApp> {
   }
 
   @override
-  Widget build(BuildContext context) => MaterialApp.router(
-    locale: const Locale('es', 'ES'),
-    supportedLocales: const [Locale('es', 'ES')],
-    localizationsDelegates: GlobalMaterialLocalizations.delegates,
-    key: ValueKey(_identity),
-    title: 'EntrenaOP · Preparadores',
-    debugShowCheckedModeBanner: false,
-    theme: EntrenaTheme.dark,
-    builder: (_, child) => EntrenaInputPolicy(child: child!),
-    routerConfig: _router,
+  Widget build(BuildContext context) => ProfessionalThemeScope(
+    controller: _appearance,
+    child: Builder(
+      builder: (context) => MaterialApp.router(
+        locale: const Locale('es', 'ES'),
+        supportedLocales: const [Locale('es', 'ES')],
+        localizationsDelegates: GlobalMaterialLocalizations.delegates,
+        key: ValueKey(_identity),
+        title: 'EntrenaOP · Preparadores',
+        debugShowCheckedModeBanner: false,
+        theme: EntrenaTheme.light,
+        darkTheme: EntrenaTheme.dark,
+        themeMode: ProfessionalThemeScope.maybeOf(context)!.value,
+        builder: (_, child) => EntrenaInputPolicy(child: child!),
+        routerConfig: _router,
+      ),
+    ),
   );
 }
 
@@ -1235,7 +1245,7 @@ class _TrainerLoginState extends State<_TrainerLogin> {
           children: [
             const Align(
               alignment: Alignment.centerLeft,
-              child: EntrenaWordmark(width: 190),
+              child: EntrenaWordmark.adaptive(width: 190),
             ),
             const SizedBox(height: 32),
             Text(

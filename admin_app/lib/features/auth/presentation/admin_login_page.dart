@@ -68,7 +68,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Center(child: EntrenaWordmark(width: 240)),
+                      const Center(child: EntrenaWordmark.adaptive(width: 240)),
                       const SizedBox(height: 16),
                       Text(
                         'ÁREA DE ADMINISTRACIÓN',

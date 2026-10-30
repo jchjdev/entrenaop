@@ -22,6 +22,9 @@ Color trainerCalendarColor(String personId) {
   return palette[hash % palette.length];
 }
 
+Color trainerCalendarDisplayColor(BuildContext context, String personId) =>
+    context.readableAccent(trainerCalendarColor(personId));
+
 class TrainerCalendarEntry {
   const TrainerCalendarEntry({
     required this.id,
@@ -51,7 +54,7 @@ class TrainerCalendarEntryTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final color = trainerCalendarColor(entry.personId);
+    final color = trainerCalendarDisplayColor(context, entry.personId);
     final label =
         '${entry.personName} · ${entry.title} · ${entry.stateLabel}'
         '${entry.dragBuilder == null ? '' : ' · Arrastra para cambiar de día'}';
@@ -188,7 +191,7 @@ class TrainerMonthCalendar extends StatelessWidget {
                       : entry.appointment
                       ? Icons.schedule
                       : Icons.event_note,
-                  color: trainerCalendarColor(entry.personId),
+                  color: trainerCalendarDisplayColor(context, entry.personId),
                 ),
                 title: Text(entry.personName),
                 subtitle: Text('${entry.title}\n${entry.stateLabel}'),

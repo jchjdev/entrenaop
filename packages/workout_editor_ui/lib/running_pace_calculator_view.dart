@@ -1,9 +1,15 @@
+import 'package:entrena_ui/entrena_ui.dart';
 import 'package:workout_core/running_pace_calculator.dart';
 
 import 'duration_input_formatter.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+Color _paceMuted(BuildContext context, {bool secondary = false}) =>
+    Theme.of(context).brightness == Brightness.dark
+    ? (secondary ? Colors.white60 : Colors.white70)
+    : Theme.of(context).colorScheme.onSurfaceVariant;
 
 enum _CalculationMode { time, pace }
 
@@ -245,7 +251,7 @@ class _RunningPaceCalculatorViewState extends State<RunningPaceCalculatorView> {
                     _showRaces
                         ? 'Elige la distancia y calcula tu tiempo final o el ritmo para llegar a tu objetivo, con todos los parciales.'
                         : 'Introduce el ritmo por kilómetro y la distancia de la serie. Verás el tiempo final y los pasos acumulados que debes marcar en pista.',
-                    style: const TextStyle(color: Colors.white70, height: 1.4),
+                    style: TextStyle(color: _paceMuted(context), height: 1.4),
                   ),
                   const SizedBox(height: 18),
                 ],
@@ -409,8 +415,8 @@ class _RunningPaceCalculatorViewState extends State<RunningPaceCalculatorView> {
                             _selectedSplit == null
                                 ? 'Automático · cada ${_splitLabel(_calculator.automaticSplitMeters(distance))}'
                                 : 'Cada ${_splitLabel(_selectedSplit!)}',
-                            style: const TextStyle(
-                              color: Colors.white60,
+                            style: TextStyle(
+                              color: _paceMuted(context, secondary: true),
                               fontSize: 12,
                             ),
                           ),
@@ -457,7 +463,7 @@ class _RunningPaceCalculatorViewState extends State<RunningPaceCalculatorView> {
                             : _mode == _CalculationMode.time
                             ? 'Revisa el ritmo y la distancia para calcular el tiempo.'
                             : 'Introduce la distancia y el tiempo objetivo para calcular el ritmo.',
-                        style: const TextStyle(color: Colors.white70),
+                        style: TextStyle(color: _paceMuted(context)),
                       ),
                     ),
                   ),
@@ -528,7 +534,9 @@ class _ResultCard extends StatelessWidget {
         isSeries ? '${_number(meters)} m' : _formatDistance(meters);
     return Card(
       key: const ValueKey('running-pace-result'),
-      color: const Color(0xFF21130E),
+      color: Theme.of(context).brightness == Brightness.dark
+          ? const Color(0xFF21130E)
+          : context.visuals.surfaceWarm,
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -540,8 +548,8 @@ class _ResultCard extends StatelessWidget {
                   : isSeries
                   ? 'Tiempo de la serie'
                   : 'Tiempo total',
-              style: const TextStyle(
-                color: Colors.white70,
+              style: TextStyle(
+                color: _paceMuted(context),
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -556,8 +564,8 @@ class _ResultCard extends StatelessWidget {
                 key: ValueKey(
                   showPace ? 'running-required-pace' : 'running-total-time',
                 ),
-                style: const TextStyle(
-                  color: Color(0xFFFF8A50),
+                style: TextStyle(
+                  color: context.readableAccent(const Color(0xFFFF8A50)),
                   fontSize: 42,
                   height: 1,
                   fontWeight: FontWeight.w900,
@@ -570,15 +578,18 @@ class _ResultCard extends StatelessWidget {
               showPace
                   ? '${distanceLabel(calculation.distanceMeters)} en ${_clock(calculation.totalSeconds)}'
                   : '${distanceLabel(calculation.distanceMeters)} a ${_paceLabel(calculation.paceSecondsPerKilometer)}',
-              style: const TextStyle(color: Colors.white60),
+              style: TextStyle(color: _paceMuted(context, secondary: true)),
             ),
             if (showPace &&
                 calculation.paceSecondsPerKilometer !=
                     calculation.paceSecondsPerKilometer.round()) ...[
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Ritmo aproximado al segundo. Los parciales conservan tu tiempo objetivo.',
-                style: TextStyle(color: Colors.white60, fontSize: 12),
+                style: TextStyle(
+                  color: _paceMuted(context, secondary: true),
+                  fontSize: 12,
+                ),
               ),
             ],
             if (hasIntermediateSplits) ...[
@@ -644,14 +655,14 @@ class _ResultCard extends StatelessWidget {
                                   children: [
                                     Text(
                                       step,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontWeight: FontWeight.w800,
                                       ),
                                     ),
                                     Text(
                                       'Tramo: $segment',
-                                      style: const TextStyle(
-                                        color: Colors.white70,
+                                      style: TextStyle(
+                                        color: _paceMuted(context),
                                       ),
                                     ),
                                     Text(
@@ -667,8 +678,8 @@ class _ResultCard extends StatelessWidget {
                                       child: Text(
                                         segment,
                                         textAlign: TextAlign.center,
-                                        style: const TextStyle(
-                                          color: Colors.white70,
+                                        style: TextStyle(
+                                          color: _paceMuted(context),
                                         ),
                                       ),
                                     ),

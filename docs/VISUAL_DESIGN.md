@@ -1,5 +1,40 @@
 # Identidad visual de EntrenaOP
 
+## Tema claro profesional · 30/10/2026
+
+Trainer y ADMIN permiten alternar claro/oscuro junto a la calculadora de la
+cabecera. En Trainer estrecho, el selector también está junto a Calculadora de
+ritmos dentro de Más. Oscuro es el valor inicial, sin imponer el ajuste del
+sistema. Se conserva el naranja de marca, tipografía, densidad y distribución;
+el claro usa fondos grises suaves, tarjetas blancas y texto oscuro. Los logos
+profesionales seleccionan explícitamente su variante adaptable.
+
+`EntrenaTheme` y `ProfessionalAppearance` comparten las dos paletas, con tokens
+de superficies, bordes, avisos y texto. Los colores de alumno y formatos conservan
+su matiz e identidad; se oscurecen en claro cuando necesitan más contraste.
+Se revisan también resultados, bloques del creador, calculadora, menús, ventanas
+flotantes, formularios y páginas de acceso. No se invierten imágenes o vídeos.
+
+`ProfessionalThemeController` y `ProfessionalThemeScope` son presentación.
+El adaptador web guarda únicamente `light`/`dark` en almacenamiento local por
+origen; no sincroniza entre subdominios ni escribe perfiles. Si el navegador lo
+bloquea, el selector funciona durante la visita. No se añaden dependencias.
+Cambiarlo conserva el router, la ruta y el estado de edición, incluida la
+calculadora abierta. Los derechos y operaciones no dependen del tema.
+
+La app del deportista mantiene su tema actual y el logo oscuro predeterminado;
+no se añade selector ni se genera APK para esta mejora de los portales.
+
+Validación local del 30/10: análisis limpio en raíz, ADMIN y Trainer. Baterías
+completas correctas: raíz 1.485 (una omisión previa), ADMIN 365 (dos omisiones
+previas), Trainer 336, `entrena_ui` 55 y `workout_editor_ui` 223. Dos casos
+adicionales de Trainer verifican el selector en Más a 390 px y a 320 px con
+texto 2×. Ocho comprobaciones específicas de tema cubren contraste, restauración
+de preferencia, almacenamiento bloqueado, logo y conservación de ruta/borrador;
+las pruebas de ambos marcos comprueban navegación y calculadora sin perder sus
+campos. Capturas de widgets reales de planificación y calculadora revisadas en
+claro/oscuro. La publicación se acredita tras comprobar cada portal por HTTPS.
+
 ## Confirmaciones de programas guiados · UI-061 · 20/10/2026
 
 Javier aporta una foto de iPhone con Cancelar y Dejar programa pegados y pide

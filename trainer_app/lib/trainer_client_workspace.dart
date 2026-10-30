@@ -508,7 +508,7 @@ class _ReportContent extends StatelessWidget {
               ),
               shape: const Border(),
               collapsedShape: const Border(),
-              leading: const Icon(Icons.repeat, color: Color(0xffffd54f)),
+              leading: Icon(Icons.repeat, color: context.visuals.warning),
               title: const Text('AMRAP: resultados de bloque'),
               subtitle: Text('${report.results.amrapBlocks.length} registros'),
               childrenPadding: const EdgeInsets.all(16),
@@ -558,7 +558,9 @@ class _ReportContent extends StatelessWidget {
         collapsedShape: const Border(),
         leading: Icon(
           running ? Icons.directions_run : Icons.fitness_center,
-          color: running ? const Color(0xffff9c68) : const Color(0xff82b1ff),
+          color: context.readableAccent(
+            running ? const Color(0xffff9c68) : const Color(0xff82b1ff),
+          ),
         ),
         title: Text(
           report.exerciseName(progress.exerciseId),

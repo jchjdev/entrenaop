@@ -245,7 +245,7 @@ class _AdminSecurityPageState extends State<AdminSecurityPage> {
               child: ListView(
                 padding: const EdgeInsets.all(24),
                 children: [
-                  const Center(child: EntrenaWordmark(width: 200)),
+                  const Center(child: EntrenaWordmark.adaptive(width: 200)),
                   const SizedBox(height: 24),
                   if (_error != null)
                     Padding(
