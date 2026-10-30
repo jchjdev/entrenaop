@@ -3,11 +3,13 @@ import 'dart:async';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop_trainer/trainer_client_planning_page.dart';
 import 'package:entrenaop_trainer/trainer_client_planning_repository.dart';
+import 'package:entrenaop_trainer/trainer_client_workspace_repository.dart';
 import 'package:entrenaop_trainer/trainer_program_pages.dart';
 import 'package:entrenaop_trainer/trainer_workout_pages.dart';
 import 'package:entrenaop_trainer/trainer_workout_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:trainer_access/trainer_calendar.dart';
 
 import '../../packages/trainer_access/test_support/fake_trainer_repository.dart';
 import 'trainer_client_workspace_test.dart' show WorkspaceFixture;
@@ -63,6 +65,8 @@ Future<void> mount(
   double width = 1600,
   double scale = 1,
   String client = 'client',
+  WorkspaceFixture? workspace,
+  Widget? goals,
 }) async {
   t.view.physicalSize = Size(width, 1200);
   t.view.devicePixelRatio = 1;
@@ -79,7 +83,7 @@ Future<void> mount(
         desktop: width >= 900,
         child: TrainerClientPlanningPage(
           clientId: client,
-          workspace: WorkspaceFixture(),
+          workspace: workspace ?? WorkspaceFixture(),
           access: FakeTrainerRepository(),
           planning: planning ?? PlanningFixture(),
           sharedCalendar: shared ?? CalendarFixture(),
@@ -87,6 +91,7 @@ Future<void> mount(
           programs: programs ?? ProgramFixture(),
           operations: OperationsFixture(),
           initialDate: DateTime(2026, 10, 26),
+          goals: goals,
           onCreateSession: createSession,
           onCreateProgram: createProgram,
         ),
@@ -96,7 +101,130 @@ Future<void> mount(
   await t.pumpAndSettle();
 }
 
+class SelfWorkspace extends WorkspaceFixture {
+  @override
+  Future<TrainerClientWorkspace> get(String clientId) async =>
+      TrainerClientWorkspace.fromJson({
+        'client': {
+          'person_id': clientId,
+          'person_name': 'Javier',
+          'is_self': true,
+          'created_at': '2026-10-20',
+          'updated_at': '2026-10-20',
+          'accepted_at': '2026-10-20',
+          'active_relation_id': 'self-relation',
+          'episode_count': 1,
+        },
+        'relations': [],
+        'relations_complete': true,
+        'notes': {'revision': 0, 'notes': '', 'goal': ''},
+        'can_edit_notes': true,
+      });
+}
+
+class FutureCoachCalendar extends CalendarFixture {
+  final weeks = <DateTime>[];
+  @override
+  Future<SharedCalendarPage> calendar(
+    String clientId,
+    DateTime from,
+    DateTime to, {
+    SharedCalendarEntry? after,
+  }) async {
+    weeks.add(from);
+    return SharedCalendarPage.fromJson({
+      'shared': true,
+      'has_more': false,
+      'coaches': [
+        {'name': 'Ervigio Jorge', 'is_you': false},
+      ],
+      'items': [
+        if (from == DateTime(2026, 11, 2))
+          {
+            'id': 'ervigio',
+            'scheduled_date': '2026-11-03',
+            'template_name': 'Carrera pautada por Ervigio',
+            'source': 'coach',
+            'status': 'planned',
+            'trainer_name': 'Ervigio Jorge',
+            'is_own': false,
+            'relation_active': true,
+            'is_running': true,
+          },
+      ],
+    });
+  }
+}
+
 void main() {
+  testWidgets('Para mí consulta la semana futura y conserva la autoría ajena', (
+    t,
+  ) async {
+    final shared = FutureCoachCalendar();
+    await mount(t, client: 'self', workspace: SelfWorkspace(), shared: shared);
+    expect(find.text('Mi planificación'), findsOneWidget);
+    expect(find.text('Carrera pautada por Ervigio'), findsNothing);
+    await t.tap(find.byTooltip('Semana siguiente'));
+    await t.pumpAndSettle();
+    expect(shared.weeks.last, DateTime(2026, 11, 2));
+    final entry = find.byKey(const ValueKey('client-planning-entry-ervigio'));
+    await t.ensureVisible(entry);
+    await t.tap(entry);
+    await t.pumpAndSettle();
+    expect(find.text('Ervigio Jorge'), findsWidgets);
+    expect(
+      find.text('Solo lectura. Puedes consultar la pauta para coordinarte.'),
+      findsOneWidget,
+    );
+    expect(find.text('Adaptar solo esta pauta'), findsNothing);
+    expect(find.text('Mover fecha'), findsNothing);
+  });
+
+  testWidgets(
+    'las semanas siguen accesibles tras desplazar objetivos y agenda',
+    (t) async {
+      final planning = PlanningFixture();
+      await mount(t, planning: planning, goals: const SizedBox(height: 1600));
+      final navigation = find.byKey(
+        const ValueKey('client-planning-week-navigation'),
+      );
+      final before = t.getRect(navigation);
+      final scroll = find.descendant(
+        of: find.byKey(const ValueKey('client-calendar-scroll')),
+        matching: find.byType(Scrollable),
+      );
+      final position = t.state<ScrollableState>(scroll).position;
+      position.jumpTo(position.maxScrollExtent);
+      await t.pumpAndSettle();
+      expect(t.getRect(navigation), before);
+      await t.tap(find.byTooltip('Semana siguiente'));
+      await t.pumpAndSettle();
+      expect(planning.calls.last.from, DateTime(2026, 11, 2));
+    },
+  );
+
+  testWidgets('elegir fecha consulta directamente la semana seleccionada', (
+    t,
+  ) async {
+    final planning = PlanningFixture();
+    await mount(t, planning: planning);
+    await t.tap(find.byTooltip('Elegir semana'));
+    await t.pumpAndSettle();
+    await t.tap(find.byIcon(Icons.edit_outlined));
+    await t.pumpAndSettle();
+    await t.enterText(
+      find.descendant(
+        of: find.byType(DatePickerDialog),
+        matching: find.byType(TextField),
+      ),
+      '11/18/2026',
+    );
+    await t.tap(find.text('OK'));
+    await t.pumpAndSettle();
+    expect(planning.calls.last.from, DateTime(2026, 11, 16));
+    expect(planning.calls.last.to, DateTime(2026, 11, 22));
+  });
+
   testWidgets(
     'el estado Garmin solo aparece en la pauta propia y no se confunde cambio con envío',
     (t) async {

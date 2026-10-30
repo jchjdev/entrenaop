@@ -4,6 +4,7 @@ set local statement_timeout='45s';
 do $$
 declare me uuid:=gen_random_uuid(); pupil uuid:=gen_random_uuid(); other uuid:=gen_random_uuid();
  coach2 uuid:=gen_random_uuid(); self_relation uuid; outsider_relation uuid; t uuid; program uuid;
+ external_template uuid; external_session uuid:=gen_random_uuid(); official_exercise uuid;
  planned uuid:=gen_random_uuid(); done uuid:=gen_random_uuid(); execution uuid; result_id uuid;
  exercise uuid; payload jsonb; content jsonb; j jsonb; before_count integer; secret text:=repeat('ab',32);
 begin
@@ -15,6 +16,7 @@ begin
   values(me,true,1,'Fixture propio'),(other,true,1,'Fixture ajeno'),(coach2,true,1,'Fixture segundo');
  insert into public.trainer_client_relations(trainer_id,client_id) values(me,pupil);
  select id into exercise from public.exercises where is_public and id<>'20000000-0000-4000-8000-000000000004' order by id limit 1;
+ official_exercise:=exercise;
  payload:=jsonb_build_object('name','Mi sesión privada','blocks',jsonb_build_array(jsonb_build_object(
   'name','Fuerza','format','straight_sets','rounds',1,'rest_after_seconds',0,
   'exercises',jsonb_build_array(jsonb_build_object('exercise_id',exercise,'sets',jsonb_build_array(jsonb_build_object('target_reps',10,'rest_after_seconds',60)))))));
@@ -58,6 +60,27 @@ begin
  if exists(select 1 from trainer_private.student_notices where owner_id=me) then raise exception 'Crea avisos de autoplanificación'; end if;
  -- Puede conservar dos preparadores externos, aparte de su ficha propia.
  insert into public.trainer_client_relations(trainer_id,client_id) values(other,me),(coach2,me);
+ -- La ficha propia reúne también las pautas futuras de otro preparador sin
+ -- exigir consentimiento consigo mismo ni conceder autoría sobre ellas.
+ perform set_config('request.jwt.claim.sub',other::text,true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',other,'role','authenticated','aal','aal2')::text,true);
+ set local role authenticated;
+ external_template:=public.save_trainer_workout(gen_random_uuid(),
+  jsonb_set(jsonb_set(payload,'{blocks,0,exercises,0,exercise_id}',to_jsonb(official_exercise)),
+   '{name}',to_jsonb('Sesión de mi preparador'::text)));
+ select id into outsider_relation from public.trainer_client_relations where trainer_id=other and client_id=me and ended_at is null;
+ perform public.assign_trainer_workout(external_session,outsider_relation,external_template,current_date+7,null);
+ reset role;
+ perform set_config('request.jwt.claim.sub',me::text,true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',me,'role','authenticated','aal','aal2')::text,true);
+ set local role authenticated;
+ j:=public.get_trainer_shared_calendar(me,me,current_date+7,current_date+13);
+ if j->>'shared'<>'true' or not exists(select 1 from jsonb_array_elements(j->'items') e
+  where e->>'id'=external_session::text and e->>'is_own'='false') then
+  raise exception 'Para mí oculta la pauta futura de mi preparador'; end if;
+ if public.get_trainer_shared_workout(me,me,external_session)->>'name'<>'Sesión de mi preparador' then
+  raise exception 'No consulta la receta de mi preparador'; end if;
+ begin perform public.cancel_trainer_assignment(external_session); raise exception 'Retira una pauta de su preparador'; exception when insufficient_privilege then null; end;
  perform set_config('request.jwt.claims',jsonb_build_object('sub',me,'role','authenticated','aal','aal1')::text,true);
  set local role authenticated;
  if (public.get_my_trainer_calendar_sharing(me)->>'active_trainers')::integer<>2 then raise exception 'Self cuenta como tercer preparador'; end if;

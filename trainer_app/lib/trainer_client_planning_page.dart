@@ -948,169 +948,215 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
     );
   }
 
-  Widget _calendar(bool inlineInspector) => ListView(
-    key: const ValueKey('client-calendar-scroll'),
-    padding: const EdgeInsets.all(16),
+  Future<void> _pickWeek() async {
+    final clientId = widget.clientId;
+    final date = await showDatePicker(
+      context: context,
+      initialDate: _day,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+      helpText: 'Elige un día de la semana que quieres consultar',
+    );
+    if (date == null ||
+        !mounted ||
+        widget.clientId != clientId ||
+        _busy ||
+        _mutation) {
+      return;
+    }
+    setState(() => _day = DateUtils.dateOnly(date));
+    _load();
+  }
+
+  Widget _weekNavigation() {
+    return Wrap(
+      key: const ValueKey('client-planning-week-navigation'),
+      spacing: 8,
+      runSpacing: 8,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        IconButton(
+          tooltip: 'Semana anterior',
+          onPressed: _busy || _mutation
+              ? null
+              : () {
+                  setState(() => _day = _civil(_day, -7));
+                  _load();
+                },
+          icon: const Icon(Icons.chevron_left),
+        ),
+        Text(
+          '${trainerDate(_from)} – ${trainerDate(_to)}',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        IconButton(
+          tooltip: 'Semana siguiente',
+          onPressed: _busy || _mutation
+              ? null
+              : () {
+                  setState(() => _day = _civil(_day, 7));
+                  _load();
+                },
+          icon: const Icon(Icons.chevron_right),
+        ),
+        IconButton(
+          tooltip: 'Elegir semana',
+          onPressed: _busy || _mutation ? null : _pickWeek,
+          icon: const Icon(Icons.calendar_month_outlined),
+        ),
+        TextButton(
+          onPressed: _busy || _mutation
+              ? null
+              : () {
+                  setState(() => _day = DateUtils.dateOnly(DateTime.now()));
+                  _load();
+                },
+          child: const Text('Hoy'),
+        ),
+      ],
+    );
+  }
+
+  Widget _calendar(bool inlineInspector) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      Text(
-        _client?.client.name ?? 'Planificación del alumno',
-        style: Theme.of(context).textTheme.headlineSmall,
+      Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+        child: _weekNavigation(),
       ),
-      if (_client?.client.isSelf == true)
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 8),
-          child: Text(
-            'Lo que te pautes aquí aparecerá en la agenda de tu app de deportista. '
-            'Puedes realizarlo con esta misma cuenta y consultar aquí sus resultados. No ocupa plaza.',
-          ),
-        ),
-      if (widget.goals != null) widget.goals!,
-      const SizedBox(height: 12),
-      Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          IconButton(
-            tooltip: 'Semana anterior',
-            onPressed: _busy || _mutation
-                ? null
-                : () {
-                    setState(() => _day = _civil(_day, -7));
-                    _load();
-                  },
-            icon: const Icon(Icons.chevron_left),
-          ),
-          Text(
-            '${trainerDate(_from)} – ${trainerDate(_to)}',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          IconButton(
-            tooltip: 'Semana siguiente',
-            onPressed: _busy || _mutation
-                ? null
-                : () {
-                    setState(() => _day = _civil(_day, 7));
-                    _load();
-                  },
-            icon: const Icon(Icons.chevron_right),
-          ),
-          TextButton(
-            onPressed: _busy || _mutation
-                ? null
-                : () {
-                    setState(() => _day = DateUtils.dateOnly(DateTime.now()));
-                    _load();
-                  },
-            child: const Text('Hoy'),
-          ),
-        ],
-      ),
-      TrainerAssignmentVisibilityFilter(
-        value: _visibility,
-        onChanged: _busy || _mutation
-            ? null
-            : (value) {
-                setState(() => _visibility = value);
-                _load();
+      const Divider(height: 1),
+      Expanded(
+        child: ListView(
+          key: const ValueKey('client-calendar-scroll'),
+          padding: const EdgeInsets.all(16),
+          children: [
+            Text(
+              _client?.client.name ?? 'Planificación del alumno',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            if (_client?.client.isSelf == true)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Text(
+                  'Aquí ves tus pautas y las que te asignan tus preparadores, con el autor en cada tarjeta. '
+                  'Lo que te pautes aquí aparecerá en la agenda de tu app de deportista. '
+                  'Puedes realizarlo con esta misma cuenta y consultar aquí sus resultados. No ocupa plaza.',
+                ),
+              ),
+            if (widget.goals != null) widget.goals!,
+            const SizedBox(height: 12),
+            TrainerAssignmentVisibilityFilter(
+              value: _visibility,
+              onChanged: _busy || _mutation
+                  ? null
+                  : (value) {
+                      setState(() => _visibility = value);
+                      _load();
+                    },
+            ),
+            const SizedBox(height: 12),
+            Text('Fecha seleccionada: ${trainerDate(_day)}'),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                FilledButton.icon(
+                  onPressed: _canAssign ? () => _assignSession(_day) : null,
+                  icon: const Icon(Icons.add),
+                  label: const Text('Asignar sesión'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: _canAssign ? () => _assignProgram(_day) : null,
+                  icon: const Icon(Icons.view_week_outlined),
+                  label: const Text('Pautar programa'),
+                ),
+                TextButton(
+                  onPressed: _canAssign && widget.onCreateSession != null
+                      ? () => _create(false)
+                      : null,
+                  child: const Text('Crear sesión'),
+                ),
+                TextButton(
+                  onPressed: _canAssign && widget.onCreateProgram != null
+                      ? () => _create(true)
+                      : null,
+                  child: const Text('Crear programa'),
+                ),
+              ],
+            ),
+            if (_busy) const LinearProgressIndicator(),
+            if (_error != null)
+              Text(
+                _error!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            if (_client?.client.active == false)
+              const Text(
+                'Servicio inactivo: conservas tus pautas y resultados. No puedes crear nuevas asignaciones.',
+              ),
+            if (_sharing == false)
+              const Text(
+                'Ves tus propias pautas. Para coordinaros, el alumno puede compartir su calendario desde Preparador → Vínculos.',
+              ),
+            if (_sharedError != null)
+              Text(
+                'No se pudo comprobar el calendario compartido. Solo se muestran tus pautas. $_sharedError',
+              ),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Text(
+                'Carrera y fuerza · autor y estado en cada tarjeta · pautas ajenas en solo lectura',
+              ),
+            ),
+            if (_moreOwn || _moreShared)
+              const Text(
+                'Semana parcial: carga el resto antes de valorar su planificación completa.',
+              ),
+            LayoutBuilder(
+              builder: (context, c) {
+                final count = c.maxWidth >= 1100
+                    ? 7
+                    : c.maxWidth >= 600
+                    ? 3
+                    : c.maxWidth >= 400
+                    ? 2
+                    : 1;
+                final width = (c.maxWidth - (count - 1) * 8) / count;
+                return Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (var i = 0; i < 7; i++)
+                      _dayCard(_civil(_from, i), width, inlineInspector),
+                  ],
+                );
               },
-      ),
-      const SizedBox(height: 12),
-      Text('Fecha seleccionada: ${trainerDate(_day)}'),
-      Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          FilledButton.icon(
-            onPressed: _canAssign ? () => _assignSession(_day) : null,
-            icon: const Icon(Icons.add),
-            label: const Text('Asignar sesión'),
-          ),
-          OutlinedButton.icon(
-            onPressed: _canAssign ? () => _assignProgram(_day) : null,
-            icon: const Icon(Icons.view_week_outlined),
-            label: const Text('Pautar programa'),
-          ),
-          TextButton(
-            onPressed: _canAssign && widget.onCreateSession != null
-                ? () => _create(false)
-                : null,
-            child: const Text('Crear sesión'),
-          ),
-          TextButton(
-            onPressed: _canAssign && widget.onCreateProgram != null
-                ? () => _create(true)
-                : null,
-            child: const Text('Crear programa'),
-          ),
-        ],
-      ),
-      if (_busy) const LinearProgressIndicator(),
-      if (_error != null)
-        Text(
-          _error!,
-          style: TextStyle(color: Theme.of(context).colorScheme.error),
-        ),
-      if (_client?.client.active == false)
-        const Text(
-          'Servicio inactivo: conservas tus pautas y resultados. No puedes crear nuevas asignaciones.',
-        ),
-      if (_sharing == false)
-        const Text(
-          'Ves tus propias pautas. Para coordinaros, el alumno puede compartir su calendario desde Preparador → Vínculos.',
-        ),
-      if (_sharedError != null)
-        Text(
-          'No se pudo comprobar el calendario compartido. Solo se muestran tus pautas. $_sharedError',
-        ),
-      const Padding(
-        padding: EdgeInsets.symmetric(vertical: 12),
-        child: Text(
-          'Carrera y fuerza · autor y estado en cada tarjeta · pautas ajenas en solo lectura',
+            ),
+            if (_moreOwn)
+              TextButton(
+                onPressed: _busy ? null : () => _load(moreOwn: true),
+                child: const Text('Cargar más pautas propias de la semana'),
+              ),
+            if (_moreShared)
+              TextButton(
+                onPressed: _busy ? null : () => _load(moreShared: true),
+                child: const Text('Cargar más calendario compartido'),
+              ),
+            const SizedBox(height: 24),
+          ],
         ),
       ),
-      if (_moreOwn || _moreShared)
-        const Text(
-          'Semana parcial: carga el resto antes de valorar su planificación completa.',
-        ),
-      LayoutBuilder(
-        builder: (context, c) {
-          final count = c.maxWidth >= 1100
-              ? 7
-              : c.maxWidth >= 600
-              ? 3
-              : c.maxWidth >= 400
-              ? 2
-              : 1;
-          final width = (c.maxWidth - (count - 1) * 8) / count;
-          return Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (var i = 0; i < 7; i++)
-                _dayCard(_civil(_from, i), width, inlineInspector),
-            ],
-          );
-        },
-      ),
-      if (_moreOwn)
-        TextButton(
-          onPressed: _busy ? null : () => _load(moreOwn: true),
-          child: const Text('Cargar más pautas propias de la semana'),
-        ),
-      if (_moreShared)
-        TextButton(
-          onPressed: _busy ? null : () => _load(moreShared: true),
-          child: const Text('Cargar más calendario compartido'),
-        ),
-      const SizedBox(height: 24),
     ],
   );
 
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
-      title: const Text('Planificación del alumno'),
+      title: Text(
+        _client?.client.isSelf == true
+            ? 'Mi planificación'
+            : 'Planificación del alumno',
+      ),
       actions: [
         IconButton(
           tooltip: 'Actualizar planificación',

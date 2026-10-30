@@ -1,5 +1,12 @@
 # Registro de decisiones vigentes
 
+**TRN-033 · ajuste de «Para mí» · 30/10/2026:** Javier confirma consultar en
+Trainer también las sesiones que le pauta su preparador y navegar por otras
+semanas. Se reutiliza el calendario propio completo, con autor visible y las
+pautas ajenas en solo lectura; no se amplían permisos ni se modifica el vínculo.
+Los controles de semana permanecen visibles al desplazar la planificación y
+permiten saltar a una fecha. [Contrato y verificación](TRAINER_SELF_TRAINING.md).
+
 **TRN-048 · planificación ligera desde el móvil · 30/10/2026:** Javier
 confirma ampliar el modo Entrenador con biblioteca, vista previa y asignación de
 sesiones desde ficha/agenda, y las acciones de seguimiento propuestas. La agenda

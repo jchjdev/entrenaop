@@ -30,6 +30,26 @@ plaza ni alternar identidades. También confirma editar el nombre desde Perfil.
 - Conserva protecciones de retirada/archivo/borrado y consentimiento/sincronizador
   Garmin. Abrir la ficha no envía entrenamientos al fabricante.
 
+## Consulta de otras semanas · 30/10/2026
+
+«Para mí» muestra tanto las autoasignaciones como las pautas recibidas de otros
+preparadores, con el autor y estado de cada una. Se reutiliza
+`get_trainer_shared_calendar` con la identidad propia; no exige compartir el
+calendario consigo mismo. Las pautas ajenas permiten consultar su receta y
+conservan la protección frente a cambios o retirada desde Trainer.
+
+La navegación de semanas queda fija sobre el calendario, incluso al desplazar
+objetivos o tarjetas: anterior, siguiente, Hoy y selector de fecha. El calendario
+consulta la semana civil elegida y conserva sus avisos de carga parcial y
+paginación. La mejora se aplica también a la planificación de un alumno.
+
+Análisis de Trainer limpio y sus 335 pruebas correctas. Tres regresiones cubren
+la sesión futura de otro preparador en la ficha propia, la barra fija y el salto
+de fecha. El contrato `supabase/tests/trainer_self_training.sql` añade lectura de
+una pauta ajena en otra semana, consulta de su receta y rechazo de su retirada;
+comprobado en Dev con ROLLBACK, sin nuevas migraciones ni datos persistentes.
+La publicación web se acredita después de terminar el publicador automático.
+
 ## Nombre editable
 
 «Cambiar nombre» normaliza espacios y exige entre 1 y 100 caracteres, sin controles
