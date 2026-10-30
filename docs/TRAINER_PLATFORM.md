@@ -37,6 +37,13 @@ filtros y scroll. Las capturas de los componentes reales se revisan en claro y
 oscuro, 320/1440 px y texto 2×; ambas pestañas caben sin desbordamientos. La
 aceptación de Javier en el portal publicado queda como siguiente comprobación.
 
+Publicación automática Dev comprobada el 31/10: revisión `86474cbb`,
+[ejecución 41145285326](https://github.com/jchjdev/entrenaop/actions/runs/41145285326)
+correcta en validación, compilación y despliegue. Verificación HTTPS independiente
+del manifiesto, identidad Dev (`sxbxfjqgoddzhtcyhalw`), revisión, SHA-256 del
+JavaScript, entrada activa, cabeceras sin caché y MIME WebAssembly. La publicación
+no incluye cambios de ADMIN ni genera una nueva versión móvil.
+
 ### Inventario de los dieciséis puntos · 29/10/2026
 
 Javier pide el estado de los dieciséis puntos y añade gestión de borrado de

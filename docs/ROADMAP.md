@@ -9,6 +9,9 @@ desplazamiento. Cancelar no escribe ni recarga; las respuestas inciertas mantien
 datos/UUID. Sin cambios en ADMIN, app del deportista, SQL o dependencias.
 Análisis limpio y 374 pruebas Trainer correctas; 12 regresiones nuevas y capturas
 de escritorio/móvil, claro/oscuro y texto 2× revisadas.
+Trainer Dev publicado automáticamente desde `86474cbb`, con validación y despliegue
+correctos ([41145285326](https://github.com/jchjdev/entrenaop/actions/runs/41145285326));
+revisión, identidad Dev y recursos contrastados por HTTPS.
 **Siguiente recorrido de este pulido:** aceptación con Javier en Trainer Dev de
 arrastrar → confirmar → abrir receta/resultados → volver a la misma semana.
 El directorio profesional y sus condiciones siguen en su recorrido propio.
