@@ -155,6 +155,26 @@ guarda el modelo de cobro directo del entrenador a sus alumnos. Esto no fija
 comisiones, no conecta credenciales al servidor ni habilita pagos reales.
 [Evidencia y límites](TRAINER_COMMERCIAL_CONTRACT.md#conexion-del-entorno-de-pruebas--28102026).
 
+**TRN-040 · inicio de implementación Dev · 30/10/2026:** Javier autoriza pasar
+de diseño a primera entrega y pide preservar el trabajo simultáneo de
+Arquitectura. Se implementan dominio/puertos/adaptador/interfaz separados en
+`trainer_access/directory`, navegación siempre visible, ficha/buscador,
+favoritos, contactos externos, editor Trainer y denuncias con resolución ADMIN.
+La migración se aplica solo en Dev, con fotos privadas y derechos comprobados
+en servidor. Publicación y derecho de las ofertas existentes quedan apagados
+hasta concretar catálogo y textos; no se modifican las cuentas del piloto.
+El contrato SQL con ROLLBACK pasa sobre el esquema aplicado; la aceptación real
+y la habilitación de fichas no se declaran cerradas.
+[Entrega, comprobaciones y siguiente paso](TRAINER_PLATFORM.md#primera-entrega-técnica--30102026).
+
+**TRN-040 · navegación y publicación confirmadas · 30/10/2026:** Javier acuerda
+Preparador siempre visible en el espacio personal, sin exigir vínculo ni
+contenido recibido, para buscar profesionales; se priorizan los preparadores
+actuales. Confirma publicación directa con denuncias, sin aprobación humana
+previa obligatoria y conservando elegibilidad, aceptación y controles de acceso.
+Revisión, retirada y restitución por incidencias quedan por concretar.
+[Contrato del directorio](TRAINER_PLATFORM.md#directorio-profesional-futuro--trn-040--28102026).
+
 **TRN-040 · Clean Architecture reafirmada · 30/10/2026:** Javier exige mantener
 Clean Architecture al implementar el directorio: dominio independiente,
 contratos hacia dentro y separación de datos/presentación según los patrones

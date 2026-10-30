@@ -1,4 +1,9 @@
 import 'trainer_invitation_landing.dart';
+import 'trainer_directory_editor.dart';
+
+import 'package:trainer_access/directory/data.dart';
+import 'package:trainer_access/directory/presentation.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:trainer_access/trainer_invitation_link.dart';
 import 'package:trainer_access/trainer_notifications.dart';
@@ -236,6 +241,12 @@ class _TrainerAppState extends State<TrainerApp> {
         sessionWorkRepository;
     SupabaseTrainerRepository access() =>
         SupabaseTrainerRepository(widget.client, userId: identity!);
+    SupabaseDirectoryRepository directory({bool webOnly = false}) =>
+        SupabaseDirectoryRepository(
+          widget.client,
+          owner: identity,
+          webOnly: webOnly,
+        );
     SupabaseTrainerOperationsRepository operations() =>
         SupabaseTrainerOperationsRepository(widget.client, identity!);
     SupabaseTrainerAgendaRepository agenda() =>
@@ -332,7 +343,11 @@ class _TrainerAppState extends State<TrainerApp> {
           : '/home',
       redirect: (_, state) async {
         final location = state.matchedLocation;
-        if (location == '/invite') return null;
+        if (location == '/invite' ||
+            location == '/directory' ||
+            location.startsWith('/directory/')) {
+          return null;
+        }
         const public = {
           '/login',
           '/register',
@@ -393,6 +408,25 @@ class _TrainerAppState extends State<TrainerApp> {
         return null;
       },
       routes: [
+        for (final path in ['/directory', '/directory/:profileId'])
+          GoRoute(
+            path: path,
+            builder: (_, state) {
+              final repository = directory(webOnly: true);
+              return TrainerDirectoryPage(
+                key: ValueKey(
+                  'directory-$identity-${state.pathParameters['profileId']}',
+                ),
+                repository: repository,
+                loadPhoto: repository.photo,
+                profileId: state.pathParameters['profileId'],
+                onOpen: (id) => _router.push('/directory/$id'),
+                onContact: (uri) =>
+                    launchUrl(uri, mode: LaunchMode.externalApplication),
+                publicBase: Uri.https('trainer.entrenaop.es', '/directory'),
+              );
+            },
+          ),
         GoRoute(
           path: '/subscription',
           builder: (_, state) => TrainerSubscriptionPage(
@@ -501,6 +535,24 @@ class _TrainerAppState extends State<TrainerApp> {
             ),
           ),
           routes: [
+            GoRoute(
+              path: '/directory-profile',
+              onExit: (_, state) => exits.requestExit(state.pageKey),
+              builder: (_, state) {
+                final repository = directory();
+                return guarded(
+                  state,
+                  TrainerDirectoryEditor(
+                    key: ValueKey('directory-editor-$identity'),
+                    repository: repository,
+                    photo: repository.photo,
+                    uploadPhoto: repository.uploadPhoto,
+                    discardPhoto: repository.discardPhoto,
+                    cleanupPhotoDrafts: repository.cleanupPhotoDrafts,
+                  ),
+                );
+              },
+            ),
             GoRoute(
               path: '/self',
               builder: (_, _) => TrainerSelfPage(

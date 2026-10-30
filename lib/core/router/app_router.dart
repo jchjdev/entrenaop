@@ -13,6 +13,10 @@ import 'package:entrenaop/features/trainers/presentation/pages/student_appointme
 
 import 'dart:async';
 
+import 'package:trainer_access/directory/data.dart';
+import 'package:trainer_access/directory/presentation.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import 'package:entrenaop/features/notifications/push_notifications_scope.dart';
 
 import 'package:trainer_access/trainer_access.dart';
@@ -187,12 +191,42 @@ class AppRouter {
           '/auth-link-error',
         ].contains(state.matchedLocation);
 
+        if (state.uri.path == '/directory' ||
+            state.uri.path.startsWith('/directory/')) {
+          return null;
+        }
         if (isLoading) return null;
         if (!isAuthenticated && !isPublicRoute) return '/';
         if (isAuthenticated && isPublicRoute) return '/home';
         return null;
       },
       routes: [
+        for (final directoryPath in ['/directory', '/directory/:profileId'])
+          materialAppRoute(
+            path: directoryPath,
+            builder: (_, state) => BlocBuilder<AuthCubit, AuthState>(
+              bloc: authCubit,
+              builder: (_, auth) {
+                final owner = auth is AuthAuthenticated ? auth.user.id : null;
+                final repository = SupabaseDirectoryRepository(
+                  sl<SupabaseClient>(),
+                  owner: owner,
+                );
+                return TrainerDirectoryPage(
+                  key: ValueKey(
+                    'directory-$owner-${state.pathParameters['profileId']}',
+                  ),
+                  repository: repository,
+                  loadPhoto: repository.photo,
+                  profileId: state.pathParameters['profileId'],
+                  onOpen: (id) => config.push('/directory/$id'),
+                  onContact: (uri) =>
+                      launchUrl(uri, mode: LaunchMode.externalApplication),
+                  publicBase: Uri.https('trainer.entrenaop.es', '/directory'),
+                );
+              },
+            ),
+          ),
         if (invitationEntry != null)
           materialAppRoute(
             path: '/trainer-invitation',

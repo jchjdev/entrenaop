@@ -24,7 +24,7 @@ void main() {
     );
   });
   testWidgets(
-    'sin preparador quedan cuatro destinos y Perfil sigue accesible arriba',
+    'sin vínculo Preparador permite descubrir profesionales y Perfil sigue accesible',
     (tester) async {
       final router = _createRouter(hasTrainer: false);
       addTearDown(router.dispose);
@@ -32,9 +32,14 @@ void main() {
       await tester.pumpAndSettle();
       expect(
         tester.widget<NavigationBar>(find.byType(NavigationBar)).destinations,
-        hasLength(4),
+        hasLength(5),
       );
-      expect(find.text('Preparador'), findsNothing);
+      expect(find.text('Preparador'), findsOneWidget);
+      await tester.tap(find.text('Preparador'));
+      await tester.pumpAndSettle();
+      expect(router.state.uri.path, '/my-trainer');
+      await tester.tap(find.text('Inicio'));
+      await tester.pumpAndSettle();
       expect(find.text('Perfil'), findsNothing);
       await tester.tap(find.byTooltip('Mi perfil'));
       await tester.pumpAndSettle();

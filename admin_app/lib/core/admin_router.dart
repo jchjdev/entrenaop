@@ -68,6 +68,7 @@ GoRouter createAdminRouter({
   Listenable? authChanges,
   bool Function()? isAuthenticated,
   WidgetBuilder? loginBuilder,
+  WidgetBuilder? directoryBuilder,
   WidgetBuilder? securityBuilder,
   Future<bool> Function()? needsSecurity,
 }) {
@@ -318,6 +319,7 @@ GoRouter createAdminRouter({
           canManageAccounts: proAccess?.canManageAccounts,
           hasGuidedPrograms: guided != null,
           hasOperations: operations != null,
+          hasDirectory: directoryBuilder != null,
           onSignOut: onSignOut,
           child: child,
         ),
@@ -575,6 +577,18 @@ GoRouter createAdminRouter({
                   ),
                 ),
               ],
+            ),
+          if (proAccess != null && directoryBuilder != null)
+            GoRoute(
+              path: '/directory-reports',
+              builder: (context, _) => load(() async {
+                if (!await proAccess.canManageAccounts()) {
+                  throw const _RouteUnavailable(
+                    'Solo el responsable de cuentas puede revisar las denuncias.',
+                  );
+                }
+                return true;
+              }, (_) => directoryBuilder(context)),
             ),
           if (proAccess != null)
             GoRoute(

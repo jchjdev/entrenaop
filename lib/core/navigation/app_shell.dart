@@ -5,7 +5,6 @@ import 'package:entrenaop/core/presentation/widgets/entrena_wordmark.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../features/trainers/presentation/student_navigation.dart';
 
 class AppShell extends StatelessWidget {
   const AppShell({required this.navigationShell, super.key});
@@ -79,14 +78,8 @@ class AppShell extends StatelessWidget {
         child: frame(navigationShell),
       );
     }
-    final showTrainer =
-        StudentNavigationScope.maybeOf(context)?.hasTrainer == true ||
-        navigationShell.currentIndex == 4;
-    final indices = [0, 1, 2, 3, if (showTrainer) 4];
-    final destinations = [
-      ..._barDestinations.take(4),
-      if (showTrainer) _barDestinations.last,
-    ];
+    final indices = [0, 1, 2, 3, 4];
+    final destinations = [..._barDestinations.take(4), _barDestinations.last];
     final selectedIndex = indices.indexOf(navigationShell.currentIndex);
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -112,7 +105,7 @@ class AppShell extends StatelessWidget {
                       ),
                       destinations: [
                         ..._railDestinations.take(4),
-                        if (showTrainer) _railDestinations.last,
+                        _railDestinations.last,
                       ],
                     ),
                   ),

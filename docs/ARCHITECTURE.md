@@ -1316,7 +1316,11 @@ según los patrones existentes; el servidor seguirá siendo la autoridad para
 permisos y derechos comerciales. Se reutilizará el dominio entre consumidores
 cuando corresponda, sin importar una aplicación desde otra ni duplicar reglas.
 No exige una clase/caso de uso por cada llamada ni crear paquetes preventivos.
-Es un criterio futuro: no se crean módulos, capas ni migraciones ahora.
+El 30/10 Javier autoriza la primera entrega Dev. `trainer_access/directory`
+separa dominio, datos y presentación compartida; app, Trainer y ADMIN inyectan
+los adaptadores por cuenta. El servidor comprueba elegibilidad y visibilidad,
+incluida la descarga de fotos privadas. La publicación queda deshabilitada hasta
+concretar catálogo y textos; no se habilita ninguna cuenta del piloto.
 [Alcance del directorio](TRAINER_PLATFORM.md#directorio-profesional-futuro--trn-040--28102026).
 
 PRG-001 incorpora un catálogo editorial separado de preparaciones con baremos.

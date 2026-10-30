@@ -28,6 +28,8 @@ import 'package:entrenaop_admin/features/editorial_covers/data/program_cover_rep
 import 'package:entrenaop_admin/core/admin_router.dart';
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
 import 'package:flutter/material.dart';
+import 'package:trainer_access/directory/data.dart';
+import 'package:trainer_access/directory/moderation_page.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:entrenaop_admin/features/pro_access/data/admin_pro_access_repository.dart';
@@ -111,6 +113,17 @@ class _AdminAppState extends State<AdminApp> {
             client.auth.currentUser!.id,
           );
     return createAdminRouter(
+      directoryBuilder: (_) {
+        final repository = SupabaseDirectoryRepository(
+          client,
+          owner: client.auth.currentUser?.id,
+        );
+        return DirectoryModerationPage(
+          key: ValueKey('directory-reports-${client.auth.currentUser?.id}'),
+          repository: repository,
+          loadPhoto: repository.photo,
+        );
+      },
       programs: SupabaseAdminProgramRepository(client),
       workouts: SupabaseAdminWorkoutRepository(client),
       exercises: SupabaseAdminExerciseRepository(

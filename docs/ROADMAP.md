@@ -1,5 +1,22 @@
 # Roadmap de EntrenaOP
 
+**TRN-040 · 30/10/2026 · primera entrega técnica del directorio en Dev:**
+Javier autoriza comenzar, preservando el trabajo paralelo de Arquitectura.
+Preparador siempre visible, búsqueda/ficha común para web/app, favoritos,
+contacto externo, editor de ficha Trainer y bandeja de denuncias ADMIN.
+Publicación directa con revisión por incidencias; derechos, consentimientos,
+visibilidad y fotos comprobados en servidor. Migración aplicada en Dev,
+contrato SQL con ROLLBACK e historial de 253 revisiones coincidentes.
+Análisis limpios y baterías completas correctas: raíz 1.509 (una omisión previa),
+Trainer 360 y ADMIN 365 (dos omisiones previas). Capturas móvil/escritorio
+revisadas; publicación automática pendiente de contrastar tras la subida.
+**Límite:** publicación deshabilitada y ofertas sin derecho de anuncio; no se
+habilitan cuentas ni se inventa un plan pagado para el piloto.
+**Siguiente recorrido:** validar catálogo elegible y textos de publicación →
+preparar fichas de Javier/Ervi → habilitar y comprobar el piloto solo en Dev.
+El inicio pedido expresamente no cierra la aceptación física móvil pendiente
+ni el directorio completo. [Entrega y evidencia](TRAINER_PLATFORM.md#primera-entrega-técnica--30102026).
+
 **TRN-048 · 30/10/2026 · planificación móvil implementada:** biblioteca →
 vista previa → asignación desde alumno o día elegido, incluido «Para mí» sin plaza.
 Agenda de día/semana/mes con color por alumno, sesiones y citas, filtros y aviso de
@@ -2793,7 +2810,7 @@ Una vez validada la primera semana adaptativa, el orden natural será:
 
 ## Fuera del camino crítico del MVP
 
-- **Directorio profesional · TRN-040 · acordado el 28/10/2026, pendiente:**
+- **Directorio profesional · TRN-040 · acordado el 28/10, iniciado en Dev el 30/10/2026:**
   primero directorio voluntario de entrenadores en la web, con ficha, foto,
   descripción, especialidades y contacto externo; prever acceso a la búsqueda
   desde «Mi preparador», con integración móvil concreta aún por diseñar.
@@ -2808,12 +2825,14 @@ Una vez validada la primera semana adaptativa, el orden natural será:
   **Concreción del 30/10:** publicidad para planes pagados intermedio/superior,
   básico excluido; ocultación al perder elegibilidad. Favoritos y elección
   solo app/también web, con aceptación expresa; acceso a búsqueda sin vínculo.
-  Piloto con Javier y Ervi. Denuncias y mínima revisión manual como orientación;
-  automatización, permisos de ADMIN, publicación y excepciones por concretar.
+  Piloto con Javier y Ervi. **Acuerdos confirmados:** Preparador siempre visible
+  en el espacio personal para buscar, incluso sin vínculos/contenido; publicación
+  directa con denuncias, sin aprobación humana previa obligatoria. Automatización,
+  permisos de ADMIN, gestión de incidencias y excepciones por concretar.
   Solo app requiere autorización y modifica el diseño de la entrada móvil;
   favoritos/enlaces no deben eludir una ficha oculta. Revisar privacidad antes
-  del lanzamiento. No se implementa ni se habilitan cuentas o planes.
-  No es el siguiente bloque ni modifica las prioridades comerciales actuales.
+  del lanzamiento. Primera entrega técnica iniciada por petición expresa;
+  la publicación real y los planes permanecen sin habilitar.
   [Acuerdos futuros y cuestiones abiertas](TRAINER_PLATFORM.md#directorio-profesional-futuro--trn-040--28102026).
 - Resolver todas las oposiciones a la vez.
 - Chat, nutrición, desafíos o red social.

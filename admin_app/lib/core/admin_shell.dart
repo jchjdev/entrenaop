@@ -15,6 +15,7 @@ class AdminShell extends StatefulWidget {
     this.canManageAccounts,
     this.hasGuidedPrograms = false,
     this.hasOperations = false,
+    this.hasDirectory = false,
     super.key,
   });
 
@@ -24,6 +25,7 @@ class AdminShell extends StatefulWidget {
   final VoidCallback onSignOut;
   final bool hasGuidedPrograms;
   final bool hasOperations;
+  final bool hasDirectory;
   final Widget child;
 
   @override
@@ -168,7 +170,13 @@ class _AdminShellState extends State<AdminShell> {
                   (section) =>
                       (!section.guided || widget.hasGuidedPrograms) &&
                       (!section.operations || widget.hasOperations) &&
-                      (section.path != '/accounts' || snapshot.data!.accounts),
+                      (section.path != '/directory-reports' ||
+                          widget.hasDirectory) &&
+                      (![
+                            '/accounts',
+                            '/directory-reports',
+                          ].contains(section.path) ||
+                          snapshot.data!.accounts),
                 );
                 String? group;
                 return ListView(
@@ -356,6 +364,12 @@ const _sections = [
     'Cuentas y Pro',
     '/accounts',
     Icons.manage_accounts_outlined,
+  ),
+  _AdminSection(
+    'Gestión',
+    'Denuncias del directorio',
+    '/directory-reports',
+    Icons.flag_outlined,
   ),
   _AdminSection(
     'Gestión',

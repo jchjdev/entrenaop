@@ -219,7 +219,7 @@ void main() {
         route,
       );
       final bar = tester.widget<NavigationBar>(find.byType(NavigationBar));
-      expect(bar.destinations, hasLength(4));
+      expect(bar.destinations, hasLength(5));
       expect(bar.selectedIndex, 2);
       expect(find.text(content), findsOneWidget);
       if (route.contains('tab=personal') && route.contains('exercises')) {

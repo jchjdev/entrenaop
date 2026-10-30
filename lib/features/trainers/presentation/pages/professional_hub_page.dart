@@ -239,6 +239,14 @@ class _ProfessionalHubPageState extends State<ProfessionalHubPage>
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
               children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: OutlinedButton.icon(
+                    onPressed: () => _openRoute('/directory'),
+                    icon: const Icon(Icons.person_search_outlined),
+                    label: const Text('Buscar preparador'),
+                  ),
+                ),
                 const StudentPushSettings(),
                 if (_busy) const LinearProgressIndicator(),
                 if (_error != null) ...[

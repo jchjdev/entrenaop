@@ -1,5 +1,16 @@
 # Producto EntrenaOP
 
+**Directorio profesional · TRN-040 · 30/10/2026:** Javier autoriza iniciar la
+primera entrega Dev con Clean Architecture. Preparador queda siempre visible
+para buscar, también sin vínculo; fichas voluntarias, favoritos y contacto
+externo se separan de la aceptación de los dos vínculos permitidos. Publicación
+directa con denuncias y moderación posterior, visibilidad solo app o también
+web. Trainer prepara la ficha y ADMIN atiende incidencias. La publicación real
+queda apagada hasta concretar los planes pagados intermedio/superior y los
+textos de publicación/privacidad; no se habilitan cuentas ni pagos. Centros y
+revisión automática mantienen su fase posterior.
+[Contrato, implementación y límites](TRAINER_PLATFORM.md#primera-entrega-técnica--30102026).
+
 **TRN-048 · 30/10/2026 · planificación rápida en el modo Entrenador:**
 Desde la ficha o la agenda se puede elegir una sesión guardada, revisar su receta
 y asignarla con fecha e indicaciones. La agenda distingue sesiones/citas por

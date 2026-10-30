@@ -247,10 +247,11 @@ de ADMIN. Su publicación y validación se acreditan en
 
 ## Directorio profesional futuro · TRN-040 · 28/10/2026
 
-**Acordado para más adelante; sin implementación ni fecha de entrega.** Javier
-confirma incorporar un directorio voluntario de profesionales. Primero se hará
-el directorio de entrenadores en la web y después se ampliará a centros. Este
-trabajo no sustituye el siguiente bloque comercial vigente del roadmap.
+**Inicio de implementación autorizado el 30/10/2026, exclusivamente en Dev.**
+Javier confirma pasar de los acuerdos futuros a una primera entrega, conservando
+el trabajo simultáneo de Arquitectura. Se desarrolla el directorio de entrenadores
+para web/app; los centros mantienen su fase posterior. La habilitación pública
+y el piloto con cuentas reales siguen sujetos al catálogo y textos pendientes.
 
 ### Recorrido y límites acordados
 
@@ -258,8 +259,10 @@ trabajo no sustituye el siguiente bloque comercial vigente del roadmap.
   presentación breve y especialidades; dispone de espacio para explicar su
   propuesta y sus servicios con su propia voz.
 - «Mi preparador» será el punto de entrada previsto para descubrir profesionales
-  desde la app. La búsqueda debe ser accesible también sin preparador vinculado,
-  conservando el acceso a los vínculos actuales. La concreción del 30/10 añade
+  desde la app. Javier confirma el 30/10 que **Preparador estará siempre visible
+  en la navegación del espacio personal**, también sin vínculo ni contenido
+  recibido, para poder buscar. Se conserva la prioridad de los vínculos actuales.
+  La concreción del 30/10 añade
   fichas solo para la app: la solución ya no puede depender únicamente de abrir
   el directorio público; la secuencia de entregas web/app queda por diseñar.
 - El primer contacto será externo al chat de EntrenaOP. Cada profesional elige
@@ -277,8 +280,8 @@ trabajo no sustituye el siguiente bloque comercial vigente del roadmap.
 
 ### Criterios adicionales acordados
 
-Javier confirma estas propuestas el 28/10/2026 para cuando se retome el
-directorio. Son acuerdos de producto futuros, sin implementación ahora:
+Javier confirma estas propuestas el 28/10/2026. La primera entrega técnica del
+30/10 desarrolla este alcance, todavía sin habilitar la publicación real:
 
 - Combinar presentación libre con campos comunes de especialidad, preparaciones,
   modalidad online/presencial y ubicación para ofrecer filtros útiles. Explicar
@@ -335,9 +338,11 @@ copia de sus datos si deja de estar autorizada. Persistencia y restauración de
 favoritos quedan por diseñar.
 
 **Moderación con poca carga manual.** Javier prefiere evitar revisar manualmente
-cada alta y quiere un botón para denunciar perfiles. Se contempla publicar sin
-aprobación humana previa, con revisión por incidencias; el flujo y las reglas
-concretas siguen pendientes. Los motivos propuestos incluyen imágenes sexuales
+cada alta y confirma **publicación directa con denuncias**, sin aprobación humana
+previa obligatoria. La publicación sigue exigiendo elegibilidad, aceptación y
+visibilidad autorizada; no elimina controles de datos o seguridad. La revisión
+será por incidencias; su flujo y las reglas concretas siguen pendientes.
+Los motivos propuestos incluyen imágenes sexuales
 explícitas o violentas, acoso/odio, suplantación, spam/enlaces engañosos y datos o
 credenciales profesionales presuntamente falsos. Pagar no se considera una
 garantía de contenido apropiado. Una denuncia no acredita por sí sola una
@@ -356,7 +361,7 @@ verificación de titulaciones ni un sistema de moderación ya contratado.
 por funcionalidad, con dominio independiente, adaptadores de datos y
 presentación separados. Reutilizar contratos entre web/app no permite duplicar
 las reglas ni delegar seguridad o derechos comerciales a la interfaz. No se
-añaden capas o clases sin una frontera real ni se implementa nada ahora.
+añaden capas o clases sin una frontera real.
 [Criterio arquitectónico](ARCHITECTURE.md#clean-architecture-aplicada-a-entrenaop).
 
 ### Cuestiones pendientes
@@ -370,6 +375,57 @@ Los centros mantienen su fase posterior, con representación y relación con
 entrenadores por decidir. Aparecer en el directorio no fija tarifas, comisiones,
 suplementos ni acreditaciones. Reseñas, reservas, chat de captación y contratación
 automática no forman parte del primer alcance acordado.
+
+### Primera entrega técnica · 30/10/2026
+
+- `trainer_access/lib/directory/` reúne dominio puro, puerto de repositorio,
+  codec/adaptador Supabase y presentación compartida, con dependencias hacia el
+  dominio. Se declara Flutter como dependencia directa ya presente en el grafo;
+  no se incorpora otro paquete externo ni se actualizan versiones.
+- La app conserva Preparador visible sin vínculos y ofrece «Buscar preparador».
+  `/directory` y `/directory/:profileId` consultan fichas, filtros, favoritos,
+  contacto externo y denuncias. Trainer ofrece las mismas rutas en modo web
+  público y `/directory-profile` para editar el borrador propio con MFA y guard
+  de cambios. ADMIN añade `/directory-reports` para el responsable de cuentas.
+- `20261030175018_trainer_directory.sql` crea tablas privadas con RLS/grants
+  restringidos, fachadas invoker e internos autorizados por identidad. Publicar
+  exige prestación comercial en la oferta pagada, periodo vigente, acceso
+  profesional, consentimiento y habilitación del directorio. No se deduce por
+  cupo, Pro personal ni regalos. El catálogo actual conserva el derecho apagado.
+- Publicación directa, favoritos privados e idempotentes, una denuncia pendiente
+  por pareja y hasta diez denuncias nuevas por día/cuenta. Denunciar no suspende:
+  el responsable decide, explica el motivo y deja auditoría. Una edición no
+  levanta la suspensión y restablecer no concede derechos comerciales.
+- Fotos en bucket privado, JPEG hasta 500 KB y máximo tres archivos por cuenta;
+  se reutiliza el selector/optimizador existente, que reencodifica sin EXIF/GPS.
+  La descarga verifica RLS y visibilidad, sin URL pública ni firmada persistente.
+  Reemplazar la foto limpia la anterior si ya no está referenciada. El editor
+  permite limpiar fotos no guardadas, con confirmación, protegiendo la actual.
+- Suspensión, pausa, solo-app y vencimiento se aplican también a búsqueda,
+  favorito, enlace directo y foto en nuevas peticiones. No se almacenan copias
+  persistentes en el cliente; una captura o dato ya recibido no puede revocarse.
+- El buscador pagina de veinte en veinte por identificador estable, sin ranking
+  comercial; especialidad/preparación y servicio se buscan por texto, junto a
+  modalidad y zona. El orden comercial y la taxonomía final siguen pendientes.
+
+**Límite deliberado de esta entrega:** `directory_private.settings.enabled` queda
+en falso y todas las ofertas existentes mantienen `directory_enabled=false`.
+Se permite preparar borradores, pero no publicar fichas reales ni habilitar
+planes desde Flutter. No se cambian las cuentas de Javier/Ervi ni se crean pagos.
+El aviso de publicación del editor no se presenta como revisión jurídica de las
+políticas. Antes de activar el piloto: concretar las ofertas elegibles y sus
+condiciones/textos, revisar las fichas de ambos y comprobar el recorrido real.
+
+La migración se aplica solo en `entrenaop-dev` y el contrato
+`supabase/tests/trainer_directory.sql` termina con ROLLBACK. El historial reúne
+253 migraciones coincidentes. El asesor de seguridad conserva sus avisos WARN;
+solo se añaden cinco INFO esperados por las tablas privadas con RLS y sin acceso
+directo. Análisis limpios en raíz, Trainer y ADMIN; baterías completas de 1.509,
+360 y 365 pruebas correctas, con una omisión previa en raíz y dos en ADMIN.
+Veintitrés comprobaciones focalizadas de navegación/directorio y dos recorridos
+visuales a 320/1200 píxeles (texto 2× en móvil) pasan; capturas con fuentes reales
+revisadas. La publicación web automática se verifica por separado tras subir el
+commit. No se da por cerrado el directorio ni su aceptación física.
 
 ## Dos circuitos comerciales
 
