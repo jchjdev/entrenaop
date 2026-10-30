@@ -22,8 +22,10 @@ con aviso, cargando los archivos de la revisión nueva. Queda cerrado este
 recorrido técnico inicial en Dev, con los límites siguientes.
 **Límite:** publicación deshabilitada y ofertas sin derecho de anuncio; no se
 habilitan cuentas ni se inventa un plan pagado para el piloto.
-**Siguiente recorrido:** validar catálogo elegible y textos de publicación →
-preparar fichas de Javier/Ervi → habilitar y comprobar el piloto solo en Dev.
+**Siguiente recorrido · concretado el 31/10:** resolver el guardado comunicado
+por Javier y acordar elegibilidad/textos para activar y comprobar el piloto con
+su cuenta solo en Dev. Ervi se incorpora después; el catálogo real y los precios
+no se dan por aprobados. [Preparación del piloto](TRAINER_PLATFORM.md#preparación-del-piloto-con-javier--31102026).
 El inicio pedido expresamente no cierra la aceptación física móvil pendiente
 ni el directorio completo. [Entrega y evidencia](TRAINER_PLATFORM.md#primera-entrega-técnica--30102026).
 

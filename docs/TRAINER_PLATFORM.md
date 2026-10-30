@@ -464,6 +464,33 @@ inicial, con el piloto comercial y la aceptación física pendientes.
 Lectura final en Dev:
 publicación deshabilitada, cero ofertas elegibles y cero fichas publicadas.
 
+### Preparación del piloto con Javier · 31/10/2026
+
+Javier pide comenzar por su cuenta y comunica que ha rellenado la ficha pero
+no consigue subirla. Ervi mantiene su participación posterior; no se habilita
+ninguna cuenta ni se publica contenido por esta petición de diagnóstico.
+
+Lectura de `entrenaop-dev`: publicación apagada, única oferta «Ensayo de
+contratación · sin cobro real» sin derecho de directorio, una foto subida y cero
+fichas guardadas. La cuenta de la foto tiene contratación de ensayo con periodo
+vigente. Son dos asuntos distintos: guardar un borrador no exige elegibilidad
+comercial, mientras publicar sí la exige. Se solicita el mensaje de «Guardar
+ficha» antes de atribuir el fallo a una causa concreta o recargar el formulario.
+
+Para el piloto se propone concretar el derecho del directorio en la oferta de
+ensayo y limitar su alcance a la cuenta de Javier en Dev, sin convertirla en un
+plan comercial aprobado ni simular pagos. Esta propuesta sigue pendiente de
+confirmar. El reparto futuro básico sin anuncio e intermedio/superior pagados
+con anuncio conserva el acuerdo previo; precios, nombres y catálogo completo
+no se consideran decididos por iniciar este ensayo.
+
+Quedan por cerrar las condiciones de publicación y moderación, la información
+de privacidad correspondiente y el texto de autorización según visibilidad:
+solo app para usuarios identificados o también web pública sin cuenta. Deben
+explicarse los datos/contactos publicados, la retirada y sus límites, y no
+presentar el directorio como verificación de titulaciones. Se conservará la
+aceptación expresa del titular desde el formulario; no se acepta en su nombre.
+
 ## Dos circuitos comerciales
 
 1. El preparador contrata EntrenaOP con un cupo de alumnos activos. Los tramos

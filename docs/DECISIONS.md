@@ -155,6 +155,18 @@ guarda el modelo de cobro directo del entrenador a sus alumnos. Esto no fija
 comisiones, no conecta credenciales al servidor ni habilita pagos reales.
 [Evidencia y límites](TRAINER_COMMERCIAL_CONTRACT.md#conexion-del-entorno-de-pruebas--28102026).
 
+**TRN-040 · preparación del piloto propio · 31/10/2026:** Javier solicita
+comenzar el piloto con su cuenta y comunica que ha rellenado la ficha pero no
+consigue subirla. Se comprueba solo en Dev: publicación deshabilitada, única
+oferta de ensayo sin derecho de directorio, una foto subida y ninguna ficha
+persistida. La cuenta propietaria de la foto tiene periodo comercial de ensayo
+vigente. El fallo de guardado debe diagnosticarse aparte de la habilitación
+comercial; se solicita el mensaje mostrado, preservando el formulario abierto.
+No se aprueban todavía tarifas, equivalencias del ensayo con planes reales,
+excepciones al pago ni textos nuevos. Empezar con Javier no habilita a Ervi ni
+publica datos automáticamente; la visibilidad y aceptación siguen siendo
+explícitas. [Preparación del piloto](TRAINER_PLATFORM.md#preparación-del-piloto-con-javier--31102026).
+
 **TRN-040 · inicio de implementación Dev · 30/10/2026:** Javier autoriza pasar
 de diseño a primera entrega y pide preservar el trabajo simultáneo de
 Arquitectura. Se implementan dominio/puertos/adaptador/interfaz separados en
