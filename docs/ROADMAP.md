@@ -13,6 +13,9 @@ revisadas; publicación automática pendiente de contrastar tras la subida.
 Los primeros procesos de CI se detuvieron por un aviso de estilo en el script
 de capturas añadido al final; corrección y nueva publicación en curso. Los
 portales mantienen mientras tanto la versión anterior con los gráficos.
+La siguiente comprobación detecta la cobertura de copias del esquema nuevo;
+se añade `directory_private` al inventario de exportación/restauración, sin
+reducir pruebas ni modificar bases remotas.
 **Límite:** publicación deshabilitada y ofertas sin derecho de anuncio; no se
 habilitan cuentas ni se inventa un plan pagado para el piloto.
 **Siguiente recorrido:** validar catálogo elegible y textos de publicación →

@@ -13,7 +13,8 @@ y el admin sigue mostrando que no existe evidencia verificada.
 
 La copia contiene roles sin contraseñas, su inventario gestionado, esquema y datos de `public`, `auth`,
 `storage`, `admin_ops_private`, `trainer_private`, `editor_private`,
-`device_private`, `admin_work_private`, `push_private`, `profile_private` y `supabase_migrations`, las
+`device_private`, `admin_work_private`, `push_private`, `profile_private`,
+`commerce_private`, `directory_private` y `supabase_migrations`, las
 extensiones necesarias, migraciones del repositorio y los archivos reales de
 Storage, incluidos los privados. Los nombres originales de objetos se guardan
 en un índice dentro del cifrado; en disco se usan nombres derivados por hash.
@@ -48,6 +49,11 @@ mismo inventario de esquemas. Antes de exportar se comprueba que no haya otro
 esquema `*_private` sin incluir. Una prueba contrasta además los `CREATE SCHEMA`
 de las migraciones. El ensayo ficticio incluye tipos públicos que dependen de
 tablas privadas y rechaza una referencia huérfana en `admin_work_private`.
+TRN-040 incorpora `directory_private` al mismo inventario el 30/10/2026;
+su omisión fue detectada por esa prueba al publicar el directorio. El inventario
+dinámico de Storage ya incluye el bucket privado `trainer-directory`, sin añadir
+otra lista de buckets. Esta corrección no ejecuta una copia real ni una
+restauración sobre Dev/producción y no cambia destino, cifrado o retención.
 Las conexiones Garmin se incluyen con sus campos ya cifrados; su clave de Edge
 sigue excluida y debe conservarse por separado.
 

@@ -435,6 +435,17 @@ comportamiento ni reducir comprobaciones. Ambos portales conservan mientras
 tanto `df772e09`, que ya contiene los gráficos del otro chat. La nueva ejecución
 se lanzará sobre main incluyendo también su cierre documental `3d9466ab`.
 
+Al superar el análisis, la comprobación de copias detecta además que faltaba
+`directory_private` en `BACKUP_SCHEMAS`. Se incorpora al inventario común de
+exportación, comprobación de claves foráneas y ensayo aislado de restauración.
+Storage ya inventaría todos los buckets, incluido `trainer-directory`. Se
+mantienen las comprobaciones de cobertura: no se omite el esquema ni se reduce
+la prueba para permitir el despliegue. La corrección no restaura datos remotos
+ni cambia la política de copias existente.
+Tras la corrección pasan las 46 pruebas de herramientas ADMIN y las 17 de
+Trainer, incluidas cobertura de esquemas, rechazo de producción e integridad
+del publicador. No se ejecuta una copia real ni una restauración remota.
+
 ## Dos circuitos comerciales
 
 1. El preparador contrata EntrenaOP con un cupo de alumnos activos. Los tramos
