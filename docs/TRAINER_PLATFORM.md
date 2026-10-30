@@ -350,6 +350,15 @@ ni suponer supervisión permanente de este chat. Revisión de nuevas versiones d
 foto/texto y priorización de casos dudosos son propuestas por evaluar, no una
 verificación de titulaciones ni un sistema de moderación ya contratado.
 
+### Arquitectura acordada
+
+**Arquitectura confirmada el 30/10:** el directorio seguirá Clean Architecture
+por funcionalidad, con dominio independiente, adaptadores de datos y
+presentación separados. Reutilizar contratos entre web/app no permite duplicar
+las reglas ni delegar seguridad o derechos comerciales a la interfaz. No se
+añaden capas o clases sin una frontera real ni se implementa nada ahora.
+[Criterio arquitectónico](ARCHITECTURE.md#clean-architecture-aplicada-a-entrenaop).
+
 ### Cuestiones pendientes
 
 Concretar catálogo y elegibilidad por plan, alcance de ADMIN y excepciones,

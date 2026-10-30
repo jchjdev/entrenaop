@@ -147,6 +147,13 @@ guarda el modelo de cobro directo del entrenador a sus alumnos. Esto no fija
 comisiones, no conecta credenciales al servidor ni habilita pagos reales.
 [Evidencia y límites](TRAINER_COMMERCIAL_CONTRACT.md#conexion-del-entorno-de-pruebas--28102026).
 
+**TRN-040 · Clean Architecture reafirmada · 30/10/2026:** Javier exige mantener
+Clean Architecture al implementar el directorio: dominio independiente,
+contratos hacia dentro y separación de datos/presentación según los patrones
+vigentes. Permisos y derechos comerciales se hacen cumplir en servidor.
+No se crean capas preventivas ni se implementa el directorio en esta tarea.
+[Criterio y límites](ARCHITECTURE.md#clean-architecture-aplicada-a-entrenaop).
+
 **TRN-040 · concreción futura · 30/10/2026:** Javier plantea publicidad para
 planes profesionales pagados intermedio/superior, excluyendo el básico; pérdida
 de elegibilidad oculta/suspende la ficha. No se aprueban catálogo ni precios.

@@ -1306,6 +1306,19 @@ los límites descritos en `PROGRAMA_ADAPTATIVO.md`.
 
 ## Clean Architecture aplicada a EntrenaOP
 
+**Directorio profesional · TRN-040 · reafirmado el 30/10/2026:** Javier exige
+Clean Architecture también para el futuro directorio. El módulo separará
+dominio, datos y presentación, con dependencias hacia contratos/reglas del
+dominio. Elegibilidad, publicación, visibilidad, favoritos y denuncias no se
+resolverán dentro de widgets ni dependerán del SDK de persistencia. Los
+adaptadores concretos y la interfaz se conectarán mediante contratos e inyección
+según los patrones existentes; el servidor seguirá siendo la autoridad para
+permisos y derechos comerciales. Se reutilizará el dominio entre consumidores
+cuando corresponda, sin importar una aplicación desde otra ni duplicar reglas.
+No exige una clase/caso de uso por cada llamada ni crear paquetes preventivos.
+Es un criterio futuro: no se crean módulos, capas ni migraciones ahora.
+[Alcance del directorio](TRAINER_PLATFORM.md#directorio-profesional-futuro--trn-040--28102026).
+
 PRG-001 incorpora un catálogo editorial separado de preparaciones con baremos.
 Autoría usa contratos puros y codecs compartidos, versiones de contenido y
 enlaces con claves foráneas a sesiones/calentamientos. ADMIN escribe mediante
