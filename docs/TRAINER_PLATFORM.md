@@ -454,6 +454,51 @@ una distancia ausente por la pautada. La cifra visible se redondea al segundo
 por kilómetro; la comparación interna mantiene su precisión. Sin tiempo o
 distancia válidos, o sin tramo completado, no se presenta un ritmo calculado.
 
-Gráficas de ritmo por repetición frente a la franja pautada, regularidad y
-comparación entre primeras/últimas repeticiones siguen siendo propuestas; esta
-corrección no implementa esos gráficos ni presume datos fisiológicos ausentes.
+La ampliación siguiente implementa el gráfico y la regularidad descritos abajo.
+No se presumen datos fisiológicos ausentes.
+
+## Gráfico de ritmos y regularidad · 30/10/2026
+
+`running_pace_analysis.dart` proyecta las instantáneas ya autorizadas de resultados;
+reutiliza `reviewSetFromJson` y su prioridad de tiempo medido. La muestra conserva
+fase, bloque, posición, objetivo, medida y recuperación. Se ordena por la receta,
+sin alterar resultados ni unir huecos de series omitidas o sin medición válida.
+Las fases antiguas/desconocidas no se atribuyen a carrera de esfuerzo.
+
+`RunningPaceChart` en `workout_editor_ui` dibuja con Flutter, sin añadir paquetes.
+Trainer y la consulta profesional móvil lo reciben desde
+`TrainerWorkoutResultContent`; el historial del deportista usa el mismo componente
+con el adaptador de su ejecución tipada y la revisión que ya calcula. No se importa
+una aplicación dentro de otra ni se duplica la interfaz completa de resultados.
+
+- Eje horizontal por serie/tramo; eje vertical en min/km, ritmos más rápidos arriba.
+- Rango de objetivo independiente por muestra, con medidas sin redondear al dibujar.
+- Series de esfuerzo por defecto; Todos los tramos permite ver las otras fases.
+  Si faltan las fases, se muestran todos y se explica la falta de clasificación.
+- Huecos sin valores inventados; no se conectan puntos a través de una repetición
+  sin ritmo ni de cambios de fase/bloque. Desplazamiento horizontal en móvil.
+- Ratón, teclado y toque dan acceso al ritmo, distancia, tiempo, objetivo,
+  recuperaciones y RPE registrado. Consulta sin operaciones de escritura.
+- Media = suma de tiempos / suma de distancias, convertida a s/km. Se excluyen
+  muestras incompletas o sin medidas válidas; los ritmos visibles se redondean al
+  segundo y las diferencias de regularidad conservan centésimas al mostrarse.
+- Regularidad: grupos con al menos dos esfuerzos completados del mismo bloque,
+  distancia y objetivo de ritmo/tiempo, modalidad y pauta de recuperación/descanso.
+  La distancia realizada debe estar dentro del 1 % de la pautada, coherente con la
+  tolerancia de distancia de la revisión. Una serie parcial no entra en el grupo.
+- Se propone el grupo mayor y se puede cambiar entre grupos. Se muestra diferencia
+  máxima de ritmos y última frente a primera entre los registros completados.
+
+El gráfico representa toda la ejecución; el filtro de diferencias permanece en
+el detalle situado debajo. No es una nueva nota deportiva ni un análisis de pulso,
+VFC o trazas instantáneas. No requiere migraciones ni llamadas adicionales al servidor.
+
+Validación local del 30/10/2026: análisis limpio y batería completa de raíz con
+1.503 pruebas correctas (una omisión existente), Trainer con 359 y ADMIN con 365
+(dos omisiones existentes). Se validó el cambio en una copia aislada de main para
+excluir el directorio profesional en curso. Las 11 pruebas del gráfico compartido
+cubren fases, huecos, precisión, correcciones, teclado, toque y detalle con texto
+2× en 320/1200 px, claro y oscuro. Catorce pruebas de dominio cubren media ponderada,
+medida del dispositivo, datos incompletos y agrupación. Capturas del componente
+real revisadas en escritorio claro/oscuro y móvil. La app necesita una nueva
+compilación para recibir el gráfico; no se genera APK en este bloque.

@@ -149,6 +149,11 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.byType(ExpansionTile), findsNothing);
+    await tester.scrollUntilVisible(
+      find.text('Tramo 1 · Completada'),
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('Tramo 1 · Completada'), findsOneWidget);
     expect(find.text('Tramo 2 · Completada'), findsOneWidget);
   });

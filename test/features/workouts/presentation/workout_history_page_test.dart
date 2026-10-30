@@ -10,8 +10,50 @@ import 'package:entrenaop/features/workouts/presentation/pages/workout_history_p
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:workout_editor_ui/running_pace_chart.dart';
 
 void main() {
+  testWidgets(
+    'el historial usa el gráfico compartido y abre el resultado medido de la serie',
+    (tester) async {
+      await _pumpGroups(tester, [
+        for (var i = 0; i < 2; i++)
+          WorkoutExecutionSet(
+            id: 'running-$i',
+            blockOrder: 0,
+            blockName: 'Series',
+            blockFormat: WorkoutBlockFormat.running,
+            itemOrder: 0,
+            exerciseId: 'run',
+            exerciseName: 'Carrera',
+            setOrder: i,
+            restAfterSeconds: 0,
+            status: WorkoutSetStatus.completed,
+            runningStep: const RunningStepMetadata(
+              kind: RunningStepKind.run,
+              completion: RunningStepCompletion.distance,
+            ),
+            targetDistanceMeters: 400,
+            targetPaceMinSecondsPerKm: 215,
+            targetPaceMaxSecondsPerKm: 220,
+            recoveryDurationSeconds: 50,
+            recoveryType: RunningRecoveryType.passive,
+            actualDistanceMeters: 400,
+            actualDurationSeconds: 90,
+            observedDurationSeconds: 87.32,
+            resultSource: WorkoutResultSource.device,
+          ),
+      ]);
+      expect(find.byType(RunningPaceChart), findsOneWidget);
+      await tester.ensureVisible(find.byKey(const ValueKey('pace-point-0')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('pace-point-0')));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Tiempo realizado: 1:27.32'), findsOneWidget);
+      expect(find.textContaining('Ritmo realizado: 3:38/km'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
   testWidgets(
     'filtro opcional conserva numeración y recupera todas las series',
     (tester) async {

@@ -48,6 +48,11 @@ Future<void> mount(WidgetTester t, Map<String, dynamic> result) async {
     ),
   );
   await t.pumpAndSettle();
+  await t.scrollUntilVisible(
+    find.textContaining(RegExp(r'^Pautado:')),
+    300,
+    scrollable: find.byType(Scrollable).first,
+  );
 }
 
 void main() {

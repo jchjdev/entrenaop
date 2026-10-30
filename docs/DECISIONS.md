@@ -1,5 +1,13 @@
 # Registro de decisiones vigentes
 
+**Análisis visual de carrera · 30/10/2026:** Javier aprueba gráfico por repetición
+frente a la franja pautada, consulta al tocar/pasar el ratón y resumen de ritmo
+medio, extremos y regularidad. Se comparte cálculo en `workout_core` y presentación
+en `workout_editor_ui`, para Trainer, consulta profesional móvil e historial del
+deportista. Las fases y huecos se conservan; la regularidad se limita a recetas
+equivalentes. No se modifican datos, permisos ni dependencias.
+[Contrato](TRAINER_PLATFORM.md#gráfico-de-ritmos-y-regularidad--30102026).
+
 **TRN-033 · agenda general y pautas recibidas · 30/10/2026:** Javier pide ver
 las sesiones de sus preparadores también en Agenda, además de Para mí. Se
 reutiliza el lector autorizado del calendario personal; cada pantalla conserva

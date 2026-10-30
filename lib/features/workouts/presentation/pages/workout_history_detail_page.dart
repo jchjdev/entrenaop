@@ -1,4 +1,5 @@
 import 'package:workout_editor_ui/workout_result_review_panel.dart';
+import 'package:workout_editor_ui/running_pace_chart.dart';
 
 import '../../domain/services/workout_result_review.dart';
 
@@ -162,6 +163,9 @@ class _DetailContentState extends State<_DetailContent> {
                   ),
                 ],
                 const SizedBox(height: 24),
+                RunningPaceChart(
+                  analysis: runningPaceExecution(execution, review),
+                ),
                 WorkoutResultReviewControls(
                   session: review,
                   onlyDifferences: _onlyDifferences,

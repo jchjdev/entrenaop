@@ -1,8 +1,28 @@
 import 'package:workout_core/performance_set_codec.dart';
 import 'package:workout_core/running_step_codec.dart';
 import 'package:workout_core/workout_result_review.dart';
+import 'package:workout_core/running_pace_analysis.dart';
 
 import '../entities/workout_execution.dart';
+
+RunningPaceAnalysis runningPaceExecution(
+  WorkoutExecution execution,
+  ReviewSession review,
+) {
+  if (review.id != execution.id ||
+      review.sets.length != execution.sets.length) {
+    throw ArgumentError('La revisión debe pertenecer a la misma ejecución.');
+  }
+  return RunningPaceAnalysis([
+    for (var i = 0; i < execution.sets.length; i++)
+      RunningPaceSample(
+        review: review.sets[i],
+        kind: execution.sets[i].runningStep?.kind,
+        recoveryType: execution.sets[i].recoveryType?.name,
+        restAfterSeconds: execution.sets[i].restAfterSeconds,
+      ),
+  ]);
+}
 
 ReviewSession reviewExecution(
   WorkoutExecution execution,

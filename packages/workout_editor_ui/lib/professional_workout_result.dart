@@ -4,8 +4,10 @@ import 'package:workout_core/workout_result_review.dart';
 import 'package:workout_core/running_step_codec.dart';
 import 'package:workout_core/performance_time.dart';
 import 'package:workout_core/running_step.dart';
+import 'package:workout_core/running_pace_analysis.dart';
 
 import 'workout_result_review_panel.dart';
+import 'running_pace_chart.dart';
 
 String _resultDate(DateTime d) =>
     '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
@@ -109,6 +111,11 @@ class _TrainerWorkoutResultContentState
                   ),
                 ),
               ),
+            RunningPaceChart(
+              analysis: RunningPaceAnalysis.fromRows(
+                sets.map((s) => Map<String, dynamic>.from(s)),
+              ),
+            ),
             WorkoutResultReviewControls(
               session: review,
               onlyDifferences: _onlyDifferences,
