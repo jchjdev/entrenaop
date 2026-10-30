@@ -26,6 +26,11 @@ habilitan cuentas ni se inventa un plan pagado para el piloto.
 por Javier y acordar elegibilidad/textos para activar y comprobar el piloto con
 su cuenta solo en Dev. Ervi se incorpora después; el catálogo real y los precios
 no se dan por aprobados. [Preparación del piloto](TRAINER_PLATFORM.md#preparación-del-piloto-con-javier--31102026).
+**Corrección del 31/10:** reproducido el aviso de error oculto al principio del
+editor. Ahora se muestra de inmediato y junto al botón de guardar; dos
+regresiones y el guardado de borrador pasan, con análisis Trainer limpio y
+362 pruebas correctas. Publicación de esta corrección pendiente de contrastar. El motivo
+concreto del rechazo de la ficha real sigue pendiente de observar.
 El inicio pedido expresamente no cierra la aceptación física móvil pendiente
 ni el directorio completo. [Entrega y evidencia](TRAINER_PLATFORM.md#primera-entrega-técnica--30102026).
 

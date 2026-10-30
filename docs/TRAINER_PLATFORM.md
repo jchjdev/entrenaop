@@ -491,6 +491,23 @@ explicarse los datos/contactos publicados, la retirada y sus límites, y no
 presentar el directorio como verificación de titulaciones. Se conservará la
 aceptación expresa del titular desde el formulario; no se acepta en su nombre.
 
+**Avisos al guardar · 31/10/2026:** Javier concreta que el botón «no hace
+nada». Se reproduce un defecto de presentación: validaciones locales y errores
+del repositorio solo se mostraban al principio del formulario, fuera de la
+vista al guardar desde abajo. El editor muestra ahora un aviso inmediato y
+mantiene el motivo junto a «Guardar ficha». Reintentar conserva la edición y
+el guardado confirmado sustituye el aviso anterior. También se aplican los
+avisos visibles a errores de carga y gestión de fotos.
+
+Dos regresiones fallan con la versión anterior y pasan con la corrección:
+validación visible desde el final y rechazo del repositorio seguido de
+reintento con el texto editado. La prueba existente conserva el guardado de
+borrador sin derecho de publicación. Esto corrige el aviso oculto; todavía no
+identifica el dato o rechazo concreto de la ficha real de Javier. No se cambian
+validaciones, permisos, ofertas ni consentimientos, ni se activa el piloto.
+Análisis Trainer limpio y batería completa de 362 pruebas correcta. Publicación
+Dev pendiente de contrastar tras subir la corrección.
+
 ## Dos circuitos comerciales
 
 1. El preparador contrata EntrenaOP con un cupo de alumnos activos. Los tramos

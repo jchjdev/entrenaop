@@ -52,6 +52,7 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
 
   void _accept(DirectoryOwnerProfile state) {
     _state = state;
+    _error = null;
     final p = state.profile;
     final values = [
       p?.name ?? '',
@@ -77,13 +78,24 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
     _dirty = false;
   }
 
+  void _showError(String message) {
+    if (!mounted) return;
+    setState(() => _error = message);
+    // El aviso debe verse también al guardar desde el final del formulario.
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text(message), duration: const Duration(seconds: 8)),
+      );
+  }
+
   Future<void> _load() async {
     setState(() => _busy = true);
     try {
       final value = await widget.repository.own();
       if (mounted) setState(() => _accept(value));
     } catch (e) {
-      if (mounted) setState(() => _error = directoryError(e));
+      _showError(directoryError(e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -114,7 +126,7 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
         }
       }
     } catch (e) {
-      if (mounted) setState(() => _error = directoryError(e));
+      _showError(directoryError(e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -151,7 +163,7 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
         });
       }
     } catch (e) {
-      if (mounted) setState(() => _error = directoryError(e));
+      _showError(directoryError(e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -186,9 +198,10 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
     final profile = _draft();
     final error = profile.validate(publishing: _published, consent: _consent);
     if (error != null) {
-      setState(() => _error = error);
+      _showError(error);
       return;
     }
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
     setState(() {
       _busy = true;
       _error = null;
@@ -212,10 +225,11 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
       }
       if (mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Ficha guardada.')));
+          ..hideCurrentSnackBar()
+          ..showSnackBar(const SnackBar(content: Text('Ficha guardada.')));
       }
     } catch (e) {
-      if (mounted) setState(() => _error = directoryError(e));
+      _showError(directoryError(e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -234,7 +248,7 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
             padding: const EdgeInsets.all(20),
             children: [
               if (_busy) const LinearProgressIndicator(),
-              if (_error != null) Text(_error!),
+              if (_error != null && _state == null) Text(_error!),
               if (_state == null)
                 TextButton(
                   onPressed: _busy ? null : _load,
@@ -378,6 +392,16 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
                           _dirty = true;
                         }),
                 ),
+                if (_error != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Text(
+                      _error!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  ),
                 FilledButton(
                   onPressed: _busy ? null : _save,
                   child: const Text('Guardar ficha'),
