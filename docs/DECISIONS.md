@@ -11,7 +11,10 @@ las acciones secundarias en «Más». Permite consultar ejercicios oficiales/pro
 con fotos y demostraciones, notas privadas y formularios guardados. Repetir una
 sesión crea una nueva pauta con una versión disponible; no reactiva una retirada
 ni modifica el historial. Los creadores completos, programas y operaciones
-masivas permanecen en web. Sin cambios SQL, dependencias ni producción.
+masivas permanecen en web. Durante la prueba, Javier confirma retirar sesiones
+también desde la agenda móvil: se expone el acceso en el menú de cada sesión,
+reutilizando la confirmación, permisos y protección del historial existentes.
+Sin cambios SQL, dependencias ni producción.
 [Contrato responsable](TRAINER_MOBILE_WORKSPACE.md#planificación-ligera--trn-048--30102026).
 
 **TRN-047 · consulta profesional móvil · 30/10/2026:** Javier pide revisar y

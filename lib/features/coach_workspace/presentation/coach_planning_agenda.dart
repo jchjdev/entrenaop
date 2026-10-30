@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:trainer_access/trainer_appointments.dart';
 
 import '../domain/coach_workspace_repository.dart';
+import 'coach_assignment_actions.dart';
 import 'coach_pages.dart';
 import 'coach_planning_pages.dart';
 import 'coach_workspace_scope.dart';
@@ -547,6 +548,11 @@ class _CoachPlanningAgendaPageState extends State<CoachPlanningAgendaPage> {
           s.name,
           s.statusLabel,
           Icons.event_note_outlined,
+          actions: CoachAssignmentActions(
+            assignment: s,
+            refresh: _load,
+            compact: true,
+          ),
           onTap: () async {
             await context.push(coachAssignmentRoute(s.id));
             if (mounted) _load();
@@ -562,6 +568,7 @@ class _CoachPlanningAgendaPageState extends State<CoachPlanningAgendaPage> {
     String subtitle,
     IconData icon, {
     VoidCallback? onTap,
+    Widget? actions,
   }) => Padding(
     padding: const EdgeInsets.only(bottom: 8),
     child: Card(
@@ -600,7 +607,10 @@ class _CoachPlanningAgendaPageState extends State<CoachPlanningAgendaPage> {
                   ],
                 ),
               ),
-              if (onTap != null) const Icon(Icons.chevron_right, size: 20),
+              if (actions != null)
+                actions
+              else if (onTap != null)
+                const Icon(Icons.chevron_right, size: 20),
             ],
           ),
         ),

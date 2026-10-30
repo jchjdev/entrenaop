@@ -264,6 +264,16 @@ papelera y gestión completa continúan en web.
 
 ### Verificación
 
+**Ajuste durante la prueba del 30/10:** la retirada ya disponible en la ficha
+también se ofrece en «Opciones de la sesión» (⋮) de cada pauta pendiente de la
+agenda. Reutiliza la confirmación y operación existentes, refresca el calendario
+al volver y mantiene las protecciones por estado y ejecución. No borra la
+plantilla ni el historial. Este acceso directo es posterior a la beta.4 instalada;
+se incorpora en la siguiente compilación habitual, sin generar otra APK por este
+ajuste visual. Cuatro pruebas cubren confirmación, refresco y rechazo de sesiones
+en curso, completadas o con ejecución. Tras el ajuste pasan las 1.485 pruebas de
+la raíz, con una omisión previa, y el análisis queda limpio.
+
 Se contrastan en Supabase Dev `sxbxfjqgoddzhtcyhalw` las firmas de las operaciones
 existentes. Pasan seis ensayos transaccionales con ROLLBACK: sesiones privadas,
 planificación propia, operación/revisión, ficha/notas, formularios y citas. No dejan

@@ -11,9 +11,11 @@ class CoachAssignmentActions extends StatelessWidget {
     super.key,
     required this.assignment,
     required this.refresh,
+    this.compact = false,
   });
   final CoachAssignment assignment;
   final VoidCallback refresh;
+  final bool compact;
   @override
   Widget build(BuildContext context) {
     if (CoachWorkspaceScope.of(context).planning == null) {
@@ -22,6 +24,39 @@ class CoachAssignmentActions extends StatelessWidget {
     Future<void> open(String path) async {
       final changed = await context.push<bool>(path);
       if (changed == true && context.mounted) refresh();
+    }
+
+    final canChange =
+        assignment.status == 'planned' && assignment.executionId == null;
+    if (compact) {
+      if (!canChange && assignment.templateId == null) {
+        return const SizedBox.shrink();
+      }
+      return PopupMenuButton<String>(
+        tooltip: 'Opciones de la sesión',
+        onSelected: open,
+        itemBuilder: (_) => [
+          if (assignment.templateId != null)
+            PopupMenuItem(
+              value: coachPlanningRoute(
+                'assign',
+                client: assignment.clientId,
+                session: assignment.templateId,
+              ),
+              child: const Text('Volver a pautar'),
+            ),
+          if (canChange) ...[
+            PopupMenuItem(
+              value: '/coach/move/${assignment.id}',
+              child: const Text('Mover fecha'),
+            ),
+            PopupMenuItem(
+              value: '/coach/withdraw/${assignment.id}',
+              child: const Text('Retirar sesión'),
+            ),
+          ],
+        ],
+      );
     }
 
     return Wrap(
@@ -40,8 +75,7 @@ class CoachAssignmentActions extends StatelessWidget {
               ),
             ),
           ),
-        if (assignment.status == 'planned' &&
-            assignment.executionId == null) ...[
+        if (canChange) ...[
           OutlinedButton.icon(
             icon: const Icon(Icons.edit_calendar),
             label: const Text('Mover fecha'),
