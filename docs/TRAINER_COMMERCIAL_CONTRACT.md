@@ -15,6 +15,15 @@ ni cambios en Dev/producción.
 
 ### Posibles niveles comerciales · propuesta del 28/10/2026
 
+**Directorio · TRN-040 · 30/10/2026:** Javier plantea diferenciar los futuros
+planes reservando la publicidad voluntaria a intermedio y superior pagados,
+con el básico excluido. No aprueba por ello el resto de prestaciones, nombres,
+precios ni catálogo. La ficha se ocultará al perder elegibilidad; el momento
+efectivo de un cambio de plan y la restauración quedan por concretar. Cancelar
+conserva el periodo pagado acordado. Regalos y gestión de ADMIN siguen separados
+del pago: no se aprueba publicidad gratuita por una concesión manual.
+[Diseño futuro y límites](TRAINER_PLATFORM.md#concreción-del-30102026--pendiente-de-implementación).
+
 Javier plantea conservar el cupo de alumnos y diferenciar tres niveles: gestión
 profesional; algoritmo para el preparador y sus alumnos, con Pro personal del
 preparador; y un nivel que incluya además Pro para los alumnos. Son ideas para

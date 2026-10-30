@@ -258,9 +258,10 @@ trabajo no sustituye el siguiente bloque comercial vigente del roadmap.
   presentación breve y especialidades; dispone de espacio para explicar su
   propuesta y sus servicios con su propia voz.
 - «Mi preparador» será el punto de entrada previsto para descubrir profesionales
-  desde la app. La primera entrega sigue siendo web; queda por diseñar si esa
-  entrada abre el directorio web o incorpora búsqueda nativa posteriormente.
-  Buscar no debe sustituir el acceso a los preparadores ya vinculados.
+  desde la app. La búsqueda debe ser accesible también sin preparador vinculado,
+  conservando el acceso a los vínculos actuales. La concreción del 30/10 añade
+  fichas solo para la app: la solución ya no puede depender únicamente de abrir
+  el directorio público; la secuencia de entregas web/app queda por diseñar.
 - El primer contacto será externo al chat de EntrenaOP. Cada profesional elige
   qué canales publicar entre correo profesional, web o WhatsApp. El botón
   «Contactar» ofrece únicamente los canales publicados voluntariamente; no se
@@ -289,19 +290,77 @@ directorio. Son acuerdos de producto futuros, sin implementación ahora:
   «Buscar preparador». Tener dos preparadores no sustituye ninguno automáticamente:
   informar del límite antes de intentar aceptar un tercero; buscar/contactar
   sigue siendo independiente de las plazas activas.
-- Empezar con un grupo pequeño de profesionales activos, con criterios de
-  revisión y retirada por concretar. Distinguir el uso de EntrenaOP de las
-  titulaciones que se hayan verificado.
+- Empezar con un grupo pequeño de profesionales activos: Javier confirma el
+  30/10 que el piloto será con su cuenta y la de Ervi, sin habilitarlas por esta
+  conversación. Distinguir el uso de EntrenaOP de titulaciones verificadas.
+
+### Concreción del 30/10/2026 · pendiente de implementación
+
+**Publicidad y planes.** Javier plantea reservar el directorio a los planes
+profesionales intermedio y superior, excluyendo el básico, y exige pago para
+anunciarse. Es el criterio de diseño futuro del directorio; no aprueba el resto
+de prestaciones, nombres, precios o catálogo de esos planes. Al perder el acceso
+o la elegibilidad se ocultará/suspenderá la ficha, conservando su contenido;
+cancelar no adelanta el final del periodo pagado vigente. El cambio a básico
+debe respetar la fecha efectiva de cambio que se acuerde comercialmente.
+
+Javier acepta gestión desde ADMIN y pregunta cómo encajarla con el pago. Se
+propone separar elegibilidad comercial, voluntad de publicación y bloqueo por
+moderación: ADMIN podría suspender/restablecer la visibilidad de una ficha
+elegible, sin simular pagos ni saltarse el plan. La concesión manual general de
+acceso profesional conserva su contrato independiente; no se aprueba que un
+regalo permita anunciarse gratis. Excepciones y alcance del permiso manual
+siguen pendientes. El piloto no concede ni cambia planes reales.
+
+**Fichas y favoritos.** Javier acepta el conjunto de campos propuesto: nombre
+profesional, foto, descripción breve, preparaciones/especialidades, servicios,
+modalidad, zona y al menos un contacto; precio opcional. Los valores, límites y
+validación se concretarán al diseñar. Quiere permitir guardar preparadores en
+favoritos para encontrarlos después. Una ficha sin plazas puede seguir visible
+con un estado claro. No se deduce automáticamente que el cupo comercial lleno
+equivalga a no aceptar contactos; automatización y significado de «solicitud»
+quedan por acordar, dado que el contacto inicial sigue siendo externo.
+
+**Visibilidad elegida y datos.** El profesional deberá aceptar expresamente la
+publicación de sus datos y poder elegir aparecer solo en la app o también en la
+web pública. El acceso público sin cuenta se limita a fichas autorizadas para
+web; la modalidad solo app requiere lectura autenticada y autorización en
+servidor, sin exponer la ficha/contactos mediante una URL pública ni confiar
+solo en ocultarla de resultados o buscadores. Se debe revisar privacidad,
+condiciones de publicación y retirada antes del lanzamiento; no se redactan ni
+validan textos legales en esta tarea. No se promete impedir capturas o reenvíos.
+Los enlaces compartibles y favoritos deberán respetar la visibilidad vigente,
+las pausas y las retiradas; guardar una ficha no debe mantener accesible una
+copia de sus datos si deja de estar autorizada. Persistencia y restauración de
+favoritos quedan por diseñar.
+
+**Moderación con poca carga manual.** Javier prefiere evitar revisar manualmente
+cada alta y quiere un botón para denunciar perfiles. Se contempla publicar sin
+aprobación humana previa, con revisión por incidencias; el flujo y las reglas
+concretas siguen pendientes. Los motivos propuestos incluyen imágenes sexuales
+explícitas o violentas, acoso/odio, suplantación, spam/enlaces engañosos y datos o
+credenciales profesionales presuntamente falsos. Pagar no se considera una
+garantía de contenido apropiado. Una denuncia no acredita por sí sola una
+infracción: retirada automática, revisión, respuesta y posible restitución deben
+definirse antes de implementarlas.
+
+Javier plantea asistencia automática futura para revisar perfiles y reducir su
+trabajo. Se registra la intención, sin elegir proveedor, crear automatizaciones
+ni suponer supervisión permanente de este chat. Revisión de nuevas versiones de
+foto/texto y priorización de casos dudosos son propuestas por evaluar, no una
+verificación de titulaciones ni un sistema de moderación ya contratado.
 
 ### Cuestiones pendientes
 
-Concretar el diseño de los canales de contacto, valores y filtros iniciales,
-gestión/publicación de fichas, criterios de revisión/retirada y orden de
-resultados. También decidir qué ocurre con la ficha al perder el acceso
-profesional y cómo se representa un
-centro y su relación con los entrenadores. Aparecer en el directorio no fija
-tarifas, comisiones, suplementos ni acreditaciones. Reseñas, reservas, chat de
-captación y contratación automática no forman parte del primer alcance acordado.
+Concretar catálogo y elegibilidad por plan, alcance de ADMIN y excepciones,
+fecha efectiva de ocultación y reglas de reactivación. Diseñar campos/filtros,
+orden de resultados, contacto con/sin plazas, favoritos, navegación sin vínculos,
+publicación/edición/denuncias y posible asistencia automática. Cerrar la entrega
+web/app y los consentimientos/textos de privacidad para ambas visibilidades.
+Los centros mantienen su fase posterior, con representación y relación con
+entrenadores por decidir. Aparecer en el directorio no fija tarifas, comisiones,
+suplementos ni acreditaciones. Reseñas, reservas, chat de captación y contratación
+automática no forman parte del primer alcance acordado.
 
 ## Dos circuitos comerciales
 

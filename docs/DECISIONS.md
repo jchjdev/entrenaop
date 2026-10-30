@@ -147,6 +147,20 @@ guarda el modelo de cobro directo del entrenador a sus alumnos. Esto no fija
 comisiones, no conecta credenciales al servidor ni habilita pagos reales.
 [Evidencia y límites](TRAINER_COMMERCIAL_CONTRACT.md#conexion-del-entorno-de-pruebas--28102026).
 
+**TRN-040 · concreción futura · 30/10/2026:** Javier plantea publicidad para
+planes profesionales pagados intermedio/superior, excluyendo el básico; pérdida
+de elegibilidad oculta/suspende la ficha. No se aprueban catálogo ni precios.
+Confirma favoritos, campos de ficha con precio opcional, visibilidad elegida
+solo app o también web con aceptación expresa y búsqueda accesible sin vínculo.
+El piloto será Javier y Ervi. Prefiere evitar revisión manual de cada alta y
+propone denuncias y asistencia automática futura, cuyos flujos quedan por
+definir; no hay supervisión permanente configurada. La gestión por ADMIN se
+acepta como dirección, pero su alcance y excepciones comerciales quedan
+pendientes: no se aprueba anunciarse gratis por un regalo. Solo app requiere
+acceso autorizado, también en enlaces/favoritos; no basta abrir la web pública.
+No se implementa, activa, automatiza ni habilita ninguna cuenta.
+[Acuerdos y cuestiones pendientes](TRAINER_PLATFORM.md#concreción-del-30102026--pendiente-de-implementación).
+
 **TRN-040 · 28/10/2026 · directorio profesional futuro:** Javier confirma
 registrar para más adelante un directorio voluntario de entrenadores en la web,
 con ampliación posterior a centros. Prevé descubrir profesionales desde

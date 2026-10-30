@@ -2805,6 +2805,14 @@ Una vez validada la primera semana adaptativa, el orden natural será:
   web o WhatsApp, vínculos actuales prioritarios con «Buscar preparador» y piloto
   con pocos profesionales activos. Informar del límite antes de aceptar un
   tercero, sin sustituciones automáticas. Diseño y criterios de revisión pendientes.
+  **Concreción del 30/10:** publicidad para planes pagados intermedio/superior,
+  básico excluido; ocultación al perder elegibilidad. Favoritos y elección
+  solo app/también web, con aceptación expresa; acceso a búsqueda sin vínculo.
+  Piloto con Javier y Ervi. Denuncias y mínima revisión manual como orientación;
+  automatización, permisos de ADMIN, publicación y excepciones por concretar.
+  Solo app requiere autorización y modifica el diseño de la entrada móvil;
+  favoritos/enlaces no deben eludir una ficha oculta. Revisar privacidad antes
+  del lanzamiento. No se implementa ni se habilitan cuentas o planes.
   No es el siguiente bloque ni modifica las prioridades comerciales actuales.
   [Acuerdos futuros y cuestiones abiertas](TRAINER_PLATFORM.md#directorio-profesional-futuro--trn-040--28102026).
 - Resolver todas las oposiciones a la vez.
