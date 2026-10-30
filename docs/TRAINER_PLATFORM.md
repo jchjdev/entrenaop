@@ -28,6 +28,12 @@ otra carencia funcional básica en este inventario.
 | 15. Informes | Resumen por periodo y CSV | Otros formatos serían ampliaciones, no un requisito básico acreditado como ausente |
 | 16. Oposición y dispositivos | Metas, marcas y pruebas privadas; integraciones con su contrato propio | Cierre de los recorridos deportivos/oficiales y de dispositivos según sus bloques; este inventario no reaudita Garmin |
 
+**Actualización móvil · TRN-048 · 30/10/2026:** biblioteca, asignación rápida,
+agenda visual y acciones ligeras de seguimiento disponibles en el modo Entrenador;
+creadores y programas permanecen en web. No cambia los pendientes del inventario
+ni acredita su aceptación física completa.
+[Contrato móvil](TRAINER_MOBILE_WORKSPACE.md#planificación-ligera--trn-048--30102026).
+
 ### Limpieza protegida de medios · TRN-046
 
 El 29/10 Javier autoriza continuar la gestión de archivos y confirma que el

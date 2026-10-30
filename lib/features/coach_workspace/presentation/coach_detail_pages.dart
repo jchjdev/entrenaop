@@ -1,3 +1,5 @@
+import 'coach_assignment_actions.dart';
+
 import 'package:workout_editor_ui/video_read_button.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrena_ui/conversation_view.dart';
@@ -48,6 +50,8 @@ class CoachAssignmentPage extends StatelessWidget {
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 12),
+              CoachAssignmentActions(assignment: assignment, refresh: refresh),
+              const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,

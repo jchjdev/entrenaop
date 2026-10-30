@@ -21,9 +21,13 @@ class CoachAssignment {
     this.changedAt,
     this.relationId,
     this.executionId,
+    this.templateId,
+    this.planningRevision,
+    this.note,
   });
   final String id, name, clientId, clientName, status;
-  final String? relationId, executionId;
+  final String? relationId, executionId, templateId, note;
+  final int? planningRevision;
   final DateTime date, createdAt;
   final DateTime? changedAt;
   String get statusLabel => switch (status) {

@@ -1,3 +1,4 @@
+import 'package:entrenaop/features/coach_workspace/domain/coach_planning_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:entrenaop/core/navigation/app_shell.dart';
@@ -219,6 +220,7 @@ GoRouter createRouter(
   FakeCoach repo,
   FakeSecurity security, {
   FakeMessages? messages,
+  CoachPlanningRepository? planning,
   String initial = '/home',
 }) {
   final exits = WorkflowExitRegistry();
@@ -229,6 +231,7 @@ GoRouter createRouter(
         builder: (_, _, shell) => CoachWorkspaceEntry(
           key: const ValueKey('javier'),
           repository: repo,
+          planning: planning,
           security: security,
           messages: messages ?? FakeMessages(),
           video: FakeVideo(),

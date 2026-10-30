@@ -1,5 +1,16 @@
 # Arquitectura de EntrenaOP
 
+**TRN-048 · 30/10/2026 · acciones profesionales móviles:**
+`CoachPlanningRepository` separa biblioteca y escrituras de la proyección de
+consulta anterior. Su adaptador Supabase usa las fachadas profesionales vigentes,
+la identidad fijada y el repositorio compartido de citas. AppRouter lo inyecta por
+cuenta dentro de la guardia profesional; no hay imports desde `trainer_app`.
+Las rutas de escritura registran `WorkflowDraftGuard`, fijan operación/payload al
+enviar y conservan borrador al alternar espacios. Notas, movimientos y citas
+mantienen revisiones; las escrituras finales siguen autorizadas por servidor.
+Sin migraciones, nuevos permisos ni cambios de dependencias.
+[Contrato y límites](TRAINER_MOBILE_WORKSPACE.md#planificación-ligera--trn-048--30102026).
+
 **TRN-047 · 30/10/2026 · presentación móvil profesional:**
 `coach_mobile_style.dart` concentra la densidad y tarjetas de consulta. AppShell
 aplica el tema únicamente a su rama profesional y adapta el selector de espacio

@@ -1,5 +1,15 @@
 # Producto EntrenaOP
 
+**TRN-048 · 30/10/2026 · planificación rápida en el modo Entrenador:**
+Desde la ficha o la agenda se puede elegir una sesión guardada, revisar su receta
+y asignarla con fecha e indicaciones. La agenda distingue sesiones/citas por
+alumno, ofrece día/semana/mes y permite filtrar; el botón + conserva el día elegido.
+La ficha propia usa «Para mí» sin ocupar plaza. Se añaden repetir, mover y retirar
+pautas pendientes, citas, notas privadas, envío/consulta de formularios y biblioteca
+de ejercicios con imágenes y demostraciones. Las acciones secundarias se agrupan
+en «Más»; no se añade otra pestaña inferior. Los creadores y programas siguen en web.
+[Contrato y verificación](TRAINER_MOBILE_WORKSPACE.md#planificación-ligera--trn-048--30102026).
+
 **TRN-047 · 30/10/2026 · consulta profesional móvil:** Resumen prioriza
 mensajes, resultados y vídeos pendientes; la ficha destaca mensaje, calendario
 y objetivos de oposición. Tarjetas y acciones admiten nombres largos y texto

@@ -1,3 +1,5 @@
+import '../domain/coach_planning_repository.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -16,11 +18,13 @@ class CoachWorkspaceScope extends InheritedNotifier<CoachWorkspaceController> {
     required CoachWorkspaceController controller,
     required this.messages,
     this.notifications,
+    this.planning,
     required this.video,
     required super.child,
   }) : super(notifier: controller);
   final TrainerInboxMessageRepository messages;
   final CoachNotificationRepository? notifications;
+  final CoachPlanningRepository? planning;
   final ExerciseVideoSource video;
   static CoachWorkspaceScope? maybeOf(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<CoachWorkspaceScope>();
@@ -35,6 +39,7 @@ class CoachWorkspaceEntry extends StatefulWidget {
     required this.security,
     required this.messages,
     this.notifications,
+    this.planning,
     required this.video,
     required this.child,
     this.noticeEvents,
@@ -44,6 +49,7 @@ class CoachWorkspaceEntry extends StatefulWidget {
   final TrainerSecurity security;
   final TrainerInboxMessageRepository messages;
   final CoachNotificationRepository? notifications;
+  final CoachPlanningRepository? planning;
   final ExerciseVideoSource video;
   final Widget child;
   @override
@@ -103,6 +109,7 @@ class _CoachWorkspaceEntryState extends State<CoachWorkspaceEntry>
     controller: controller,
     messages: widget.messages,
     notifications: widget.notifications,
+    planning: widget.planning,
     video: widget.video,
     child: widget.child,
   );

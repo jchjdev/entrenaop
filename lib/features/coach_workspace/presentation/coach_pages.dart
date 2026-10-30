@@ -1,3 +1,5 @@
+import 'coach_planning_agenda.dart';
+import 'coach_planning_pages.dart';
 import 'coach_notification_settings.dart';
 import 'coach_mobile_style.dart';
 
@@ -76,9 +78,10 @@ class CoachPagedList<T> extends StatefulWidget {
     this.filter,
     this.empty = 'No hay elementos.',
     this.embedded = false,
+    this.searchLabel = 'Buscar entre los alumnos cargados',
     this.refreshParent,
   });
-  final String title, empty;
+  final String title, empty, searchLabel;
   final Future<List<T>> Function(T? before) load;
   final Widget Function(BuildContext, T) row;
   final bool Function(T, String)? filter;
@@ -166,8 +169,8 @@ class _CoachPagedListState<T> extends State<CoachPagedList<T>> {
       if (widget.header != null) widget.header!,
       if (widget.filter != null) ...[
         TextField(
-          decoration: const InputDecoration(
-            labelText: 'Buscar entre los alumnos cargados',
+          decoration: InputDecoration(
+            labelText: widget.searchLabel,
             prefixIcon: Icon(Icons.search),
           ),
           onChanged: (value) =>
@@ -393,84 +396,10 @@ class CoachAssignmentTile extends StatelessWidget {
   );
 }
 
-class CoachAgendaPage extends StatefulWidget {
+class CoachAgendaPage extends StatelessWidget {
   const CoachAgendaPage({super.key});
   @override
-  State<CoachAgendaPage> createState() => _CoachAgendaPageState();
-}
-
-class _CoachAgendaPageState extends State<CoachAgendaPage> {
-  DateTime _day = DateUtils.dateOnly(DateTime.now());
-  bool _week = false;
-  @override
-  Widget build(BuildContext context) {
-    final from = _week ? _day.subtract(Duration(days: _day.weekday - 1)) : _day;
-    final to = _week ? from.add(const Duration(days: 6)) : from;
-    final repo = CoachWorkspaceScope.of(context).controller.repository;
-    return CoachPagedList<CoachAssignment>(
-      key: ValueKey(('agenda', from, to)),
-      title: 'Agenda de alumnos',
-      pageSize: 100,
-      load: (after) => repo.agenda(from, to, after: after),
-      row: (_, item) => CoachAssignmentTile(item: item),
-      empty: 'No hay pautas en estas fechas.',
-      header: Column(
-        children: [
-          SegmentedButton<bool>(
-            segments: const [
-              ButtonSegment(value: false, label: Text('Día')),
-              ButtonSegment(value: true, label: Text('Semana')),
-            ],
-            selected: {_week},
-            onSelectionChanged: (v) => setState(() => _week = v.single),
-          ),
-          Row(
-            children: [
-              IconButton(
-                tooltip: 'Anterior',
-                icon: const Icon(Icons.chevron_left),
-                onPressed: () => setState(
-                  () => _day = _day.subtract(Duration(days: _week ? 7 : 1)),
-                ),
-              ),
-              Expanded(
-                child: TextButton(
-                  onPressed: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: _day,
-                      firstDate: DateTime(2000),
-                      lastDate: DateTime(2200),
-                    );
-                    if (picked != null && mounted) {
-                      setState(() => _day = picked);
-                    }
-                  },
-                  child: Text(
-                    _week
-                        ? '${coachDate(from)} – ${coachDate(to)}'
-                        : coachDate(_day),
-                  ),
-                ),
-              ),
-              IconButton(
-                tooltip: 'Siguiente',
-                icon: const Icon(Icons.chevron_right),
-                onPressed: () => setState(
-                  () => _day = _day.add(Duration(days: _week ? 7 : 1)),
-                ),
-              ),
-            ],
-          ),
-          TextButton(
-            onPressed: () =>
-                setState(() => _day = DateUtils.dateOnly(DateTime.now())),
-            child: const Text('Hoy'),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => const CoachPlanningAgendaPage();
 }
 
 class CoachClientsPage extends StatefulWidget {
@@ -557,6 +486,7 @@ class CoachClientPage extends StatelessWidget {
     return CoachLoad(
       load: () => repo.client(clientId),
       builder: (context, data, refresh) => CoachPagedList<CoachAssignment>(
+        key: ObjectKey(data),
         title: data.client.name,
         pageSize: 50,
         load: (before) => repo.assignments(clientId, before: before),
@@ -577,6 +507,57 @@ class CoachClientPage extends StatelessWidget {
                     icon: const Icon(Icons.chat_bubble_outline),
                     label: const Text('Mensaje'),
                   ),
+                if (CoachWorkspaceScope.of(context).planning != null) ...[
+                  if (data.client.active)
+                    FilledButton.icon(
+                      icon: const Icon(Icons.add_task),
+                      label: const Text('Asignar sesión'),
+                      onPressed: () async {
+                        final changed = await context.push<bool>(
+                          coachPlanningRoute('assign', client: clientId),
+                        );
+                        if (changed == true && context.mounted) refresh();
+                      },
+                    ),
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.more_horiz),
+                    label: const Text('Más'),
+                    onPressed: () async {
+                      final action = await showModalBottomSheet<String>(
+                        context: context,
+                        useSafeArea: true,
+                        builder: (sheet) => Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (data.client.active)
+                              ListTile(
+                                leading: const Icon(Icons.event_available),
+                                title: const Text('Crear cita'),
+                                onTap: () =>
+                                    Navigator.pop(sheet, 'new-appointment'),
+                              ),
+                            ListTile(
+                              leading: const Icon(Icons.edit_note),
+                              title: const Text('Notas privadas'),
+                              onTap: () => Navigator.pop(sheet, 'notes'),
+                            ),
+                            ListTile(
+                              leading: const Icon(Icons.assignment_outlined),
+                              title: const Text('Formularios'),
+                              onTap: () => Navigator.pop(sheet, 'forms'),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (action == null || !context.mounted) return;
+                      final path = action == 'new-appointment'
+                          ? coachPlanningRoute(action, client: clientId)
+                          : '/coach/$action/${Uri.encodeComponent(clientId)}';
+                      final changed = await context.push<bool>(path);
+                      if (changed == true && context.mounted) refresh();
+                    },
+                  ),
+                ],
                 OutlinedButton.icon(
                   onPressed: () => context.push(
                     '/coach/calendar/${Uri.encodeComponent(clientId)}',

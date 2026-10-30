@@ -1,3 +1,5 @@
+import '../../support/coach_planning_fixture.dart';
+
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -26,6 +28,14 @@ void main() {
     'conversacion': '/coach/messages/relation',
     'revisiones': '/coach/reviews',
     'videos': '/coach/videos',
+    'biblioteca': '/coach/library',
+    'ejercicios': '/coach/exercises',
+    'asignar': '/coach/assign?client=isabel&session=template',
+    'notas': '/coach/notes/isabel',
+    'cita': '/coach/new-appointment?client=isabel',
+    'formularios': '/coach/forms/isabel',
+    'enviar-formulario': '/coach/send-form?client=isabel',
+    'respuesta-formulario': '/coach/form/form-assignment',
   };
 
   for (final width in [320.0, 390.0, 430.0]) {
@@ -63,10 +73,13 @@ void main() {
             await icons.load();
           });
         }
+        final planning = FakeCoachPlanning();
+        planning.appointments.items = [planning.appointments.row()];
         final router = createRouter(
           CoachMobileFixture(),
           FakeSecurity(),
           initial: '/coach',
+          planning: planning,
         );
         addTearDown(router.dispose);
         final boundary = GlobalKey();
@@ -93,7 +106,7 @@ void main() {
             isNull,
             reason: '${entry.key}: $width / $scale',
           );
-          expect(router.state.uri.path, entry.value);
+          expect(router.state.uri.toString(), entry.value);
           expect(
             find.byKey(const ValueKey('app-workspace-switcher')).hitTestable(),
             findsOneWidget,
@@ -157,7 +170,7 @@ void main() {
         await chooseSpace(false);
         expect(router.state.uri.path, '/home');
         await chooseSpace(true);
-        expect(router.state.uri.path, '/coach/videos');
+        expect(router.state.uri.toString(), screens.values.last);
         await tester.pumpWidget(const SizedBox());
         debugDefaultTargetPlatformOverride = null;
       });

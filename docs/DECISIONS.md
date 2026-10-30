@@ -1,5 +1,19 @@
 # Registro de decisiones vigentes
 
+**TRN-048 · planificación ligera desde el móvil · 30/10/2026:** Javier
+confirma ampliar el modo Entrenador con biblioteca, vista previa y asignación de
+sesiones desde ficha/agenda, y las acciones de seguimiento propuestas. La agenda
+móvil incorpora día, semana y mes, actividad por alumno, citas y filtros; se
+prioriza elegir fecha y confirmar frente a trasladar el escritorio al teléfono.
+Se reutilizan las operaciones y permisos de Trainer, incluida la ficha propia
+sin plaza, sin importar `trainer_app` ni añadir roles o derechos. La ficha reúne
+las acciones secundarias en «Más». Permite consultar ejercicios oficiales/propios
+con fotos y demostraciones, notas privadas y formularios guardados. Repetir una
+sesión crea una nueva pauta con una versión disponible; no reactiva una retirada
+ni modifica el historial. Los creadores completos, programas y operaciones
+masivas permanecen en web. Sin cambios SQL, dependencias ni producción.
+[Contrato responsable](TRAINER_MOBILE_WORKSPACE.md#planificación-ligera--trn-048--30102026).
+
 **TRN-047 · consulta profesional móvil · 30/10/2026:** Javier pide revisar y
 pulir el espacio Entrenador de la app porque en iPhone los textos y proporciones
 no encajan. Se mantiene la consulta rápida y el seguimiento en móvil; los

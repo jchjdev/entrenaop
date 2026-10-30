@@ -15,8 +15,8 @@ no necesita Pro para que se compruebe su condición profesional.
 El modo personal conserva las pilas existentes y «Preparador» sigue siendo el
 servicio que recibe el usuario. El profesional incorpora cuatro pilas:
 Resumen, Agenda, Alumnos y Mensajes. Cambiar de espacio conserva la pantalla y
-el borrador del chat. Perfil mantiene su ruta del navegador raíz. Los creadores,
-asignaciones y gestión completa permanecen en Trainer web.
+el borrador del chat. Perfil mantiene su ruta del navegador raíz. TRN-048 añade
+planificación ligera; los creadores y la gestión completa permanecen en Trainer web.
 
 - Resumen consulta hoy, resultados pendientes y vídeos sin primera corrección.
   Muestra una selección breve y permite abrir sus listados paginados.
@@ -194,3 +194,83 @@ de construcción limpio, SHA-256 de JavaScript y recursos HTTPS verificados.
 La [verificación 41023331336](https://github.com/jchjdev/entrenaop/actions/runs/41023331336)
 termina correctamente, incluida compilación iOS Release sin firma. Esta evidencia
 no instala la app móvil, no acredita APNs y no cambia producción.
+
+
+## Planificación ligera · TRN-048 · 30/10/2026
+
+La petición amplía la consulta de TRN-036: el preparador puede operar con contenido
+ya creado desde su móvil. Se conserva el espacio personal, la guardia de cuenta/MFA,
+las cuatro pestañas y los permisos del servicio. No se importa una aplicación web,
+no se añaden roles y no se amplían cuotas ni Pro.
+
+### Recorridos y presentación
+
+- Ficha → Asignar sesión: alumno conocido → biblioteca con búsqueda entre las
+  sesiones cargadas → vista previa compartida → fecha/nota → confirmación. Si la
+  sesión ya está elegida no se despliega otra vez el catálogo.
+- Agenda → +: conserva el día seleccionado; permite asignar sesión o crear cita.
+  El destinatario se elige entre alumnos activos paginados, o «Para mí». La ficha
+  propia se obtiene con `ensure_trainer_self_client`; conserva la misma identidad
+  y su exclusión del cupo, sin crear otra cuenta.
+- La agenda muestra semana por defecto, día y mes. La semana evita apartados de
+  días vacíos salvo el seleccionado. Las tarjetas indican alumno, sesión/estado
+  o cita/hora/duración. El color usa la misma paleta y cálculo estable que web.
+  La navegación de días usa fechas civiles, también al cruzar el cambio de hora.
+- Los filtros mantienen el alumno elegido. Sesiones y citas cargan sus páginas
+  por separado; si faltan filas se indica que la vista es parcial y se permite
+  cargar más junto al calendario. Los puntos del mes no se presentan como un
+  inventario completo antes de terminar la paginación.
+- La pauta permite volver a pautar una versión disponible y mover/retirar una
+  sesión pendiente sin ejecución. Repetir crea otra asignación: la anterior y sus
+  resultados permanecen. Una versión retirada no se reasigna de forma silenciosa;
+  se puede elegir otra de la biblioteca. No hay editor de receta en móvil.
+- «Más» en la ficha reúne cita, notas privadas y formularios. Las citas conservan
+  fecha/hora civil, zona, revisión, advertencia de solapamiento y avisos existentes.
+  Se pueden editar y cancelar. El alumno decide su recordatorio; la sugerencia
+  del preparador no lo activa en su nombre.
+- Las notas conservan revisión y objetivo interno; no se envían por chat ni
+  sustituyen objetivos de oposición. Los formularios envían una versión guardada
+  y muestran las respuestas autorizadas, incluidas respuestas `false` y opciones
+  con sus etiquetas. No se incorpora autoría de formularios.
+- Mis sesiones da acceso a ejercicios propios y oficiales en consulta, con foto,
+  descripción y demostración. Las fotos privadas usan enlaces firmados de 15 min;
+  se renuevan al actualizar. Se cargan miniaturas al mostrarlas y el vídeo solo
+  bajo demanda, desmontándolo al ocultar el espacio. Los enlaces externos se abren
+  en su proveedor. El buscador comparte el desplazamiento para admitir teclado.
+
+### Contratos y recuperación
+
+`CoachPlanningRepository` es un puerto del módulo móvil. Su adaptador reutiliza
+las RPC de biblioteca, asignación, planificación, notas y formularios; delega
+citas en `trainer_access`. La receta completa se restringe a propietario,
+origen coach y estado publicado, además de las políticas de servidor. El calendario
+solo consulta la presencia de otras planificaciones para advertir coincidencias,
+sin descargar nombres o contenido de planes personales ajenos.
+
+Cada envío fija un UUID y sus campos para reintentar. Las notas y movimientos
+conservan la revisión leída; las citas mantienen su ID/revisión y confirmación de
+solapamiento. Cancelar una cita incierta reintenta cancelar, nunca guardar. Una
+retirada incierta consulta el estado autorizado antes de darla por confirmada.
+Las rutas de escritura usan el guard compartido para salidas y doble pulsación;
+al alternar espacios se conserva el borrador sin enviar automáticamente.
+
+No se alteran el modelo, RLS, grants, funciones SQL, preferencias de avisos,
+pagos o dependencias. No se han usado cuentas reales para crear asignaciones
+ni se ha generado una APK. Creadores, composición de programas, envíos masivos,
+papelera y gestión completa continúan en web.
+
+### Verificación
+
+Se contrastan en Supabase Dev `sxbxfjqgoddzhtcyhalw` las firmas de las operaciones
+existentes. Pasan seis ensayos transaccionales con ROLLBACK: sesiones privadas,
+planificación propia, operación/revisión, ficha/notas, formularios y citas. No dejan
+datos ni modifican producción. La batería completa raíz pasa 1.481 pruebas, con una omisión previa; análisis
+limpio. Veintiséis pruebas nuevas cubren transporte,
+propiedad, revisión, reintentos, selección/navegación, «Para mí», citas, notas,
+formularios, teclado y conservación del borrador. Las nueve pruebas de disposición
+recorren veinte pantallas a 320/390/430 px y texto 1×/1,3×/2× con zonas seguras iOS.
+
+Las capturas usan widgets reales y datos simulados; la aceptación física en iPhone
+sigue pendiente de instalar su compilación. No acreditan APNs, recepción física de
+avisos, envío a relojes ni cobros. El siguiente recorrido es ficha → asignación →
+agenda → ejecución en el alumno → revisión/mensaje, comprobando también una cita.

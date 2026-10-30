@@ -1,3 +1,4 @@
+import '../../features/coach_workspace/data/supabase_coach_planning_repository.dart';
 import 'apple_watch_route.dart';
 import '../../features/trainers/presentation/trainer_invitation_entry.dart';
 import '../../features/trainers/presentation/trainer_invitation_page.dart';
@@ -1391,6 +1392,7 @@ class AppRouter {
     return CoachWorkspaceEntry(
       key: ValueKey('workspace-$owner'),
       repository: SupabaseCoachWorkspaceRepository(client, owner),
+      planning: SupabaseCoachPlanningRepository(client, owner),
       security: SupabaseTrainerSecurity(client, owner),
       messages: SupabaseTrainerMessageRepository(client, owner),
       notifications: SupabaseCoachNotificationRepository(client, owner),

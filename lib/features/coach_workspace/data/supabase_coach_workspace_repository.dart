@@ -21,6 +21,9 @@ class SupabaseCoachWorkspaceRepository implements CoachWorkspaceRepository {
   CoachAssignment _assignment(Map<String, dynamic> row, {String? clientId}) =>
       CoachAssignment(
         id: row['id'] as String,
+        templateId: row['template_id'] as String?,
+        planningRevision: (row['planning_revision'] as num?)?.toInt(),
+        note: row['note'] as String?,
         name: row['template_name'] as String,
         date: DateTime.parse(row['scheduled_date'] as String),
         createdAt: DateTime.parse(row['created_at'] as String),

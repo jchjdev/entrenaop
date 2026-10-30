@@ -1,5 +1,19 @@
 # Roadmap de EntrenaOP
 
+**TRN-048 · 30/10/2026 · planificación móvil implementada:** biblioteca →
+vista previa → asignación desde alumno o día elegido, incluido «Para mí» sin plaza.
+Agenda de día/semana/mes con color por alumno, sesiones y citas, filtros y aviso de
+paginación incompleta. Repetir, mover/retirar pendientes, citas con avisos existentes,
+notas privadas y envío/consulta de formularios; ejercicios con fotos y demostraciones.
+Guardias, revisión y reintentos reutilizan los contratos de Trainer. Raíz: 1.481
+pruebas correctas y una omisión previa; análisis limpio. Seis contratos SQL
+correctos con ROLLBACK en Dev, veinte pantallas con nueve combinaciones de ancho
+y texto y una prueba de teclado a 320×640. Sin migraciones,
+APK ni cambios en los portales web. Se mantiene la aceptación física pendiente:
+**único siguiente recorrido recomendado**, instalar la compilación en iPhone y
+comprobar asignación, cita, ejecución, resultado y mensaje con un alumno real.
+[Contrato y evidencia](TRAINER_MOBILE_WORKSPACE.md#planificación-ligera--trn-048--30102026).
+
 **TRN-047 · 30/10/2026 · consulta móvil pulida y validada en código:**
 Resumen compacto, tarjetas flexibles, ficha con acciones y objetivos, resultado
 con desplazamiento único y selector de espacios adaptable. Conserva MFA,
