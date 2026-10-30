@@ -48,7 +48,12 @@ la sesión futura de otro preparador en la ficha propia, la barra fija y el salt
 de fecha. El contrato `supabase/tests/trainer_self_training.sql` añade lectura de
 una pauta ajena en otra semana, consulta de su receta y rechazo de su retirada;
 comprobado en Dev con ROLLBACK, sin nuevas migraciones ni datos persistentes.
-La publicación web se acredita después de terminar el publicador automático.
+Publicado automáticamente en Trainer Dev el 30/10/2026: revisión `0de94804`,
+ejecución `41076417824` correcta en validación y despliegue. Comprobación HTTPS
+posterior correcta: entorno y proyecto Dev, entrada activa, hash del JavaScript
+`592c20f701de8f26b15727771d3a20305e8ab44b534b5c4f9a88de7df458cd48`,
+cabeceras sin caché y MIME WebAssembly. La comprobación no sustituye la aceptación
+humana de la ficha con la sesión real de Javier.
 
 ## Nombre editable
 
