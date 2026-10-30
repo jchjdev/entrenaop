@@ -33,7 +33,15 @@ texto 2×. Ocho comprobaciones específicas de tema cubren contraste, restauraci
 de preferencia, almacenamiento bloqueado, logo y conservación de ruta/borrador;
 las pruebas de ambos marcos comprueban navegación y calculadora sin perder sus
 campos. Capturas de widgets reales de planificación y calculadora revisadas en
-claro/oscuro. La publicación se acredita tras comprobar cada portal por HTTPS.
+claro/oscuro.
+
+Publicados automáticamente y comprobados por HTTPS el 30/10: revisión
+`5c73e144`, ADMIN `41084133393` y Trainer `41084133337`, ambos en desarrollo
+contra `sxbxfjqgoddzhtcyhalw`. Se verifican entrada activa, cabeceras, MIME
+WebAssembly y hash del JavaScript servido: ADMIN
+`34ea33d45fb6841df84ebc363fc9bcfc896c0e8240bed239602689d06cb1a8d1`,
+Trainer `fc8ce1fa6084d414db7c9bd3b8ce0363a25b380f0c597a958293e96170448d43`.
+La aceptación en las condiciones reales de luz del viaje queda para Javier.
 
 ## Confirmaciones de programas guiados · UI-061 · 20/10/2026
 
