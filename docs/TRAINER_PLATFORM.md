@@ -2,6 +2,33 @@
 
 ## Inventario y siguiente bloque · 29/10/2026
 
+### Agenda y seguimiento directo · 31/10/2026
+
+Javier aprueba pulir Agenda → alumno → resultados empezando por la asignación
+directa y el detalle lateral. El recorrido de biblioteca/arrastre reúne alumno,
+sesión seleccionada, fecha e indicaciones en una sola confirmación. Si Agenda
+está filtrada por alumno, se verifica su vínculo activo y se preselecciona sin
+abrir otro selector. No se cambia silenciosamente a otro alumno si ese vínculo
+terminó. La selección mantiene paginación explícita y búsqueda entre los alumnos
+cargados; «Para mí» usa el vínculo existente, sin crear otro ni ocupar plaza.
+La sesión/version elegida no vuelve a consultar la biblioteca salvo al pulsar
+«Cambiar sesión». Una respuesta incierta congela los datos y conserva el UUID
+para reintentar. Cancelar no escribe ni recarga Agenda.
+
+Las sesiones del calendario abren un panel a la derecha, con receta de la
+versión asignada y resultados cargados bajo demanda mediante los lectores
+existentes. En pantallas estrechas se presenta como hoja inferior. Se conserva
+el detalle completo para revisión, técnica y conversación. Mover, adaptar y
+retirar mantienen sus operaciones y confirmaciones; no se ofrecen para sesiones
+ya iniciadas. Las sesiones recibidas de otro preparador utilizan el mismo panel
+en solo lectura y su lector autorizado, sin acciones de edición.
+
+La agenda queda montada bajo el panel. Cerrar no reinicia su periodo, filtros ni
+desplazamiento. Abrir ficha o resultado completo usa navegación apilada; al
+volver se actualizan los datos conservando el contexto. La ficha de la lista
+también ofrece «Ver detalle». No se modifican ADMIN, la app del deportista,
+datos, permisos, dependencias ni algoritmos en este tramo.
+
 Javier pide el estado de los dieciséis puntos y añade gestión de borrado de
 sesiones, programas y ejercicios en ambos portales. Se contrasta el mapa del
 22/10 con las entregas posteriores y el código de los catálogos. Esta revisión
@@ -505,8 +532,13 @@ reintento con el texto editado. La prueba existente conserva el guardado de
 borrador sin derecho de publicación. Esto corrige el aviso oculto; todavía no
 identifica el dato o rechazo concreto de la ficha real de Javier. No se cambian
 validaciones, permisos, ofertas ni consentimientos, ni se activa el piloto.
-Análisis Trainer limpio y batería completa de 362 pruebas correcta. Publicación
-Dev pendiente de contrastar tras subir la corrección.
+Análisis Trainer limpio y batería completa de 362 pruebas correcta. La revisión
+`e111cf5b` queda publicada en Trainer Dev por
+[41144218840](https://github.com/jchjdev/entrenaop/actions/runs/41144218840), con
+validación y despliegue correctos. Verificación HTTPS independiente: proyecto
+Dev, fuentes guardadas, revisión, SHA-256 del JavaScript, entrada activa,
+cabeceras y MIME WebAssembly. La comprobación del guardado con los datos reales
+de Javier sigue pendiente; no se da por guardada ni publicada su ficha.
 
 ## Dos circuitos comerciales
 
