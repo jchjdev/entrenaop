@@ -574,6 +574,15 @@ String _measures(Map row, String prefix) {
       : null;
   final duration = native ?? row['${prefix}duration_seconds'] as num?;
   if (duration != null) values.add(formatPerformanceTime(duration));
+  if (prefix == 'actual_' && row['block_format'] == 'running') {
+    // La revisión ya elige el tiempo medido y usa la distancia real del tramo,
+    // sin sumar recuperaciones ni sustituirla por la distancia pautada.
+    final pace = reviewSetFromJson(Map<String, dynamic>.from(row))
+        .actual['pace'];
+    if (pace != null && pace.isFinite && pace > 0) {
+      values.add('ritmo medio ${_time(pace.round())}/km');
+    }
+  }
   final recovery =
       row['${prefix == 'target_' ? '' : prefix}recovery_duration_seconds']
           as num?;

@@ -375,3 +375,17 @@ revisar contenido → comprobar que el historial anterior no cambia. Añadir
 aislamiento entre profesionales, MFA, reintentos, concurrencia, baja/vuelta,
 cuotas, móvil estrecho y recuperación de errores. La publicación web Dev, la
 distribución de la app móvil y el lanzamiento comercial son hitos distintos.
+
+## Ritmo realizado por tramo · 30/10/2026
+
+La ficha compartida de resultados de carrera muestra el ritmo medio del tramo
+completado junto a su distancia y tiempo. Reutiliza el cálculo de
+`workout_core`: duración medida del dispositivo cuando existe, en otro caso la
+registrada, dividida por la distancia real. No suma recuperación ni sustituye
+una distancia ausente por la pautada. La cifra visible se redondea al segundo
+por kilómetro; la comparación interna mantiene su precisión. Sin tiempo o
+distancia válidos, o sin tramo completado, no se presenta un ritmo calculado.
+
+Gráficas de ritmo por repetición frente a la franja pautada, regularidad y
+comparación entre primeras/últimas repeticiones siguen siendo propuestas; esta
+corrección no implementa esos gráficos ni presume datos fisiológicos ausentes.

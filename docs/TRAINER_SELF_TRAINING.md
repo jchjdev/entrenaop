@@ -133,3 +133,34 @@ móvil; publicar Trainer no actualiza el iPhone ni acredita APNs. Las citas nuev
 reutilizan el recorrido profesional disponible en las instalaciones anteriores.
 Queda pendiente la aceptación humana de autoasignación → ejecución física en la
 app → consulta del resultado y del nombre en la nueva build móvil.
+
+## Agenda general y pautas recibidas · 30/10/2026
+
+La agenda profesional consulta también el calendario propio ya activado desde
+Para mí. Reutiliza `get_trainer_shared_calendar` y `get_trainer_shared_workout`,
+con el propietario de la sesión fijado; no crea una segunda planificación ni
+vínculos al abrir Agenda. El adaptador solo admite el propio usuario y comprueba
+su vínculo personal bajo RLS antes de usar el lector compartido existente. Sin
+Para mí activado no crea datos ni intenta leer la cartera de otro entrenador.
+
+Las sesiones de otros preparadores aparecen con su autor en mes, semana, día y
+lista, y abren la receta en solo lectura. No se habilitan mover, adaptar, retirar,
+archivar o borrar esas pautas. Las propias conservan sus acciones y no se duplican.
+Los filtros de alumno y estado se aplican también a las recibidas: Habitual oculta
+las retiradas, Retiradas las muestra y Todas reúne ambas; Archivadas corresponde
+a la gestión propia. El contrato compartido no expone el archivo administrativo
+del preparador ajeno. Los fallos de carga personal no ocultan las pautas propias;
+se ofrece reintento y paginación independiente con aviso de calendario parcial.
+La ruta se identifica por cuenta para descartar el estado al cambiar de usuario.
+
+No se modifican SQL, permisos ni el consentimiento entre preparadores. Continúa
+vigente la prueba transaccional de lectura propia de pautas ajenas y rechazo de
+su retirada en `supabase/tests/trainer_self_training.sql`.
+
+Comprobación local: análisis sin incidencias en las tres aplicaciones; baterías
+completas de raíz (1.485, una omitida existente), ADMIN (365, dos omitidas
+existentes) y Trainer (358), más una regresión adicional de semana de escritorio,
+día y lista. Once regresiones de calendario cubren también filtros, duplicados,
+consulta sin autoría, paginación, fallos y cambio de cuenta. La prueba SQL
+transaccional vuelve a pasar en Dev con ROLLBACK. El editor compartido conserva
+sus 223 pruebas correctas; diez regresiones verifican el ritmo realizado.

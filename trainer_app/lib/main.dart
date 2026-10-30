@@ -62,6 +62,7 @@ import 'trainer_week_copy_dialog.dart';
 import 'trainer_client_workspace.dart';
 import 'trainer_client_navigation.dart';
 import 'trainer_self_page.dart';
+import 'trainer_personal_calendar_repository.dart';
 
 import 'package:trainer_access/authenticated_rpc.dart';
 
@@ -911,10 +912,16 @@ class _TrainerAppState extends State<TrainerApp> {
             GoRoute(
               path: '/agenda',
               builder: (context, _) => TrainerAgendaPage(
+                key: ValueKey('agenda-$identity'),
                 repository: agenda(),
-                appointments: SupabaseTrainerAppointmentRepository(
+                personalCalendar: SupabaseTrainerPersonalCalendarRepository(
                   widget.client,
                   identity!,
+                ),
+                personalClientId: identity,
+                appointments: SupabaseTrainerAppointmentRepository(
+                  widget.client,
+                  identity,
                   forTrainer: true,
                 ),
                 workouts: workouts(),

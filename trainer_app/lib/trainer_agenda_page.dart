@@ -5,6 +5,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:trainer_access/authenticated_rpc.dart';
 import 'package:trainer_access/trainer_access.dart';
 import 'package:trainer_access/trainer_appointments.dart';
+import 'package:trainer_access/trainer_calendar.dart';
+import 'package:workout_core/workout_template_model.dart';
+import 'package:workout_editor_ui/workout_template_content.dart';
 
 import 'trainer_appointment_dialog.dart';
 import 'trainer_appointment_week.dart';
@@ -101,8 +104,12 @@ class TrainerAgendaPage extends StatefulWidget {
     this.workouts,
     this.access,
     this.appointments,
-  });
+    this.personalCalendar,
+    this.personalClientId,
+  }) : assert((personalCalendar == null) == (personalClientId == null));
   final TrainerAgendaRepository repository;
+  final TrainerSharedCalendarRepository? personalCalendar;
+  final String? personalClientId;
   final TrainerWorkoutRepository? workouts;
   final TrainerRepository? access;
   final TrainerAppointmentRepository? appointments;
@@ -122,6 +129,25 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
   DateTime? _selected;
   _AgendaView _view = _AgendaView.month;
   List<TrainerAgendaItem> _items = [];
+  List<SharedCalendarEntry> _personal = [];
+  bool _personalBusy = false, _morePersonal = false;
+  String? _personalError;
+
+  Iterable<SharedCalendarEntry> get _received => _personal.where(
+    (entry) =>
+        !entry.own &&
+        !_items.any((row) => row.assignment.id == entry.id) &&
+        entry.source == 'coach' &&
+        (_clientFilter == null || _clientFilter == widget.personalClientId) &&
+        (_statusFilter == null || entry.status == _statusFilter) &&
+        _eventKind != 'appointments' &&
+        switch (_visibility) {
+          TrainerAssignmentVisibility.current => entry.status != 'cancelled',
+          TrainerAssignmentVisibility.withdrawn => entry.status == 'cancelled',
+          TrainerAssignmentVisibility.archived => false,
+          TrainerAssignmentVisibility.all => true,
+        },
+  );
   List<ProfessionalAssessmentEvent> _assessments = [];
   bool _assessmentsBusy = false, _moreAssessments = false;
   String? _assessmentError;
@@ -142,7 +168,11 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
   String? _libraryError;
 
   bool get _locked =>
-      _busy || _mutating || _assessmentsBusy || _appointmentsBusy;
+      _busy ||
+      _mutating ||
+      _assessmentsBusy ||
+      _appointmentsBusy ||
+      _personalBusy;
   DateTime _civilOffset(DateTime date, int days) =>
       DateTime(date.year, date.month, date.day + days);
   DateTime _weekStart(DateTime date) => _civilOffset(date, 1 - date.weekday);
@@ -383,6 +413,18 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
                                     ),
                                   ))
                                     _boardCard(row),
+                                  for (final entry in _received.where(
+                                    (e) => DateUtils.isSameDay(
+                                      e.date,
+                                      _civilOffset(_from, day),
+                                    ),
+                                  ))
+                                    Padding(
+                                      padding: const EdgeInsets.all(4),
+                                      child: TrainerCalendarEntryTile(
+                                        entry: _receivedCalendar(entry),
+                                      ),
+                                    ),
                                   for (final event
                                       in _assessments
                                           .where(_matchesAssessment)
@@ -600,6 +642,9 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
   Future<void> _load({bool more = false}) async {
     final request = ++_request;
     final from = _from, to = _to;
+    final personalFetch = !more
+        ? _loadPersonal(request: request)
+        : Future<void>.value();
     final assessmentFetch = !more
         ? _loadAssessments(request: request)
         : Future<void>.value();
@@ -630,9 +675,148 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
         setState(() => _error = trainerError(e));
       }
     } finally {
+      await personalFetch;
       await assessmentFetch;
       await appointmentFetch;
       if (mounted && request == _request) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _loadPersonal({bool more = false, int? request}) async {
+    final repository = widget.personalCalendar;
+    final id = widget.personalClientId;
+    if (repository == null || id == null) return;
+    final generation = request ?? _request;
+    setState(() {
+      _personalBusy = true;
+      _personalError = null;
+      if (!more) {
+        _personal = [];
+        _morePersonal = false;
+      }
+    });
+    try {
+      final page = await repository.calendar(
+        id,
+        _from,
+        _to,
+        after: more ? _personal.lastOrNull : null,
+      );
+      if (!mounted || generation != _request) return;
+      setState(() {
+        _personal = page.shared
+            ? (more ? [..._personal, ...page.entries] : page.entries)
+            : [];
+        _morePersonal = page.shared && page.hasMore;
+        if (_personal.any((e) => !e.own && e.source == 'coach')) {
+          _clientNames.putIfAbsent(id, () => 'Para mí');
+        }
+      });
+    } catch (_) {
+      if (mounted && generation == _request) {
+        setState(
+          () => _personalError =
+              'No se pudieron cargar las sesiones de tus preparadores.',
+        );
+      }
+    } finally {
+      if (mounted && generation == _request) {
+        setState(() => _personalBusy = false);
+      }
+    }
+  }
+
+  String _receivedState(SharedCalendarEntry entry) => switch (entry.status) {
+    'planned' => 'Pendiente',
+    'in_progress' => 'En curso',
+    'completed' => 'Completada',
+    'skipped' => 'Omitida',
+    'abandoned' => 'Abandonada',
+    'cancelled' => 'Retirada',
+    _ => 'Estado desconocido',
+  };
+
+  TrainerCalendarEntry _receivedCalendar(SharedCalendarEntry entry) =>
+      TrainerCalendarEntry(
+        id: 'received-${entry.id}',
+        date: entry.date,
+        personId: widget.personalClientId!,
+        personName: 'Para mí · ${entry.trainerName ?? 'Preparador'}',
+        title: entry.name,
+        stateLabel: '${_receivedState(entry)} · Solo lectura',
+        muted: entry.status == 'cancelled',
+        completed: entry.status == 'completed',
+        onTap: _locked ? null : () => _openReceived(entry),
+      );
+
+  Widget _receivedCard(SharedCalendarEntry entry) => Card(
+    key: ValueKey('agenda-received-${entry.id}'),
+    child: ListTile(
+      leading: Icon(
+        entry.running ? Icons.directions_run : Icons.fitness_center,
+      ),
+      title: Text(entry.name),
+      subtitle: Text(
+        'Para mí · ${entry.trainerName ?? 'Preparador'}\n${_dayLabel(entry.date)} · ${_receivedState(entry)} · Solo lectura',
+      ),
+      isThreeLine: true,
+      trailing: const Icon(Icons.lock_outline),
+      onTap: _locked ? null : () => _openReceived(entry),
+    ),
+  );
+
+  Future<void> _openReceived(SharedCalendarEntry entry) async {
+    final generation = _request;
+    setState(() => _mutating = true);
+    try {
+      final json = await widget.personalCalendar!.workout(
+        widget.personalClientId!,
+        entry.id,
+      );
+      if (!mounted || generation != _request) return;
+      final template = WorkoutTemplateModel.fromJson(json);
+      setState(() => _mutating = false);
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) => Dialog(
+          child: ConstrainedBox(
+            constraints: ProfessionalWorkspaceScope.pageConstraints(
+              dialogContext,
+              maxWidth: 760,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  title: Text(entry.name),
+                  subtitle: Text(
+                    '${entry.trainerName ?? 'Preparador'} · Solo lectura',
+                  ),
+                  trailing: IconButton(
+                    tooltip: 'Cerrar pauta',
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(dialogContext),
+                  ),
+                ),
+                Flexible(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: WorkoutTemplateContent(template: template),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    } catch (_) {
+      if (mounted && generation == _request) {
+        setState(
+          () => _personalError = 'No se pudo abrir la sesión recibida. Actualiza la agenda e inténtalo de nuevo.',
+        );
+      }
+    } finally {
+      if (mounted && generation == _request) setState(() => _mutating = false);
     }
   }
 
@@ -1161,6 +1345,11 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
           (e) => _selected == null || DateUtils.isSameDay(e.date, _selected),
         )
         .toList();
+    final received = _received
+        .where(
+          (e) => _selected == null || DateUtils.isSameDay(e.date, _selected),
+        )
+        .toList();
     final visible = _selected == null
         ? filtered
         : filtered
@@ -1407,6 +1596,28 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
                     child: const Text('Reintentar'),
                   ),
                 ],
+                if (_personalError != null)
+                  Text(
+                    _personalError!,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                if (_morePersonal || _personalError != null)
+                  OutlinedButton(
+                    onPressed: _locked
+                        ? null
+                        : () => _loadPersonal(more: _personalError == null),
+                    child: Text(
+                      _personalError == null
+                          ? 'Cargar más sesiones recibidas'
+                          : 'Reintentar sesiones recibidas',
+                    ),
+                  ),
+                if (_morePersonal)
+                  const Text(
+                    'Hay más sesiones personales por cargar. El calendario es parcial.',
+                  ),
                 if (_more)
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 12),
@@ -1422,6 +1633,7 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
                     firstDay: _from,
                     entries: [
                       for (final row in filtered) _calendarEntry(row),
+                      for (final entry in _received) _receivedCalendar(entry),
                       if (_eventKind != 'appointments')
                         for (final event in _assessments.where(
                           _matchesAssessment,
@@ -1498,7 +1710,11 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
                           },
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
-                  if (!_busy && visible.isEmpty && _error == null)
+                  if (!_busy &&
+                      visible.isEmpty &&
+                      received.isEmpty &&
+                      _error == null &&
+                      _personalError == null)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 24),
                       child: Text(
@@ -1509,7 +1725,10 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
                     ),
                   ProfessionalCatalogGrid(
                     minCardWidth: 340,
-                    children: [for (final row in visible) _card(row)],
+                    children: [
+                      for (final row in visible) _card(row),
+                      for (final entry in received) _receivedCard(entry),
+                    ],
                   ),
                 ],
                 if (widget.assessments != null &&
@@ -1707,7 +1926,7 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
     selected: _selected ?? (_view == _AgendaView.week ? _anchor : null),
     week: _view == _AgendaView.week,
     enabled: !_locked,
-    partial: _more || _moreAssessments || _moreAppointments,
+    partial: _more || _moreAssessments || _moreAppointments || _morePersonal,
     onSelectDate: (date) => setState(() => _selected = date),
     onSelectAdjacentDate: (date) {
       setState(() {
@@ -1723,6 +1942,7 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
     entries: [
       for (final row in _shownAppointments) _calendarAppointment(row),
       for (final row in filtered) _calendarEntry(row),
+      for (final entry in _received) _receivedCalendar(entry),
       if (_eventKind != 'appointments')
         for (final event in _assessments.where(_matchesAssessment))
           if (event.status != 'withdrawn') _calendarAssessment(event),
