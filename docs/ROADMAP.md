@@ -12,7 +12,9 @@ no equivalen a aceptación física de iOS. Sin APK ni uso del Samsung, por petic
 de Javier. **Único siguiente recorrido recomendado:** instalar su compilación
 en iPhone y comprobar invitación → planificación → ejecución → mensaje/revisión,
 incluyendo varios alumnos; no abrir otro bloque de funciones antes de esa prueba.
-[Alcance y evidencia](TRAINER_MOBILE_WORKSPACE.md#ajuste-de-consulta-movil--trn-047--30102026).
+La entrega `e9163d73` supera además la compilación iOS sin firma y ambas
+publicaciones automáticas; recursos, hashes y destino Dev verificados por HTTPS.
+[Alcance y evidencia](TRAINER_MOBILE_WORKSPACE.md#ajuste-de-consulta-móvil--trn-047--30102026).
 
 **TRN-046 · 29/10/2026 · limpieza protegida cerrada en Dev:** cola durable,
 confirmación externa y reintentos para imágenes y demostraciones gestionadas.

@@ -184,3 +184,13 @@ móvil sigue a cargo de Javier.
 El siguiente recorrido es aceptar una invitación en iPhone, alternar ambos
 espacios y completar planificación, ejecución y revisión con mensaje y vídeo,
 comprobando además que el servicio recibido de otro preparador permanece.
+
+
+Entrega guardada en `e9163d73854ff727050db7e77c2b08916d4a4483`. La publicación
+automática termina correctamente en [Trainer 41023331383](https://github.com/jchjdev/entrenaop/actions/runs/41023331383)
+y [ADMIN 41023331371](https://github.com/jchjdev/entrenaop/actions/runs/41023331371).
+Ambos portales sirven esa revisión: identidad Dev `sxbxfjqgoddzhtcyhalw`, árbol
+de construcción limpio, SHA-256 de JavaScript y recursos HTTPS verificados.
+La [verificación 41023331336](https://github.com/jchjdev/entrenaop/actions/runs/41023331336)
+termina correctamente, incluida compilación iOS Release sin firma. Esta evidencia
+no instala la app móvil, no acredita APNs y no cambia producción.

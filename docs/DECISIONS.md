@@ -11,7 +11,7 @@ conserva ambas rutas y los avisos, sin recortar la escala de accesibilidad.
 No cambia cuentas, MFA, permisos, contratos de datos ni cuotas. Javier descarta
 usar el Samsung en esta revisión; no se genera APK y queda pendiente comprobar
 la nueva compilación en el iPhone físico.
-[Alcance y evidencia](TRAINER_MOBILE_WORKSPACE.md#ajuste-de-consulta-movil--trn-047--30102026).
+[Alcance y evidencia](TRAINER_MOBILE_WORKSPACE.md#ajuste-de-consulta-móvil--trn-047--30102026).
 
 **TRN-046 · limpieza protegida de medios · 29/10/2026:** Javier autoriza
 eliminar imágenes y vídeos que ya no tengan usos para recuperar cuota, incluida

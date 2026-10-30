@@ -8,7 +8,7 @@ El lector común `TrainerWorkoutResultContent` acepta una cabecera opcional en
 su propia lista, evitando dos zonas de desplazamiento en móvil; los consumidores
 web conservan su composición por defecto. Los fixtures están fuera de `lib/` y
 el target local de revisión no utiliza cuentas ni se publica.
-[Contrato y límites](TRAINER_MOBILE_WORKSPACE.md#ajuste-de-consulta-movil--trn-047--30102026).
+[Contrato y límites](TRAINER_MOBILE_WORKSPACE.md#ajuste-de-consulta-móvil--trn-047--30102026).
 
 **TRN-046 · 29/10/2026 · limpieza protegida de archivos:**
 `entrena_ui` aporta la vista de mantenimiento; cada portal conserva su adaptador

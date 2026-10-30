@@ -7,7 +7,7 @@ ampliado; los resultados desplazan también su cabecera. El cambio de espacio
 se adapta al ancho disponible. Los creadores siguen en web y el entrenamiento
 personal conserva su contexto. Validado con pantallas reales de Flutter a
 anchos de iPhone; aceptación en el iPhone físico pendiente, sin nueva APK.
-[Alcance y comprobación](TRAINER_MOBILE_WORKSPACE.md#ajuste-de-consulta-movil--trn-047--30102026).
+[Alcance y comprobación](TRAINER_MOBILE_WORKSPACE.md#ajuste-de-consulta-móvil--trn-047--30102026).
 
 **TRN-046 · 29/10/2026 · archivos y almacenamiento:** Trainer y
 ADMIN incorporan mantenimiento de imágenes sin uso y solicitudes de limpieza
