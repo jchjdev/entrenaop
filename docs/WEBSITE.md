@@ -1,5 +1,34 @@
 # Web pública de EntrenaOP
 
+## Movimiento en Trainer · WEB-012 · 31/10/2026
+
+Javier confirma el lenguaje visual de WEB-011 y pide extenderlo a entrenadores
+conservando los textos. El portal entra con perspectiva y se reúne con piezas
+decorativas de alumnos, planificación y seguimiento. Esas piezas se recogen al
+centrarse la vista y dejan libre la grabación real del portal. Los retratos
+reutilizan los cuatro personajes ficticios del rodaje, no testimonios reales.
+
+Una segunda escena conecta la agenda profesional con el móvil del deportista,
+reutilizando pantallas reales de la demo. Se conservan los 60 párrafos y títulos;
+precios, registro y preguntas frecuentes mantienen su HTML anterior íntegro.
+No se añaden formularios ni llamadas a servicios, y las condiciones comerciales
+siguen siendo las provisionales de WEB-007.
+
+`trainer-motion.css` define las poses. El controlador compartido admite entrada
+conservada: una vez visible, el vídeo no se retira mientras se consulta o se
+alcanzan sus controles; al volver por encima, se deshace el montaje. El foco
+mantiene la ventana estable. En móvil, el portal permanece estático y legible,
+con movimiento en la relación agenda/app. Movimiento reducido o falta de JS
+presentan la composición final sin las piezas decorativas del portal.
+
+Comprobación: 320/390/768/1440 px sin desbordamiento; cuatro retratos cargados,
+piezas retiradas a progreso 1, pausa de vídeo y foco estables. Tramo 100 con
+directorio comprobado y devuelto a 5 sin extra. Portada del deportista revisada,
+cinco scripts válidos y sin errores de consola observados. Evidencia en
+`website/reviews/2026-10-31-trainer-motion/`. Commit web `98d58bf`, recuperable
+con historial completo verificado en
+`docs/audits/website-2026-10-31-trainer-motion.bundle`.
+
 ## Corrección del movimiento · WEB-011 · 31/10/2026
 
 Javier aporta una grabación de Kotcha y descarta las tarjetas enormes de WEB-010.
