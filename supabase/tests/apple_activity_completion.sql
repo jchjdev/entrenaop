@@ -42,10 +42,15 @@ do $$declare owner uuid:=current_setting('fixture.owner')::uuid; sid uuid:=curre
   'effort_score',4.0,'offset_minutes',60,'intervals',jsonb_build_array(
    jsonb_build_object('id',gen_random_uuid(),'started_at',started,'ended_at',started+interval '87.3 seconds','timer_seconds',87.3,'distance_meters',400),
    jsonb_build_object('id',gen_random_uuid(),'started_at',started+interval '87.3 seconds','ended_at',started+interval '117.3 seconds','timer_seconds',30,'distance_meters',20)));
+ -- Llega primero un intervalo sin distancia; después la distancia, FC y recuperación.
+ perform public.apple_results_command(owner,'ingest',jsonb_build_object('observations',jsonb_build_array(
+  jsonb_set(obs,'{intervals}',jsonb_build_array((obs->'intervals'->0)-'distance_meters')))));
+ obs:=jsonb_set(obs,'{intervals,0,average_heart_rate}','150');
  perform public.apple_results_command(owner,'ingest',jsonb_build_object('observations',jsonb_build_array(obs)));
  result_id:=(public.apple_results_command(owner,'catalog')->'results'->0->>'id')::uuid;
  review:=public.apple_results_command(owner,'preview',jsonb_build_object('activity_id',result_id,'scheduled_id',sid));
  if jsonb_array_length(review->'activity'->'laps')<>2 or review->>'recorded_rpe'<>'4' then raise exception 'Pierde intervalos o esfuerzo observado';end if;
+ if review->>'blocked_reason' is not null or review->'activity'->'laps'->0->>'averageHeartRate'<>'150' then raise exception 'El enriquecimiento bloquea o pierde mediciones';end if;
  confirm_input:=jsonb_build_object('operation_id',gen_random_uuid(),'activity_id',result_id,'scheduled_id',sid,
   'activity_revision',review->>'activity_revision','source_revision',review->>'source_revision','rpe',4,'utc_offset_minutes',60,
   'mapping',jsonb_build_array(jsonb_build_object('block_order',0,'item_order',0,'set_order',0,'skipped',false,'lap_indices','[0]'::jsonb,'recovery_lap_indices','[1]'::jsonb)));
@@ -66,6 +71,10 @@ do $$declare owner uuid:=current_setting('fixture.owner')::uuid; sid uuid:=curre
  if not exists(select 1 from public.scheduled_workouts where id=sid and status='completed' and execution_id=execution) then raise exception 'No completa la semana';end if;
  if (public.apple_results_command(owner,'catalog')->'results'->0->>'execution_id')::uuid<>execution then raise exception 'Resumen no remite al historial';end if;
  perform set_config('fixture.apple.execution',execution::text,true);
+ obs:=jsonb_set(obs,'{intervals,0,distance_meters}','399');
+ perform public.apple_results_command(owner,'ingest',jsonb_build_object('observations',jsonb_build_array(obs)));
+ if public.apple_results_command(owner,'catalog')->'results'->0->>'state'<>'review' then raise exception 'No detecta contradicción real';end if;
+
 end $$;
 reset role;
 do $$declare owner uuid:=current_setting('fixture.owner')::uuid; sid uuid:=current_setting('fixture.scheduled')::uuid; data jsonb;begin

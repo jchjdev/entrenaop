@@ -118,7 +118,11 @@ El adaptador Apple implementa el mismo puerto de revisión y confirmación que
 utiliza Garmin. El servidor vuelve a comprobar cuenta/sesión, derechos, referencia,
 fuente y revisión; crea y termina la ejecución mediante los contratos comunes,
 con tiempos originales. El cierre queda en semana, historial y seguimiento del
-preparador vigente. El recibo privado de confirmación hace idempotente el reintento;
+preparador vigente. Una distancia o FC que llega después, o un intervalo nuevo
+ya cerrado, enriquece los intervalos existentes por su UUID sin perder las muestras anteriores. Se
+revalida la combinación completa; modificar una medición existente sí señala
+revisión y no altera el resultado aceptado.
+El recibo privado de confirmación hace idempotente el reintento;
 una actividad ficticia o un conflicto no pueden completar la semana.
 
 La recogida al abrir/reanudar sigue siendo automática con consentimiento; el
@@ -131,10 +135,22 @@ las categorías nuevas tras actualizar. La lectura manual básica sigue Free.
 420 en Trainer, 33 focalizadas de Apple/revisión y dos de tarjeta compartida.
 232 pruebas de servidor y TypeScript estricto correctos. Cinco contratos SQL
 con ROLLBACK: cierre Apple, retorno Apple, programación Apple, retorno Garmin y
-progreso Garmin. Las 265 migraciones locales/remotas coinciden en Dev. Endpoint
+progreso Garmin. Las 267 migraciones locales/remotas coinciden en Dev. Endpoint
 Apple v7 ACTIVE con JWT obligatorio y fuente contrastada. La tabla privada de
 confirmaciones tiene RLS y no permite acceso directo; su INFO sin políticas es
 intencional, como en el resto del almacenamiento privado.
+
+**Compilación y publicación de esta entrega:** `bbbef362` supera
+[iOS Release y consumidor](https://github.com/jchjdev/entrenaop/actions/runs/41227035559)
+y [Salud Android/iOS](https://github.com/jchjdev/entrenaop/actions/runs/41227035635).
+La revisión conjunta `9ee9acfa` incluye ese código y las mejoras del otro chat;
+[Trainer Dev](https://github.com/jchjdev/entrenaop/actions/runs/41227859256) y
+[ADMIN Dev](https://github.com/jchjdev/entrenaop/actions/runs/41228571275) quedan
+publicados y contrastados por HTTPS con esa revisión, entorno development y
+proyecto `sxbxfjqgoddzhtcyhalw`. El ajuste posterior de enriquecimiento solo cambia
+SQL; no añade otra actualización nativa ni necesita republicar las webs.
+Las primeras publicaciones de `bbbef362` se detuvieron al avanzar main; sus
+pruebas habían pasado. No se fuerza una publicación obsoleta.
 
 **Aceptación física pendiente:** nueva lectura de la referencia/intervalos desde
 el iPhone, mediciones por fase y cierre de una sesión real. La prueba ficticia
@@ -203,9 +219,9 @@ cerrada**. Los recibos preparados sin ACK se conservan como pendientes, nunca co
 métricas avanzadas no se exportan en este bloque.
 
 La actividad terminada conserva el recorrido manual de Salud y añade la
-recogida automática de pautas propias descrita arriba. Aún no se importan sus
-intervalos sin revisar ni se completa automáticamente la cita semanal.
-La revisión por intervalos y el cierre explícito se describen arriba.
+recogida automática de pautas propias descrita arriba. Se guardan los intervalos
+medidos disponibles; la revisión y el cierre explícito incorporan sus resultados
+a la ejecución semanal. Un total no completa por sí solo los pasos.
 
 La asociación exacta utiliza la propiedad pública asíncrona
 `HKWorkout.workoutPlan`, disponible desde iOS 17/watchOS 10 al importar WorkoutKit.
@@ -249,9 +265,10 @@ es intencional en el esquema privado, sin acceso directo de clientes y con acces
 mediante el comando autenticado. No se añaden políticas de lectura a la tabla.
 
 No se acredita instalación ni recepción Apple con una compilación o un ACK.
-**Siguiente recorrido único:** contrastar la actividad ficticia en Fitness/Salud
-del iPhone emparejado con el SE de segunda generación y su lectura desde
-EntrenaOP. Después quedan la ejecución real de fases/avisos, el cambio y la
+**Siguiente recorrido único:** el apartado de intervalos y cierre describe la
+única actualización del iPhone y la comprobación física pendiente. La lectura
+manual de la actividad ficticia en Fitness/Salud ya fue comunicada. Quedan la
+nueva lectura automática, la ejecución real de fases/avisos, el cambio y la
 retirada de la pauta. La recepción comunicada no cierra esas comprobaciones.
 El bloque permanece abierto hasta esa aceptación física.
 
