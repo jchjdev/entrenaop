@@ -11,6 +11,10 @@ import 'package:entrenaop/features/profile/domain/age_on_date.dart';
 import 'package:entrenaop/features/profile/presentation/choose_birth_date.dart';
 import 'package:entrenaop/features/profile/presentation/widgets/app_build_info_tile.dart';
 import 'package:flutter/material.dart';
+import 'package:trainer_access/profile_photo/domain.dart';
+
+import '../profile_photo_control.dart';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -21,11 +25,13 @@ class ProfilePage extends StatefulWidget {
     required this.preparations,
     required this.birthDateRepository,
     this.nameRepository,
+    this.photoRepository,
   });
 
   final PreparationGoalRepository preparations;
   final ProfileBirthDateRepository birthDateRepository;
   final ProfileNameRepository? nameRepository;
+  final ProfilePhotoRepository? photoRepository;
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -131,18 +137,26 @@ class _ProfilePageState extends State<ProfilePage> {
                           padding: const EdgeInsets.all(24),
                           child: Row(
                             children: [
-                              CircleAvatar(
-                                radius: 34,
-                                backgroundColor: const Color(0xFFFF8A50),
-                                foregroundColor: const Color(0xFF20120D),
-                                child: Text(
-                                  displayName.characters.first.toUpperCase(),
-                                  style: const TextStyle(
-                                    fontSize: 29,
-                                    fontWeight: FontWeight.w900,
+                              if (user != null &&
+                                  widget.photoRepository != null)
+                                ProfilePhotoControl(
+                                  key: ValueKey('profile-photo-${user.id}'),
+                                  repository: widget.photoRepository!,
+                                  name: displayName,
+                                )
+                              else
+                                CircleAvatar(
+                                  radius: 34,
+                                  backgroundColor: const Color(0xFFFF8A50),
+                                  foregroundColor: const Color(0xFF20120D),
+                                  child: Text(
+                                    displayName.characters.first.toUpperCase(),
+                                    style: const TextStyle(
+                                      fontSize: 29,
+                                      fontWeight: FontWeight.w900,
+                                    ),
                                   ),
                                 ),
-                              ),
                               const SizedBox(width: 18),
                               Expanded(
                                 child: Column(

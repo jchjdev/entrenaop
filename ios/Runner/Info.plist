@@ -42,7 +42,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Selecciona una imagen de tu galería para tus ejercicios personales.</string>
+	<string>Selecciona imágenes de tu galería para tu foto de perfil y tus ejercicios personales.</string>
 	<key>NSHealthShareUsageDescription</key>
 	<string>EntrenaOP lee tus entrenamientos de carrera para que puedas revisarlos y guardar los que elijas en tu cuenta.</string>
 	<key>UIApplicationSceneManifest</key>

@@ -2,6 +2,7 @@ import 'trainer_message_inbox_scope.dart';
 
 import 'package:flutter/material.dart';
 import 'package:trainer_access/trainer_access.dart';
+import 'package:trainer_access/profile_photo/presentation.dart';
 
 enum TrainerClientAction { history, deactivate, archive, restore }
 
@@ -14,9 +15,11 @@ class TrainerClientCard extends StatelessWidget {
     this.onOpen,
     this.onTechnique,
     this.techniqueMode = false,
+    this.photoLoader,
   });
 
   final TrainerClient client;
+  final ProfilePhotoLoader? photoLoader;
   final bool busy, techniqueMode;
   final VoidCallback? onOpen, onTechnique;
   final ValueChanged<TrainerClientAction> onManage;
@@ -24,13 +27,6 @@ class TrainerClientCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final initials = client.name
-        .trim()
-        .split(RegExp(r'\s+'))
-        .where((p) => p.isNotEmpty)
-        .take(2)
-        .map((p) => p.characters.first.toUpperCase())
-        .join();
     return Card(
       margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
@@ -44,7 +40,11 @@ class TrainerClientCard extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircleAvatar(child: Text(initials.isEmpty ? '?' : initials)),
+                  ProfilePhotoAvatar(
+                    name: client.name,
+                    path: client.profilePhotoPath,
+                    load: photoLoader,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(

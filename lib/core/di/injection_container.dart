@@ -1,4 +1,6 @@
 import 'package:entrenaop/features/workouts/domain/usecases/workout_result_review_usecase.dart';
+import 'package:trainer_access/profile_photo/domain.dart';
+import 'package:trainer_access/profile_photo/data.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_session_draft_store.dart';
 import 'package:entrenaop/features/guided_programs/domain/guided_program_repository.dart';
 import 'package:entrenaop/features/guided_programs/data/supabase_guided_program_repository.dart';
@@ -242,6 +244,12 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => FasPeriodicAssessmentRepository(sl()));
   sl.registerLazySingleton(() => ProfileBirthDateRepository(sl()));
   sl.registerLazySingleton(() => ProfileNameRepository(sl()));
+  sl.registerFactory<ProfilePhotoRepository>(() {
+    final client = sl<SupabaseClient>();
+    final owner = client.auth.currentUser?.id;
+    if (owner == null) throw StateError('Inicia sesión para abrir Perfil.');
+    return SupabaseProfilePhotoRepository(client, ownerId: owner);
+  });
   sl.registerLazySingleton<ProgramAssessmentRepository>(
     () => SupabaseProgramAssessmentRepository(sl()),
   );

@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:trainer_access/trainer_access.dart';
+import 'package:trainer_access/profile_photo/presentation.dart';
 
 class TrainerClientsPage extends StatefulWidget {
   const TrainerClientsPage({
@@ -21,8 +22,10 @@ class TrainerClientsPage extends StatefulWidget {
     this.onOpenTechnique,
     this.techniqueMode = false,
     this.onOpenSelf,
+    this.photoLoader,
   });
   final TrainerRepository repository;
+  final ProfilePhotoLoader? photoLoader;
   final Future<void> Function()? onSignOut;
   final VoidCallback? onOpenWorkouts;
   final ValueChanged<String>? onOpenClient;
@@ -189,6 +192,7 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
           TrainerClientCard(
             key: ValueKey(client.personId),
             client: client,
+            photoLoader: widget.photoLoader,
             busy: _busy,
             techniqueMode: widget.techniqueMode,
             onOpen: openClient == null

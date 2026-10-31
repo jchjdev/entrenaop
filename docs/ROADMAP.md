@@ -16,6 +16,22 @@ incluida la compilación de iOS sin firma.
 consultar, comentar, revisar y avanzar, volviendo a su misma agenda o bandeja.
 [Contrato y límites](TRAINER_PLATFORM.md#ficha-resultados-y-revisión-continua--31102026).
 
+**31/10/2026 · fotos personales de los usuarios, primera entrega Dev:** Javier
+confirma foto opcional para cualquier plan desde Perfil, con encuadre, cambio y
+retirada. Se muestran en listado/ficha de alumnos para ayudar a Ervi a reconocer
+las cuentas. Archivos privados, titular/vínculos activos autorizados, iniciales
+como alternativa y separación de la ficha pública. Contrato, adaptador y avatar
+compartido con reglas de servidor. Dos migraciones aplicadas solo en Dev,
+255 revisiones coincidentes y contrato SQL correcto con ROLLBACK. Comprobación
+aislada: análisis limpios, raíz 1.516, Trainer 375, ADMIN 365 y editor 238 pruebas
+correctas, con las omisiones previas indicadas en el contrato. Encuadre a 320 y
+texto 2× comprobado. CI/publicación y beta móvil pendientes; se conserva el
+trabajo paralelo de los otros chats.
+**Siguiente recorrido:** instalar la beta actualizada, elegir foto en Perfil y
+verla como preparador en listado/ficha; cambiarla y quitarla. La aceptación real
+y la comprobación física permanecen abiertas.
+[Alcance](PRODUCT.md#fotos-personales-de-los-usuarios--31102026).
+
 **31/10/2026 · Agenda → alumno → resultados, pulido localizado de Trainer:**
 asignación en una confirmación con sesión/fecha elegidas y alumno filtrado
 preseleccionado tras verificar el vínculo. Detalle lateral de receta/resultados

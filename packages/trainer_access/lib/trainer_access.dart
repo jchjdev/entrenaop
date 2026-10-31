@@ -48,6 +48,7 @@ enum TrainerClientState { active, inactive, archived }
 class TrainerClient {
   TrainerClient.fromJson(Json json)
     : personId = json['person_id'] as String,
+      profilePhotoPath = json['profile_photo_path'] as String?,
       isSelf = json['is_self'] == true,
       name = json['person_name'] as String,
       createdAt = DateTime.parse(json['created_at'] as String),
@@ -58,6 +59,7 @@ class TrainerClient {
       activeRelationId = json['active_relation_id'] as String?,
       episodeCount = (json['episode_count'] as num).toInt();
   final String personId, name;
+  final String? profilePhotoPath;
   final bool isSelf;
   final String? activeRelationId;
   final DateTime createdAt, updatedAt, acceptedAt;

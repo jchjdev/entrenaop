@@ -4,6 +4,7 @@ import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:trainer_access/trainer_access.dart';
+import 'package:trainer_access/profile_photo/presentation.dart';
 import 'package:workout_core/trainer_progress.dart';
 import 'package:workout_core/performance_time.dart';
 
@@ -22,10 +23,12 @@ class TrainerClientWorkspacePage extends StatefulWidget {
     required this.repository,
     required this.clientId,
     this.area = 'all',
+    this.photoLoader,
   });
   final TrainerClientWorkspaceRepository repository;
   final String clientId;
   final String area;
+  final ProfilePhotoLoader? photoLoader;
   @override
   State<TrainerClientWorkspacePage> createState() =>
       _TrainerClientWorkspacePageState();
@@ -255,7 +258,26 @@ class _TrainerClientWorkspacePageState
       isBusy: () => _saving,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(workspace?.client.name ?? 'Ficha del alumno'),
+          title: Row(
+            children: [
+              if (workspace != null) ...[
+                ProfilePhotoAvatar(
+                  name: workspace.client.name,
+                  path: workspace.client.profilePhotoPath,
+                  load: widget.photoLoader,
+                  radius: 18,
+                ),
+                const SizedBox(width: 10),
+              ],
+              Expanded(
+                child: Text(
+                  workspace?.client.name ?? 'Ficha del alumno',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
           actions: [
             IconButton(
               tooltip: 'Recargar ficha',

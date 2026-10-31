@@ -14,6 +14,7 @@ import 'package:entrenaop/features/training_plan/domain/repositories/training_co
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:trainer_access/profile_photo/domain.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'
     show SupabaseClient, GoTrueClient, User;
 import 'package:entrenaop/features/trainers/presentation/my_trainer_page.dart';
@@ -23,6 +24,7 @@ import 'package:entrenaop/features/device_connections/presentation/device_connec
 import 'package:entrenaop/features/device_connections/presentation/garmin_connection_page.dart';
 
 void main() {
+  setUp(() => sl.registerSingleton<ProfilePhotoRepository>(_PhotoFixture()));
   testWidgets(
     'Perfil agrupa conexiones y volver de Garmin conserva la pantalla común',
     (tester) async {
@@ -208,6 +210,16 @@ void main() {
       expect(router.config.state.uri.path, '/profile');
     },
   );
+}
+
+class _PhotoFixture implements ProfilePhotoRepository {
+  @override
+  String get ownerId => 'route-user';
+  @override
+  Future<ProfilePhotoState> own() async =>
+      const ProfilePhotoState(path: null, revision: 0);
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 class _ClientWithoutSession extends Fake implements SupabaseClient {

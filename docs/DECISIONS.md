@@ -13,6 +13,16 @@ general. La paginación parcial no se presenta como bandeja vacía. Se reutiliza
 operaciones, MFA, permisos, UUID y revisión de resultados existentes, sin SQL ni
 dependencias nuevas. [Contrato](TRAINER_PLATFORM.md#ficha-resultados-y-revisión-continua--31102026).
 
+**Fotos personales de usuarios · 31/10/2026:** Javier aclara que la petición de
+Ervi es para las cuentas de los usuarios de la app, para reconocer a sus alumnos
+en Trainer, y confirma la propuesta: foto opcional para todos los planes,
+selección/encuadre/cambio/retirada desde Perfil, iniciales como alternativa y
+uso en listado y ficha de alumnos. Visibilidad limitada al titular y a sus
+preparadores/alumnos vinculados y autorizados; la foto personal es independiente
+de la ficha pública del directorio. Tratamiento de imagen reutilizado, archivos
+privados y permisos en servidor, con Clean Architecture y sin paquetes nuevos.
+[Contrato y entrega](PRODUCT.md#fotos-personales-de-los-usuarios--31102026).
+
 **Agenda y seguimiento directo · 31/10/2026:** Javier confirma unificar la
 asignación de sesión, alumno y fecha en una confirmación, sin volver a elegir
 la sesión arrastrada ni el alumno ya filtrado. La sesión del calendario abre

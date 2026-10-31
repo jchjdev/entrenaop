@@ -2,6 +2,7 @@ import 'trainer_invitation_landing.dart';
 import 'trainer_directory_editor.dart';
 
 import 'package:trainer_access/directory/data.dart';
+import 'package:trainer_access/profile_photo/data.dart';
 import 'package:trainer_access/directory/links.dart';
 import 'package:trainer_access/directory/presentation.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -242,6 +243,8 @@ class _TrainerAppState extends State<TrainerApp> {
         sessionWorkRepository;
     SupabaseTrainerRepository access() =>
         SupabaseTrainerRepository(widget.client, userId: identity!);
+    SupabaseProfilePhotoRepository photos() =>
+        SupabaseProfilePhotoRepository(widget.client, ownerId: identity!);
     SupabaseDirectoryRepository directory({bool webOnly = false}) =>
         SupabaseDirectoryRepository(
           widget.client,
@@ -751,6 +754,7 @@ class _TrainerAppState extends State<TrainerApp> {
                     'client-workspace-$identity-${state.pathParameters['id']}',
                   ),
                   repository: workspace(),
+                  photoLoader: photos().download,
                   clientId: state.pathParameters['id']!,
                   area: state.uri.queryParameters['area'] ?? 'progress',
                 ),
@@ -956,6 +960,7 @@ class _TrainerAppState extends State<TrainerApp> {
                         '$identity-${state.uri.queryParameters['view']}',
                       ),
                       repository: access(),
+                      photoLoader: photos().download,
                       onSignOut: () => widget.client.auth.signOut(),
                       onOpenWorkouts: () => context.go('/workouts'),
                       onOpenSelf: () => context.go('/self'),

@@ -1096,6 +1096,7 @@ class AppRouter {
             preparations: sl(),
             birthDateRepository: sl(),
             nameRepository: sl(),
+            photoRepository: sl(),
           ),
           routes: [
             materialAppRoute(

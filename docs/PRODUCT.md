@@ -1,5 +1,51 @@
 # Producto EntrenaOP
 
+## Fotos personales de los usuarios · 31/10/2026
+
+Javier confirma que la foto pertenece a la cuenta del usuario de la app; Ervi
+quiere reconocer mejor a sus alumnos en Trainer. Es opcional y está disponible
+para cualquier plan. Desde la foto/inicial en Perfil se elige una imagen, se
+ajusta su encuadre y se puede cambiar o quitar. Listado y ficha de alumnos de
+Trainer la muestran cuando hay acceso vigente; sin foto o sin acceso se usan
+iniciales. No se publica en el directorio ni se toma automáticamente de él.
+
+El titular controla su foto. La lectura de terceros requiere vínculo activo y
+acceso vigente; el preparador mantiene el requisito de MFA. El fin del vínculo
+o del acceso retira la lectura también por referencia directa. No se ofrecen
+URLs públicas o firmadas. Los bytes ya recibidos o capturas no pueden revocarse;
+no se añaden copias persistentes en el cliente. La foto se vuelve a consultar al
+reanudar la aplicación.
+
+Se reutilizan selección y optimización existentes, con encuadre local y JPEG
+cuadrado de 512 píxeles, hasta 200 KB, sin EXIF/GPS. Cancelar la selección no
+sube nada. La referencia privada se guarda por revisión; un reintento conserva
+la subida y se comprueba el estado si se pierde la respuesta. Cambiar o quitar
+la foto retira la referencia antes de limpiar el archivo anterior. El servidor
+protege la foto guardada frente a la limpieza de subidas pendientes y limita a
+tres archivos por cuenta. La copia cifrada de Dev ya incluye el esquema privado
+y todos los buckets; no cambia su destino ni retención.
+
+`trainer_access/profile_photo` separa contrato puro, adaptador y avatar común;
+Perfil compone la edición e inyecta el adaptador. Los lectores de alumnos añaden
+solo una referencia opcional; conservan orden, paginación y autorización.
+Las migraciones `20261031063559_profile_photos` y
+`20261031070910_profile_photo_lookup_index` están aplicadas solo en Dev, con
+255 revisiones coincidentes. El contrato `supabase/tests/profile_photos.sql`
+pasa antes y después de aplicar, siempre con ROLLBACK. Prueba titular Free,
+suplantación, revisión antigua, cuota, lectura por vínculo/MFA, fotos retiradas,
+fin de relación, ausencia de lectura anónima y rechazo de URLs firmadas. El
+asesor mantiene los WARN previos; añade un INFO esperado por la tabla privada
+sin acceso directo.
+
+Comprobación aislada desde `dd7521c8` más este bloque: análisis limpios, raíz
+1.516 pruebas (una omisión previa), Trainer 375, ADMIN 365 (dos omisiones previas)
+y editor compartido 238 correctas. Selección cancelada, respuesta perdida,
+reintento con el mismo archivo, retirada y cambio desde otra sesión quedan
+cubiertos; encuadre a 320 píxeles y texto 2× sin desbordamiento. Se preserva el
+trabajo paralelo sobre ficha/resultados de Trainer; CI contrastará la integración
+final en main. Publicación y beta móvil pendientes; no acredita instalación en
+dispositivos ni aceptación del recorrido real por los usuarios.
+
 **Directorio profesional · TRN-040 · 30/10/2026:** Javier autoriza iniciar la
 primera entrega Dev con Clean Architecture. Preparador queda siempre visible
 para buscar, también sin vínculo; fichas voluntarias, favoritos y contacto
