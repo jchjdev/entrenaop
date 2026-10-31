@@ -841,8 +841,13 @@ class _TrainerAppState extends State<TrainerApp> {
             ),
             GoRoute(
               path: '/reviews',
-              builder: (_, _) =>
-                  TrainerReviewQueuePage(repository: operations()),
+              builder: (_, state) => TrainerReviewQueuePage(
+                key: ValueKey(
+                  'reviews-$identity-${state.uri.queryParameters['client']}',
+                ),
+                repository: operations(),
+                clientId: state.uri.queryParameters['client'],
+              ),
             ),
             GoRoute(
               path: '/assignments/:id/adapt',
@@ -1183,6 +1188,7 @@ class _TrainerAppState extends State<TrainerApp> {
                     operations: operations(),
                     goals: TrainerClientGoalsPanel(
                       key: ValueKey('planning-goals-$identity-$id'),
+                      compact: true,
                       repository: SupabaseTrainerClientGoalsRepository(
                         widget.client,
                         identity,
@@ -1208,6 +1214,9 @@ class _TrainerAppState extends State<TrainerApp> {
                     repository: workouts(),
                     operations: operations(),
                     assignmentId: state.pathParameters['assignment']!,
+                    clientId: state.pathParameters['id']!,
+                    reviewAllClients:
+                        state.uri.queryParameters['review'] == 'all',
                   ),
                 ),
               ],

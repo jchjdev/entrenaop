@@ -44,6 +44,67 @@ del manifiesto, identidad Dev (`sxbxfjqgoddzhtcyhalw`), revisión, SHA-256 del
 JavaScript, entrada activa, cabeceras sin caché y MIME WebAssembly. La publicación
 no incluye cambios de ADMIN ni genera una nueva versión móvil.
 
+### Ficha, resultados y revisión continua · 31/10/2026
+
+Se completa el recorrido propuesto, junto a la asignación directa y el panel
+de Agenda ya publicados. La cabecera de planificación muestra nombre, estado
+del servicio, semana seleccionada, pautas visibles de fuerza/carrera y realizadas.
+Muestra una pendiente con acceso a su receta y permite desplegar más. Objetivo
+de oposición y fecha conservan el lector/editor existentes, con marcas
+desplegables en la vista compacta; en escritorio aprovechan las columnas del
+espacio profesional. Una semana incompleta o con fallo de lectura compartida
+se identifica como parcial. No se presume que lo no cargado no exista.
+
+El acceso de pendientes consulta la bandeja autorizada existente. El contador es
+por alumno y, si quedan páginas, se expresa como mínimo cargado. La bandeja
+admite filtro por alumno manteniendo el cursor bruto de servidor y carga
+explícita. Un listado parcial sin coincidencias no se presenta como ausencia de
+resultados. Cambiar entre áreas del alumno sustituye solo la ficha superior,
+conserva el origen de navegación y respeta sus guardas de salida. La entrada
+directa mantiene su comportamiento por URL, sin inventar una agenda anterior.
+
+`ReviewExecutionSummary`, en `workout_core`, proyecta las instantáneas de revisión
+existentes. Separa posiciones completadas, omitidas y sin completar; entre las
+completadas distingue medidas comparables dentro de pauta, diferencias, medidas
+ausentes, condiciones a revisar y ausencia de referencia. Reutiliza las
+tolerancias del revisor y el tiempo observado de dispositivo; cero repeticiones
+no es una ausencia. No asigna calificaciones. Los AMRAP se cuentan por bloques
+con rondas registradas o sin agregado, excluyendo su receta de las series
+ejecutadas. `WorkoutExecutionSummary`, en `workout_editor_ui`, coloca este resumen
+antes de métricas, gráficos y detalle, con el mismo componente para Trainer y
+consulta profesional móvil. El filtro de diferencias no altera el resumen de
+la ejecución completa.
+
+El detalle identifica al alumno y la fecha de pauta; contrasta el alumno de la
+URL con el contexto autorizado y la ejecución. Permite comentar por la relación
+confirmada o revisar con nota interna privada. «Revisar y siguiente» conserva el
+diálogo retenido, UUID y revisión observada. Solo después de confirmar se recarga
+el resultado: si hay una corrección nueva sin revisar, permanece abierto y avisa.
+Desde la ficha continúa con ese alumno; desde la bandeja general conserva el
+alcance global. Nunca marca la siguiente pauta automáticamente. Sustituir el
+detalle mantiene debajo la agenda, ficha o bandeja inicial. Si una página de
+100 no contiene un siguiente compatible, se ofrece continuar cargando con su
+cursor original; solo una página final permite informar de fin de selección.
+El fallo de carga posterior no deshace ni repite un guardado confirmado.
+
+El diálogo de revisión y el detalle estrecho admiten desplazamiento con texto
+ampliado. No se modifican algoritmos, derechos, datos del alumno, esquema,
+contratos SQL ni dependencias. Los cambios de fotos de perfil en curso se
+mantienen aparte; no forman parte de este bloque.
+
+Validación local del 31/10: análisis limpios de raíz, Trainer, ADMIN y editor
+compartido. Baterías completas: raíz 1.517 pruebas correctas (una omisión previa),
+Trainer 390 y ADMIN 365 (dos omisiones previas). Se valida en una copia aislada
+de `dd7521c8`, conservando el trabajo paralelo. Siete casos de dominio y cuatro
+de presentación compartida cubren mediciones ausentes, cero, temporizador,
+tolerancias y AMRAP. Dieciséis regresiones nuevas de Trainer cubren guardado,
+correcciones, paginación, alcance por alumno/global, comentario, guardas de salida,
+retorno al origen, objetivo compacto y conservación del contenido/scroll al
+recargar. Capturas de la ficha real y resultados revisadas; móvil/escritorio,
+temas claro/oscuro y texto ampliado comprobados en los componentes afectados.
+La aceptación humana en los dispositivos y el portal publicado sigue siendo
+el siguiente recorrido; no se genera una APK en este bloque.
+
 ### Inventario de los dieciséis puntos · 29/10/2026
 
 Javier pide el estado de los dieciséis puntos y añade gestión de borrado de

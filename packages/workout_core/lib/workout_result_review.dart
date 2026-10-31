@@ -52,6 +52,82 @@ class ReviewHistoryPage {
 typedef ReviewHistoryLoader =
     Future<ReviewHistoryPage> Function(Object? cursor);
 
+/// Lectura descriptiva de la pauta y sus registros; no puntúa el rendimiento.
+/// Una medición ausente no se clasifica como diferencia ni como cumplimiento.
+class ReviewExecutionSummary {
+  factory ReviewExecutionSummary(ReviewSession session) {
+    var total = 0, completed = 0, skipped = 0, pending = 0;
+    var matching = 0,
+        different = 0,
+        missing = 0,
+        uncertain = 0,
+        withoutReference = 0;
+    for (final set in session.sets) {
+      if (set.format == 'amrap') continue;
+      total++;
+      if (set.status == 'skipped') {
+        skipped++;
+      } else if (set.status != 'completed') {
+        pending++;
+      } else {
+        completed++;
+        if (set.uncertain) {
+          uncertain++;
+        } else if (set.actual.isEmpty ||
+            set.targets.keys.any(
+              (key) => !set.actual.containsKey(
+                key == 'paceMin' || key == 'paceMax' ? 'pace' : key,
+              ),
+            )) {
+          missing++;
+        } else if (set.targets.isEmpty) {
+          withoutReference++;
+        } else if (set.needsReview) {
+          different++;
+        } else {
+          matching++;
+        }
+      }
+    }
+    final amrapResults = session.amrap.map((a) => a.block).toSet().length;
+    final amrapWithoutResult = session.sets
+        .where((s) => s.format == 'amrap' && s.block != null)
+        .map((s) => s.block!)
+        .toSet()
+        .difference(session.amrap.map((a) => a.block).toSet())
+        .length;
+    return ReviewExecutionSummary._(
+      total,
+      completed,
+      skipped,
+      pending,
+      matching,
+      different,
+      missing,
+      uncertain,
+      withoutReference,
+      amrapResults,
+      amrapWithoutResult,
+    );
+  }
+  const ReviewExecutionSummary._(
+    this.total,
+    this.completed,
+    this.skipped,
+    this.pending,
+    this.matching,
+    this.different,
+    this.missing,
+    this.uncertain,
+    this.withoutReference,
+    this.amrapResults,
+    this.amrapWithoutResult,
+  );
+  final int total, completed, skipped, pending;
+  final int matching, different, missing, uncertain, withoutReference;
+  final int amrapResults, amrapWithoutResult;
+}
+
 class ReviewSet {
   ReviewSet({
     required this.id,

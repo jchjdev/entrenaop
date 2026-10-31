@@ -10,6 +10,11 @@ import 'package:entrenaop_trainer/trainer_workout_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trainer_access/trainer_calendar.dart';
+import 'package:workout_core/professional_opposition_goal.dart';
+import 'package:entrenaop_trainer/trainer_client_goals.dart';
+
+import '../../test/helpers/performance_visual_review.dart';
+import 'trainer_client_goals_test.dart' show FakeGoals;
 
 import '../../packages/trainer_access/test_support/fake_trainer_repository.dart';
 import 'trainer_client_workspace_test.dart' show WorkspaceFixture;
@@ -77,7 +82,10 @@ Future<void> mount(
       builder: (context, child) => MediaQuery(
         data: MediaQuery.of(context)
             .copyWith(textScaler: TextScaler.linear(scale)),
-        child: child!,
+        child: RepaintBoundary(
+          key: const ValueKey('review-boundary'),
+          child: child!,
+        ),
       ),
       home: ProfessionalWorkspaceScope(
         desktop: width >= 900,
@@ -157,6 +165,75 @@ class FutureCoachCalendar extends CalendarFixture {
 }
 
 void main() {
+  setUpAll(loadReviewFont);
+  testWidgets(
+    'actualizar la misma semana conserva contenido y scroll durante la lectura',
+    (t) async {
+      final planning = PlanningFixture();
+      final original = await planning.week(
+        'client',
+        DateTime(2026, 10, 26),
+        DateTime(2026, 11, 1),
+      );
+      await mount(t, planning: planning);
+      final scroll = t
+          .state<ScrollableState>(
+            find
+                .descendant(
+                  of: find.byKey(const ValueKey('client-calendar-scroll')),
+                  matching: find.byType(Scrollable),
+                )
+                .first,
+          )
+          .position;
+      scroll.jumpTo(scroll.maxScrollExtent.clamp(0, 350).toDouble());
+      await t.pumpAndSettle();
+      final offset = scroll.pixels;
+      planning.pending = Completer<TrainerClientAgendaPage>();
+      await t.tap(find.byTooltip('Actualizar planificación'));
+      await t.pump(const Duration(milliseconds: 200));
+      expect(scroll.pixels, closeTo(offset, 1));
+      expect(find.text('Fuerza propia'), findsWidgets);
+      planning.pending!.complete(original);
+      await t.pumpAndSettle();
+      expect(scroll.pixels, closeTo(offset, 1));
+      expect(t.takeException(), isNull);
+    },
+  );
+  testWidgets(
+    'la ficha resume la semana y señala cuando la planificación está incompleta',
+    (t) async {
+      await mount(
+        t,
+        planning: PlanningFixture()..more = true,
+        goals: TrainerClientGoalsPanel(
+          repository: FakeGoals()
+            ..goal = ProfessionalOppositionGoal(
+              revision: 1,
+              title: 'Policía Nacional',
+              targetDate: DateTime(2027, 3, 12),
+            ),
+          clientId: 'client',
+          compact: true,
+        ),
+      );
+      final overview = find.byKey(const ValueKey('client-week-overview'));
+      expect(overview, findsOneWidget);
+      expect(
+        find.descendant(of: overview, matching: find.text('Alumno')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: overview, matching: find.text('Servicio activo')),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Resumen parcial'), findsOneWidget);
+      expect(find.text('Pendientes de esta semana'), findsOneWidget);
+      expect(find.text('0 resultados por revisar'), findsOneWidget);
+      expect(t.takeException(), isNull);
+      await capturePerformanceWidget(t, 'trainer-client-week-overview');
+    },
+  );
   testWidgets('Para mí consulta la semana futura y conserva la autoría ajena', (
     t,
   ) async {

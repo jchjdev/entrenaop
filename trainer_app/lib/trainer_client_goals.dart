@@ -50,10 +50,12 @@ class TrainerClientGoalsPanel extends StatefulWidget {
     required this.repository,
     required this.clientId,
     this.canEdit = true,
+    this.compact = false,
   });
   final TrainerClientGoalsRepository repository;
   final String clientId;
   final bool canEdit;
+  final bool compact;
   @override
   State<TrainerClientGoalsPanel> createState() =>
       _TrainerClientGoalsPanelState();
@@ -309,7 +311,9 @@ class _TrainerClientGoalsPanelState extends State<TrainerClientGoalsPanel> {
                 ),
               const SizedBox(height: 12),
               for (final target
-                  in (_expanded ? goal.targets : goal.targets.take(3)))
+                  in (_expanded
+                      ? goal.targets
+                      : goal.targets.take(widget.compact ? 0 : 3)))
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: Row(
@@ -351,7 +355,7 @@ class _TrainerClientGoalsPanelState extends State<TrainerClientGoalsPanel> {
                     ],
                   ),
                 ),
-              if (goal.targets.length > 3)
+              if (goal.targets.length > (widget.compact ? 0 : 3))
                 Align(
                   alignment: Alignment.centerLeft,
                   child: TextButton(
@@ -359,6 +363,8 @@ class _TrainerClientGoalsPanelState extends State<TrainerClientGoalsPanel> {
                     child: Text(
                       _expanded
                           ? 'Mostrar menos metas'
+                          : widget.compact
+                          ? 'Ver ${goal.targets.length} ${goal.targets.length == 1 ? 'marca' : 'marcas'} objetivo'
                           : 'Ver las ${goal.targets.length} metas',
                     ),
                   ),

@@ -52,6 +52,18 @@ Widget resultApp(List<Map<String, dynamic>> sets, {double scale = 1}) =>
       ),
     );
 
+Future<void> showResultDetails(WidgetTester tester) async {
+  final heading = find.text('Bloque 1');
+  await tester.scrollUntilVisible(
+    heading,
+    200,
+    scrollable: find.byType(Scrollable).first,
+  );
+  await tester.ensureVisible(heading);
+  await Scrollable.ensureVisible(tester.element(heading), alignment: 0);
+  await tester.pumpAndSettle();
+}
+
 void main() {
   testWidgets(
     'diez series ocupan una tarjeta y mantienen su detalle original',
@@ -59,6 +71,7 @@ void main() {
       final sets = List.generate(10, (i) => series(i));
       await tester.pumpWidget(resultApp(sets));
       await tester.pumpAndSettle();
+      await showResultDetails(tester);
       expect(find.byType(ExpansionTile), findsOneWidget);
       expect(find.text('Press banca'), findsOneWidget);
       expect(find.text('10/10 completadas'), findsOneWidget);
@@ -94,6 +107,7 @@ void main() {
       ]),
     );
     await tester.pumpAndSettle();
+    await showResultDetails(tester);
     expect(find.byType(ExpansionTile), findsNWidgets(3));
     expect(find.text('Bloque 1'), findsOneWidget);
     expect(find.text('Bloque 2'), findsOneWidget);
@@ -109,6 +123,7 @@ void main() {
         resultApp([series(0), series(1, exercise: 'another'), legacy]),
       );
       await tester.pumpAndSettle();
+      await showResultDetails(tester);
       expect(find.byType(ExpansionTile), findsNWidgets(3));
     },
   );
@@ -125,6 +140,7 @@ void main() {
         ]),
       );
       await tester.pumpAndSettle();
+      await showResultDetails(tester);
       expect(
         find.text('2/4 completadas · 1 omitida · 1 pendiente'),
         findsOneWidget,

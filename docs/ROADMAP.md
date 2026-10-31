@@ -1,5 +1,18 @@
 # Roadmap de EntrenaOP
 
+**31/10/2026 · recorrido completo de Agenda, ficha y revisión de resultados:**
+se completan los cinco ajustes acordados: asignación directa y panel de Agenda
+ya publicados, cabecera semanal con objetivo compacto, resumen de resultados
+compartido y revisión continua. Los cambios de área conservan el origen de
+navegación y sus guardas; refrescar la misma semana conserva contenido y scroll.
+«Revisar y siguiente» confirma el guardado/revisión vigente, distingue el alcance
+por alumno o global y conserva cursores de páginas sin coincidencias. No convierte
+datos ausentes ni AMRAP en cumplimiento ficticio ni cambia permisos, SQL o
+dependencias. Se comprueba el bloque aislado del trabajo de fotos de perfil.
+**Único siguiente recorrido de este bloque:** aceptación de Javier de asignar,
+consultar, comentar, revisar y avanzar, volviendo a su misma agenda o bandeja.
+[Contrato y límites](TRAINER_PLATFORM.md#ficha-resultados-y-revisión-continua--31102026).
+
 **31/10/2026 · Agenda → alumno → resultados, pulido localizado de Trainer:**
 asignación en una confirmación con sesión/fecha elegidas y alumno filtrado
 preseleccionado tras verificar el vínculo. Detalle lateral de receta/resultados

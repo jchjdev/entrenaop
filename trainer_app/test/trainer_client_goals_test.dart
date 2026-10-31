@@ -75,20 +75,46 @@ class FakeGoals extends TrainerClientGoalsRepository {
   }
 }
 
-Widget app(FakeGoals repository, {bool canEdit = true}) => MaterialApp(
-  theme: EntrenaTheme.dark,
-  home: Scaffold(
-    body: SingleChildScrollView(
-      child: TrainerClientGoalsPanel(
-        repository: repository,
-        clientId: 'student',
-        canEdit: canEdit,
+Widget app(FakeGoals repository, {bool canEdit = true, bool compact = false}) =>
+    MaterialApp(
+      theme: EntrenaTheme.dark,
+      home: Scaffold(
+        body: SingleChildScrollView(
+          child: TrainerClientGoalsPanel(
+            repository: repository,
+            clientId: 'student',
+            canEdit: canEdit,
+            compact: compact,
+          ),
+        ),
       ),
-    ),
-  ),
-);
+    );
 
 void main() {
+  testWidgets(
+    'el resumen compacto conserva oposición y fecha con marcas desplegables',
+    (t) async {
+      final repository = FakeGoals()
+        ..goal = ProfessionalOppositionGoal(
+          revision: 1,
+          title: 'Policía Nacional',
+          targetDate: DateTime(2027, 2, 12),
+          targets: [
+            ProfessionalOppositionGoalTarget(protocol: protocol(), value: 90),
+          ],
+        );
+      await t.pumpWidget(app(repository, compact: true));
+      await t.pumpAndSettle();
+      expect(find.text('Policía Nacional'), findsOneWidget);
+      expect(find.textContaining('12/2/2027'), findsOneWidget);
+      expect(find.text('Carrera protocol'), findsNothing);
+      await t.tap(find.text('Ver 1 marca objetivo'));
+      await t.pumpAndSettle();
+      expect(find.text('Carrera protocol'), findsOneWidget);
+      expect(repository.writes, isEmpty);
+      expect(t.takeException(), isNull);
+    },
+  );
   test('tiempo y resolución reutilizan el contrato de pruebas', () {
     final p = protocol();
     final parsed = ProfessionalAssessmentValidator.parseMark('1:30,12', p);

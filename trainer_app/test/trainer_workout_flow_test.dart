@@ -216,6 +216,11 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.textContaining('4 rondas completas'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(find.textContaining('4 rondas completas'), findsOneWidget);
       expect(find.textContaining('series completadas'), findsNothing);
       expect(find.textContaining('Realizado: Sin registro'), findsNothing);
@@ -469,6 +474,11 @@ void main() {
         isNull,
       );
       await press(tester, 'Ver resultados');
+      await tester.scrollUntilVisible(
+        find.text('Buenas sensaciones'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(find.text('Buenas sensaciones'), findsOneWidget);
       expect(find.text('Esfuerzo final'), findsOneWidget);
       expect(find.text('6/10'), findsOneWidget);

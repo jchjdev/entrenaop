@@ -145,6 +145,16 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
   final _selection = ValueNotifier<_Selection?>(null);
   bool _programLibrary = false;
   TrainerAssignmentVisibility _visibility = TrainerAssignmentVisibility.current;
+  int? _reviewCount;
+  bool _reviewPartial = false;
+  bool _showWeekPending = false;
+  ({
+    String client,
+    DateTime from,
+    DateTime to,
+    TrainerAssignmentVisibility visibility,
+  })?
+  _displayedScope;
   DateTime get _from => _civil(_day, 1 - _day.weekday);
   DateTime get _to => _civil(_from, 6);
   bool get _canAssign =>
@@ -200,12 +210,17 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
   Future<void> _load({bool moreOwn = false, bool moreShared = false}) async {
     final request = ++_generation;
     final id = widget.clientId, from = _from, to = _to;
+    final scope = (client: id, from: from, to: to, visibility: _visibility);
+    final keepVisible = _displayedScope == scope;
+    _displayedScope = scope;
     _selection.value = null;
     setState(() {
       _busy = true;
       _error = null;
       _sharedError = null;
-      if (!moreOwn && !moreShared) {
+      // Al volver de un resultado no vaciar el calendario durante la lectura:
+      // encogerlo un instante fuerza al scroll a perder la posición conservada.
+      if (!moreOwn && !moreShared && !keepVisible) {
         _own.clear();
         _shared.clear();
         _sharing = null;
@@ -221,6 +236,10 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
         _client = workspace;
         _effective = access.effective;
       });
+      if (!moreOwn && !moreShared) {
+        _reviewCount = null;
+        _loadReviews(request, id);
+      }
       if (!workspace.client.active || !access.effective) {
         setState(() {
           _shared.clear();
@@ -285,6 +304,122 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
     } finally {
       if (mounted && request == _generation) setState(() => _busy = false);
     }
+  }
+
+  Future<void> _loadReviews(int request, String clientId) async {
+    try {
+      final rows = await widget.operations.reviews();
+      if (!mounted || request != _generation || widget.clientId != clientId) {
+        return;
+      }
+      setState(() {
+        _reviewCount = rows.where((r) => r.clientId == clientId).length;
+        _reviewPartial = rows.length == 100;
+      });
+    } catch (_) {
+      if (mounted && request == _generation) {
+        setState(() => _reviewCount = null);
+      }
+    }
+  }
+
+  Widget _weekOverview(bool inlineInspector) {
+    final entries = _entries
+        .where((e) => e.status != 'cancelled' && e.assignment?.archived != true)
+        .toList();
+    final pending = entries
+        .where((e) => e.status == 'planned' || e.status == 'in_progress')
+        .toList();
+    return Card(
+      key: const ValueKey('client-week-overview'),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Wrap(
+              spacing: 12,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text(
+                  _client!.client.name,
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                Chip(
+                  label: Text(
+                    _client!.client.active
+                        ? 'Servicio activo'
+                        : 'Servicio inactivo',
+                  ),
+                ),
+                if (_client!.client.isSelf)
+                  const Chip(label: Text('Para mí · No ocupa plaza')),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Semana seleccionada · ${trainerDate(_from)} – ${trainerDate(_to)}',
+            ),
+            if (_error == null)
+              Text(
+                'Pautas visibles · ${entries.where((e) => !e.running).length} de fuerza · ${entries.where((e) => e.running).length} de carrera · ${entries.where((e) => e.status == 'completed').length} realizadas',
+              ),
+            if (_moreOwn || _moreShared || _sharedError != null)
+              const Text(
+                'Resumen parcial: falta cargar parte de la planificación.',
+              ),
+            TextButton.icon(
+              icon: const Icon(Icons.fact_check_outlined),
+              label: Text(
+                _reviewCount == null || _reviewPartial && _reviewCount == 0
+                    ? 'Consultar pendientes de revisión'
+                    : '${_reviewPartial ? 'Al menos ' : ''}$_reviewCount resultados por revisar',
+              ),
+              onPressed: _mutation
+                  ? null
+                  : () async {
+                      await context.push(
+                        '/reviews?client=${Uri.encodeComponent(widget.clientId)}',
+                      );
+                      if (mounted) {
+                        await _loadReviews(_generation, widget.clientId);
+                      }
+                    },
+            ),
+            if (pending.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              const Text('Pendientes de esta semana'),
+              for (final entry in pending.take(_showWeekPending ? 3 : 1))
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(
+                    entry.running ? Icons.directions_run : Icons.fitness_center,
+                  ),
+                  title: Text(entry.name),
+                  subtitle: Text(
+                    '${trainerDate(entry.date)} · ${entry.origin} · ${entry.statusLabel}',
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: _busy || _mutation
+                      ? null
+                      : () => _select(entry, showDialogView: !inlineInspector),
+                ),
+              if (pending.length > 1)
+                TextButton(
+                  onPressed: () =>
+                      setState(() => _showWeekPending = !_showWeekPending),
+                  child: Text(
+                    _showWeekPending
+                        ? 'Mostrar menos pendientes'
+                        : 'Ver pendientes de la semana (${pending.length})',
+                  ),
+                ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _loadLibrary({
@@ -1030,10 +1165,14 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
           key: const ValueKey('client-calendar-scroll'),
           padding: const EdgeInsets.all(16),
           children: [
-            Text(
-              _client?.client.name ?? 'Planificación del alumno',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
+            if (_client != null)
+              if (widget.goals != null)
+                ProfessionalDetailColumns(
+                  primary: _weekOverview(inlineInspector),
+                  secondary: widget.goals!,
+                )
+              else
+                _weekOverview(inlineInspector),
             if (_client?.client.isSelf == true)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 8),
@@ -1043,7 +1182,6 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
                   'Puedes realizarlo con esta misma cuenta y consultar aquí sus resultados. No ocupa plaza.',
                 ),
               ),
-            if (widget.goals != null) widget.goals!,
             const SizedBox(height: 12),
             TrainerAssignmentVisibilityFilter(
               value: _visibility,

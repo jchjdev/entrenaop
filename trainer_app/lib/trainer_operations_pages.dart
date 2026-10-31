@@ -374,8 +374,13 @@ class _TrainerAssignmentAdaptationPageState
 }
 
 class TrainerReviewQueuePage extends StatefulWidget {
-  const TrainerReviewQueuePage({super.key, required this.repository});
+  const TrainerReviewQueuePage({
+    super.key,
+    required this.repository,
+    this.clientId,
+  });
   final TrainerOperationsRepository repository;
+  final String? clientId;
   @override
   State<TrainerReviewQueuePage> createState() => _TrainerReviewQueuePageState();
 }
@@ -384,6 +389,8 @@ class _TrainerReviewQueuePageState extends State<TrainerReviewQueuePage> {
   List<TrainerReviewItem> _items = [];
   bool _busy = true, _more = false;
   String? _error;
+  bool _matches(TrainerReviewItem item) =>
+      widget.clientId == null || item.clientId == widget.clientId;
   @override
   void initState() {
     super.initState();
@@ -415,7 +422,11 @@ class _TrainerReviewQueuePageState extends State<TrainerReviewQueuePage> {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
-      title: const Text('Resultados por revisar'),
+      title: Text(
+        widget.clientId == null
+            ? 'Resultados por revisar'
+            : 'Resultados del alumno por revisar',
+      ),
       actions: [
         IconButton(
           onPressed: _busy ? null : _load,
@@ -435,19 +446,23 @@ class _TrainerReviewQueuePageState extends State<TrainerReviewQueuePage> {
           Text(_error!),
           TextButton(onPressed: _load, child: const Text('Reintentar')),
         ],
-        if (!_busy && _items.isEmpty && _error == null)
-          const Padding(
-            padding: EdgeInsets.all(24),
-            child: Text('No hay resultados pendientes de revisión.'),
+        if (!_busy && _items.where(_matches).isEmpty && _error == null)
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              _more
+                  ? 'No hay resultados de este alumno entre los cargados. Carga más para continuar.'
+                  : 'No hay resultados pendientes de revisión${widget.clientId == null ? '' : ' de este alumno'}.',
+            ),
           ),
         if (_items.isNotEmpty)
           Text(
-            '${_items.length} resultados cargados${_more ? ' · listado parcial' : ''}',
+            '${_items.where(_matches).length} resultados en esta selección${_more ? ' · listado parcial, carga más para continuar' : ''}',
           ),
         ProfessionalCatalogGrid(
           minCardWidth: 340,
           children: [
-            for (final item in _items)
+            for (final item in _items.where(_matches))
               ProfessionalResourceCard(
                 leading: const ProfessionalResourceIcon(
                   Icons.fact_check_outlined,
@@ -461,7 +476,7 @@ class _TrainerReviewQueuePageState extends State<TrainerReviewQueuePage> {
                     ? null
                     : () async {
                         await context.push(
-                          '/clients/${item.clientId}/workouts/${item.assignment.id}/result',
+                          '/clients/${item.clientId}/workouts/${item.assignment.id}/result${widget.clientId == null ? '?review=all' : ''}',
                         );
                         if (mounted) await _load();
                       },
@@ -478,23 +493,26 @@ class _TrainerReviewQueuePageState extends State<TrainerReviewQueuePage> {
   );
 }
 
-Future<void> showTrainerReviewDialog(
+Future<bool> showTrainerReviewDialog(
   BuildContext context,
   TrainerOperationsRepository repository,
   String assignmentId,
   int resultRevision,
-  String? previousNote,
-) async {
-  await showDialog<bool>(
-    context: context,
-    barrierDismissible: false,
-    builder: (_) => _ReviewDialog(
-      repository: repository,
-      assignmentId: assignmentId,
-      revision: resultRevision,
-      previousNote: previousNote,
-    ),
-  );
+  String? previousNote, {
+  String confirmLabel = 'Marcar revisado',
+}) async {
+  return await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => _ReviewDialog(
+          repository: repository,
+          assignmentId: assignmentId,
+          revision: resultRevision,
+          previousNote: previousNote,
+          confirmLabel: confirmLabel,
+        ),
+      ) ??
+      false;
 }
 
 class _ReviewDialog extends StatefulWidget {
@@ -503,11 +521,13 @@ class _ReviewDialog extends StatefulWidget {
     required this.assignmentId,
     required this.revision,
     this.previousNote,
+    required this.confirmLabel,
   });
   final TrainerOperationsRepository repository;
   final String assignmentId;
   final int revision;
   final String? previousNote;
+  final String confirmLabel;
   @override
   State<_ReviewDialog> createState() => _ReviewDialogState();
 }
@@ -541,6 +561,7 @@ class _ReviewDialogState extends State<_ReviewDialog> {
     },
     builder: (context, submit, saving, error, markDirty) => AlertDialog(
       title: const Text('Marcar resultado revisado'),
+      scrollable: true,
       content: SizedBox(
         width: 520,
         child: Column(
@@ -573,7 +594,7 @@ class _ReviewDialogState extends State<_ReviewDialog> {
         FilledButton(
           onPressed: saving ? null : () => submit(true),
           child: Text(
-            error == null ? 'Marcar revisado' : 'Reintentar la revisión',
+            error == null ? widget.confirmLabel : 'Reintentar la revisión',
           ),
         ),
       ],

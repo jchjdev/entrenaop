@@ -24,6 +24,17 @@ class TrainerClientNavigation extends StatelessWidget {
     );
   }
 
+  void _openArea(BuildContext context, String path) {
+    if (location.toString() == path) return;
+    // Cambiar de área sustituye la ficha, conservando debajo la agenda o
+    // bandeja desde la que se abrió. Una entrada directa conserva su URL.
+    if (context.canPop()) {
+      context.pushReplacement(path);
+    } else {
+      context.go(path);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final id = location.pathSegments[1];
@@ -90,9 +101,7 @@ class TrainerClientNavigation extends StatelessWidget {
                           label: tab.$2,
                           selected: area == tab.$1,
                           onPressed: () {
-                            if (location.toString() != tab.$3) {
-                              context.go(tab.$3);
-                            }
+                            _openArea(context, tab.$3);
                           },
                         ),
                     ],
@@ -101,7 +110,7 @@ class TrainerClientNavigation extends StatelessWidget {
               ),
               PopupMenuButton<String>(
                 tooltip: 'Más opciones del alumno',
-                onSelected: (path) => context.go(path),
+                onSelected: (path) => _openArea(context, path),
                 itemBuilder: (_) => [
                   PopupMenuItem(
                     value: '$base/workouts',

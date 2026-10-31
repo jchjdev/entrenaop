@@ -1,5 +1,18 @@
 # Registro de decisiones vigentes
 
+**Cierre del recorrido profesional · 31/10/2026:** Javier pide completar los
+cinco ajustes propuestos de Agenda → ficha → resultados. La ficha muestra un
+resumen de las pautas visibles de la semana, pendientes de revisión cargados y
+objetivo de oposición compacto. Los cambios de área conservan debajo la agenda
+o bandeja de origen y respetan las guardas de salida. El resumen compartido de
+resultados distingue diferencias medidas, datos ausentes y condiciones a revisar;
+AMRAP conserva su agregado de rondas, sin inventar series ni una nota deportiva.
+«Revisar y siguiente» confirma el guardado y la revisión vigente antes de buscar
+otra pauta: del mismo alumno en la ficha, o de cualquier alumno en la bandeja
+general. La paginación parcial no se presenta como bandeja vacía. Se reutilizan
+operaciones, MFA, permisos, UUID y revisión de resultados existentes, sin SQL ni
+dependencias nuevas. [Contrato](TRAINER_PLATFORM.md#ficha-resultados-y-revisión-continua--31102026).
+
 **Agenda y seguimiento directo · 31/10/2026:** Javier confirma unificar la
 asignación de sesión, alumno y fecha en una confirmación, sin volver a elegir
 la sesión arrastrada ni el alumno ya filtrado. La sesión del calendario abre

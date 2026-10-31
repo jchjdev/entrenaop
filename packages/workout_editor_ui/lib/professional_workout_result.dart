@@ -8,6 +8,7 @@ import 'package:workout_core/running_pace_analysis.dart';
 
 import 'workout_result_review_panel.dart';
 import 'running_pace_chart.dart';
+import 'workout_execution_summary.dart';
 
 String _resultDate(DateTime d) =>
     '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
@@ -46,14 +47,15 @@ class _TrainerWorkoutResultContentState
         )
         .toList();
     final blocks = _resultBlocks(visible);
-    final hasSeries = sets.any((set) => set['block_format'] != 'amrap');
+    final series = sets.where((set) => set['block_format'] != 'amrap');
+    final hasSeries = series.isNotEmpty;
     final status = switch (result['status']) {
       'completed' => 'Completada',
       'abandoned' => 'Abandonada',
       _ => 'En curso',
     };
-    final completed = sets.where((s) => s['status'] == 'completed').length;
-    final skipped = sets.where((s) => s['status'] == 'skipped').length;
+    final completed = series.where((s) => s['status'] == 'completed').length;
+    final skipped = series.where((s) => s['status'] == 'skipped').length;
     final started = DateTime.tryParse(result['started_at'] as String? ?? '');
     final abandonment = switch (result['abandonment_reason']) {
       'lack_of_time' => 'Falta de tiempo',
@@ -85,6 +87,8 @@ class _TrainerWorkoutResultContentState
             if (started != null)
               Text('Inicio: ${_resultDate(started.toLocal())}'),
             const SizedBox(height: 16),
+            WorkoutExecutionSummary(review: review),
+            const SizedBox(height: 8),
             if (hasSeries)
               Text(
                 '$completed ${completed == 1 ? 'serie completada' : 'series completadas'} · $skipped omitidas',

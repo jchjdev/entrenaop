@@ -1,7 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/material.dart';
 import 'package:entrenaop_trainer/trainer_workout_repository.dart';
 
-import 'trainer_workout_result_groups_test.dart' show series, resultApp;
+import 'trainer_workout_result_groups_test.dart'
+    show series, resultApp, showResultDetails;
 
 void main() {
   testWidgets(
@@ -14,9 +16,16 @@ void main() {
       ];
       await tester.pumpWidget(resultApp(sets));
       await tester.pumpAndSettle();
+      await showResultDetails(tester);
       expect(find.text('2/3 completadas · 1 omitida'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('Solo diferencias con la pauta'),
+        -200,
+        scrollable: find.byType(Scrollable).first,
+      );
       await tester.tap(find.text('Solo diferencias con la pauta'));
       await tester.pumpAndSettle();
+      await showResultDetails(tester);
       expect(find.text('1/2 completadas · 1 omitida'), findsOneWidget);
       await tester.ensureVisible(find.text('Press banca'));
       await tester.pumpAndSettle();
