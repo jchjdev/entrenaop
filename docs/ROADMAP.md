@@ -3,6 +3,8 @@
 **31/10/2026 · portátiles y distribución compartida:** Agenda incorpora altura
 automática/compacta/amplia; los creadores de Trainer y ADMIN comparten columnas
 ajustables con ratón o teclado, límites de ancho y conservación del borrador.
+Publicación automática e integridad HTTPS comprobadas en ambos portales Dev
+con `e658149c`; siguiente recorrido: aceptación de Javier en su portátil.
 [Contrato y evidencia](TRAINER_DESKTOP_2026_10_25.md#portátiles-densidad-y-columnas-ajustables--31102026).
 
 **31/10/2026 · recorrido completo de Agenda, ficha y revisión de resultados:**

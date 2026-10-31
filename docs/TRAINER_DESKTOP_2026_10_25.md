@@ -35,6 +35,21 @@ de widgets reales a 1366 × 768 revisadas: agenda compacta, fuerza y carrera con
 navegación completa del portal. El arrastre de biblioteca, reordenación y
 asignación mantienen sus pruebas existentes.
 
+Publicación Dev comprobada el 31/10 con código
+`e658149ce63a03255829f7dc0f3abaa47209f7b2`. Terminan correctamente las
+publicaciones automáticas de [Trainer](https://github.com/jchjdev/entrenaop/actions/runs/41182329152)
+y [ADMIN](https://github.com/jchjdev/entrenaop/actions/runs/41182329137).
+Se comprueban de nuevo por HTTPS manifiestos, entrada activa, SHA-256 del
+JavaScript, cabeceras y MIME de WebAssembly. Ambos sirven `development`,
+proyecto `sxbxfjqgoddzhtcyhalw`, en sus respectivos subdominios:
+
+- Trainer: release `e658149ce63a03255829f7dc0f3abaa47209f7b2-41182329152-1`,
+  SHA-256 `c809095ded59c935fc170976c28eddced817b52f31d67b4b454b2ace176720db`.
+- ADMIN: release `e658149ce63a03255829f7dc0f3abaa47209f7b2-41182329137-1`,
+  SHA-256 `77722a8164a59f39127b7c8337cadbe65b3b7452ac4b32fbb3185fac56ea3e24`.
+
+La aceptación de Javier en su portátil sigue pendiente.
+
 ## Acuerdo y alcance
 
 Javier aprueba implementar en Trainer y ADMIN la propuesta de escritorio y sus
