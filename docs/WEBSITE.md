@@ -8,6 +8,44 @@ La selección final de pantallas y el archivo de vídeo están pendientes.
 La pieza se preparará con datos de demostración. Esta decisión todavía no
 sustituye la imagen ni acredita que exista un vídeo integrado.
 
+### Guion de demostración propuesto · 31/10/2026
+
+Javier pide preparar alumnos y contenido ficticios para poder grabar la app.
+Se propone una pieza de aproximadamente 25–30 segundos, sin sonido y en bucle,
+con una indicación discreta de datos de demostración. No se atribuirán mejoras
+deportivas, opiniones ni resultados comerciales a clientes reales.
+
+| Personaje ficticio | Uso en la demostración |
+| --- | --- |
+| Lucía Vega | Deportista protagonista: semana con fuerza y carrera, sesión pendiente y resultados de ejemplo. |
+| Dani Torres | Alumno que trabaja la carrera; aparece en el listado profesional y en su agenda. |
+| Nora Martín | Alumna con trabajo de dominadas y una revisión técnica de ejemplo. |
+| Marcos Vidal | Alumno centrado en mantener su condición física, con seguimiento reciente. |
+
+El preparador se identifica como «Entrenador demo». No hacen falta correos,
+teléfonos ni fotografías personales. Los nombres, estados y resultados son
+material de demostración, no personas ni historiales de entrenamiento reales.
+
+| Tiempo orientativo | Escena propuesta con pantallas existentes |
+| --- | --- |
+| 0–4 s | Inicio y preparación de Lucía. |
+| 4–9 s | Mi plan y organización de su semana. |
+| 9–14 s | Biblioteca y vista de una sesión guiada. |
+| 14–19 s | Registro o consulta de resultados de ejemplo. |
+| 19–25 s | Trainer: alumnos, agenda y seguimiento del mismo caso. |
+| 25–30 s | Vuelta al espacio con el preparador en la app del deportista. |
+
+Hay herramientas de capturas con widgets reales y repositorios ficticios en
+`tools/athlete_navigation_visual_test.dart` y
+`trainer_app/tool/capture_clients.dart`. Son base de trabajo; no constituyen
+una grabación de navegación ni una app demo completa.
+
+La ruta propuesta es una demo local aislada que reutilice las pantallas y sus
+fronteras de repositorio existentes. Antes de implementarla se concretarán el
+punto de entrada y la herramienta de captura. No se necesitan altas en Dev ni
+cambios en los Cubits, rutas de producción o reglas de negocio para redactar
+este guion. El MP4 y su integración en portada siguen pendientes.
+
 Para recorrer y revisar la maqueta se utiliza el servidor local en
 `http://127.0.0.1:8765/`; debe permanecer abierto durante la revisión.
 El cierre del servidor anterior dejaba sin servicio los enlaces HTTP de esa
