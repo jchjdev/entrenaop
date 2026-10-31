@@ -1,5 +1,13 @@
 # Registro de decisiones vigentes
 
+**Directorio y planes · acuerdo del 31/10/2026:** Javier confirma directorio
+incluido en Profesional y Completo, y complemento opcional de pago en Básico.
+Sustituye la exclusión absoluta del Básico acordada el 30/10. Comprar el derecho
+no publica la ficha: se conservan consentimiento por canal, elegibilidad y
+moderación. No concede Pro ni algoritmo, no fija importes, cupos ni posiciones
+preferentes y no cambia cuentas ni ofertas existentes. Toda preparación comercial
+continúa en pruebas. [Borrador de precios](TRAINER_PRICING_DRAFT.md).
+
 **Búsqueda completa en Trainer · 31/10/2026:** Javier pide buscar sesiones y
 programas en toda la biblioteca, sin cargar previamente las páginas. Las
 consultas y filtros se aplican en servidor antes de paginar, conservando MFA,

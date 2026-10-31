@@ -12,6 +12,8 @@ class SupabaseCoachWorkspaceRepository implements CoachWorkspaceRepository {
   const SupabaseCoachWorkspaceRepository(this._client, this.owner);
   final SupabaseClient _client;
   final String owner;
+  @override
+  String get personalClientId => owner;
   Future<dynamic> _rpc(String name, Map<String, dynamic> args) =>
       authenticatedTrainerRpc(_client, owner, name, params: args);
   String _day(DateTime d) =>

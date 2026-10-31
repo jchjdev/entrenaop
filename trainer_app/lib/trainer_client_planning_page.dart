@@ -4,6 +4,7 @@ import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trainer_access/trainer_access.dart';
+import 'package:trainer_access/profile_photo/presentation.dart';
 import 'package:trainer_access/trainer_calendar.dart';
 import 'package:workout_core/workout_template.dart';
 import 'package:workout_core/guided_program_codec.dart';
@@ -104,11 +105,13 @@ class TrainerClientPlanningPage extends StatefulWidget {
     required this.workouts,
     required this.programs,
     required this.operations,
+    this.photoLoader,
     this.goals,
     this.initialDate,
     this.onCreateSession,
     this.onCreateProgram,
   });
+  final ProfilePhotoLoader? photoLoader;
   final String clientId;
   final TrainerClientWorkspaceRepository workspace;
   final TrainerRepository access;
@@ -347,6 +350,12 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
               runSpacing: 8,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
+                ProfilePhotoAvatar(
+                  name: _client!.client.name,
+                  path: _client!.client.profilePhotoPath,
+                  load: widget.photoLoader,
+                  radius: 20,
+                ),
                 Text(
                   _client!.client.name,
                   style: Theme.of(context).textTheme.headlineSmall,

@@ -60,6 +60,9 @@ class CoachTechniquePending {
 }
 
 abstract class CoachWorkspaceRepository {
+  /// Identidad personal fijada al crear el repositorio autenticado.
+  String get personalClientId;
+
   Future<List<CoachTechniquePending>> pendingTechnique({
     CoachTechniquePending? before,
   });

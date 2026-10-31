@@ -224,6 +224,37 @@ para probar la planificación de Ervi y comenzar el seguimiento de Isabel,
 comprobando recepción, ejecución y resultados. No se da ese recorrido por probado
 por ejecutar fixtures ni se crea un recordatorio automático.
 
+### Mejoras de chat y planificación · 31/10/2026
+
+Javier pide orientación habitual de chat, planificación recibida en móvil y
+avatar junto al nombre. Confirma que el fallo aparece en **Entrenador → Agenda**.
+Se implementa en cliente, sin modificar SQL, permisos ni cuotas:
+
+- `ConversationView`, común a alumno, profesional web y modo Entrenador, muestra
+  antiguo arriba y reciente abajo; editor fijo inferior también en móvil. El
+  cursor de servidor continúa descendente. Conserva borrador/reintento y páginas;
+  al recibir mientras se lee atrás no desplaza y ofrece «Ver mensajes nuevos».
+  Los añadidos en curso de cabeceras/acciones del directorio se preservan como
+  trabajo ajeno; no se guardan dentro de esta entrega.
+- Agenda móvil reúne las pautas propias con las recibidas para la identidad
+  personal fijada por el repositorio autenticado. Reutiliza
+  `get_trainer_shared_calendar`, con autor, estado y consulta sin editar, mover
+  o retirar lo ajeno. Filtra fuentes ajenas al entrenador, duplicados y retiradas,
+  conserva el filtro de alumno y fechas civiles de día/semana/mes. Pagina el
+  calendario personal con su cursor completo y descarta respuestas obsoletas;
+  fallar esa lectura no elimina el resto de sesiones/citas. No consulta otras
+  carteras de alumnos ni crea un vínculo «Para mí» para cargar la agenda.
+- La cabecera de planificación web utiliza `ProfilePhotoAvatar` y el mismo lector
+  privado que las fichas; muestra iniciales si la imagen no está disponible.
+- Fotos, sin cambios: perfil 512×512/JPEG hasta 200 KiB antes de subir, con límite
+  defensivo de repositorio/servidor 500 KiB; ejercicios se reducen para 1280×720 y
+  JPEG hasta 500 KiB. Portadas: variantes 800 px/180 KiB y 1600 px/500 KiB. Estos
+  límites no corresponden a vídeos ni implican subir el original sin reducir.
+
+La app requiere actualizarse desde GitHub y compilarse; no se prepara APK ni se
+acredita prueba física nueva del iPhone en esta tarea. Verificación y publicación
+web se registran cuando finalicen las comprobaciones.
+
 ### Inventario de los dieciséis puntos · 29/10/2026
 
 Javier pide el estado de los dieciséis puntos y añade gestión de borrado de
@@ -523,13 +554,16 @@ Javier confirma estas propuestas el 28/10/2026. La primera entrega técnica del
 
 ### Concreción del 30/10/2026 · pendiente de implementación
 
-**Publicidad y planes.** Javier plantea reservar el directorio a los planes
-profesionales intermedio y superior, excluyendo el básico, y exige pago para
-anunciarse. Es el criterio de diseño futuro del directorio; no aprueba el resto
-de prestaciones, nombres, precios o catálogo de esos planes. Al perder el acceso
-o la elegibilidad se ocultará/suspenderá la ficha, conservando su contenido;
-cancelar no adelanta el final del periodo pagado vigente. El cambio a básico
-debe respetar la fecha efectiva de cambio que se acuerde comercialmente.
+**Publicidad y planes · actualizado por acuerdo del 31/10.** Directorio incluido
+en Profesional y Completo; Básico puede contratarlo como complemento opcional de
+pago. Sustituye la exclusión absoluta del Básico planteada el 30/10. La compra
+no sustituye la publicación voluntaria, aceptación por canal ni moderación. No
+se aprueban por ello importes, cupos, prestaciones completas ni posiciones
+preferentes. Al perder acceso o elegibilidad se ocultará/suspenderá la ficha,
+conservando su contenido; cancelar no adelanta el fin del periodo pagado. Un
+cambio a Básico conserva elegibilidad solo si incluye el complemento vigente.
+Regalos y piloto temporal mantienen su contrato separado.
+[Borrador comercial, sin activar ofertas](TRAINER_PRICING_DRAFT.md).
 
 Javier acepta gestión desde ADMIN y pregunta cómo encajarla con el pago. Se
 propone separar elegibilidad comercial, voluntad de publicación y bloqueo por

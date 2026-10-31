@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:trainer_access/trainer_calendar.dart';
 import 'package:trainer_access/trainer_access.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -60,6 +63,23 @@ class _CoachPlanningAgendaPageState extends State<CoachPlanningAgendaPage> {
   _AgendaView _view = _AgendaView.week;
   List<CoachAssignment> _sessions = [];
   List<TrainerAppointment> _appointments = [];
+  List<SharedCalendarEntry> _personal = [];
+  bool _personalBusy = false, _morePersonal = false;
+  String? _personalError;
+  int _personalGeneration = 0;
+  String get _personalId =>
+      CoachWorkspaceScope.of(context).controller.repository.personalClientId;
+
+  // El cursor sigue la página completa; la vista excluye duplicados y planes
+  // personales automáticos sin convertir una pauta ajena en una editable.
+  Iterable<SharedCalendarEntry> get _received => _personal.where(
+    (e) =>
+        !e.own &&
+        e.source == 'coach' &&
+        e.status != 'cancelled' &&
+        !_sessions.any((s) => s.id == e.id) &&
+        (_client == null || _client == _personalId),
+  );
   bool _initialized = false,
       _busy = false,
       _moreSessions = false,
@@ -103,6 +123,7 @@ class _CoachPlanningAgendaPageState extends State<CoachPlanningAgendaPage> {
         _appointments = [];
       }
     });
+    if (!moreSessions && !moreAppointments) unawaited(_loadPersonal());
     try {
       final sessions = moreAppointments
           ? _sessions
@@ -145,6 +166,47 @@ class _CoachPlanningAgendaPageState extends State<CoachPlanningAgendaPage> {
       }
     } finally {
       if (mounted && generation == _generation) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _loadPersonal({bool more = false}) async {
+    final generation = ++_personalGeneration;
+    final repository = CoachWorkspaceScope.of(context).controller.repository;
+    final from = _from, to = _to;
+    setState(() {
+      _personalBusy = true;
+      _personalError = null;
+      if (!more) {
+        _personal = [];
+        _morePersonal = false;
+      }
+    });
+    try {
+      final page = await repository.sharedCalendar(
+        repository.personalClientId,
+        from,
+        to,
+        after: more ? _personal.lastOrNull : null,
+      );
+      if (!mounted || generation != _personalGeneration) return;
+      if (page.hasMore && page.entries.isEmpty) {
+        throw const FormatException('La página recibida está incompleta.');
+      }
+      setState(() {
+        _personal = more ? [..._personal, ...page.entries] : page.entries;
+        _morePersonal = page.hasMore;
+      });
+    } catch (e) {
+      if (mounted && generation == _personalGeneration) {
+        setState(
+          () => _personalError =
+              'No se pudo completar tu planificación recibida. ${e is Exception ? trainerError(e) : 'Vuelve a intentarlo.'}',
+        );
+      }
+    } finally {
+      if (mounted && generation == _personalGeneration) {
+        setState(() => _personalBusy = false);
+      }
     }
   }
 
@@ -327,12 +389,26 @@ class _CoachPlanningAgendaPageState extends State<CoachPlanningAgendaPage> {
               ),
             _calendar(),
             const SizedBox(height: 12),
-            if (_busy) const LinearProgressIndicator(),
+            if (_busy || _personalBusy) const LinearProgressIndicator(),
             if (_error != null) ...[
               Text(_error!),
               TextButton(onPressed: _load, child: const Text('Reintentar')),
             ],
-            if (_moreSessions || _moreAppointments) ...[
+            if (_personalError != null) ...[
+              Text(_personalError!),
+              TextButton(
+                onPressed: _personalBusy ? null : _loadPersonal,
+                child: const Text('Reintentar planificación recibida'),
+              ),
+            ],
+            if (_morePersonal)
+              TextButton(
+                onPressed: _personalBusy
+                    ? null
+                    : () => _loadPersonal(more: true),
+                child: const Text('Cargar más de mi preparador'),
+              ),
+            if (_moreSessions || _moreAppointments || _morePersonal) ...[
               const Text(
                 'Vista parcial: carga el resto para completar el calendario.',
               ),
@@ -356,6 +432,7 @@ class _CoachPlanningAgendaPageState extends State<CoachPlanningAgendaPage> {
                         DateUtils.isSameDay(s.date, day) &&
                         (_client == null || s.clientId == _client),
                   ) ||
+                  _received.any((s) => DateUtils.isSameDay(s.date, day)) ||
                   _appointments.any(
                     (a) =>
                         DateUtils.isSameDay(a.calendarStart, day) &&
@@ -429,6 +506,11 @@ class _CoachPlanningAgendaPageState extends State<CoachPlanningAgendaPage> {
                             )
                             .map((a) => a.clientId),
                       };
+                      if (_received.any(
+                        (s) => DateUtils.isSameDay(s.date, day),
+                      )) {
+                        ids.add(_personalId);
+                      }
                       final selected = DateUtils.isSameDay(day, _day);
                       return Padding(
                         padding: const EdgeInsets.all(2),
@@ -516,7 +598,14 @@ class _CoachPlanningAgendaPageState extends State<CoachPlanningAgendaPage> {
             )
             .toList()
           ..sort((a, b) => a.calendarStart.compareTo(b.calendarStart));
-    if (sessions.isEmpty && appointments.isEmpty && !_busy && _error == null) {
+    final received = _received.where((s) => DateUtils.isSameDay(s.date, day));
+    if (sessions.isEmpty &&
+        appointments.isEmpty &&
+        received.isEmpty &&
+        !_busy &&
+        !_personalBusy &&
+        _error == null &&
+        _personalError == null) {
       return [
         const Padding(
           padding: EdgeInsets.only(bottom: 10),
@@ -525,6 +614,21 @@ class _CoachPlanningAgendaPageState extends State<CoachPlanningAgendaPage> {
       ];
     }
     return [
+      for (final s in received)
+        _event(
+          _personalId,
+          'Para mí · ${s.trainerName ?? 'Mi preparador'}',
+          s.name,
+          '${switch (s.status) {
+            'planned' => 'Pendiente',
+            'in_progress' => 'En curso',
+            'completed' => 'Completada',
+            'skipped' => 'Omitida',
+            'abandoned' => 'Abandonada',
+            _ => s.status,
+          }} · Solo consulta',
+          s.running ? Icons.directions_run : Icons.fitness_center,
+        ),
       for (final a in appointments)
         _event(
           a.clientId,

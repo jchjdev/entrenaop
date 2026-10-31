@@ -69,6 +69,57 @@ class CoachServer {
 }
 
 void main() {
+  test('el calendario personal usa la identidad fijada y conserva cursor y fechas civiles', () async {
+    final api = CoachServer();
+    addTearDown(api.client.dispose);
+    api.responses['get_trainer_shared_calendar'] = {
+      'shared': true,
+      'has_more': false,
+      'coaches': [],
+      'items': [
+        {
+          'id': 'received',
+          'scheduled_date': '2026-10-31',
+          'template_name': 'Series de Ervi',
+          'source': 'coach',
+          'status': 'planned',
+          'is_own': false,
+        },
+      ],
+    };
+    await api.login();
+    final repo = SupabaseCoachWorkspaceRepository(api.client, owner);
+    expect(repo.personalClientId, owner);
+    final page = await repo.sharedCalendar(
+      repo.personalClientId,
+      DateTime(2026, 10, 26),
+      DateTime(2026, 11, 1),
+    );
+    expect(api.payload['p_expected_owner'], owner);
+    expect(api.payload['p_client_id'], owner);
+    expect(api.payload['p_from'], '2026-10-26');
+    expect(api.payload['p_to'], '2026-11-01');
+    await repo.sharedCalendar(
+      repo.personalClientId,
+      DateTime(2026, 10, 26),
+      DateTime(2026, 11, 1),
+      after: page.entries.single,
+    );
+    expect(api.payload['p_after_date'], '2026-10-31');
+    expect(api.payload['p_after_id'], 'received');
+    api.account = other;
+    await api.login();
+    final count = api.requests.length;
+    await expectLater(
+      repo.sharedCalendar(
+        repo.personalClientId,
+        DateTime(2026, 10, 26),
+        DateTime(2026, 11, 1),
+      ),
+      throwsStateError,
+    );
+    expect(api.requests.length, count);
+  });
   test('el estado profesional procede del servidor, nunca del Pro o metadata editable', () async {
     final api = CoachServer();
     addTearDown(api.client.dispose);

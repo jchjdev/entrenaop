@@ -35,6 +35,8 @@ class FakeSecurity implements TrainerSecurity {
 }
 
 class FakeCoach extends CoachWorkspaceRepository {
+  @override
+  String get personalClientId => 'self';
   bool enabled = true, failed = false, shareEnabled = true;
   int assignmentCalls = 0, failedReviews = 0;
   Map<String, dynamic>? resultData;
@@ -123,7 +125,7 @@ class FakeCoach extends CoachWorkspaceRepository {
     'shared': shareEnabled,
     'has_more': false,
     'coaches': [],
-    'items': !shareEnabled
+    'items': !shareEnabled || clientId == personalClientId
         ? []
         : [
             {

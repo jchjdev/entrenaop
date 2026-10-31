@@ -1,27 +1,29 @@
 # Contrato comercial profesional · propuesta para el punto 14
 
-**Actualización COM-022 · 28/10/2026:** Javier retoma la implementación de pagos,
-inicia el alta de Stripe y diferencia contratación profesional web de Pro personal
-en las tiendas. Se prepara el adaptador de pruebas descrito al final. No existe
-aún Checkout integrado en el portal ni concesión automática tras pago.
+**Estado vigente · 31/10/2026:** el portal y el servidor ya incorporan contratación
+y activación confirmada mediante Checkout/webhook **en pruebas**. El catálogo de
+ensayo descrito al final no fija precios de venta. Javier confirma el encaje del
+directorio en los niveles; importes/cupos y cobertura Pro continúan como propuesta
+en [el borrador comercial](TRAINER_PRICING_DRAFT.md). No se activa producción.
 
-**21/10/2026 · propuesta técnica y núcleo simulado comprobado; proveedor y
-políticas pendientes de decisión humana.** Se añaden el núcleo puro y sus pruebas
-en las rutas reservadas, sin integración de cobros, cuentas externas, secretos,
-contratos aceptados, productos publicados, pruebas Stripe, movimientos de dinero
-ni cambios en Dev/producción.
+**Antecedentes COM-022 · 21–28/10/2026:** se comenzó con núcleo simulado y después
+adaptador Stripe, antes de integrar Checkout en portal. Esa descripción histórica
+no representa el estado actual ni una aprobación de tarifas definitivas.
 
 ## 1. Base vigente y propuesta principal
 
 ### Posibles niveles comerciales · propuesta del 28/10/2026
 
-**Directorio · TRN-040 · 30/10/2026:** Javier plantea diferenciar los futuros
-planes reservando la publicidad voluntaria a intermedio y superior pagados,
-con el básico excluido. No aprueba por ello el resto de prestaciones, nombres,
-precios ni catálogo. La ficha se ocultará al perder elegibilidad; el momento
-efectivo de un cambio de plan y la restauración quedan por concretar. Cancelar
-conserva el periodo pagado acordado. Regalos y gestión de ADMIN siguen separados
-del pago: no se aprueba publicidad gratuita por una concesión manual.
+**Directorio · TRN-040 · acuerdo del 31/10/2026:** Javier confirma publicidad
+voluntaria incluida en Profesional y Completo, y complemento opcional pagado
+para Básico. Sustituye la exclusión absoluta del Básico del 30/10. No aprueba por
+ello precios, cupos ni las prestaciones completas de esos niveles. La compra no
+publica la ficha: siguen siendo necesarios consentimiento por canal y controles
+del directorio. La ficha se ocultará al perder elegibilidad; la fecha efectiva
+del cambio y restauración siguen pendientes. Cancelar conserva el periodo pagado.
+Regalos y gestión de ADMIN siguen separados del pago; regalar herramientas no
+concede automáticamente publicidad. El ensayo temporal del directorio conserva
+su contrato específico. [Importes y cupos propuestos](TRAINER_PRICING_DRAFT.md).
 [Diseño futuro y límites](TRAINER_PLATFORM.md#concreción-del-30102026--pendiente-de-implementación).
 
 Javier plantea conservar el cupo de alumnos y diferenciar tres niveles: gestión

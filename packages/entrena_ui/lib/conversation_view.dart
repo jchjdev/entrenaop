@@ -53,6 +53,8 @@ class ConversationView extends StatefulWidget {
 class _ConversationViewState extends State<ConversationView>
     with WidgetsBindingObserver {
   final _body = TextEditingController();
+  final _scroll = ScrollController();
+  bool _loaded = false, _newMessages = false;
   List<ConversationEntry> _items = [];
   ConversationHeader? _header;
   bool _busy = true, _sending = false, _more = false;
@@ -97,6 +99,7 @@ class _ConversationViewState extends State<ConversationView>
     _timer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _exit?.onExit = null;
+    _scroll.dispose();
     _body.dispose();
     super.dispose();
   }
@@ -143,6 +146,8 @@ class _ConversationViewState extends State<ConversationView>
       await _loading!.future;
       if (!mounted) return;
     }
+    var pixels = 0.0, extent = 0.0;
+    var stick = false, updated = false;
     final completion = Completer<void>();
     _loading = completion;
     if (!quiet) {
@@ -157,7 +162,20 @@ class _ConversationViewState extends State<ConversationView>
         more && _items.isNotEmpty ? _items.last : null,
       );
       if (!mounted) return;
+      final position = _scroll.hasClients ? _scroll.position : null;
+      pixels = position?.pixels ?? 0.0;
+      extent = position?.maxScrollExtent ?? 0.0;
+      stick =
+          !more &&
+          (!_loaded || !quiet || _sending || (position?.extentAfter ?? 0) < 80);
+      updated = true;
       setState(() {
+        final incoming = rows.any(
+          (row) => !_items.any((old) => old.id == row.id),
+        );
+        if (quiet && !stick && incoming) _newMessages = true;
+        if (stick) _newMessages = false;
+        _loaded = true;
         _header = header;
         _error = null;
         // Si llegaron más de una página, reinicia el cursor para no ocultar el hueco.
@@ -184,7 +202,38 @@ class _ConversationViewState extends State<ConversationView>
       if (mounted && !quiet) setState(() => _busy = false);
       _loading = null;
       completion.complete();
+      if (mounted && updated) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted || !_scroll.hasClients) return;
+          final current = _scroll.position;
+          // Al anteponer historial, conserva la zona que se estaba leyendo.
+          final target = stick
+              ? current.maxScrollExtent
+              : more
+              ? pixels + current.maxScrollExtent - extent
+              : pixels;
+          if (stick) {
+            _scrollLatest();
+          } else {
+            _scroll.jumpTo(target.clamp(0.0, current.maxScrollExtent));
+          }
+        });
+      }
     }
+  }
+
+  void _scrollLatest([int remaining = 3]) {
+    if (!mounted || !_scroll.hasClients) return;
+    _scroll.jumpTo(_scroll.position.maxScrollExtent);
+    if (remaining == 0) return;
+    // ListView estima las filas fuera de pantalla. Reajusta de forma acotada
+    // tras medirlas para alcanzar el último mensaje, también con texto largo.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _scroll.hasClients && _scroll.position.extentAfter > 1) {
+        _scrollLatest(remaining - 1);
+      }
+    });
+    WidgetsBinding.instance.scheduleFrame();
   }
 
   Future<void> _send() async {
@@ -223,8 +272,8 @@ class _ConversationViewState extends State<ConversationView>
         controller: _body,
         enabled: !_sending && _pending == null,
         maxLength: 4000,
-        minLines: 2,
-        maxLines: 6,
+        minLines: 1,
+        maxLines: 4,
         onChanged: (_) => setState(() {}),
         decoration: const InputDecoration(
           labelText: 'Mensaje para la preparación',
@@ -270,6 +319,7 @@ class _ConversationViewState extends State<ConversationView>
                     : 900,
               ),
               child: ListView(
+                controller: _scroll,
                 padding: const EdgeInsets.all(20),
                 children: [
                   if (_busy) const LinearProgressIndicator(),
@@ -280,25 +330,25 @@ class _ConversationViewState extends State<ConversationView>
                       child: const Text('Reintentar consulta'),
                     ),
                   ],
-                  if (_header?.canSend == false)
-                    const Text(
-                      'Conversación conservada en consulta. El servicio no admite nuevos envíos ahora.',
-                    ),
-                  if (!ProfessionalWorkspaceScope.isDesktop(context) &&
-                      (_header?.canSend == true || _pending != null))
-                    _composer(),
-                  const SizedBox(height: 16),
                   Text(
                     widget.refreshInterval == null
-                        ? 'Mensajes más recientes primero. Actualiza para consultar respuestas.'
-                        : 'Mensajes más recientes primero. Las respuestas se actualizan automáticamente.',
+                        ? 'Actualiza para consultar respuestas.'
+                        : 'Las respuestas se actualizan automáticamente.',
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
+                  if (_more)
+                    TextButton(
+                      onPressed: _busy || _sending
+                          ? null
+                          : () => _load(more: true),
+                      child: const Text('Cargar mensajes anteriores'),
+                    ),
                   if (!_busy && _items.isEmpty && _error == null)
                     const Padding(
                       padding: EdgeInsets.all(24),
                       child: Text('Todavía no hay mensajes.'),
                     ),
-                  for (final entry in _items)
+                  for (final entry in _items.reversed)
                     Align(
                       alignment: entry.mine
                           ? Alignment.centerRight
@@ -341,25 +391,46 @@ class _ConversationViewState extends State<ConversationView>
                         ),
                       ),
                     ),
-                  if (_more)
-                    TextButton(
-                      onPressed: _busy || _sending
-                          ? null
-                          : () => _load(more: true),
-                      child: const Text('Cargar mensajes anteriores'),
-                    ),
                 ],
               ),
             ),
           ),
         ),
-        if (ProfessionalWorkspaceScope.isDesktop(context) &&
-            (_header?.canSend == true || _pending != null))
+        if (_newMessages)
+          TextButton.icon(
+            onPressed: () {
+              setState(() => _newMessages = false);
+              WidgetsBinding.instance.addPostFrameCallback(
+                (_) => _scrollLatest(),
+              );
+            },
+            icon: const Icon(Icons.arrow_downward),
+            label: const Text('Ver mensajes nuevos'),
+          ),
+        if (_header?.canSend == false)
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: const Text(
+                'Conversación conservada en consulta. El servicio no admite nuevos envíos ahora.',
+              ),
+            ),
+          ),
+        if (_header?.canSend == true || _pending != null)
           Material(
             color: Theme.of(context).colorScheme.surface,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: _composer(),
+            child: SafeArea(
+              top: false,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1200),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                    child: _composer(),
+                  ),
+                ),
+              ),
             ),
           ),
       ],

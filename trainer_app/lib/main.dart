@@ -1177,6 +1177,7 @@ class _TrainerAppState extends State<TrainerApp> {
                 return guarded(
                   state,
                   TrainerClientPlanningPage(
+                    photoLoader: photos().download,
                     key: ValueKey(
                       'client-planning-$identity-$id-${state.uri.queryParameters['date']}',
                     ),

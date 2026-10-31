@@ -6,6 +6,99 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  testWidgets('móvil lee del antiguo al reciente con editor fijo abajo', (
+    t,
+  ) async {
+    await t.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => t.binding.setSurfaceSize(null));
+    await t.pumpWidget(
+      MaterialApp(
+        home: ConversationView(
+          header: () async =>
+              const ConversationHeader(title: 'Alumno', canSend: true),
+          load: (_) async => [
+            ConversationEntry(
+              id: '2',
+              body: 'Último mensaje',
+              createdAt: DateTime(2026, 10, 31, 12),
+              mine: true,
+            ),
+            ConversationEntry(
+              id: '1',
+              body: 'Mensaje anterior',
+              createdAt: DateTime(2026, 10, 31, 11),
+              mine: false,
+            ),
+          ],
+          send: (_, _) async {},
+          newOperationId: () => 'operation',
+          errorLabel: (_) => 'Error',
+        ),
+      ),
+    );
+    await t.pumpAndSettle();
+    expect(
+      t.getTopLeft(find.text('Mensaje anterior')).dy,
+      lessThan(t.getTopLeft(find.text('Último mensaje')).dy),
+    );
+    expect(
+      t.getTopLeft(find.text('Último mensaje')).dy,
+      lessThan(t.getTopLeft(find.byType(TextField)).dy),
+    );
+    expect(t.takeException(), isNull);
+  });
+
+  testWidgets(
+    'una respuesta no desplaza la lectura anterior ni borra el borrador',
+    (t) async {
+      var calls = 0;
+      ConversationEntry entry(int n) => ConversationEntry(
+        id: '$n',
+        body: 'Contenido $n',
+        createdAt: DateTime(2026, 10, 31, 0, n),
+        mine: false,
+      );
+      await t.pumpWidget(
+        MaterialApp(
+          home: ConversationView(
+            refreshInterval: const Duration(seconds: 15),
+            header: () async =>
+                const ConversationHeader(title: 'Alumno', canSend: true),
+            load: (_) async {
+              calls++;
+              return List.generate(
+                50,
+                (i) => entry((calls == 1 ? 50 : 51) - i),
+              );
+            },
+            send: (_, _) async {},
+            newOperationId: () => 'operation',
+            errorLabel: (_) => 'Error',
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+      await t.enterText(find.byType(TextField), 'Conservar borrador');
+      final list = t.widget<ListView>(find.byType(ListView));
+      list.controller!.jumpTo(0);
+      await t.pumpAndSettle();
+      final before = list.controller!.position.pixels;
+      await t.pump(const Duration(seconds: 15));
+      await t.pumpAndSettle();
+      expect(list.controller!.position.pixels, closeTo(before, 1));
+      expect(find.text('Ver mensajes nuevos'), findsOneWidget);
+      expect(
+        t.widget<TextField>(find.byType(TextField)).controller!.text,
+        'Conservar borrador',
+      );
+      await t.tap(find.text('Ver mensajes nuevos'));
+      await t.pumpAndSettle();
+      expect(find.text('Contenido 51'), findsOneWidget);
+      expect(find.text('Ver mensajes nuevos'), findsNothing);
+      await t.pumpWidget(const SizedBox());
+    },
+  );
+
   testWidgets(
     'consulta lenta no se solapa y no acredita lectura bajo otra pantalla',
     (t) async {
@@ -152,7 +245,7 @@ void main() {
     await t.pumpAndSettle();
     await t.scrollUntilVisible(
       find.text('Cargar mensajes anteriores'),
-      500,
+      -500,
       maxScrolls: 40,
       scrollable: find.byType(Scrollable).first,
     );
@@ -163,6 +256,11 @@ void main() {
     await t.pumpAndSettle();
     expect(newestCalls, 2);
     expect(find.text('Cargar mensajes anteriores'), findsNothing);
+    await t.scrollUntilVisible(
+      find.text('Mensaje 0'),
+      -300,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('Mensaje 0'), findsOneWidget);
     await t.pumpWidget(const SizedBox());
   });
