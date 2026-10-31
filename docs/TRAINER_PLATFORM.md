@@ -1176,3 +1176,16 @@ terminan en ROLLBACK. Se contrastan cuatro migraciones propias aplicadas en Dev
 y los veinte precios activos del sandbox contra sus ofertas del servidor.
 No se incorporan los cambios Apple o promocionales abiertos en otros trabajos.
 La aceptación manual del Checkout con los precios nuevos sigue pendiente.
+
+### Publicación comprobada del catálogo y creador · 31/10/2026
+
+El código de `eaf091ec` está incluido en la revisión publicada `9ee9acfa`.
+Trainer termina correctamente en [41227859256](https://github.com/jchjdev/entrenaop/actions/runs/41227859256)
+y ADMIN en [41228571275](https://github.com/jchjdev/entrenaop/actions/runs/41228571275).
+Se verifican por HTTPS identidad, revisión, arranque y hash de JavaScript de
+ambos portales: `development`, proyecto `sxbxfjqgoddzhtcyhalw`. Publicación
+automática, sin administrador de archivos Hostinger. Las 421 pruebas de Trainer
+incluyen conservar la oferta pendiente y recuperar la contratación preparada
+por otra pestaña. La prueba manual de registro y tarjeta ficticia con el catálogo
+nuevo sigue pendiente; el ensayo activa acceso/cupo, no concede aún Pro ni la
+elegibilidad comercial del directorio. No se activan cobros reales.

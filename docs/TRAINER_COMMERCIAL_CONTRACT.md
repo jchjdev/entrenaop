@@ -796,3 +796,32 @@ acceso; la evidencia simulada de pago proyecta exactamente su cupo; se rechazan
 identidad ajena y aal1. Esto no acredita veinte pagos con tarjeta en Checkout.
 La aceptación con tarjeta ficticia de la oferta antigua del 28/10 conserva su
 alcance histórico; la del catálogo nuevo está pendiente de prueba manual.
+
+### Publicación comprobada del catálogo y creador · 31/10/2026
+
+El código de `eaf091ec` está incluido en la revisión publicada `9ee9acfa`.
+Trainer termina correctamente en [41227859256](https://github.com/jchjdev/entrenaop/actions/runs/41227859256)
+y ADMIN en [41228571275](https://github.com/jchjdev/entrenaop/actions/runs/41228571275).
+Se verifican por HTTPS identidad, revisión, arranque y hash de JavaScript de
+ambos portales: `development`, proyecto `sxbxfjqgoddzhtcyhalw`. Publicación
+automática, sin administrador de archivos Hostinger. Las 421 pruebas de Trainer
+incluyen conservar la oferta pendiente y recuperar la contratación preparada
+por otra pestaña. La prueba manual de registro y tarjeta ficticia con el catálogo
+nuevo sigue pendiente; el ensayo activa acceso/cupo, no concede aún Pro ni la
+elegibilidad comercial del directorio. No se activan cobros reales.
+
+### Prueba manual del catálogo nuevo · pendiente
+
+1. Crear una cuenta desde Trainer, confirmar el correo y entrar. Usar una
+   cuenta sin regalos previos de ADMIN para comprobar la activación desde cero.
+2. Abrir «Suscripción profesional · pruebas» y completar su doble factor.
+3. Elegir cupo y nivel. Comprobar el importe antes de abrir Checkout.
+4. Usar la tarjeta ficticia 4242 4242 4242 4242, fecha futura y CVC de prueba.
+5. Volver al portal: el pago pendiente no debe habilitar el panel. Tras acreditar
+   el pago, comprobar suscripción activa y capacidad del plan contratado.
+6. Cancelar desde «Gestionar suscripción»: conservar periodo pagado e historial.
+
+El ensayo no concede todavía Pro ni elegibilidad comercial del directorio.
+Para ensayar compras sucesivas de otros niveles usar otra cuenta mientras no
+esté implementado el cambio de plan; no confundir cancelar renovación con
+terminar inmediatamente el periodo ya acreditado. No se valida aquí venta real.
