@@ -408,11 +408,11 @@ class _ConversationViewState extends State<ConversationView>
             label: const Text('Ver mensajes nuevos'),
           ),
         if (_header?.canSend == false)
-          SafeArea(
+          const SafeArea(
             top: false,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: const Text(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text(
                 'Conversación conservada en consulta. El servicio no admite nuevos envíos ahora.',
               ),
             ),
