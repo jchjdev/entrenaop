@@ -830,7 +830,20 @@ La corrección pasa los cuatro análisis y las baterías completas: deportista 1
 Incluye apertura desde el aviso y la navegación, contadores a 320 píxeles y
 texto doble, solicitud aceptada al volver, traslado a Alumnos y preparación de
 la invitación sin alta automática ni desbordar el cupo. No cambia contratos SQL,
-permisos o datos reales. Publicación de la corrección pendiente de verificar.
+permisos o datos reales.
+
+**Publicación comprobada de la corrección · 31/10/2026:** implementación
+`3ecd5e72`; ADMIN publicado en esa revisión. Trainer se publica desde `76306efa`,
+que incorpora únicamente avances documentales sobre el mismo código. Las
+subidas documentales simultáneas hicieron actuar el control de main y detener
+tres intentos de publicación; se coordinó la espera con los chats activos y se
+conservaron las comprobaciones. El último proceso de
+[Trainer termina correctamente](https://github.com/jchjdev/entrenaop/actions/runs/41218293954);
+[ADMIN también está correcto](https://github.com/jchjdev/entrenaop/actions/runs/41214560406).
+Verificación HTTPS independiente de ambos: revisiones esperadas, entorno Dev,
+backend `sxbxfjqgoddzhtcyhalw`, fuentes limpias y recursos/hashes correctos.
+El siguiente recorrido del directorio es la invitación real y su aceptación por
+Isabel, con continuidad del historial. Esta comprobación técnica no la vincula.
 
 **Siguiente recorrido:** cargar el código nuevo mediante Hot Restart en localhost
 y recargar Trainer. Isabel entra en Mi preparador → Buscar preparador → ficha de

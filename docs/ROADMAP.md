@@ -112,7 +112,12 @@ se actualiza al volver del chat y el usuario recibe el motivo por el que no
 puede escribir. Desde el contacto aceptado se abre la invitación existente por
 correo y enlace personal. Cuatro análisis limpios y baterías completas correctas:
 1541 deportista, 415 Trainer, 365 ADMIN, 59 UI; tres omisiones previas.
-Publicación de esta corrección pendiente de verificar.
+Corrección `3ecd5e72` publicada y contrastada por HTTPS: ADMIN en esa revisión,
+Trainer en `76306efa` (solo documentación adicional). El control de main detuvo
+los intentos anteriores al avanzar otros chats; se coordinó el guardado y la
+última publicación termina correctamente. Entrega técnica cerrada; único
+siguiente recorrido: Javier inicia la invitación y la comparte, Isabel la acepta
+y se comprueba que continúa el mismo historial.
 [Recorrido](TRAINER_PLATFORM.md#primer-contacto-en-el-chat-existente--31102026).
 
 **TRN-040 · 31/10/2026 · contacto por el chat existente publicado y habilitado en Dev:**
