@@ -25,13 +25,13 @@ class AppleResultsCoordinator extends ChangeNotifier {
     final before = catalog?.results
         .map(
           (r) =>
-              '${r.id}:${r.state}:${r.seconds}:${r.meters}:${r.averageHeartRate}:${r.maxHeartRate}',
+              '${r.id}:${r.state}:${r.seconds}:${r.meters}:${r.averageHeartRate}:${r.maxHeartRate}:${r.executionId}:${r.intervalCount}:${r.effortScore}',
         )
         .join('|');
     final after = next.results
         .map(
           (r) =>
-              '${r.id}:${r.state}:${r.seconds}:${r.meters}:${r.averageHeartRate}:${r.maxHeartRate}',
+              '${r.id}:${r.state}:${r.seconds}:${r.meters}:${r.averageHeartRate}:${r.maxHeartRate}:${r.executionId}:${r.intervalCount}:${r.effortScore}',
         )
         .join('|');
     catalog = next;

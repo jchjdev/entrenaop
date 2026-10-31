@@ -2090,3 +2090,19 @@ dos pulsos de la prueba manual en su iPhone 12, tras instalar la versión
 corregida con Supabase de desarrollo, y confirma después la sincronía
 percibida entre vibración y sonido en su prueba. Contrato y comprobaciones
 en `docs/WORKOUT_AUDIO_2026_10_08.md`.
+
+## INT-023 · Actualización conjunta de retorno Apple · 31/10/2026
+
+Javier pide terminar el retorno por intervalos y el cierre semanal en una sola
+actualización para iPhone, evitando instalaciones sucesivas mientras el Mac de
+Isabel está ocupado. Se implementa la lectura de mediciones por actividad de
+HealthKit y esfuerzo registrado cuando existen, sin repartir totales ni inventar
+mediciones ausentes. La referencia exacta conserva la pauta y el ámbito de cuenta.
+La revisión y confirmación reutilizan el puerto y el ciclo de ejecución comunes
+a Garmin: semana, historial y preparador vigente comparten el resultado. Pruebas
+ficticias y conflictos no pueden completar la cita; la confirmación es idempotente.
+El cierre requiere revisar los intervalos y el esfuerzo global; la recogida al
+abrir/reanudar es automática con consentimiento. No se promete ejecución con la
+app cerrada ni programación automática Apple desde nube. Solo Dev; nueva lectura
+y cierre real en el reloj pendientes de aceptación física.
+[Contrato y comprobaciones](DEVICE_APPLE_WATCH.md#intervalos-y-cierre-de-la-cita--31102026).

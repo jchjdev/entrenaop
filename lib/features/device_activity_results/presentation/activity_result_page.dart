@@ -6,8 +6,16 @@ import '../domain/activity_result.dart';
 import 'activity_result_cubit.dart';
 
 class ActivityResultPage extends StatefulWidget {
-  const ActivityResultPage({super.key, required this.repository});
+  const ActivityResultPage({
+    super.key,
+    required this.repository,
+    this.provider = 'Garmin',
+    this.initialActivityId,
+    this.initialScheduledId,
+  });
   final ActivityResultRepository repository;
+  final String provider;
+  final String? initialActivityId, initialScheduledId;
   @override
   State<ActivityResultPage> createState() => _ActivityResultPageState();
 }
@@ -16,8 +24,21 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
   late final ActivityResultCubit cubit = ActivityResultCubit(
     widget.repository,
     () => const Uuid().v4(),
-  )..load();
+  );
+  @override
+  void initState() {
+    super.initState();
+    cubit.load().then((_) {
+      if (mounted &&
+          widget.initialActivityId != null &&
+          widget.initialScheduledId != null) {
+        cubit.preview(widget.initialActivityId!, widget.initialScheduledId!);
+      }
+    });
+  }
+
   final Map<String, String> _selected = {};
+  String? _appointment(ReceivedRun run) => run.scheduledId ?? _selected[run.id];
   @override
   void dispose() {
     cubit.close();
@@ -26,7 +47,7 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Actividades recibidas de Garmin')),
+    appBar: AppBar(title: Text('Actividades recibidas de ${widget.provider}')),
     body: BlocBuilder<ActivityResultCubit, ActivityResultState>(
       bloc: cubit,
       builder: (context, state) {
@@ -77,8 +98,10 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
   List<Widget> _catalog(ActivityResultState state) {
     final catalog = state.catalog;
     return [
-      const Text(
-        'Después de sincronizar el reloj con Garmin Connect, tus actividades compatibles aparecerán aquí.',
+      Text(
+        widget.provider == 'Garmin'
+            ? 'Después de sincronizar el reloj con Garmin Connect, tus actividades compatibles aparecerán aquí.'
+            : 'Las actividades recogidas desde Salud aparecen aquí vinculadas a la pauta enviada a Apple Watch.',
       ),
       const Text(
         'Recibir una actividad no completa la semana: revisa sus datos y confirma a qué sesión corresponde.',
@@ -116,7 +139,14 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   Text(
-                    '${_date(run.startedAt)} UTC · ${run.sport == 'strength' ? 'Fuerza' : _distance(run.meters)} · ${_time(run.seconds)}',
+                    [
+                      '${_date(run.startedAt)} UTC',
+                      if (run.sport == 'strength')
+                        'Fuerza'
+                      else if (run.meters != null)
+                        _distance(run.meters),
+                      _time(run.seconds),
+                    ].join(' · '),
                   ),
                   if (run.executionId != null)
                     const Text('Asociada a una sesión completada')
@@ -130,10 +160,10 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
                         initialValue:
                             catalog.appointments.any(
                               (v) =>
-                                  v.id == _selected[run.id] &&
+                                  v.id == _appointment(run) &&
                                   v.sport == run.sport,
                             )
-                            ? _selected[run.id]
+                            ? _appointment(run)
                             : null,
                         isExpanded: true,
                         decoration: const InputDecoration(
@@ -151,7 +181,7 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
                               ),
                             ),
                         ],
-                        onChanged: state.busy
+                        onChanged: state.busy || run.scheduledId != null
                             ? null
                             : (id) => setState(() {
                                 if (id != null) _selected[run.id] = id;
@@ -162,11 +192,11 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
                             state.busy ||
                                 !catalog.appointments.any(
                                   (a) =>
-                                      a.id == _selected[run.id] &&
+                                      a.id == _appointment(run) &&
                                       a.sport == run.sport,
                                 )
                             ? null
-                            : () => cubit.preview(run.id, _selected[run.id]!),
+                            : () => cubit.preview(run.id, _appointment(run)!),
                         child: const Text('Revisar datos y sesión'),
                       ),
                     ],
@@ -183,10 +213,26 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
     return [
       Text(review.name, style: Theme.of(context).textTheme.titleLarge),
       Text(
-        '${review.sport == 'strength' ? 'Fuerza' : _distance(review.meters)} · ${_time(review.seconds)}'
-        '${review.averageHeartRate == null ? '' : ' · ${review.averageHeartRate} ppm medias'}',
+        [
+          if (review.sport == 'strength')
+            'Fuerza'
+          else if (review.meters != null)
+            _distance(review.meters),
+          _time(review.seconds),
+          if (review.averageHeartRate != null)
+            '${review.averageHeartRate} ppm medias',
+        ].join(' · '),
       ),
       const SizedBox(height: 12),
+      if (review.isTest)
+        const Text(
+          'Actividad de prueba: puedes revisar los intervalos, pero no completar una sesión real.',
+        ),
+      if (review.blockedReason case final code?) Text(_problem(code)),
+      if (widget.provider == 'Apple Watch' && review.laps.isEmpty)
+        const Text(
+          'Apple no ha proporcionado intervalos utilizables para esta pauta. El resumen global se conserva; no se reparte entre los pasos.',
+        ),
       const Text(
         'Comprueba cada correspondencia. Las sugerencias se basan en la estructura de las vueltas; puedes corregirlas.',
       ),
@@ -196,6 +242,33 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
       if (review.sport == 'strength')
         const Text(
           'Mostramos las repeticiones y el peso registrados por el reloj. Un dato ausente no se rellena con la pauta. Una serie por repeticiones requiere ese registro para confirmarse.',
+        ),
+      if (widget.provider == 'Apple Watch' &&
+          review.laps.isNotEmpty &&
+          review.laps.length ==
+              state.rows.fold<int>(
+                0,
+                (count, row) => count + (row.requiresRecovery ? 2 : 1),
+              ))
+        OutlinedButton.icon(
+          onPressed: locked
+              ? null
+              : () {
+                  // La persona propone el orden y revisa después cada correspondencia.
+                  var next = 0;
+                  cubit.edit(
+                    rows: [
+                      for (final row in state.rows)
+                        row.select(
+                          skipped: false,
+                          laps: [next++],
+                          recoveryLaps: row.requiresRecovery ? [next++] : [],
+                        ),
+                    ],
+                  );
+                },
+          icon: const Icon(Icons.format_list_numbered),
+          label: const Text('Asignar intervalos en orden y revisar'),
         ),
       for (var index = 0; index < state.rows.length; index++)
         _row(state, review, index, locked),
@@ -271,46 +344,60 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
       cubit.edit(rows: rows);
     }
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '${index + 1}. ${row.label}',
-              style: Theme.of(context).textTheme.titleSmall,
+    final content = Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${index + 1}. ${row.label}',
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Paso no realizado'),
+            value: row.skipped,
+            onChanged: locked
+                ? null
+                : (value) => change(row.select(skipped: value)),
+          ),
+          if (!row.skipped) ...[
+            _lapPicker(
+              review.sport == 'strength'
+                  ? 'Serie registrada'
+                  : 'Vuelta de trabajo',
+              row.laps,
+              review.laps,
+              locked ? null : (value) => change(row.select(laps: value)),
             ),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Paso no realizado'),
-              value: row.skipped,
-              onChanged: locked
-                  ? null
-                  : (value) => change(row.select(skipped: value)),
-            ),
-            if (!row.skipped) ...[
+            if (row.requiresRecovery)
               _lapPicker(
-                review.sport == 'strength'
-                    ? 'Serie registrada'
-                    : 'Vuelta de trabajo',
-                row.laps,
+                'Vuelta de recuperación',
+                row.recoveryLaps,
                 review.laps,
-                locked ? null : (value) => change(row.select(laps: value)),
+                locked
+                    ? null
+                    : (value) => change(row.select(recoveryLaps: value)),
               ),
-              if (row.requiresRecovery)
-                _lapPicker(
-                  'Vuelta de recuperación',
-                  row.recoveryLaps,
-                  review.laps,
-                  locked
-                      ? null
-                      : (value) => change(row.select(recoveryLaps: value)),
-                ),
-            ],
           ],
-        ),
+        ],
       ),
+    );
+    return Card(
+      child: widget.provider == 'Apple Watch'
+          ? ExpansionTile(
+              key: PageStorageKey('apple-step-$index'),
+              title: Text('${index + 1}. ${row.label}'),
+              subtitle: Text(
+                row.skipped
+                    ? 'No realizado'
+                    : row.laps.isEmpty
+                    ? 'Pendiente de asignar'
+                    : 'Intervalos asignados',
+              ),
+              children: [content],
+            )
+          : content,
     );
   }
 
@@ -322,7 +409,9 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
   ) {
     final chosen = laps.where((lap) => selected.contains(lap.index));
     final seconds = chosen.fold<double>(0, (total, lap) => total + lap.seconds);
-    final meters = chosen.fold<double>(0, (total, lap) => total + lap.meters);
+    final double? meters = chosen.any((l) => l.meters == null)
+        ? null
+        : chosen.fold<double>(0, (total, lap) => total + lap.meters!);
     return ListTile(
       contentPadding: EdgeInsets.zero,
       title: Text(label),
@@ -331,7 +420,7 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
             ? 'Elegir vueltas'
             : chosen.length == 1 && chosen.single.strength
             ? _strengthMetrics(chosen.single)
-            : 'Vueltas ${selected.map((i) => i + 1).join(', ')} · ${_time(seconds)} · ${_distance(meters)}',
+            : 'Vueltas ${selected.map((i) => i + 1).join(', ')} · ${_measures(seconds, meters)}',
       ),
       trailing: const Icon(Icons.edit_outlined),
       onTap: changed == null
@@ -358,7 +447,7 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
                               CheckboxListTile(
                                 value: draft.contains(lap.index),
                                 title: Text(
-                                  '${lap.index + 1} · ${lap.strength ? _strengthMetrics(lap) : '${_time(lap.seconds)} · ${_distance(lap.meters)}'}',
+                                  '${lap.index + 1} · ${lap.strength ? _strengthMetrics(lap) : _measures(lap.seconds, lap.meters)}',
                                 ),
                                 onChanged: (checked) => update(() {
                                   if (checked == true) {
@@ -395,7 +484,10 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
 
 String _date(DateTime date) =>
     '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-String _distance(double meters) => '${(meters / 1000).toStringAsFixed(2)} km';
+String _measures(double seconds, double? meters) =>
+    [_time(seconds), if (meters != null) _distance(meters)].join(' · ');
+String _distance(double? meters) =>
+    meters == null ? '' : '${(meters / 1000).toStringAsFixed(2)} km';
 String _strengthMetrics(RecordedLap lap) =>
     '${lap.kind == 'rest' ? 'Descanso' : 'Serie'} · ${_time(lap.seconds)} · ${lap.repetitions == null ? 'Repeticiones sin dato' : '${lap.repetitions} rep'} · ${lap.loadKg == null ? 'Peso sin dato' : '${lap.loadKg} kg'}';
 String _time(double seconds) {
@@ -406,6 +498,9 @@ String _time(double seconds) {
 String _offset(int minutes) =>
     'UTC${minutes < 0 ? '-' : '+'}${(minutes.abs() ~/ 60).toString().padLeft(2, '0')}:${(minutes.abs() % 60).toString().padLeft(2, '0')}';
 String _problem(String code) => switch (code) {
+  'test_activity' =>
+    'Esta actividad está marcada como prueba y no completa una sesión real.',
+  'activity_conflict' => 'Las mediciones han cambiado y necesitan revisión antes de completar la sesión.',
   'account_changed' => 'Tu cuenta ha cambiado. Vuelve a abrir esta pantalla.',
   'activity_already_confirmed' =>
     'Esta carrera ya tiene un resultado. Actualiza la lista.',

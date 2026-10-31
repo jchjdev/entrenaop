@@ -154,7 +154,11 @@ visible en Fitness e importación manual a EntrenaOP. Se añade en Dev recogida
 automática al abrir/reanudar el iPhone y resumen vinculado por referencia de
 WorkoutKit, visible al deportista y al preparador de esa pauta. No inventa
 resultados por pasos ni esfuerzo ni completa la cita con totales. La nueva
-recogida requiere recompilar y contrastar físicamente. [Recorrido](DEVICE_APPLE_WATCH.md).
+recogida requiere recompilar y contrastar físicamente. Se entrega conjuntamente
+la revisión de intervalos medidos y el cierre explícito de la cita, con el mismo
+historial y seguimiento profesional que Garmin. Se propone el esfuerzo registrado,
+o se pide cuando falta; una prueba o un total sin fases no acredita series. El
+reintento no duplica resultados. Aceptación física del nuevo lector pendiente. [Recorrido](DEVICE_APPLE_WATCH.md).
 
 **Consulta profesional móvil · TRN-036 · 28/10/2026:** el deportista que
 también es entrenador puede alternar su entrenamiento personal y el seguimiento

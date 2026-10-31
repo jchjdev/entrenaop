@@ -33,7 +33,7 @@ preparador los datos de la actividad, como en el recorrido Garmin. El primer
 retorno automático de Apple se implementa solo en Dev:
 
 - Activación inicial por cuenta en Apple Watch, con petición separada de lectura
-  de Entrenamientos y frecuencia cardiaca. Programar con WorkoutKit no concede
+  de Entrenamientos, frecuencia cardiaca, distancia y esfuerzo registrado. Programar con WorkoutKit no concede
   lectura de Salud. HealthKit no permite acreditar lectura concedida a partir
   de una consulta vacía.
 - El arranque, regreso a primer plano y comprobación periódica mientras la app
@@ -60,7 +60,8 @@ retorno automático de Apple se implementa solo en Dev:
 - El estado es resultado recibido, pendiente de revisión o prueba. Los totales
   no completan automáticamente cada paso ni inventan RPE, vueltas, series o
   alertas cumplidas. Incorporar resultados por intervalos y cerrar la ejecución
-  exige un bloque posterior con evidencia física de esas mediciones.
+  utiliza ahora la revisión descrita en el siguiente apartado; su aceptación
+  física sigue pendiente.
 - Las pruebas se identifican separadamente y no crean ejecuciones deportivas.
   La actividad ficticia de esta comprobación queda señalada en Dev mediante una
   referencia privada; sus identificadores y métricas no se guardan en Git.
@@ -95,6 +96,52 @@ habitual GitHub Desktop → Xcode del Mac al incorporar este código nativo.
 Falta contrastar el nuevo lector y la referencia
 de la actividad en el iPhone recompilado; la importación manual ya comprobada
 no acredita esta nueva recogida automática.
+
+
+## Intervalos y cierre de la cita · 31/10/2026
+
+Javier pide entregar conjuntamente la recogida y el cierre, para instalar una
+sola actualización desde GitHub Desktop y Xcode cuando el Mac quede disponible.
+El nuevo adaptador lee las actividades internas de HealthKit con tiempo,
+distancia y pulsaciones medidos, además de marcadores públicos y esfuerzo
+registrado cuando existen. No reparte totales ni convierte la actividad por
+defecto que cubre toda una receta con varias fases en una serie.
+
+Desde el resultado recibido se abre su pauta exacta. La revisión común muestra
+pasos plegables, permite asignar intervalos en orden mediante una acción expresa
+y exige revisar la correspondencia. El esfuerzo entero registrado se propone;
+si falta, se pide al confirmar. Un dato ausente conserva null. Una carrera que
+requiere distancia no se acredita con un intervalo que carece de esa medición.
+Sin intervalos utilizables se conserva el resumen, sin cerrar falsamente pasos.
+
+El adaptador Apple implementa el mismo puerto de revisión y confirmación que
+utiliza Garmin. El servidor vuelve a comprobar cuenta/sesión, derechos, referencia,
+fuente y revisión; crea y termina la ejecución mediante los contratos comunes,
+con tiempos originales. El cierre queda en semana, historial y seguimiento del
+preparador vigente. El recibo privado de confirmación hace idempotente el reintento;
+una actividad ficticia o un conflicto no pueden completar la semana.
+
+La recogida al abrir/reanudar sigue siendo automática con consentimiento; el
+cierre requiere esta revisión. No se añade ejecución con la app cerrada, envío
+Apple automático desde nube ni fuerza. «Revisar permisos de Salud» permite pedir
+las categorías nuevas tras actualizar. La lectura manual básica sigue Free.
+
+**Validación técnica:** análisis de raíz, ADMIN y Trainer sin incidencias;
+1.553 pruebas correctas y una omitida en raíz, 365 y dos omitidas en ADMIN,
+420 en Trainer, 33 focalizadas de Apple/revisión y dos de tarjeta compartida.
+232 pruebas de servidor y TypeScript estricto correctos. Cinco contratos SQL
+con ROLLBACK: cierre Apple, retorno Apple, programación Apple, retorno Garmin y
+progreso Garmin. Las 265 migraciones locales/remotas coinciden en Dev. Endpoint
+Apple v7 ACTIVE con JWT obligatorio y fuente contrastada. La tabla privada de
+confirmaciones tiene RLS y no permite acceso directo; su INFO sin políticas es
+intencional, como en el resto del almacenamiento privado.
+
+**Aceptación física pendiente:** nueva lectura de la referencia/intervalos desde
+el iPhone, mediciones por fase y cierre de una sesión real. La prueba ficticia
+anterior permanece separada y no acredita ese cierre. Siguiente recorrido único:
+una sola instalación y contrastar lo que Salud entrega antes de confirmar una
+actividad real. Las fases/avisos, cambios y retirada conservan sus pruebas físicas
+pendientes; no se dan por verificadas mediante la CI.
 
 ## Primer recorrido de desarrollo
 
@@ -157,7 +204,8 @@ métricas avanzadas no se exportan en este bloque.
 
 La actividad terminada conserva el recorrido manual de Salud y añade la
 recogida automática de pautas propias descrita arriba. Aún no se importan sus
-intervalos ni se completa automáticamente la cita semanal.
+intervalos sin revisar ni se completa automáticamente la cita semanal.
+La revisión por intervalos y el cierre explícito se describen arriba.
 
 La asociación exacta utiliza la propiedad pública asíncrona
 `HKWorkout.workoutPlan`, disponible desde iOS 17/watchOS 10 al importar WorkoutKit.
@@ -209,6 +257,9 @@ El bloque permanece abierto hasta esa aceptación física.
 
 ## Referencias oficiales
 
+- [Actividades e intervalos de HealthKit](https://developer.apple.com/documentation/healthkit/dividing-a-healthkit-workout-into-activities).
+- [Mediciones por actividad](https://developer.apple.com/documentation/healthkit/hkworkoutactivity/statistics(for:)).
+- [Esfuerzo registrado](https://developer.apple.com/documentation/healthkit/hkquantitytypeidentifier/workouteffortscore).
 - [WorkoutKit](https://developer.apple.com/documentation/workoutkit).
 - [Plan asociado a una actividad de Salud](https://developer.apple.com/documentation/healthkit/hkworkout/workoutplan).
 - [WorkoutScheduler](https://developer.apple.com/documentation/workoutkit/workoutscheduler).

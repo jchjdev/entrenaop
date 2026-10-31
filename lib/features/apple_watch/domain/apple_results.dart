@@ -35,12 +35,42 @@ class AppleResultObservation {
     this.meters,
     this.averageHeartRate,
     this.maxHeartRate,
+    this.intervals = const [],
+    this.markers = const [],
+    this.effortScore,
+    this.offsetMinutes,
   });
   final String workoutId, planId, revision;
   final bool matchesPrescription;
   final DateTime startedAt, endedAt;
   final double seconds;
   final double? meters, averageHeartRate, maxHeartRate;
+  final List<AppleResultInterval> intervals;
+  final List<AppleResultMarker> markers;
+  final double? effortScore;
+  final int? offsetMinutes;
+}
+
+class AppleResultInterval {
+  const AppleResultInterval(
+    this.id,
+    this.startedAt,
+    this.endedAt,
+    this.seconds, {
+    this.meters,
+    this.averageHeartRate,
+    this.maxHeartRate,
+  });
+  final String id;
+  final DateTime startedAt, endedAt;
+  final double seconds;
+  final double? meters, averageHeartRate, maxHeartRate;
+}
+
+class AppleResultMarker {
+  const AppleResultMarker(this.kind, this.startedAt, this.endedAt);
+  final String kind;
+  final DateTime startedAt, endedAt;
 }
 
 /// Repetir una lectura es seguro: el servidor identifica el objeto HealthKit.

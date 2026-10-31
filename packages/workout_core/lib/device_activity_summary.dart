@@ -10,6 +10,9 @@ class DeviceActivitySummary {
     this.meters,
     this.averageHeartRate,
     this.maxHeartRate,
+    this.executionId,
+    this.intervalCount = 0,
+    this.effortScore,
   });
 
   factory DeviceActivitySummary.fromJson(Map<String, dynamic> json) {
@@ -32,6 +35,9 @@ class DeviceActivitySummary {
       state: json['state'] as String,
       averageHeartRate: (json['average_heart_rate'] as num?)?.round(),
       maxHeartRate: (json['max_heart_rate'] as num?)?.round(),
+      executionId: json['execution_id'] as String?,
+      intervalCount: json['interval_count'] as int? ?? 0,
+      effortScore: (json['effort_score'] as num?)?.toDouble(),
     );
   }
 
@@ -40,4 +46,7 @@ class DeviceActivitySummary {
   final double seconds;
   final double? meters;
   final int? averageHeartRate, maxHeartRate;
+  final String? executionId;
+  final int intervalCount;
+  final double? effortScore;
 }

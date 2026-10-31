@@ -11,10 +11,14 @@ class AppleWatchPage extends StatefulWidget {
     required this.service,
     required this.onOpenHealth,
     this.results,
+    this.onReviewResult,
+    this.onOpenExecution,
   });
   final AppleTrainingService service;
   final VoidCallback onOpenHealth;
   final AppleResultsCoordinator? results;
+  final void Function(String id, String scheduledId)? onReviewResult;
+  final void Function(String executionId)? onOpenExecution;
   @override
   State<AppleWatchPage> createState() => _AppleWatchPageState();
 }
@@ -163,6 +167,15 @@ class _AppleWatchPageState extends State<AppleWatchPage> {
                           ? results.enable
                           : null,
                     ),
+                    if (results.catalog?.enabled == true)
+                      TextButton.icon(
+                        onPressed:
+                            results.reader.supported && !results.configuring
+                            ? () => results.enable(true)
+                            : null,
+                        icon: const Icon(Icons.health_and_safety_outlined),
+                        label: const Text('Revisar permisos de Salud'),
+                      ),
                     if (results.busy) const LinearProgressIndicator(),
                     if (results.error case final error?) Text(error),
                     if (results.lastChecked case final date?)
@@ -181,7 +194,27 @@ class _AppleWatchPageState extends State<AppleWatchPage> {
                       ),
                     for (final result in results.catalog?.results ?? []) ...[
                       DeviceActivitySummaryCard(result: result, showName: true),
-                      if (result.state != 'test')
+                      if (result.executionId case final execution?)
+                        TextButton.icon(
+                          onPressed: () =>
+                              widget.onOpenExecution?.call(execution),
+                          icon: const Icon(Icons.history),
+                          label: const Text('Ver en mi historial'),
+                        )
+                      else if (widget.onReviewResult != null)
+                        TextButton.icon(
+                          onPressed: () => widget.onReviewResult!(
+                            result.id,
+                            result.scheduledId,
+                          ),
+                          icon: const Icon(Icons.fact_check_outlined),
+                          label: Text(
+                            result.state == 'test'
+                                ? 'Ver intervalos de prueba'
+                                : 'Revisar intervalos y completar sesión',
+                          ),
+                        ),
+                      if (result.state != 'test' && result.executionId == null)
                         TextButton.icon(
                           onPressed: () => results.classify(result.id, true),
                           icon: const Icon(Icons.science_outlined),

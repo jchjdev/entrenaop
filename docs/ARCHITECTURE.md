@@ -111,7 +111,12 @@ común identifican la pauta; servidor revalida dueño, consentimiento y fuente.
 El resumen se conserva con revisiones privadas y se proyecta por cita al
 deportista y a su preparador vigente mediante widgets comunes. No se transforma
 un total en series completadas ni se crea RPE. Garmin conserva su recorrido.
-Lectura física de este nuevo retorno pendiente. [Contrato](DEVICE_APPLE_WATCH.md#retorno-automatico-de-pautas-propias--31102026).
+El adaptador Apple implementa además el puerto común de revisión de resultados:
+intervalos HealthKit medidos, distancias opcionales, esfuerzo registrado y
+confirmación idempotente que usa inicio/completado/cierre de ejecución existentes.
+No hay dependencia de OAuth ni del repositorio Garmin; ambos conservan la misma
+revisión de correspondencias y los controles del servidor. Las pruebas ficticias
+no crean ejecuciones. Lectura física de este nuevo retorno pendiente. [Contrato](DEVICE_APPLE_WATCH.md#retorno-automatico-de-pautas-propias--31102026).
 
 **TRN-038 · 28/10/2026 · enlaces de invitación:** el codec se comparte en
 `trainer_access`; Trainer adapta canal de envío y página pública. La app nativa

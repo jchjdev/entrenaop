@@ -1,5 +1,8 @@
 import '../../features/coach_workspace/data/supabase_coach_planning_repository.dart';
 import 'apple_watch_route.dart';
+import '../../features/apple_watch/data/apple_activity_result_repository.dart';
+import '../../features/apple_watch/data/apple_training_adapters.dart';
+import '../../features/device_activity_results/presentation/activity_result_page.dart';
 import '../../features/apple_watch/presentation/apple_results_coordinator.dart';
 import '../../features/trainers/presentation/trainer_invitation_entry.dart';
 import '../../features/trainers/presentation/trainer_invitation_page.dart';
@@ -1208,6 +1211,29 @@ class AppRouter {
                         key: ValueKey('apple-${auth.user.id}'),
                         ownerId: auth.user.id,
                         client: sl<SupabaseClient>(),
+                      ),
+              ),
+            ),
+            materialAppRoute(
+              path: 'apple-watch/results',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (_, state) => BlocBuilder<AuthCubit, AuthState>(
+                bloc: authCubit,
+                builder: (_, auth) => auth is! AuthAuthenticated
+                    ? const SizedBox.shrink()
+                    : ActivityResultPage(
+                        key: ValueKey('apple-results-${auth.user.id}'),
+                        provider: 'Apple Watch',
+                        initialActivityId:
+                            state.uri.queryParameters['activity'],
+                        initialScheduledId:
+                            state.uri.queryParameters['scheduled'],
+                        repository: AppleActivityResultRepository(
+                          SupabaseAppleTrainingRepository(
+                            sl<SupabaseClient>(),
+                            auth.user.id,
+                          ),
+                        ),
                       ),
               ),
             ),

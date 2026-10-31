@@ -13,12 +13,15 @@ class ReceivedRun {
     this.meters,
     this.executionId, {
     this.sport = 'running',
+    this.scheduledId,
   });
   final String id, revision, name;
   final DateTime startedAt;
-  final double seconds, meters;
+  final double seconds;
+  final double? meters;
   final String? executionId;
   final String sport;
+  final String? scheduledId;
 }
 
 class RunAppointment {
@@ -45,7 +48,8 @@ class RecordedLap {
     this.loadKg,
   });
   final int index;
-  final double seconds, meters;
+  final double seconds;
+  final double? meters;
   final String? kind;
   final bool strength;
   final int? repetitions;
@@ -64,11 +68,14 @@ class LapAssignment {
     this.skipped = false,
     this.strength = false,
     this.requiresReps = false,
+    this.requiresDistance = false,
+    this.requiresRecoveryDistance = false,
   });
   final int block, item, set;
   final String label;
   final bool requiresRecovery, skipped;
   final bool strength, requiresReps;
+  final bool requiresDistance, requiresRecoveryDistance;
   final List<int> laps, recoveryLaps;
   LapAssignment select({
     List<int>? laps,
@@ -85,6 +92,8 @@ class LapAssignment {
     skipped: skipped ?? this.skipped,
     strength: strength,
     requiresReps: requiresReps,
+    requiresDistance: requiresDistance,
+    requiresRecoveryDistance: requiresRecoveryDistance,
   );
 }
 
@@ -103,14 +112,22 @@ class ActivityResultReview {
     required this.laps,
     required this.rows,
     this.sport = 'running',
+    this.recordedRpe,
+    this.isTest = false,
+    this.requiresMeasuredStep = false,
+    this.blockedReason,
   });
   final String activityId, activityRevision, scheduledId, sourceRevision, name;
   final DateTime startedAt;
-  final double seconds, meters;
+  final double seconds;
+  final double? meters;
   final int? offsetMinutes, averageHeartRate;
   final List<RecordedLap> laps;
   final List<LapAssignment> rows;
   final String sport;
+  final int? recordedRpe;
+  final bool isTest, requiresMeasuredStep;
+  final String? blockedReason;
 }
 
 class ConfirmActivityResult {
@@ -150,6 +167,9 @@ bool validLapAssignments(List<LapAssignment> rows, List<RecordedLap> laps) {
     if (!validGroup(row.laps)) {
       return false;
     }
+    if (row.requiresDistance && row.laps.any((i) => laps[i].meters == null)) {
+      return false;
+    }
     if (row.strength &&
         (row.laps.length != 1 ||
             !laps[row.laps.single].strength ||
@@ -160,6 +180,10 @@ bool validLapAssignments(List<LapAssignment> rows, List<RecordedLap> laps) {
     if (row.requiresRecovery) {
       if (!validGroup(row.recoveryLaps) ||
           row.recoveryLaps.first <= row.laps.last) {
+        return false;
+      }
+      if (row.requiresRecoveryDistance &&
+          row.recoveryLaps.any((i) => laps[i].meters == null)) {
         return false;
       }
     } else if (row.recoveryLaps.isNotEmpty) {

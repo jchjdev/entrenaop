@@ -198,6 +198,32 @@ class SupabaseAppleResultsRepository implements AppleResultsRepository {
             if (r.averageHeartRate != null)
               'average_heart_rate': r.averageHeartRate,
             if (r.maxHeartRate != null) 'max_heart_rate': r.maxHeartRate,
+            if (r.effortScore != null) 'effort_score': r.effortScore,
+            if (r.offsetMinutes != null) 'offset_minutes': r.offsetMinutes,
+            if (r.intervals.isNotEmpty)
+              'intervals': [
+                for (final s in r.intervals)
+                  {
+                    'id': s.id,
+                    'started_at': s.startedAt.toUtc().toIso8601String(),
+                    'ended_at': s.endedAt.toUtc().toIso8601String(),
+                    'timer_seconds': s.seconds,
+                    if (s.meters != null) 'distance_meters': s.meters,
+                    if (s.averageHeartRate != null)
+                      'average_heart_rate': s.averageHeartRate,
+                    if (s.maxHeartRate != null)
+                      'max_heart_rate': s.maxHeartRate,
+                  },
+              ],
+            if (r.markers.isNotEmpty)
+              'markers': [
+                for (final m in r.markers)
+                  {
+                    'kind': m.kind,
+                    'started_at': m.startedAt.toUtc().toIso8601String(),
+                    'ended_at': m.endedAt.toUtc().toIso8601String(),
+                  },
+              ],
           },
       ],
     });
@@ -250,6 +276,28 @@ class NativeAppleResultsReader implements AppleResultsReader {
           meters: (row['distance_meters'] as num?)?.toDouble(),
           averageHeartRate: (row['average_heart_rate'] as num?)?.toDouble(),
           maxHeartRate: (row['max_heart_rate'] as num?)?.toDouble(),
+          effortScore: (row['effort_score'] as num?)?.toDouble(),
+          offsetMinutes: row['offset_minutes'] as int?,
+          intervals: [
+            for (final s in row['intervals'] as List? ?? [])
+              AppleResultInterval(
+                s['id'] as String,
+                DateTime.parse(s['started_at'] as String),
+                DateTime.parse(s['ended_at'] as String),
+                (s['timer_seconds'] as num).toDouble(),
+                meters: (s['distance_meters'] as num?)?.toDouble(),
+                averageHeartRate: (s['average_heart_rate'] as num?)?.toDouble(),
+                maxHeartRate: (s['max_heart_rate'] as num?)?.toDouble(),
+              ),
+          ],
+          markers: [
+            for (final m in row['markers'] as List? ?? [])
+              AppleResultMarker(
+                m['kind'] as String,
+                DateTime.parse(m['started_at'] as String),
+                DateTime.parse(m['ended_at'] as String),
+              ),
+          ],
         ),
     ];
   }

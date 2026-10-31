@@ -150,6 +150,8 @@ final class AppleActivityReader {
         do {
           var types: Set<HKObjectType> = [HKObjectType.workoutType()]
           if let heart = HKObjectType.quantityType(forIdentifier: .heartRate) { types.insert(heart) }
+          if let distance = HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning) { types.insert(distance) }
+          if let effort = HKObjectType.quantityType(forIdentifier: .workoutEffortScore) { types.insert(effort) }
           try await self.store.requestAuthorization(toShare: [], read: types)
           // HealthKit no permite distinguir lectura denegada de una consulta vacía.
           result(["requested": true])
@@ -195,6 +197,34 @@ final class AppleActivityReader {
               if let average = stats.averageQuantity()?.doubleValue(for: unit) { row["average_heart_rate"] = average }
               if let maximum = stats.maximumQuantity()?.doubleValue(for: unit) { row["max_heart_rate"] = maximum }
             }
+            let intervals = workout.workoutActivities.sorted { $0.startDate < $1.startDate }.compactMap { activity -> [String: Any]? in
+              guard let end = activity.endDate, activity.duration > 0,
+                (activity.workoutConfiguration.activityType == .running ||
+                 activity.workoutConfiguration.activityType == .walking) else { return nil }
+              var part: [String: Any] = ["id": activity.uuid.uuidString.lowercased(),
+                "started_at": ISO8601DateFormatter().string(from: activity.startDate),
+                "ended_at": ISO8601DateFormatter().string(from: end), "timer_seconds": activity.duration]
+              if let type = HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning),
+                let distance = activity.statistics(for: type)?.sumQuantity()?.doubleValue(for: .meter()) { part["distance_meters"] = distance }
+              if let type = HKObjectType.quantityType(forIdentifier: .heartRate), let stats = activity.statistics(for: type) {
+                let unit = HKUnit.count().unitDivided(by: .minute())
+                if let value = stats.averageQuantity()?.doubleValue(for: unit) { part["average_heart_rate"] = value }
+                if let value = stats.maximumQuantity()?.doubleValue(for: unit) { part["max_heart_rate"] = value }
+              }
+              return part
+            }
+            if !intervals.isEmpty && intervals.count <= 100 { row["intervals"] = intervals }
+            let markers = (workout.workoutEvents ?? []).filter { $0.type == .lap || $0.type == .segment }.prefix(200).map { event in
+              ["kind": event.type == .lap ? "lap" : "segment",
+               "started_at": ISO8601DateFormatter().string(from: event.dateInterval.start),
+               "ended_at": ISO8601DateFormatter().string(from: event.dateInterval.end)]
+            }
+            if !markers.isEmpty { row["markers"] = markers }
+            if let identifier = workout.metadata?[HKMetadataKeyTimeZone] as? String, let zone = TimeZone(identifier: identifier) {
+              let offset = zone.secondsFromGMT(for: workout.startDate)
+              if offset % 60 == 0 { row["offset_minutes"] = offset / 60 }
+            }
+            if let effort = await self.effort(workout) { row["effort_score"] = effort }
             observations.append(row)
           }
         }
@@ -204,6 +234,26 @@ final class AppleActivityReader {
   }
 
   private enum ReadError: Error { case invalid }
+  @MainActor private func effort(_ workout: HKWorkout) async -> Double? {
+    guard let type = HKObjectType.quantityType(forIdentifier: .workoutEffortScore) else { return nil }
+    return await withCheckedContinuation { continuation in
+      var finished = false
+      let query = HKSampleQuery(sampleType: type,
+        predicate: HKQuery.predicateForWorkoutEffortSamplesRelated(workout: workout, activity: nil),
+        limit: 2, sortDescriptors: nil) { _, samples, _ in
+        Task { @MainActor in
+          guard !finished else { return }; finished = true
+          let values = (samples as? [HKQuantitySample] ?? []).map { $0.quantity.doubleValue(for: .appleEffortScore()) }
+          continuation.resume(returning: values.count == 1 && values[0].isFinite && values[0] >= 0 && values[0] <= 10 ? values[0] : nil)
+        }
+      }
+      self.store.execute(query)
+      Task { @MainActor in
+        try? await Task.sleep(nanoseconds: 2_000_000_000)
+        if !finished { finished = true; self.store.stop(query); continuation.resume(returning: nil) }
+      }
+    }
+  }
   @MainActor private func workouts() async throws -> [HKWorkout] {
     try await withCheckedThrowingContinuation { continuation in
       var finished = false

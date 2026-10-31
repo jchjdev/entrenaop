@@ -51,5 +51,12 @@ class _AppleWatchRouteState extends State<AppleWatchRoute> {
     service: _service,
     results: widget.results,
     onOpenHealth: () => context.push('/profile/activities'),
+    onReviewResult: (id, scheduled) async {
+      await context.push(
+        '/profile/apple-watch/results?activity=$id&scheduled=$scheduled',
+      );
+      await widget.results?.refresh();
+    },
+    onOpenExecution: (id) => context.push('/assessment/history/workouts/$id'),
   );
 }

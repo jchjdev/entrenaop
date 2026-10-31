@@ -30,6 +30,10 @@ class ActivityResultState {
       offsetMinutes != null &&
       offsetMinutes!.abs() <= 840 &&
       review != null &&
+      !review!.isTest &&
+      review!.blockedReason == null &&
+      (!review!.requiresMeasuredStep ||
+          rows.any((r) => !r.skipped && r.laps.isNotEmpty)) &&
       validLapAssignments(rows, review!.laps);
 }
 
@@ -72,6 +76,7 @@ class ActivityResultCubit extends Cubit<ActivityResultState> {
             review: review,
             rows: List.unmodifiable(review.rows),
             offsetMinutes: review.offsetMinutes,
+            rpe: review.recordedRpe,
           ),
         );
       }

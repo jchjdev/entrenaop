@@ -41,3 +41,24 @@ test('Catálogo de retorno traduce solo la receta autorizada del servidor',async
  const response=await handleAppleTraining(request({owner:'owner',action:'results.catalog'}),config,async()=>Response.json({enabled:true,results:[],plans:[{snapshot:source,revision:'a'.repeat(64),plan_id:'plan'}]}));
  const data=await response.json();assert.equal(data.plans[0].prescription.steps.length,2);assert.equal(data.plans[0].snapshot,undefined);
 });
+
+test('La revisión Apple usa los pasos autorizados y no asigna intervalos por su cuenta',async()=>{
+ const response=await handleAppleTraining(request({owner:'owner',action:'results.preview',input:{activity_id:'activity',scheduled_id:'scheduled'}}),config,async(url,init)=>{
+  assert.ok(String(url).endsWith('/rpc/apple_results_command'));
+  assert.equal(JSON.parse(init?.body as string).p_action,'preview');
+  return Response.json({snapshot:source,activity:{id:'activity',laps:[{index:0,timerSeconds:120}]},is_test:true});
+ });
+ const data=await response.json();assert.equal(response.status,200);
+ assert.equal(data.snapshot,undefined);assert.equal(data.is_test,true);
+ assert.equal(data.rows.length,1);assert.equal(data.rows[0].requires_recovery,true);
+ assert.equal(data.rows[0].requires_distance,true);assert.equal(data.requires_measured_step,true);
+ assert.deepEqual(data.rows[0].lap_indices,[]);assert.deepEqual(data.rows[0].recovery_lap_indices,[]);
+});
+
+test('El rechazo de pruebas se conserva y un cierre sobredimensionado no llega al RPC',async()=>{
+ const response=await handleAppleTraining(request({owner:'owner',action:'results.confirm',input:{}}),config,async()=>Response.json({message:'test_activity'},{status:400}));
+ assert.deepEqual(await response.json(),{code:'test_activity'});
+ let calls=0;
+ const large=await handleAppleTraining(request({owner:'owner',action:'results.confirm',padding:'x'.repeat(66000)}),config,async()=>{calls++;return Response.json({});});
+ assert.equal(large.status,413);assert.equal(calls,0);
+});

@@ -281,9 +281,16 @@ pasos ni inventa RPE; los datos de prueba se conservan separados.
 `b2497f26` compila iOS Release y simulador, pasa los consumidores y está publicado
 y comprobado por HTTPS en Trainer y ADMIN Dev. La recepción física del nuevo
 lector sigue pendiente.
-**Siguiente recorrido único de Apple:** recompilar el iPhone, activar el retorno
-y comprobar la referencia y el resumen de esta actividad de prueba en ambas
-vistas, sin completar la cita. Cambios, retirada
+**Entrega conjunta · 31/10:** intervalos medidos de HealthKit, esfuerzo disponible,
+revisión común en tarjetas plegables y cierre idempotente mediante el contrato
+de ejecución existente. Semana, historial y preparador reciben el mismo resultado;
+pruebas ficticias y totales sin intervalos no acreditan pasos. Análisis de las tres
+apps, baterías raíz/ADMIN/Trainer, 232 pruebas de servidor y cinco contratos SQL
+con ROLLBACK correctos. Solo Dev; aceptación física aún pendiente.
+**Siguiente recorrido único de Apple:** instalar una sola actualización desde
+GitHub Desktop/Xcode cuando el Mac esté libre, activar/revisar permisos y contrastar
+referencia, intervalos y resumen sin cerrar la actividad ficticia; después confirmar
+una sesión real y comprobar semana/historial/preparador. Cambios, retirada
 y ejecución real de fases/avisos siguen pendientes.
 [Contrato, validación y límites](DEVICE_APPLE_WATCH.md).
 

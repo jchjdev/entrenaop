@@ -20,7 +20,10 @@ class DeviceActivitySummaryCard extends StatelessWidget {
     final label = switch (r.state) {
       'test' => 'Prueba · no completa la sesión',
       'review' => 'Resultado pendiente de revisión',
-      _ => 'Resultado recibido de Apple Watch',
+      _ =>
+        r.executionId == null
+            ? 'Resultado recibido de Apple Watch'
+            : 'Resultados incorporados a la sesión',
     };
     return Card(
       child: ExpansionTile(
@@ -44,14 +47,19 @@ class DeviceActivitySummaryCard extends StatelessWidget {
           if (r.averageHeartRate case final value?)
             Text('FC media: $value ppm'),
           if (r.maxHeartRate case final value?) Text('FC máxima: $value ppm'),
+          if (r.effortScore case final value?)
+            Text('Esfuerzo registrado en Salud: $value/10'),
+          if (r.intervalCount > 0)
+            Text('${r.intervalCount} intervalos disponibles'),
           const SizedBox(height: 8),
-          Text(
-            r.state == 'test'
-                ? 'Actividad identificada como prueba. Se conserva separada del resultado deportivo.'
-                : r.state == 'review'
-                ? 'La receta o sus datos necesitan revisión antes de incorporarlos como entrenamiento completado.'
-                : 'La actividad corresponde a esta pauta. El resumen del reloj no acredita el resultado individual de cada paso ni la valoración de esfuerzo.',
-          ),
+          if (r.executionId == null)
+            Text(
+              r.state == 'test'
+                  ? 'Actividad identificada como prueba. Se conserva separada del resultado deportivo.'
+                  : r.state == 'review'
+                  ? 'La receta o sus datos necesitan revisión antes de incorporarlos como entrenamiento completado.'
+                  : 'La actividad corresponde a esta pauta. El resumen del reloj no acredita el resultado individual de cada paso ni la valoración de esfuerzo.',
+            ),
         ],
       ),
     );
