@@ -72,7 +72,12 @@ class WorkoutFixture extends TrainerWorkoutRepository {
     'created_at': '2026-10-21T10:00:00Z',
   });
   @override
-  Future<List<TrainerWorkout>> workouts({TrainerWorkout? before}) async {
+  Future<List<TrainerWorkout>> workouts({
+    TrainerWorkout? before,
+    String query = '',
+    bool? running,
+    String? format,
+  }) async {
     libraryReads++;
     if (failWorkouts) throw StateError('Biblioteca no disponible');
     return before == null ? availableWorkouts ?? [entry] : [];

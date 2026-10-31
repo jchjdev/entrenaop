@@ -105,7 +105,12 @@ class TrainerAssignment {
 }
 
 abstract class TrainerWorkoutRepository {
-  Future<List<TrainerWorkout>> workouts({TrainerWorkout? before});
+  Future<List<TrainerWorkout>> workouts({
+    TrainerWorkout? before,
+    String query = '',
+    bool? running,
+    String? format,
+  });
   Future<WorkoutTemplate?> template(String id);
   Future<List<WorkoutEditorExercise>> exercises({
     Set<String> retainedIds = const {},
@@ -159,7 +164,23 @@ class SupabaseTrainerWorkoutRepository implements TrainerWorkoutRepository {
   }
 
   @override
-  Future<List<TrainerWorkout>> workouts({TrainerWorkout? before}) async {
+  Future<List<TrainerWorkout>> workouts({
+    TrainerWorkout? before,
+    String query = '',
+    bool? running,
+    String? format,
+  }) async {
+    if (query.trim().isNotEmpty || running != null || format != null) {
+      return (await _rpc('search_trainer_workouts', {
+            'p_query': query.trim(),
+            'p_running': running,
+            'p_format': format,
+            'p_before_at': before?.createdAt.toUtc().toIso8601String(),
+            'p_before_id': before?.id,
+          }) as List)
+          .map((row) => TrainerWorkout.fromJson(WorkoutJson.from(row as Map)))
+          .toList();
+    }
     final rows = await _rpc('list_trainer_workouts', {
       'p_before_at': before?.createdAt.toUtc().toIso8601String(),
       'p_before_id': before?.id,

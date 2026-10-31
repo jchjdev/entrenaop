@@ -1,3 +1,5 @@
+import 'trainer_catalog_search.dart';
+
 import 'package:workout_core/exercise_catalog_preferences.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
@@ -182,6 +184,7 @@ class TrainerProgramLibraryPage extends StatefulWidget {
 }
 
 class _TrainerProgramLibraryPageState extends State<TrainerProgramLibraryPage> {
+  final _catalogSearch = TrainerCatalogSearch();
   String _query = '';
   final _search = TextEditingController();
   List<TrainerProgram> _items = [];
@@ -211,11 +214,18 @@ class _TrainerProgramLibraryPageState extends State<TrainerProgramLibraryPage> {
 
   @override
   void dispose() {
+    _catalogSearch.dispose();
     _search.dispose();
     super.dispose();
   }
 
-  Future<void> _load({bool more = false}) async {
+  void _searchCatalog() {
+    setState(() => _busy = true);
+    _catalogSearch.schedule(() => _load(catalogOnly: true));
+  }
+
+  Future<void> _load({bool more = false, bool catalogOnly = false}) async {
+    final request = _catalogSearch.begin();
     setState(() {
       _busy = true;
       _error = null;
@@ -224,29 +234,32 @@ class _TrainerProgramLibraryPageState extends State<TrainerProgramLibraryPage> {
       final access = await widget.access.access();
       final rows = await widget.repository.programs(
         before: more ? _items.last : null,
+        query: _query,
       );
       List<GuidedWork>? works;
       String? workError;
-      if (widget.workRepository != null && !more) {
+      if (widget.workRepository != null && !more && !catalogOnly) {
         try {
           works = await widget.workRepository!.list();
         } catch (error) {
           workError = trainerError(error);
         }
       }
-      if (mounted) {
+      if (mounted && _catalogSearch.current(request)) {
         setState(() {
           _items = more ? [..._items, ...rows] : rows;
           _more = rows.length == 50;
           _canCreate = access.effective;
           if (works != null) _works = works;
-          if (!more) _workError = workError;
+          if (!more && !catalogOnly) _workError = workError;
         });
       }
     } catch (e) {
-      if (mounted) setState(() => _error = trainerError(e));
+      if (mounted && _catalogSearch.current(request)) {
+        setState(() => _error = trainerError(e));
+      }
     } finally {
-      if (mounted) {
+      if (mounted && _catalogSearch.current(request)) {
         if (_reloadAfterTrash) {
           _reloadAfterTrash = false;
           await _load();
@@ -341,133 +354,147 @@ class _TrainerProgramLibraryPageState extends State<TrainerProgramLibraryPage> {
         ),
       ],
     ),
-    body: _programFrame(context, [
-      const Text(
-        'Organiza sesiones por rutinas o fases y reutiliza cada programa con tus alumnos. Cada pauta conserva la versión asignada.',
-      ),
-      const SizedBox(height: 16),
-      if (widget.workRepository != null &&
-          (_busy ||
-              _works.isNotEmpty ||
-              _workError != null ||
-              _discardError != null ||
-              _discardAttempt != null)) ...[
-        Text(
-          'Trabajos incompletos',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
+    body: trainerCatalogAutoPage(
+      active: _query.trim().isNotEmpty,
+      hasMore: _more,
+      busy: _busy,
+      loadMore: () => _load(more: true),
+      child: _programFrame(context, [
         const Text(
-          'Continúa los montajes guardados aunque tengan campos pendientes. Las sesiones creadas dentro se gestionan en su biblioteca.',
+          'Organiza sesiones por rutinas o fases y reutiliza cada programa con tus alumnos. Cada pauta conserva la versión asignada.',
         ),
-        if (_workError != null) Text('No se pudieron cargar: $_workError'),
-        if (_discardError != null) Text(_discardError!),
-        if (_discardAttempt != null && !_discardBusy)
-          TextButton(
-            onPressed: !_canCreate
-                ? null
-                : () => _discard(_discardAttempt!, retry: true),
-            child: const Text('Reintentar mismo descarte'),
+        const SizedBox(height: 16),
+        if (widget.workRepository != null &&
+            (_busy ||
+                _works.isNotEmpty ||
+                _workError != null ||
+                _discardError != null ||
+                _discardAttempt != null)) ...[
+          Text(
+            'Trabajos incompletos',
+            style: Theme.of(context).textTheme.titleLarge,
           ),
-        if (_discardBusy) const LinearProgressIndicator(),
-        if (!_busy && _workError == null && _works.isEmpty)
-          const Text('No tienes trabajos incompletos guardados.'),
-        for (final work in _works)
-          Card(
-            child: ListTile(
-              title: Text(work.name),
-              subtitle: Text('Trabajo guardado · revisión ${work.revision}'),
-              onTap: _discardBusy
-                  ? null
-                  : () async {
-                      await context.push(
-                        '/programs/work/${Uri.encodeComponent(work.id)}',
-                      );
-                      if (mounted) await _load();
-                    },
-              trailing: IconButton(
-                onPressed:
-                    _busy ||
-                        _discardBusy ||
-                        !_canCreate ||
-                        _discardAttempt != null
-                    ? null
-                    : () => _discard(work),
-                icon: const Icon(Icons.delete_outline),
-                tooltip: 'Descartar trabajo ${work.name}',
-              ),
-            ),
-          ),
-        if (_works.length == 100)
           const Text(
-            'Se han cargado 100 trabajos. Puede haber más; conservan su enlace de recuperación.',
+            'Continúa los montajes guardados aunque tengan campos pendientes. Las sesiones creadas dentro se gestionan en su biblioteca.',
           ),
-        const SizedBox(height: 24),
-      ],
-      Align(
-        alignment: Alignment.centerLeft,
-        child: FilledButton.icon(
-          onPressed: _busy || !_canCreate
-              ? null
-              : () async {
-                  await context.push('/programs/new');
-                  if (mounted) await _load();
-                },
-          icon: const Icon(Icons.add),
-          label: const Text('Crear programa privado'),
-        ),
-      ),
-      if (_busy) const LinearProgressIndicator(),
-      if (_error != null) ...[
-        Text(_error!),
-        TextButton(onPressed: _load, child: const Text('Reintentar')),
-      ],
-      if (!_busy && _error == null && _items.isEmpty)
-        const Padding(
-          padding: EdgeInsets.all(24),
-          child: Text('Todavía no has creado programas privados.'),
-        ),
-      const SizedBox(height: 16),
-      Align(
-        alignment: Alignment.centerLeft,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 640),
-          child: TextField(
-            controller: _search,
-            decoration: const InputDecoration(
-              labelText: 'Buscar entre los programas cargados',
-              prefixIcon: Icon(Icons.search),
+          if (_workError != null) Text('No se pudieron cargar: $_workError'),
+          if (_discardError != null) Text(_discardError!),
+          if (_discardAttempt != null && !_discardBusy)
+            TextButton(
+              onPressed: !_canCreate
+                  ? null
+                  : () => _discard(_discardAttempt!, retry: true),
+              child: const Text('Reintentar mismo descarte'),
             ),
-            onChanged: (v) => setState(() => _query = v),
+          if (_discardBusy) const LinearProgressIndicator(),
+          if (!_busy && _workError == null && _works.isEmpty)
+            const Text('No tienes trabajos incompletos guardados.'),
+          for (final work in _works)
+            Card(
+              child: ListTile(
+                title: Text(work.name),
+                subtitle: Text('Trabajo guardado · revisión ${work.revision}'),
+                onTap: _discardBusy
+                    ? null
+                    : () async {
+                        await context.push(
+                          '/programs/work/${Uri.encodeComponent(work.id)}',
+                        );
+                        if (mounted) await _load();
+                      },
+                trailing: IconButton(
+                  onPressed:
+                      _busy ||
+                          _discardBusy ||
+                          !_canCreate ||
+                          _discardAttempt != null
+                      ? null
+                      : () => _discard(work),
+                  icon: const Icon(Icons.delete_outline),
+                  tooltip: 'Descartar trabajo ${work.name}',
+                ),
+              ),
+            ),
+          if (_works.length == 100)
+            const Text(
+              'Se han cargado 100 trabajos. Puede haber más; conservan su enlace de recuperación.',
+            ),
+          const SizedBox(height: 24),
+        ],
+        Align(
+          alignment: Alignment.centerLeft,
+          child: FilledButton.icon(
+            onPressed: _busy || !_canCreate
+                ? null
+                : () async {
+                    await context.push('/programs/new');
+                    if (mounted) await _load();
+                  },
+            icon: const Icon(Icons.add),
+            label: const Text('Crear programa privado'),
           ),
         ),
-      ),
-      const SizedBox(height: 16),
-      ProfessionalCatalogGrid(
-        children: [
-          for (final row in _items.where(
-            (row) =>
-                row.program.name.toLowerCase().contains(_query.toLowerCase()),
-          ))
-            ProfessionalResourceCard(
-              leading: const ProfessionalResourceIcon(Icons.view_week_outlined),
-              title: Text(row.program.name),
-              subtitle: Text(
-                '${row.program.modeLabel} · ${row.program.sessionCount} sesiones · v${row.program.version}',
+        if (_busy) const LinearProgressIndicator(),
+        if (_error != null) ...[
+          Text(_error!),
+          TextButton(onPressed: _load, child: const Text('Reintentar')),
+        ],
+        const SizedBox(height: 16),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 640),
+            child: TextField(
+              controller: _search,
+              decoration: const InputDecoration(
+                labelText: 'Buscar en todos mis programas',
+                prefixIcon: Icon(Icons.search),
               ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () async {
-                await context.push('/programs/${row.program.id}');
-                if (mounted) await _load();
+              onChanged: (v) {
+                setState(() => _query = v);
+                _searchCatalog();
               },
             ),
-        ],
-      ),
-      if (_more)
-        OutlinedButton(
-          onPressed: _busy ? null : () => _load(more: true),
-          child: const Text('Cargar más programas'),
+          ),
         ),
-    ]),
+        const SizedBox(height: 16),
+        if (!_busy && _error == null && _items.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Text(
+              _query.trim().isNotEmpty
+                  ? 'No hay programas que coincidan con la búsqueda.'
+                  : 'Todavía no has creado programas privados.',
+            ),
+          ),
+        ProfessionalCatalogGrid(
+          children: [
+            for (final row in _items)
+              ProfessionalResourceCard(
+                leading: const ProfessionalResourceIcon(
+                  Icons.view_week_outlined,
+                ),
+                title: Text(row.program.name),
+                subtitle: Text(
+                  '${row.program.modeLabel} · ${row.program.sessionCount} sesiones · v${row.program.version}',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: _busy
+                    ? null
+                    : () async {
+                        await context.push('/programs/${row.program.id}');
+                        if (mounted) await _load();
+                      },
+              ),
+          ],
+        ),
+        if (_more && !(_query.trim().isNotEmpty))
+          OutlinedButton(
+            onPressed: _busy ? null : () => _load(more: true),
+            child: const Text('Cargar más programas'),
+          ),
+      ]),
+    ),
   );
 }
 
@@ -957,6 +984,9 @@ class TrainerProgramAssignmentDialog extends StatefulWidget {
 
 class _TrainerProgramAssignmentDialogState
     extends State<TrainerProgramAssignmentDialog> {
+  final _catalogSearch = TrainerCatalogSearch();
+  String _programQuery = '';
+  final _programSearch = TextEditingController();
   final _note = TextEditingController();
   List<TrainerProgram> _programs = [];
   GuidedProgram? _program;
@@ -977,11 +1007,14 @@ class _TrainerProgramAssignmentDialogState
 
   @override
   void dispose() {
+    _catalogSearch.dispose();
+    _programSearch.dispose();
     _note.dispose();
     super.dispose();
   }
 
   Future<void> _load({bool more = false}) async {
+    final request = _catalogSearch.begin();
     setState(() {
       _busy = true;
       _error = null;
@@ -989,8 +1022,9 @@ class _TrainerProgramAssignmentDialogState
     try {
       final rows = await widget.repository.programs(
         before: more ? _programs.last : null,
+        query: _programQuery,
       );
-      if (mounted) {
+      if (mounted && _catalogSearch.current(request)) {
         setState(() {
           _programs = more ? [..._programs, ...rows] : rows;
           _more = rows.length == 50;
@@ -998,9 +1032,13 @@ class _TrainerProgramAssignmentDialogState
         });
       }
     } catch (e) {
-      if (mounted) setState(() => _error = trainerError(e));
+      if (mounted && _catalogSearch.current(request)) {
+        setState(() => _error = trainerError(e));
+      }
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (mounted && _catalogSearch.current(request)) {
+        setState(() => _busy = false);
+      }
     }
   }
 
@@ -1186,263 +1224,284 @@ class _TrainerProgramAssignmentDialogState
       _program!.phases[e.phase].sessions[e.session].name;
   String _date(DateTime date) => '${date.day}/${date.month}/${date.year}';
   @override
-  Widget build(BuildContext context) => PopScope<bool>(
-    canPop: !_busy,
-    child: Dialog(
-      insetPadding: const EdgeInsets.all(12),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 760, maxHeight: 820),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Flexible(
-              child: ListView(
-                shrinkWrap: true,
-                padding: const EdgeInsets.all(20),
-                children: [
-                  Text(
-                    'Pautar programa privado',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Elige el programa y revisa cada fecha. La propuesta separa las sesiones dos días; ajústala a la disponibilidad del alumno. Las fases no avanzan automáticamente.',
-                  ),
-                  if (_busy) const LinearProgressIndicator(),
-                  if (_program == null) ...[
-                    for (final row in _programs)
-                      ListTile(
-                        title: Text(row.program.name),
-                        subtitle: Text(
-                          'v${row.program.version} · ${row.program.sessionCount} sesiones',
-                        ),
-                        onTap: _busy ? null : () => _choose(row.program),
-                        trailing: const Icon(Icons.chevron_right),
-                      ),
-                    if (!_busy && _programs.isEmpty && _error == null)
-                      const Text(
-                        'Crea primero un programa en tu biblioteca privada.',
-                      ),
-                    if (_more)
-                      TextButton(
-                        onPressed: _busy ? null : () => _load(more: true),
-                        child: const Text('Cargar más programas'),
-                      ),
-                  ] else ...[
-                    const SizedBox(height: 12),
+  Widget build(BuildContext context) => trainerCatalogAutoPage(
+    active: _programQuery.trim().isNotEmpty,
+    hasMore: _more,
+    busy: _busy,
+    loadMore: () => _load(more: true),
+    child: PopScope<bool>(
+      canPop: !_busy,
+      child: Dialog(
+        insetPadding: const EdgeInsets.all(12),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 760, maxHeight: 820),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: ListView(
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.all(20),
+                  children: [
                     Text(
-                      '${_program!.name} · v${_program!.version}',
-                      style: Theme.of(context).textTheme.titleMedium,
+                      'Pautar programa privado',
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
-                    if (_program!.description.isNotEmpty)
-                      Text(_program!.description),
                     const SizedBox(height: 12),
-                    const Text('Fases que vas a pautar'),
-                    const SizedBox(height: 6),
-                    DropdownButtonFormField<int>(
-                      key: ValueKey('${_program!.id}:$_phase'),
-                      initialValue: _phase,
-                      isExpanded: true,
-                      decoration: const InputDecoration(),
-                      items: [
-                        if (_program!.sessionCount <= 256)
-                          const DropdownMenuItem(
-                            value: -1,
-                            child: Text('Todas las fases'),
-                          ),
-                        for (var i = 0; i < _program!.phases.length; i++)
-                          DropdownMenuItem(
-                            value: i,
-                            child: Text(_program!.phases[i].name),
-                          ),
-                      ],
-                      onChanged: _busy || _operation != null
-                          ? null
-                          : (value) {
-                              if (value != null) {
-                                _choose(_program!, phase: value);
-                              }
-                            },
+                    const Text(
+                      'Elige el programa y revisa cada fecha. La propuesta separa las sesiones dos días; ajústala a la disponibilidad del alumno. Las fases no avanzan automáticamente.',
                     ),
-                    if (_program!.sessionCount > 256)
+                    if (_busy) const LinearProgressIndicator(),
+                    if (_program == null) ...[
+                      TextField(
+                        controller: _programSearch,
+                        decoration: const InputDecoration(
+                          labelText: 'Buscar en todos mis programas',
+                          prefixIcon: Icon(Icons.search),
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            _programQuery = value;
+                            _busy = true;
+                          });
+                          _catalogSearch.schedule(() => _load());
+                        },
+                      ),
+                      for (final row in _programs)
+                        ListTile(
+                          title: Text(row.program.name),
+                          subtitle: Text(
+                            'v${row.program.version} · ${row.program.sessionCount} sesiones',
+                          ),
+                          onTap: _busy ? null : () => _choose(row.program),
+                          trailing: const Icon(Icons.chevron_right),
+                        ),
+                      if (!_busy && _programs.isEmpty && _error == null)
+                        const Text(
+                          'Crea primero un programa en tu biblioteca privada.',
+                        ),
+                      if (_more)
+                        TextButton(
+                          onPressed: _busy ? null : () => _load(more: true),
+                          child: const Text('Cargar más programas'),
+                        ),
+                    ] else ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        '${_program!.name} · v${_program!.version}',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      if (_program!.description.isNotEmpty)
+                        Text(_program!.description),
+                      const SizedBox(height: 12),
+                      const Text('Fases que vas a pautar'),
+                      const SizedBox(height: 6),
+                      DropdownButtonFormField<int>(
+                        key: ValueKey('${_program!.id}:$_phase'),
+                        initialValue: _phase,
+                        isExpanded: true,
+                        decoration: const InputDecoration(),
+                        items: [
+                          if (_program!.sessionCount <= 256)
+                            const DropdownMenuItem(
+                              value: -1,
+                              child: Text('Todas las fases'),
+                            ),
+                          for (var i = 0; i < _program!.phases.length; i++)
+                            DropdownMenuItem(
+                              value: i,
+                              child: Text(_program!.phases[i].name),
+                            ),
+                        ],
+                        onChanged: _busy || _operation != null
+                            ? null
+                            : (value) {
+                                if (value != null) {
+                                  _choose(_program!, phase: value);
+                                }
+                              },
+                      ),
+                      if (_program!.sessionCount > 256)
+                        const Text(
+                          'Este programa se pauta por fases. Cada envío admite hasta 256 sesiones con fechas concretas.',
+                        ),
+                      TextButton(
+                        onPressed: _busy || _operation != null
+                            ? null
+                            : _changeProgram,
+                        child: const Text('Elegir otro programa'),
+                      ),
+                      _schedulePreview(),
+                      const SizedBox(height: 12),
+                      for (var i = 0; i < _entries.length; i++)
+                        Card(
+                          key: ValueKey('program-date-$i'),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Text(_program!.phases[_entries[i].phase].name),
+                                Text(_sessionName(_entries[i])),
+                                if (_program!
+                                    .phases[_entries[i].phase]
+                                    .instructions
+                                    .isNotEmpty)
+                                  Text(
+                                    _program!
+                                        .phases[_entries[i].phase]
+                                        .instructions,
+                                  ),
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: [
+                                    OutlinedButton.icon(
+                                      onPressed: _busy || _operation != null
+                                          ? null
+                                          : () async {
+                                              final old = _entries[i];
+                                              final chosen =
+                                                  await showDatePicker(
+                                                    context: context,
+                                                    initialDate: old.date,
+                                                    firstDate: DateTime(2020),
+                                                    lastDate: DateTime(2100),
+                                                  );
+                                              if (chosen != null && mounted) {
+                                                setState(
+                                                  () => _entries[i] =
+                                                      TrainerProgramEntry(
+                                                        old.phase,
+                                                        old.session,
+                                                        chosen,
+                                                      ),
+                                                );
+                                              }
+                                            },
+                                      icon: const Icon(Icons.calendar_month),
+                                      label: Text(_date(_entries[i].date)),
+                                    ),
+                                    TextButton(
+                                      onPressed: _busy || _operation != null
+                                          ? null
+                                          : () => setState(
+                                              () => _entries.removeAt(i),
+                                            ),
+                                      child: const Text('Quitar de esta pauta'),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      if (_entries.length < 256)
+                        OutlinedButton.icon(
+                          onPressed:
+                              _busy || _operation != null || _entries.isEmpty
+                              ? null
+                              : () => setState(() {
+                                  final latest = _entries
+                                      .map((e) => e.date)
+                                      .reduce((a, b) => a.isAfter(b) ? a : b);
+                                  final earliest = _entries
+                                      .map((e) => e.date)
+                                      .reduce((a, b) => a.isBefore(b) ? a : b);
+                                  final span =
+                                      (DateTime.utc(
+                                                    latest.year,
+                                                    latest.month,
+                                                    latest.day,
+                                                  )
+                                                  .difference(
+                                                    DateTime.utc(
+                                                      earliest.year,
+                                                      earliest.month,
+                                                      earliest.day,
+                                                    ),
+                                                  )
+                                                  .inDays ~/
+                                              7 +
+                                          1) *
+                                      7;
+                                  final copies = [
+                                    for (final e in _entries)
+                                      TrainerProgramEntry(
+                                        e.phase,
+                                        e.session,
+                                        DateTime(
+                                          e.date.year,
+                                          e.date.month,
+                                          e.date.day + span,
+                                        ),
+                                      ),
+                                  ];
+                                  _entries.addAll(
+                                    copies.take(256 - _entries.length),
+                                  );
+                                }),
+                          icon: const Icon(Icons.copy_outlined),
+                          label: const Text('Repetir la planificación después'),
+                        ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _note,
+                        enabled: !_busy && _operation == null,
+                        maxLength: 320,
+                        maxLines: 3,
+                        decoration: const InputDecoration(
+                          labelText: 'Indicaciones para el alumno',
+                        ),
+                      ),
                       const Text(
-                        'Este programa se pauta por fases. Cada envío admite hasta 256 sesiones con fechas concretas.',
+                        'Se añaden a su agenda junto a su plan automático. No se sustituyen entrenamientos existentes; el alumno verá los avisos de coincidencia.',
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                    if (_error != null) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        _error!,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                      if (_program == null)
+                        TextButton(
+                          onPressed: _busy ? null : _load,
+                          child: const Text('Reintentar carga'),
+                        ),
+                    ],
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (_program != null)
+                      FilledButton(
+                        onPressed: _busy || _entries.isEmpty ? null : _assign,
+                        child: Text(
+                          _operation == null
+                              ? 'Confirmar ${_entries.length} ${_entries.length == 1 ? 'sesión' : 'sesiones'}'
+                              : 'Comprobar y reintentar planificación',
+                        ),
                       ),
                     TextButton(
-                      onPressed: _busy || _operation != null
+                      onPressed: _busy
                           ? null
-                          : _changeProgram,
-                      child: const Text('Elegir otro programa'),
+                          : () => Navigator.pop(context, false),
+                      child: const Text('Volver al alumno'),
                     ),
-                    _schedulePreview(),
-                    const SizedBox(height: 12),
-                    for (var i = 0; i < _entries.length; i++)
-                      Card(
-                        key: ValueKey('program-date-$i'),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Text(_program!.phases[_entries[i].phase].name),
-                              Text(_sessionName(_entries[i])),
-                              if (_program!
-                                  .phases[_entries[i].phase]
-                                  .instructions
-                                  .isNotEmpty)
-                                Text(
-                                  _program!
-                                      .phases[_entries[i].phase]
-                                      .instructions,
-                                ),
-                              Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                children: [
-                                  OutlinedButton.icon(
-                                    onPressed: _busy || _operation != null
-                                        ? null
-                                        : () async {
-                                            final old = _entries[i];
-                                            final chosen = await showDatePicker(
-                                              context: context,
-                                              initialDate: old.date,
-                                              firstDate: DateTime(2020),
-                                              lastDate: DateTime(2100),
-                                            );
-                                            if (chosen != null && mounted) {
-                                              setState(
-                                                () => _entries[i] =
-                                                    TrainerProgramEntry(
-                                                      old.phase,
-                                                      old.session,
-                                                      chosen,
-                                                    ),
-                                              );
-                                            }
-                                          },
-                                    icon: const Icon(Icons.calendar_month),
-                                    label: Text(_date(_entries[i].date)),
-                                  ),
-                                  TextButton(
-                                    onPressed: _busy || _operation != null
-                                        ? null
-                                        : () => setState(
-                                            () => _entries.removeAt(i),
-                                          ),
-                                    child: const Text('Quitar de esta pauta'),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    if (_entries.length < 256)
-                      OutlinedButton.icon(
-                        onPressed:
-                            _busy || _operation != null || _entries.isEmpty
-                            ? null
-                            : () => setState(() {
-                                final latest = _entries
-                                    .map((e) => e.date)
-                                    .reduce((a, b) => a.isAfter(b) ? a : b);
-                                final earliest = _entries
-                                    .map((e) => e.date)
-                                    .reduce((a, b) => a.isBefore(b) ? a : b);
-                                final span =
-                                    (DateTime.utc(
-                                                  latest.year,
-                                                  latest.month,
-                                                  latest.day,
-                                                )
-                                                .difference(
-                                                  DateTime.utc(
-                                                    earliest.year,
-                                                    earliest.month,
-                                                    earliest.day,
-                                                  ),
-                                                )
-                                                .inDays ~/
-                                            7 +
-                                        1) *
-                                    7;
-                                final copies = [
-                                  for (final e in _entries)
-                                    TrainerProgramEntry(
-                                      e.phase,
-                                      e.session,
-                                      DateTime(
-                                        e.date.year,
-                                        e.date.month,
-                                        e.date.day + span,
-                                      ),
-                                    ),
-                                ];
-                                _entries.addAll(
-                                  copies.take(256 - _entries.length),
-                                );
-                              }),
-                        icon: const Icon(Icons.copy_outlined),
-                        label: const Text('Repetir la planificación después'),
-                      ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _note,
-                      enabled: !_busy && _operation == null,
-                      maxLength: 320,
-                      maxLines: 3,
-                      decoration: const InputDecoration(
-                        labelText: 'Indicaciones para el alumno',
-                      ),
-                    ),
-                    const Text(
-                      'Se añaden a su agenda junto a su plan automático. No se sustituyen entrenamientos existentes; el alumno verá los avisos de coincidencia.',
-                    ),
-                    const SizedBox(height: 12),
                   ],
-                  if (_error != null) ...[
-                    const SizedBox(height: 12),
-                    Text(
-                      _error!,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                    ),
-                    if (_program == null)
-                      TextButton(
-                        onPressed: _busy ? null : _load,
-                        child: const Text('Reintentar carga'),
-                      ),
-                  ],
-                ],
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (_program != null)
-                    FilledButton(
-                      onPressed: _busy || _entries.isEmpty ? null : _assign,
-                      child: Text(
-                        _operation == null
-                            ? 'Confirmar ${_entries.length} ${_entries.length == 1 ? 'sesión' : 'sesiones'}'
-                            : 'Comprobar y reintentar planificación',
-                      ),
-                    ),
-                  TextButton(
-                    onPressed: _busy
-                        ? null
-                        : () => Navigator.pop(context, false),
-                    child: const Text('Volver al alumno'),
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     ),

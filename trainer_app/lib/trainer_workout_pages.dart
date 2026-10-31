@@ -1,3 +1,4 @@
+import 'trainer_catalog_search.dart';
 import 'trainer_assignment_lifecycle_actions.dart';
 import 'trainer_catalog_trash_page.dart';
 import 'trainer_catalog_trash_repository.dart';
@@ -39,6 +40,7 @@ class TrainerWorkoutLibraryPage extends StatefulWidget {
 }
 
 class _TrainerWorkoutLibraryPageState extends State<TrainerWorkoutLibraryPage> {
+  final _catalogSearch = TrainerCatalogSearch();
   String _query = '';
   final _search = TextEditingController();
   bool? _runningFilter;
@@ -72,11 +74,18 @@ class _TrainerWorkoutLibraryPageState extends State<TrainerWorkoutLibraryPage> {
 
   @override
   void dispose() {
+    _catalogSearch.dispose();
     _search.dispose();
     super.dispose();
   }
 
-  Future<void> _load({bool more = false}) async {
+  void _searchCatalog() {
+    setState(() => _busy = true);
+    _catalogSearch.schedule(() => _load(catalogOnly: true));
+  }
+
+  Future<void> _load({bool more = false, bool catalogOnly = false}) async {
+    final request = _catalogSearch.begin();
     setState(() {
       _busy = true;
       _error = null;
@@ -85,32 +94,42 @@ class _TrainerWorkoutLibraryPageState extends State<TrainerWorkoutLibraryPage> {
       final access = await widget.accessRepository.access();
       final rows = await widget.repository.workouts(
         before: more ? _items.last : null,
+        query: _query,
+        running: _runningFilter,
+        format: _formatFilter,
       );
-      if (!mounted) return;
+      if (!mounted || !_catalogSearch.current(request)) return;
       setState(() {
         _items = more ? [..._items, ...rows] : rows;
         _more = rows.length == 50;
         _canCreate = access.effective;
       });
     } catch (e) {
-      if (mounted) setState(() => _error = trainerError(e));
+      if (mounted && _catalogSearch.current(request)) {
+        setState(() => _error = trainerError(e));
+      }
     } finally {
       // La recuperación propia sigue disponible aunque falle el catálogo o
       // se haya deshabilitado el acceso profesional a nuevas escrituras.
-      if (!more && widget.workRepository != null) {
+      if (!more &&
+          !catalogOnly &&
+          _catalogSearch.current(request) &&
+          widget.workRepository != null) {
         try {
           final works = await widget.workRepository!.list();
-          if (mounted) {
+          if (mounted && _catalogSearch.current(request)) {
             setState(() {
               _works = works;
               _workError = null;
             });
           }
         } catch (error) {
-          if (mounted) setState(() => _workError = trainerError(error));
+          if (mounted && _catalogSearch.current(request)) {
+            setState(() => _workError = trainerError(error));
+          }
         }
       }
-      if (mounted) {
+      if (mounted && _catalogSearch.current(request)) {
         if (_reloadAfterTrash) {
           _reloadAfterTrash = false;
           await _load();
@@ -210,170 +229,198 @@ class _TrainerWorkoutLibraryPageState extends State<TrainerWorkoutLibraryPage> {
         ),
       ],
     ),
-    body: _frame(context, [
-      const Text(
-        'Tu biblioteca profesional. Las sesiones solo se comparten con los alumnos a los que las pautes.',
-      ),
-      const SizedBox(height: 16),
-      if (widget.workRepository != null &&
-          (_busy ||
-              _works.isNotEmpty ||
-              _workError != null ||
-              _discardError != null ||
-              _discardAttempt != null)) ...[
-        Text(
-          'Trabajos incompletos',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
+    body: trainerCatalogAutoPage(
+      active:
+          _query.trim().isNotEmpty ||
+          _runningFilter != null ||
+          _formatFilter != null,
+      hasMore: _more,
+      busy: _busy,
+      loadMore: () => _load(more: true),
+      child: _frame(context, [
         const Text(
-          'Retoma tus sesiones aunque tengan campos pendientes. Un envío sin confirmar conserva su receta hasta resolverlo.',
+          'Tu biblioteca profesional. Las sesiones solo se comparten con los alumnos a los que las pautes.',
         ),
-        if (_workError != null) Text('No se pudieron cargar: $_workError'),
-        if (_discardError != null) Text(_discardError!),
-        if (_discardAttempt != null && !_discardBusy)
-          TextButton(
-            onPressed: !_canCreate
-                ? null
-                : () => _discard(_discardAttempt!, retry: true),
-            child: const Text('Reintentar mismo descarte'),
+        const SizedBox(height: 16),
+        if (widget.workRepository != null &&
+            (_busy ||
+                _works.isNotEmpty ||
+                _workError != null ||
+                _discardError != null ||
+                _discardAttempt != null)) ...[
+          Text(
+            'Trabajos incompletos',
+            style: Theme.of(context).textTheme.titleLarge,
           ),
-        if (_discardBusy) const LinearProgressIndicator(),
-        if (!_busy && _workError == null && _works.isEmpty)
-          const Text('No tienes trabajos incompletos guardados.'),
-        for (final work in _works)
-          Card(
-            child: ListTile(
-              title: Text(work.name),
-              subtitle: Text(
-                work.origin['parentWorkId'] != null
-                    ? 'Sesión de un programa · retomar desde el programa'
-                    : work.origin['assignmentId'] != null
-                    ? 'Adaptación individual · borrador guardado'
-                    : work.state['intent'] != null
-                    ? 'Guardado pendiente de confirmar'
-                    : 'Trabajo guardado · revisión ${work.revision}',
-              ),
-              onTap: _busy || _discardBusy
-                  ? null
-                  : () async {
-                      final parent = work.origin['parentWorkId'] as String?;
-                      final assignment = work.origin['assignmentId'] as String?;
-                      await context.push(
-                        parent != null
-                            ? '/programs/work/${Uri.encodeComponent(parent)}'
-                            : assignment != null
-                            ? Uri(
-                                path:
-                                    '/assignments/${Uri.encodeComponent(assignment)}/adapt',
-                                queryParameters: {'workId': work.id},
-                              ).toString()
-                            : '/workouts/work/${Uri.encodeComponent(work.id)}',
-                      );
-                      if (mounted) await _load();
-                    },
-              trailing: work.state['intent'] != null
-                  ? null
-                  : IconButton(
-                      onPressed:
-                          _busy ||
-                              _discardBusy ||
-                              !_canCreate ||
-                              _discardAttempt != null
-                          ? null
-                          : () => _discard(work),
-                      tooltip: 'Descartar trabajo ${work.name}',
-                      icon: const Icon(Icons.delete_outline),
-                    ),
-            ),
+          const Text(
+            'Retoma tus sesiones aunque tengan campos pendientes. Un envío sin confirmar conserva su receta hasta resolverlo.',
           ),
-        const SizedBox(height: 24),
-      ],
-      Align(
-        alignment: Alignment.centerLeft,
-        child: FilledButton.icon(
-          onPressed: _busy || _discardBusy || !_canCreate ? null : _create,
-          icon: const Icon(Icons.add),
-          label: const Text('Crear sesión privada'),
-        ),
-      ),
-      if (_busy) const LinearProgressIndicator(),
-      if (_error != null) _retry(_error!, () => _load()),
-      if (!_busy && _items.isEmpty && _error == null)
-        const Padding(
-          padding: EdgeInsets.all(24),
-          child: Text('Todavía no has creado sesiones privadas.'),
-        ),
-      const SizedBox(height: 16),
-      Align(
-        alignment: Alignment.centerLeft,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 640),
-          child: TextField(
-            controller: _search,
-            decoration: const InputDecoration(
-              labelText: 'Buscar en sesiones, bloques y ejercicios cargados',
-              prefixIcon: Icon(Icons.search),
-            ),
-            onChanged: (v) => setState(() => _query = v),
-          ),
-        ),
-      ),
-      const SizedBox(height: 16),
-      TrainerWorkoutFilters(
-        running: _runningFilter,
-        format: _formatFilter,
-        onRunningChanged: (value) => setState(() => _runningFilter = value),
-        onFormatChanged: (value) => setState(() => _formatFilter = value),
-      ),
-      if (!_busy &&
-          _items.isNotEmpty &&
-          !_items.any(
-            (item) => matchesTrainerWorkout(
-              item,
-              query: _query,
-              running: _runningFilter,
-              format: _formatFilter,
-            ),
-          ))
-        const Text('No hay sesiones que coincidan entre las cargadas.'),
-      ProfessionalCatalogGrid(
-        children: [
-          for (final item in _items.where(
-            (item) => matchesTrainerWorkout(
-              item,
-              query: _query,
-              running: _runningFilter,
-              format: _formatFilter,
-            ),
-          ))
-            ProfessionalResourceCard(
-              leading: ProfessionalResourceIcon(
-                item.isRunning ? Icons.directions_run : Icons.fitness_center,
-              ),
-              title: Text(item.name),
-              subtitle: Text(
-                [
-                  '${item.isRunning ? 'Carrera' : 'Fuerza'} · Versión ${item.version} · Privada',
-                  if (trainerWorkoutFormatSummary(item).isNotEmpty)
-                    trainerWorkoutFormatSummary(item),
-                ].join(' · '),
-              ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: _busy
+          if (_workError != null) Text('No se pudieron cargar: $_workError'),
+          if (_discardError != null) Text(_discardError!),
+          if (_discardAttempt != null && !_discardBusy)
+            TextButton(
+              onPressed: !_canCreate
                   ? null
-                  : () async {
-                      await context.push('/workouts/${item.id}');
-                      if (mounted) await _load();
-                    },
+                  : () => _discard(_discardAttempt!, retry: true),
+              child: const Text('Reintentar mismo descarte'),
             ),
+          if (_discardBusy) const LinearProgressIndicator(),
+          if (!_busy && _workError == null && _works.isEmpty)
+            const Text('No tienes trabajos incompletos guardados.'),
+          for (final work in _works)
+            Card(
+              child: ListTile(
+                title: Text(work.name),
+                subtitle: Text(
+                  work.origin['parentWorkId'] != null
+                      ? 'Sesión de un programa · retomar desde el programa'
+                      : work.origin['assignmentId'] != null
+                      ? 'Adaptación individual · borrador guardado'
+                      : work.state['intent'] != null
+                      ? 'Guardado pendiente de confirmar'
+                      : 'Trabajo guardado · revisión ${work.revision}',
+                ),
+                onTap: _busy || _discardBusy
+                    ? null
+                    : () async {
+                        final parent = work.origin['parentWorkId'] as String?;
+                        final assignment =
+                            work.origin['assignmentId'] as String?;
+                        await context.push(
+                          parent != null
+                              ? '/programs/work/${Uri.encodeComponent(parent)}'
+                              : assignment != null
+                              ? Uri(
+                                  path:
+                                      '/assignments/${Uri.encodeComponent(assignment)}/adapt',
+                                  queryParameters: {'workId': work.id},
+                                ).toString()
+                              : '/workouts/work/${Uri.encodeComponent(work.id)}',
+                        );
+                        if (mounted) await _load();
+                      },
+                trailing: work.state['intent'] != null
+                    ? null
+                    : IconButton(
+                        onPressed:
+                            _busy ||
+                                _discardBusy ||
+                                !_canCreate ||
+                                _discardAttempt != null
+                            ? null
+                            : () => _discard(work),
+                        tooltip: 'Descartar trabajo ${work.name}',
+                        icon: const Icon(Icons.delete_outline),
+                      ),
+              ),
+            ),
+          const SizedBox(height: 24),
         ],
-      ),
-      if (_more)
-        OutlinedButton(
-          onPressed: _busy ? null : () => _load(more: true),
-          child: const Text('Cargar más sesiones'),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: FilledButton.icon(
+            onPressed: _busy || _discardBusy || !_canCreate ? null : _create,
+            icon: const Icon(Icons.add),
+            label: const Text('Crear sesión privada'),
+          ),
         ),
-    ]),
+        if (_busy) const LinearProgressIndicator(),
+        if (_error != null) _retry(_error!, () => _load()),
+        const SizedBox(height: 16),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 640),
+            child: TextField(
+              controller: _search,
+              decoration: const InputDecoration(
+                labelText: 'Buscar en todas mis sesiones, bloques y ejercicios',
+                prefixIcon: Icon(Icons.search),
+              ),
+              onChanged: (v) {
+                setState(() => _query = v);
+                _searchCatalog();
+              },
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        TrainerWorkoutFilters(
+          running: _runningFilter,
+          format: _formatFilter,
+          onRunningChanged: (value) {
+            setState(() => _runningFilter = value);
+            _searchCatalog();
+          },
+          onFormatChanged: (value) {
+            setState(() => _formatFilter = value);
+            _searchCatalog();
+          },
+        ),
+        if (!_busy &&
+            _items.isNotEmpty &&
+            !_items.any(
+              (item) => matchesTrainerWorkout(
+                item,
+                query: _query,
+                running: _runningFilter,
+                format: _formatFilter,
+              ),
+            ))
+          const Text('No hay sesiones que coincidan con la búsqueda.'),
+        if (!_busy && _error == null && _items.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Text(
+              _query.trim().isNotEmpty ||
+                      _runningFilter != null ||
+                      _formatFilter != null
+                  ? 'No hay sesiones que coincidan con la búsqueda.'
+                  : 'Todavía no has creado sesiones privadas.',
+            ),
+          ),
+        ProfessionalCatalogGrid(
+          children: [
+            for (final item in _items.where(
+              (item) => matchesTrainerWorkout(
+                item,
+                query: _query,
+                running: _runningFilter,
+                format: _formatFilter,
+              ),
+            ))
+              ProfessionalResourceCard(
+                leading: ProfessionalResourceIcon(
+                  item.isRunning ? Icons.directions_run : Icons.fitness_center,
+                ),
+                title: Text(item.name),
+                subtitle: Text(
+                  [
+                    '${item.isRunning ? 'Carrera' : 'Fuerza'} · Versión ${item.version} · Privada',
+                    if (trainerWorkoutFormatSummary(item).isNotEmpty)
+                      trainerWorkoutFormatSummary(item),
+                  ].join(' · '),
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: _busy
+                    ? null
+                    : () async {
+                        await context.push('/workouts/${item.id}');
+                        if (mounted) await _load();
+                      },
+              ),
+          ],
+        ),
+        if (_more &&
+            !(_query.trim().isNotEmpty ||
+                _runningFilter != null ||
+                _formatFilter != null))
+          OutlinedButton(
+            onPressed: _busy ? null : () => _load(more: true),
+            child: const Text('Cargar más sesiones'),
+          ),
+      ]),
+    ),
   );
 }
 
@@ -888,7 +935,9 @@ class _TrainerAssignmentDialogState extends State<TrainerAssignmentDialog> {
   String? _relationId;
   bool? _runningFilter;
   String? _formatFilter;
+  final _catalogSearch = TrainerCatalogSearch();
   String _sessionQuery = '';
+  final _sessionSearch = TextEditingController();
   final _note = TextEditingController();
   List<TrainerWorkout> _workouts = [];
   TrainerWorkout? _selected;
@@ -911,11 +960,19 @@ class _TrainerAssignmentDialogState extends State<TrainerAssignmentDialog> {
 
   @override
   void dispose() {
+    _catalogSearch.dispose();
+    _sessionSearch.dispose();
     _note.dispose();
     super.dispose();
   }
 
+  void _searchCatalog() {
+    setState(() => _busy = true);
+    _catalogSearch.schedule(() => _load());
+  }
+
   Future<void> _load({bool more = false}) async {
+    final request = _catalogSearch.begin();
     setState(() {
       _busy = true;
       _error = null;
@@ -923,8 +980,11 @@ class _TrainerAssignmentDialogState extends State<TrainerAssignmentDialog> {
     try {
       final rows = await widget.repository.workouts(
         before: more ? _cursor : null,
+        query: _sessionQuery,
+        running: _runningFilter,
+        format: _formatFilter,
       );
-      if (mounted) {
+      if (mounted && _catalogSearch.current(request)) {
         setState(() {
           _workouts = more
               ? [..._workouts, ...rows]
@@ -939,9 +999,13 @@ class _TrainerAssignmentDialogState extends State<TrainerAssignmentDialog> {
         });
       }
     } catch (e) {
-      if (mounted) setState(() => _error = trainerError(e));
+      if (mounted && _catalogSearch.current(request)) {
+        setState(() => _error = trainerError(e));
+      }
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (mounted && _catalogSearch.current(request)) {
+        setState(() => _busy = false);
+      }
     }
   }
 
@@ -1011,167 +1075,194 @@ class _TrainerAssignmentDialogState extends State<TrainerAssignmentDialog> {
   }
 
   @override
-  Widget build(BuildContext context) => PopScope(
-    canPop: !_busy,
-    child: EntrenaDialog(
-      title: const Text('Asignar sesión privada'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (_busy) const LinearProgressIndicator(),
-          const Text(
-            'El alumno recibirá esta versión en su agenda. Su plan automático se conserva.',
-          ),
-          const SizedBox(height: 16),
-          if (widget.accessRepository != null) ...[
-            TrainerAssignmentClientField(
-              repository: widget.accessRepository!,
-              initialClientId: widget.initialClientId,
-              enabled: !_busy && _operationId == null,
-              onChanged: (client) =>
-                  setState(() => _relationId = client?.relationId),
+  Widget build(BuildContext context) => trainerCatalogAutoPage(
+    active:
+        _sessionQuery.trim().isNotEmpty ||
+        _runningFilter != null ||
+        _formatFilter != null,
+    hasMore: _more,
+    busy: _busy,
+    loadMore: () => _load(more: true),
+    child: PopScope(
+      canPop: !_busy,
+      child: EntrenaDialog(
+        title: const Text('Asignar sesión privada'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (_busy) const LinearProgressIndicator(),
+            const Text(
+              'El alumno recibirá esta versión en su agenda. Su plan automático se conserva.',
             ),
             const SizedBox(height: 16),
-          ],
-          if (_selected != null) ...[
-            Text(
-              'Sesión seleccionada',
-              style: Theme.of(context).textTheme.labelMedium,
-            ),
-            Text(
-              _selected!.name,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            Text('Versión ${_selected!.version}'),
-            if (!_choosingWorkout)
-              TextButton.icon(
-                onPressed: _busy || _operationId != null
+            if (widget.accessRepository != null) ...[
+              TrainerAssignmentClientField(
+                repository: widget.accessRepository!,
+                initialClientId: widget.initialClientId,
+                enabled: !_busy && _operationId == null,
+                onChanged: (client) =>
+                    setState(() => _relationId = client?.relationId),
+              ),
+              const SizedBox(height: 16),
+            ],
+            if (_selected != null) ...[
+              Text(
+                'Sesión seleccionada',
+                style: Theme.of(context).textTheme.labelMedium,
+              ),
+              Text(
+                _selected!.name,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              Text('Versión ${_selected!.version}'),
+              if (!_choosingWorkout)
+                TextButton.icon(
+                  onPressed: _busy || _operationId != null
+                      ? null
+                      : _chooseWorkout,
+                  icon: const Icon(Icons.swap_horiz),
+                  label: const Text('Cambiar sesión'),
+                ),
+            ],
+            if (_choosingWorkout &&
+                _workouts.isEmpty &&
+                !_busy &&
+                _error == null)
+              Text(
+                _sessionQuery.trim().isNotEmpty ||
+                        _runningFilter != null ||
+                        _formatFilter != null
+                    ? 'No hay sesiones que coincidan con la búsqueda.'
+                    : 'Crea primero una sesión en Mis sesiones privadas.',
+              ),
+            if (_choosingWorkout)
+              TextField(
+                controller: _sessionSearch,
+                decoration: const InputDecoration(
+                  labelText: 'Buscar en el contenido de las sesiones',
+                ),
+                onChanged: (value) {
+                  setState(() => _sessionQuery = value);
+                  _searchCatalog();
+                },
+              ),
+            if (_choosingWorkout)
+              TrainerWorkoutFilters(
+                stacked: true,
+                running: _runningFilter,
+                format: _formatFilter,
+                onRunningChanged: (value) {
+                  setState(() => _runningFilter = value);
+                  _searchCatalog();
+                },
+                onFormatChanged: (value) {
+                  setState(() => _formatFilter = value);
+                  _searchCatalog();
+                },
+              ),
+            if (_choosingWorkout)
+              RadioGroup<String>(
+                groupValue: _selected?.id,
+                onChanged: (value) {
+                  if (!_busy && _operationId == null) {
+                    setState(() {
+                      _selected = _workouts.firstWhere(
+                        (item) => item.id == value,
+                      );
+                      _choosingWorkout = false;
+                    });
+                  }
+                },
+                child: Column(
+                  children: [
+                    for (final item in _workouts.where(
+                      (item) => matchesTrainerWorkout(
+                        item,
+                        query: _sessionQuery,
+                        running: _runningFilter,
+                        format: _formatFilter,
+                      ),
+                    ))
+                      RadioListTile<String>(
+                        title: Text(item.name),
+                        subtitle: Text('Versión ${item.version}'),
+                        value: item.id,
+                        enabled: !_busy && _operationId == null,
+                      ),
+                  ],
+                ),
+              ),
+            if (_choosingWorkout && _more)
+              TextButton(
+                onPressed: _busy ? null : () => _load(more: true),
+                child: const Text('Cargar más sesiones'),
+              ),
+            if (_choosingWorkout && _error != null && !_libraryLoaded)
+              TextButton(
+                onPressed: _busy ? null : _load,
+                child: const Text('Reintentar carga de sesiones'),
+              ),
+            if (_choosingWorkout && _selected != null)
+              TextButton(
+                onPressed: _busy
                     ? null
-                    : _chooseWorkout,
-                icon: const Icon(Icons.swap_horiz),
-                label: const Text('Cambiar sesión'),
+                    : () => setState(() => _choosingWorkout = false),
+                child: const Text('Conservar sesión seleccionada'),
               ),
-          ],
-          if (_choosingWorkout && _workouts.isEmpty && !_busy && _error == null)
-            const Text('Crea primero una sesión en Mis sesiones privadas.'),
-          if (_choosingWorkout)
-            TextField(
-              decoration: const InputDecoration(
-                labelText: 'Buscar en el contenido de las sesiones',
+            if (_selected != null)
+              TextButton(
+                onPressed: _busy ? null : _preview,
+                child: const Text('Ver receta antes de asignar'),
               ),
-              onChanged: (value) => setState(() => _sessionQuery = value),
-            ),
-          if (_choosingWorkout)
-            TrainerWorkoutFilters(
-              stacked: true,
-              running: _runningFilter,
-              format: _formatFilter,
-              onRunningChanged: (value) =>
-                  setState(() => _runningFilter = value),
-              onFormatChanged: (value) => setState(() => _formatFilter = value),
-            ),
-          if (_choosingWorkout)
-            RadioGroup<String>(
-              groupValue: _selected?.id,
-              onChanged: (value) {
-                if (!_busy && _operationId == null) {
-                  setState(() {
-                    _selected = _workouts.firstWhere(
-                      (item) => item.id == value,
-                    );
-                    _choosingWorkout = false;
-                  });
-                }
-              },
-              child: Column(
-                children: [
-                  for (final item in _workouts.where(
-                    (item) => matchesTrainerWorkout(
-                      item,
-                      query: _sessionQuery,
-                      running: _runningFilter,
-                      format: _formatFilter,
-                    ),
-                  ))
-                    RadioListTile<String>(
-                      title: Text(item.name),
-                      subtitle: Text('Versión ${item.version}'),
-                      value: item.id,
-                      enabled: !_busy && _operationId == null,
-                    ),
-                ],
-              ),
-            ),
-          if (_choosingWorkout && _more)
-            TextButton(
-              onPressed: _busy ? null : () => _load(more: true),
-              child: const Text('Cargar más sesiones'),
-            ),
-          if (_choosingWorkout && _error != null && !_libraryLoaded)
-            TextButton(
-              onPressed: _busy ? null : _load,
-              child: const Text('Reintentar carga de sesiones'),
-            ),
-          if (_choosingWorkout && _selected != null)
-            TextButton(
-              onPressed: _busy
+            OutlinedButton(
+              onPressed: _busy || _operationId != null
                   ? null
-                  : () => setState(() => _choosingWorkout = false),
-              child: const Text('Conservar sesión seleccionada'),
+                  : () async {
+                      final date = await showDatePicker(
+                        context: context,
+                        initialDate: _date,
+                        firstDate: DateTime(1970),
+                        lastDate: DateTime(2200, 12, 31),
+                      );
+                      if (date != null && mounted) setState(() => _date = date);
+                    },
+              child: Text('Fecha: ${trainerDate(_date)}'),
             ),
-          if (_selected != null)
-            TextButton(
-              onPressed: _busy ? null : _preview,
-              child: const Text('Ver receta antes de asignar'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _note,
+              enabled: !_busy && _operationId == null,
+              maxLength: 500,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                labelText: 'Indicaciones para el alumno (opcional)',
+              ),
             ),
-          OutlinedButton(
-            onPressed: _busy || _operationId != null
-                ? null
-                : () async {
-                    final date = await showDatePicker(
-                      context: context,
-                      initialDate: _date,
-                      firstDate: DateTime(1970),
-                      lastDate: DateTime(2200, 12, 31),
-                    );
-                    if (date != null && mounted) setState(() => _date = date);
-                  },
-            child: Text('Fecha: ${trainerDate(_date)}'),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _note,
-            enabled: !_busy && _operationId == null,
-            maxLength: 500,
-            maxLines: 3,
-            decoration: const InputDecoration(
-              labelText: 'Indicaciones para el alumno (opcional)',
-            ),
-          ),
-          if (_error != null) Text(_error!),
-        ],
-      ),
-      actions: [
-        EntrenaDialogActions(
-          primaryLabel: _operationId == null
-              ? 'Asignar sesión'
-              : 'Reintentar asignación',
-          onPrimary:
-              _busy ||
-                  _selected == null ||
-                  _choosingWorkout ||
-                  _relationId == null
-              ? null
-              : _assign,
-          secondary: [
-            TextButton(
-              onPressed: _busy ? null : () => Navigator.pop(context, false),
-              child: const Text('Volver'),
-            ),
+            if (_error != null) Text(_error!),
           ],
         ),
-      ],
+        actions: [
+          EntrenaDialogActions(
+            primaryLabel: _operationId == null
+                ? 'Asignar sesión'
+                : 'Reintentar asignación',
+            onPrimary:
+                _busy ||
+                    _selected == null ||
+                    _choosingWorkout ||
+                    _relationId == null
+                ? null
+                : _assign,
+            secondary: [
+              TextButton(
+                onPressed: _busy ? null : () => Navigator.pop(context, false),
+                child: const Text('Volver'),
+              ),
+            ],
+          ),
+        ],
+      ),
     ),
   );
 }

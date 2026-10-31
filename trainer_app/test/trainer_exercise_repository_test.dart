@@ -1,3 +1,5 @@
+import 'package:entrenaop_trainer/trainer_program_repository.dart';
+
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -106,6 +108,10 @@ class ServerFixture {
     if (path.endsWith('/rpc/list_trainer_exercises')) {
       return json(request, [row('current'), row('old', current: false)]);
     }
+    if (path.endsWith('/rpc/search_trainer_workouts') ||
+        path.endsWith('/rpc/search_trainer_programs')) {
+      return json(request, workoutRows);
+    }
     if (path.endsWith('/rpc/list_trainer_workouts')) {
       return json(request, workoutRows);
     }
@@ -164,6 +170,86 @@ class ServerFixture {
 }
 
 void main() {
+  test('búsqueda de sesión envía filtros y cursor y evita volver a descargar sus bloques', () async {
+    final server = ServerFixture()
+      ..workoutRows = [
+        {
+          'id': 'session',
+          'name': 'Fuerza',
+          'version': 1,
+          'is_running': false,
+          'created_at': '2026-10-31T09:00:00Z',
+          'formats': ['amrap'],
+          'search_content': ['Dominadas'],
+        },
+      ];
+    addTearDown(server.client.dispose);
+    await server.login();
+    final cursor = TrainerWorkout.fromJson(server.workoutRows.single);
+    final result = await SupabaseTrainerWorkoutRepository(server.client, owner)
+        .workouts(
+          query: ' dominadas ',
+          running: false,
+          format: 'amrap',
+          before: cursor,
+        );
+    expect(result.single.searchContent, ['Dominadas']);
+    final request = server.requests.singleWhere(
+      (r) => r.url.path.endsWith('/rpc/search_trainer_workouts'),
+    );
+    expect(jsonDecode(request.body), {
+      'p_query': 'dominadas',
+      'p_running': false,
+      'p_format': 'amrap',
+      'p_before_at': '2026-10-31T09:00:00.000Z',
+      'p_before_id': 'session',
+    });
+    expect(
+      server.requests.where((r) => r.url.path == '/rest/v1/workout_templates'),
+      isEmpty,
+    );
+  });
+  test('búsqueda de programa conserva propietario de sesión y cursor mediante la RPC propia', () async {
+    final server = ServerFixture()
+      ..workoutRows = [
+        {
+          'id': 'program',
+          'family_id': 'family',
+          'version': 1,
+          'status': 'published',
+          'created_at': '2026-10-31T09:00:00Z',
+          'content': {
+            'name': 'Programa de dominadas',
+            'mode': 'phased',
+            'phases': [
+              {
+                'name': 'Base',
+                'instructions': 'Revisar',
+                'sessions': [
+                  {'template_id': 'session', 'name': 'Fuerza'},
+                ],
+              },
+            ],
+          },
+        },
+      ];
+    addTearDown(server.client.dispose);
+    await server.login();
+    final cursor = TrainerProgram.fromJson(server.workoutRows.single);
+    final result = await SupabaseTrainerProgramRepository(
+      server.client,
+      owner,
+    ).programs(query: ' dominadas ', before: cursor);
+    expect(result.single.program.id, 'program');
+    final request = server.requests.singleWhere(
+      (r) => r.url.path.endsWith('/rpc/search_trainer_programs'),
+    );
+    expect(jsonDecode(request.body), {
+      'p_query': 'dominadas',
+      'p_before_at': '2026-10-31T09:00:00.000Z',
+      'p_before_id': 'program',
+    });
+  });
   test(
     'biblioteca lee formatos y ejercicios en lote limitado a los IDs propios',
     () async {

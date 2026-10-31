@@ -141,7 +141,12 @@ class SessionWorkFixture implements WorkoutEditorWorkRepository {
 class TrackingWorkouts extends WorkoutFixture {
   bool failCatalog = false;
   @override
-  Future<List<TrainerWorkout>> workouts({TrainerWorkout? before}) async {
+  Future<List<TrainerWorkout>> workouts({
+    TrainerWorkout? before,
+    String query = '',
+    bool? running,
+    String? format,
+  }) async {
     if (failCatalog) throw StateError('Catálogo no disponible');
     return super.workouts(before: before);
   }

@@ -57,7 +57,10 @@ class ProgramFixture extends TrainerProgramRepository {
   @override
   Future<GuidedProgram> program(String id) async => privateProgram;
   @override
-  Future<List<TrainerProgram>> programs({TrainerProgram? before}) async {
+  Future<List<TrainerProgram>> programs({
+    TrainerProgram? before,
+    String query = '',
+  }) async {
     libraryReads++;
     if (failPrograms) throw StateError('Biblioteca no disponible');
     return before == null
@@ -107,8 +110,12 @@ class ProgramFixture extends TrainerProgramRepository {
 class ChangingLibraryFixture extends WorkoutFixture {
   bool retired = false;
   @override
-  Future<List<TrainerWorkout>> workouts({TrainerWorkout? before}) async =>
-      retired ? [] : super.workouts(before: before);
+  Future<List<TrainerWorkout>> workouts({
+    TrainerWorkout? before,
+    String query = '',
+    bool? running,
+    String? format,
+  }) async => retired ? [] : super.workouts(before: before);
 }
 
 class AgendaFixture extends TrainerAgendaRepository {

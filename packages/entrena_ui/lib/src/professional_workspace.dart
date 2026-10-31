@@ -232,6 +232,10 @@ class ProfessionalLibraryPane<T> extends StatefulWidget {
     this.footer,
     this.leadingOf,
     this.filters,
+    this.onSearchChanged,
+    this.searchQuery,
+    this.searching = false,
+    this.onLoadMore,
   });
   final String title;
   final List<T> items;
@@ -243,6 +247,10 @@ class ProfessionalLibraryPane<T> extends StatefulWidget {
   final Widget? footer;
   final Widget Function(T)? leadingOf;
   final Widget? filters;
+  final ValueChanged<String>? onSearchChanged;
+  final String? searchQuery;
+  final bool searching;
+  final VoidCallback? onLoadMore;
   @override
   State<ProfessionalLibraryPane<T>> createState() =>
       _ProfessionalLibraryPaneState<T>();
@@ -251,16 +259,40 @@ class ProfessionalLibraryPane<T> extends StatefulWidget {
 class _ProfessionalLibraryPaneState<T>
     extends State<ProfessionalLibraryPane<T>> {
   String _query = '';
+  late final TextEditingController _searchController;
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController(text: widget.searchQuery ?? '');
+  }
+
+  @override
+  void didUpdateWidget(covariant ProfessionalLibraryPane<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.searchQuery != null &&
+        widget.searchQuery != _searchController.text) {
+      _searchController.text = widget.searchQuery!;
+    }
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final items = widget.items
-        .where(
-          (item) =>
-              '${widget.nameOf(item)} ${widget.subtitleOf(item)} ${widget.searchTextOf?.call(item) ?? ''}'
-                  .toLowerCase()
-                  .contains(_query.trim().toLowerCase()),
-        )
-        .toList();
+    final items = widget.onSearchChanged != null
+        ? widget.items
+        : widget.items
+              .where(
+                (item) =>
+                    '${widget.nameOf(item)} ${widget.subtitleOf(item)} ${widget.searchTextOf?.call(item) ?? ''}'
+                        .toLowerCase()
+                        .contains(_query.trim().toLowerCase()),
+              )
+              .toList();
     return Material(
       color: Theme.of(context).colorScheme.surfaceContainerLow,
       child: Column(
@@ -277,12 +309,15 @@ class _ProfessionalLibraryPaneState<T>
                 ),
                 const SizedBox(height: 12),
                 TextField(
-                  enabled: widget.enabled,
+                  controller: _searchController,
+                  enabled: widget.onSearchChanged != null || widget.enabled,
                   decoration: const InputDecoration(
                     labelText: 'Buscar en la biblioteca',
                     prefixIcon: Icon(Icons.search),
                   ),
-                  onChanged: (value) => setState(() => _query = value),
+                  onChanged:
+                      widget.onSearchChanged ??
+                      (value) => setState(() => _query = value),
                 ),
                 const SizedBox(height: 8),
                 if (widget.filters != null) ...[
@@ -290,7 +325,9 @@ class _ProfessionalLibraryPaneState<T>
                   const SizedBox(height: 8),
                 ],
                 Text(
-                  '${items.length} de ${widget.items.length} cargados',
+                  widget.onSearchChanged != null
+                      ? '${items.length} cargados'
+                      : '${items.length} de ${widget.items.length} cargados',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
@@ -298,89 +335,107 @@ class _ProfessionalLibraryPaneState<T>
           ),
           const Divider(height: 1),
           Expanded(
-            child: items.isEmpty
-                ? const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Text('No hay elementos que coincidan.'),
-                  )
-                : ListView.builder(
-                    primary: false,
-                    itemCount: items.length,
-                    itemBuilder: (context, index) {
-                      final item = items[index];
-                      final tile = Padding(
-                        padding: const EdgeInsets.fromLTRB(10, 4, 10, 4),
-                        child: Material(
-                          color: Theme.of(context).scaffoldBackgroundColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6),
-                            side: BorderSide(
-                              color: Theme.of(context).dividerColor,
-                            ),
-                          ),
-                          clipBehavior: Clip.antiAlias,
-                          child: ListTile(
-                            title: Tooltip(
-                              message: widget.nameOf(item),
-                              child: Text(
-                                widget.nameOf(item),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
+            child: NotificationListener<ScrollNotification>(
+              onNotification: (notice) {
+                if (!widget.searching &&
+                    notice.depth == 0 &&
+                    notice.metrics.extentAfter < 240 &&
+                    notice.metrics.pixels > 0) {
+                  widget.onLoadMore?.call();
+                }
+                return false;
+              },
+              child: items.isEmpty
+                  ? Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(
+                        widget.searching
+                            ? 'Buscando…'
+                            : 'No hay elementos que coincidan.',
+                      ),
+                    )
+                  : ListView.builder(
+                      primary: false,
+                      itemCount: items.length,
+                      itemBuilder: (context, index) {
+                        final item = items[index];
+                        final tile = Padding(
+                          padding: const EdgeInsets.fromLTRB(10, 4, 10, 4),
+                          child: Material(
+                            color: Theme.of(context).scaffoldBackgroundColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6),
+                              side: BorderSide(
+                                color: Theme.of(context).dividerColor,
                               ),
                             ),
-                            subtitle: Tooltip(
-                              message: widget.subtitleOf(item),
-                              child: Text(
-                                widget.subtitleOf(item),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
+                            clipBehavior: Clip.antiAlias,
+                            child: ListTile(
+                              title: Tooltip(
+                                message: widget.nameOf(item),
+                                child: Text(
+                                  widget.nameOf(item),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
-                            ),
-                            leading: widget.leadingOf != null
-                                ? Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      if (widget.dragOwner != null) ...[
-                                        const Icon(
-                                          Icons.drag_indicator,
-                                          size: 14,
-                                        ),
-                                        const SizedBox(width: 4),
+                              subtitle: Tooltip(
+                                message: widget.subtitleOf(item),
+                                child: Text(
+                                  widget.subtitleOf(item),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              leading: widget.leadingOf != null
+                                  ? Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        if (widget.dragOwner != null) ...[
+                                          const Icon(
+                                            Icons.drag_indicator,
+                                            size: 14,
+                                          ),
+                                          const SizedBox(width: 4),
+                                        ],
+                                        widget.leadingOf!(item),
                                       ],
-                                      widget.leadingOf!(item),
-                                    ],
-                                  )
-                                : widget.dragOwner == null
-                                ? null
-                                : const Icon(Icons.drag_indicator, size: 18),
-                            onTap: widget.enabled
-                                ? () => widget.onSelected(item)
-                                : null,
-                          ),
-                        ),
-                      );
-                      if (widget.dragOwner == null || !widget.enabled) {
-                        return tile;
-                      }
-                      return Draggable<ProfessionalLibraryDrag<T>>(
-                        data: ProfessionalLibraryDrag(widget.dragOwner!, item),
-                        maxSimultaneousDrags: 1,
-                        feedback: Material(
-                          elevation: 8,
-                          borderRadius: BorderRadius.circular(12),
-                          child: SizedBox(
-                            width: 240,
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Text(widget.nameOf(item)),
+                                    )
+                                  : widget.dragOwner == null
+                                  ? null
+                                  : const Icon(Icons.drag_indicator, size: 18),
+                              onTap: widget.enabled
+                                  ? () => widget.onSelected(item)
+                                  : null,
                             ),
                           ),
-                        ),
-                        childWhenDragging: Opacity(opacity: .4, child: tile),
-                        child: tile,
-                      );
-                    },
-                  ),
+                        );
+                        if (widget.dragOwner == null || !widget.enabled) {
+                          return tile;
+                        }
+                        return Draggable<ProfessionalLibraryDrag<T>>(
+                          data: ProfessionalLibraryDrag(
+                            widget.dragOwner!,
+                            item,
+                          ),
+                          maxSimultaneousDrags: 1,
+                          feedback: Material(
+                            elevation: 8,
+                            borderRadius: BorderRadius.circular(12),
+                            child: SizedBox(
+                              width: 240,
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Text(widget.nameOf(item)),
+                              ),
+                            ),
+                          ),
+                          childWhenDragging: Opacity(opacity: .4, child: tile),
+                          child: tile,
+                        );
+                      },
+                    ),
+            ),
           ),
           if (widget.footer != null)
             Padding(padding: const EdgeInsets.all(12), child: widget.footer!),

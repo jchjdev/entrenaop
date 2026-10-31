@@ -95,13 +95,20 @@ class _PortalFixture {
             'status': 'restored',
             'trashed_at': null,
           };
+        case 'search_trainer_workouts':
+        case 'search_trainer_programs':
         case 'list_trainer_workouts':
         case 'list_trainer_programs':
         case 'list_trainer_exercises':
           final snapshot = catalogKind == null ? [] : catalogRows();
           catalogReads++;
           if (catalogReads == 1) await pendingCatalogRead?.future;
-          result = snapshot;
+          final query = (params['p_query'] as String? ?? '').toLowerCase();
+          result = snapshot
+              .where(
+                (row) => (row['name'] as String).toLowerCase().contains(query),
+              )
+              .toList();
         case 'workout_templates':
           result = catalogKind == null
               ? []
@@ -233,6 +240,7 @@ void main() {
           expect(find.text('Recuperado ${kind.label}'), findsOneWidget);
           expect(find.text('Otra referencia'), findsNothing);
 
+          final readsBeforeTrash = fixture.catalogReads;
           // La ida desde el botón también conserva el campo y no exige recarga manual.
           await tester.tap(
             find.byTooltip(switch (kind) {
@@ -252,7 +260,7 @@ void main() {
           expect(tester.takeException(), isNull);
           expect(
             fixture.catalogReads,
-            4,
+            readsBeforeTrash + 1,
             reason:
                 'Un refresco por retorno, sin duplicarlo con el await de push.',
           );

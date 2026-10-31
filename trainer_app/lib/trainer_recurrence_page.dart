@@ -1,3 +1,5 @@
+import 'trainer_catalog_search.dart';
+
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -234,11 +236,19 @@ class _TrainerRecurrenceEditorDialogState
 
   @override
   void dispose() {
+    _catalogSearch.dispose();
+    _workoutSearch.dispose();
     _note.dispose();
     super.dispose();
   }
 
-  Future<void> _load({String? more}) async {
+  final _catalogSearch = TrainerCatalogSearch();
+  String _workoutQuery = '';
+  final _workoutSearch = TextEditingController();
+  TrainerWorkout? _searchCursor;
+
+  Future<void> _load({String? more, bool search = false}) async {
+    final request = _catalogSearch.begin();
     setState(() {
       _busy = true;
       _error = null;
@@ -255,19 +265,27 @@ class _TrainerRecurrenceEditorDialogState
       }
       if (more == null || more == 'workouts') {
         final rows = await widget.workouts.workouts(
-          before: more == 'workouts' && _workouts.isNotEmpty
-              ? _workouts.last
-              : null,
+          before: more == 'workouts' && !search ? _searchCursor : null,
+          query: _workoutQuery,
         );
-        _workouts = more == 'workouts' ? [..._workouts, ...rows] : rows;
+        if (!mounted || !_catalogSearch.current(request)) return;
+        _searchCursor = rows.lastOrNull;
+        _workouts = more == 'workouts' && !search
+            ? [..._workouts, ...rows]
+            : rows;
+        final selected = _workout;
+        if (selected != null &&
+            !_workouts.any((row) => row.id == selected.id)) {
+          _workouts = [selected, ..._workouts];
+        }
         _moreWorkouts = rows.length == 50;
       }
     } catch (e) {
-      if (mounted) {
+      if (mounted && _catalogSearch.current(request)) {
         setState(() => _error = trainerError(e));
       }
     } finally {
-      if (mounted) {
+      if (mounted && _catalogSearch.current(request)) {
         setState(() => _busy = false);
       }
     }
@@ -503,6 +521,22 @@ class _TrainerRecurrenceEditorDialogState
                 onPressed: _busy ? null : () => _load(more: 'clients'),
                 child: const Text('Cargar más alumnos'),
               ),
+            TextField(
+              controller: _workoutSearch,
+              decoration: const InputDecoration(
+                labelText: 'Buscar en todas mis sesiones',
+                prefixIcon: Icon(Icons.search),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _workoutQuery = value;
+                  _busy = true;
+                });
+                _catalogSearch.schedule(
+                  () => _load(more: 'workouts', search: true),
+                );
+              },
+            ),
             DropdownButtonFormField<String>(
               key: const ValueKey('recurrence-template'),
               initialValue: _workout?.id,

@@ -1,5 +1,13 @@
 # Roadmap de EntrenaOP
 
+**31/10/2026 · búsqueda completa de sesiones y programas:** consultas autorizadas
+en servidor antes de paginar, contenido y filtros de sesión, programas por
+nombre/descripción/fases/sesiones y conexión a bibliotecas/selectores del portal.
+Pulsaciones agrupadas, respuesta antigua descartada y continuación al desplazar.
+[Contrato y comprobaciones](TRAINER_PLATFORM.md#búsqueda-completa-de-biblioteca--31102026).
+**Siguiente recorrido:** aceptación con las pautas de Ervi y el seguimiento de
+Isabel durante la semana del 2 al 8 de noviembre, incluyendo recepción y resultados.
+
 **31/10/2026 · planificación por grupos y revisión individual:** propuesta de
 fechas común con envío individual, previsualización de recetas y coincidencias,
 recibo con acceso a la semana de cada alumno y vuelta al mismo recibo. Se

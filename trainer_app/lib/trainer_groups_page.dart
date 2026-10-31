@@ -1,3 +1,5 @@
+import 'trainer_catalog_search.dart';
+
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -463,6 +465,12 @@ class TrainerBatchAssignmentDialog extends StatefulWidget {
 
 class _TrainerBatchAssignmentDialogState
     extends State<TrainerBatchAssignmentDialog> {
+  final _catalogSearch = TrainerCatalogSearch();
+  String _workoutQuery = '', _programQuery = '';
+  final _workoutSearch = TextEditingController(),
+      _programSearch = TextEditingController();
+  TrainerWorkout? _workoutCursor;
+  TrainerProgram? _programCursor;
   final _note = TextEditingController();
   late final Map<String, TrainerGroupMember> _selected = {
     for (final member in widget.group?.members ?? <TrainerGroupMember>[])
@@ -494,11 +502,15 @@ class _TrainerBatchAssignmentDialogState
 
   @override
   void dispose() {
+    _catalogSearch.dispose();
+    _workoutSearch.dispose();
+    _programSearch.dispose();
     _note.dispose();
     super.dispose();
   }
 
-  Future<void> _load({String? more}) async {
+  Future<void> _load({String? more, bool search = false}) async {
+    final request = _catalogSearch.begin();
     setState(() {
       _busy = true;
       _error = null;
@@ -510,31 +522,51 @@ class _TrainerBatchAssignmentDialogState
               ? _clients.last
               : null,
         );
+        if (!mounted) return;
         _clients = more == 'clients' ? [..._clients, ...rows] : rows;
         _moreClients = rows.length == 50;
       }
       if (more == null || more == 'workouts') {
         final rows = await widget.workouts.workouts(
-          before: more == 'workouts' && _workouts.isNotEmpty
-              ? _workouts.last
-              : null,
+          before: more == 'workouts' && !search ? _workoutCursor : null,
+          query: _workoutQuery,
         );
-        _workouts = more == 'workouts' ? [..._workouts, ...rows] : rows;
+        if (!mounted || !_catalogSearch.current(request)) return;
+        _workoutCursor = rows.lastOrNull;
+        _workouts = more == 'workouts' && !search
+            ? [..._workouts, ...rows]
+            : rows;
+        final selected = _workout;
+        if (selected != null &&
+            !_workouts.any((row) => row.id == selected.id)) {
+          _workouts = [selected, ..._workouts];
+        }
         _moreWorkouts = rows.length == 50;
       }
       if (more == null || more == 'programs') {
         final rows = await widget.programs.programs(
-          before: more == 'programs' && _programs.isNotEmpty
-              ? _programs.last
-              : null,
+          before: more == 'programs' && !search ? _programCursor : null,
+          query: _programQuery,
         );
-        _programs = more == 'programs' ? [..._programs, ...rows] : rows;
+        if (!mounted || !_catalogSearch.current(request)) return;
+        _programCursor = rows.lastOrNull;
+        _programs = more == 'programs' && !search
+            ? [..._programs, ...rows]
+            : {
+                for (final row in _programs)
+                  if (row.program.id == _program?.id) row.program.id!: row,
+                for (final row in rows) row.program.id!: row,
+              }.values.toList();
         _morePrograms = rows.length == 50;
       }
     } catch (e) {
-      if (mounted) setState(() => _error = trainerError(e));
+      if (mounted && _catalogSearch.current(request)) {
+        setState(() => _error = trainerError(e));
+      }
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (mounted && _catalogSearch.current(request)) {
+        setState(() => _busy = false);
+      }
     }
   }
 
@@ -931,6 +963,22 @@ class _TrainerBatchAssignmentDialogState
               ],
             ),
             if (!_programMode) ...[
+              TextField(
+                controller: _workoutSearch,
+                decoration: const InputDecoration(
+                  labelText: 'Buscar en todas mis sesiones',
+                  prefixIcon: Icon(Icons.search),
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    _workoutQuery = value;
+                    _busy = true;
+                  });
+                  _catalogSearch.schedule(
+                    () => _load(more: 'workouts', search: true),
+                  );
+                },
+              ),
               DropdownButtonFormField<String>(
                 key: const ValueKey('trainer-batch-workout'),
                 initialValue: _workout?.id,
@@ -971,6 +1019,22 @@ class _TrainerBatchAssignmentDialogState
                 label: Text(_dateLabel(_date)),
               ),
             ] else ...[
+              TextField(
+                controller: _programSearch,
+                decoration: const InputDecoration(
+                  labelText: 'Buscar en todos mis programas',
+                  prefixIcon: Icon(Icons.search),
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    _programQuery = value;
+                    _busy = true;
+                  });
+                  _catalogSearch.schedule(
+                    () => _load(more: 'programs', search: true),
+                  );
+                },
+              ),
               DropdownButtonFormField<String>(
                 key: const ValueKey('trainer-batch-program'),
                 initialValue: _program?.id,

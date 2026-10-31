@@ -1,5 +1,14 @@
 # Registro de decisiones vigentes
 
+**Búsqueda completa en Trainer · 31/10/2026:** Javier pide buscar sesiones y
+programas en toda la biblioteca, sin cargar previamente las páginas. Las
+consultas y filtros se aplican en servidor antes de paginar, conservando MFA,
+propiedad, papelera y separación de variantes individuales. Se reutilizan
+bibliotecas y selectores; las pulsaciones se agrupan y las respuestas antiguas
+se descartan. La prueba real de pautas de Ervi y seguimiento de Isabel se prevé
+para la semana del 2 al 8 de noviembre; no se acredita con pruebas automáticas.
+[Contrato](TRAINER_PLATFORM.md#búsqueda-completa-de-biblioteca--31102026).
+
 **Planificación por grupos · 31/10/2026:** Javier pide cerrar el recorrido de
 planificar para varios alumnos, revisar fechas/coincidencias, adaptar a uno,
 comprobar avisos agrupados y revisar resultados. Se reutilizan los envíos

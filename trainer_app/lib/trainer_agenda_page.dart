@@ -1,3 +1,5 @@
+import 'trainer_catalog_search.dart';
+
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -193,14 +195,28 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
   };
 
   @override
+  void dispose() {
+    _catalogSearch.dispose();
+    super.dispose();
+  }
+
+  @override
   void initState() {
     super.initState();
     _load();
     if (widget.workouts != null) _loadLibrary();
   }
 
+  final _catalogSearch = TrainerCatalogSearch();
+  String _libraryQuery = '';
+  void _searchLibrary() {
+    setState(() => _libraryBusy = true);
+    _catalogSearch.schedule(() => _loadLibrary());
+  }
+
   Future<void> _loadLibrary({bool more = false}) async {
-    if (_libraryBusy || widget.workouts == null) return;
+    if (widget.workouts == null) return;
+    final request = _catalogSearch.begin();
     setState(() {
       _libraryBusy = true;
       _libraryError = null;
@@ -208,22 +224,38 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
     try {
       final rows = await widget.workouts!.workouts(
         before: more ? _library.last : null,
+        query: _libraryQuery,
+        running: _libraryRunning,
+        format: _libraryFormat,
       );
-      if (mounted) {
+      if (mounted && _catalogSearch.current(request)) {
         setState(() {
           _library = more ? [..._library, ...rows] : rows;
           _libraryMore = rows.length == 50;
         });
       }
     } catch (e) {
-      if (mounted) setState(() => _libraryError = trainerError(e));
+      if (mounted && _catalogSearch.current(request)) {
+        setState(() => _libraryError = trainerError(e));
+      }
     } finally {
-      if (mounted) setState(() => _libraryBusy = false);
+      if (mounted && _catalogSearch.current(request)) {
+        setState(() => _libraryBusy = false);
+      }
     }
   }
 
   Widget _libraryPane() => ProfessionalLibraryPane<TrainerWorkout>(
     title: 'Sesiones para asignar',
+    searchQuery: _libraryQuery,
+    onSearchChanged: (value) {
+      setState(() => _libraryQuery = value);
+      _searchLibrary();
+    },
+    searching: _libraryBusy,
+    onLoadMore: _libraryMore && !_libraryBusy
+        ? () => _loadLibrary(more: true)
+        : null,
     items: _library
         .where(
           (item) => matchesTrainerWorkout(
@@ -240,8 +272,14 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
       stacked: true,
       running: _libraryRunning,
       format: _libraryFormat,
-      onRunningChanged: (value) => setState(() => _libraryRunning = value),
-      onFormatChanged: (value) => setState(() => _libraryFormat = value),
+      onRunningChanged: (value) {
+        setState(() => _libraryRunning = value);
+        _searchLibrary();
+      },
+      onFormatChanged: (value) {
+        setState(() => _libraryFormat = value);
+        _searchLibrary();
+      },
     ),
     nameOf: (s) => s.name,
     leadingOf: (s) => Icon(

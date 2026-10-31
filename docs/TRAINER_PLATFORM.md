@@ -173,6 +173,47 @@ directorio en esta entrega.
 adaptar una, realizarla y revisar, observando los avisos del teléfono. El circuito
 automatizado no sustituye esa comprobación con Javier y Ervi.
 
+### Búsqueda completa de biblioteca · 31/10/2026
+
+Javier pide encontrar sesiones y programas sin cargar primero las páginas
+anteriores. El portal web consulta la biblioteca completa en servidor y pagina
+las coincidencias, con el mismo cursor por fecha e ID. La navegación sin consulta
+mantiene su lector anterior. No descarga las recetas completas para buscar.
+
+Las sesiones admiten todos los términos, sin distinguir tildes o mayúsculas,
+en nombre, descripción, bloques, ejercicios y etiquetas de formato. Modalidad
+y formato se filtran antes del límite de página. Los programas buscan nombre,
+descripción, fases y nombres de sesiones. Los caracteres de comodín son literales.
+Las RPC exigen la misma cuenta y MFA que las listas existentes, limitan cada
+respuesta a 50 filas y excluyen papelera, versiones no publicadas y adaptaciones
+individuales de la biblioteca general de sesiones.
+
+Se conecta a bibliotecas, Agenda, ficha del alumno, asignación individual,
+envíos por grupos y recurrencias finitas. Se agrupan pulsaciones durante 300 ms
+y se descartan respuestas anteriores; el texto, la receta elegida y los cursores
+se conservan por su contexto. Las bibliotecas y los paneles admiten continuación
+al desplazarse. Los borradores mantienen su recuperación separada. El componente
+compartido ofrece callbacks opcionales; sus consumidores locales conservan la
+búsqueda anterior. Este tramo no cambia los lectores propios del modo móvil.
+
+La migración `20261031091005_trainer_library_search.sql` se aplica solo a Dev.
+`trainer_library_search.sql` comprueba 61 sesiones y 61 programas, búsquedas
+fuera de la primera página, contenido, tildes, comodines literales, filtros,
+cursores sin duplicados, MFA, aislamiento, papelera y variantes. Termina con
+ROLLBACK y cero cuentas temporales. El contrato previo de papelera también pasa.
+
+Validación del 31/10: análisis limpios de raíz, Trainer y ADMIN; baterías completas
+con 1.526 pruebas correctas de la app (una omisión previa), 411 de Trainer y 365
+de ADMIN (dos omisiones previas). Quince regresiones de búsqueda/retorno y captura
+del componente real correctas. Historial Dev contrastado: 257 migraciones
+coincidentes, sin pendientes. El asesor de seguridad no añade avisos sobre las
+funciones nuevas; no se presenta como una auditoría global de hallazgos previos.
+
+**Aceptación humana acordada:** Javier indica la semana del 2 al 8 de noviembre
+para probar la planificación de Ervi y comenzar el seguimiento de Isabel,
+comprobando recepción, ejecución y resultados. No se da ese recorrido por probado
+por ejecutar fixtures ni se crea un recordatorio automático.
+
 ### Inventario de los dieciséis puntos · 29/10/2026
 
 Javier pide el estado de los dieciséis puntos y añade gestión de borrado de
@@ -189,7 +230,7 @@ otra carencia funcional básica en este inventario.
 | 3. Calendario editable | Mes/semana/día/lista, fichas arrastrables, sesiones y citas con avisos | Sincronización Google Calendar aplazada; no es parte del recorrido interno ya implementado |
 | 4. Adaptación individual | Receta individual manual y recuperación persistente | La adaptación automática profesional pertenece al motor pendiente |
 | 5. Creador ágil | Editores compartidos, arrastre y recuperación de biblioteca, hijos y adaptaciones | — |
-| 6. Biblioteca eficiente | Fotos, origen oficial/propio, colecciones, búsqueda interna, formatos, papelera y limpieza protegida de archivos | Filtros actuales sobre filas cargadas |
+| 6. Biblioteca eficiente | Fotos, origen oficial/propio, colecciones, búsqueda interna, formatos, papelera y limpieza protegida de archivos | Aceptación de la búsqueda completa en el portal web |
 | 7. Grupos y envío conjunto | Grupos, asignación conjunta y copia semanal | Aceptación humana con varias cuentas; recorrido automatizado y accesos por destinatario ampliados el 31/10 |
 | 8. Evolución | Métricas por periodo y evolución del servicio | — |
 | 9. Bandeja de revisión | Resultados, revisión persistente y correcciones | — |

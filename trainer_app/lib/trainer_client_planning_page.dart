@@ -1,3 +1,5 @@
+import 'trainer_catalog_search.dart';
+
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -136,6 +138,8 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
   bool? _sharing;
   String? _error, _sharedError, _libraryError;
   int _generation = 0, _libraryGeneration = 0;
+  final _catalogSearch = TrainerCatalogSearch();
+  String _sessionQuery = '', _programQuery = '';
   final _own = <TrainerClientAgendaItem>[], _shared = <SharedCalendarEntry>[];
   List<TrainerWorkout> _library = [];
   bool? _libraryRunning;
@@ -200,6 +204,7 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
 
   @override
   void dispose() {
+    _catalogSearch.dispose();
     _generation++;
     _libraryGeneration++;
     WidgetsBinding.instance.removeObserver(this);
@@ -422,6 +427,12 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
     );
   }
 
+  void _searchLibrary() {
+    ++_libraryGeneration;
+    setState(() => _libraryBusy = true);
+    _catalogSearch.schedule(() => _loadLibrary());
+  }
+
   Future<void> _loadLibrary({
     bool sessionsMore = false,
     bool programsMore = false,
@@ -435,6 +446,9 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
       if (!programsMore) {
         final rows = await widget.workouts.workouts(
           before: sessionsMore ? _library.lastOrNull : null,
+          query: _sessionQuery,
+          running: _libraryRunning,
+          format: _libraryFormat,
         );
         if (!mounted || request != _libraryGeneration) return;
         setState(() {
@@ -445,6 +459,7 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
       if (!sessionsMore) {
         final rows = await widget.programs.programs(
           before: programsMore ? _programs.lastOrNull : null,
+          query: _programQuery,
         );
         if (!mounted || request != _libraryGeneration) return;
         setState(() {
@@ -825,6 +840,15 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
         child: _programLibrary
             ? ProfessionalLibraryPane<TrainerProgram>(
                 title: 'Tus programas',
+                searchQuery: _programQuery,
+                onSearchChanged: (value) {
+                  setState(() => _programQuery = value);
+                  _searchLibrary();
+                },
+                searching: _libraryBusy,
+                onLoadMore: _morePrograms && !_libraryBusy
+                    ? () => _loadLibrary(programsMore: true)
+                    : null,
                 items: _programs,
                 nameOf: (row) => row.program.name,
                 subtitleOf: (row) =>
@@ -836,6 +860,15 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
               )
             : ProfessionalLibraryPane<TrainerWorkout>(
                 title: 'Tus sesiones',
+                searchQuery: _sessionQuery,
+                onSearchChanged: (value) {
+                  setState(() => _sessionQuery = value);
+                  _searchLibrary();
+                },
+                searching: _libraryBusy,
+                onLoadMore: _moreLibrary && !_libraryBusy
+                    ? () => _loadLibrary(sessionsMore: true)
+                    : null,
                 searchTextOf: (item) => [
                   ...item.searchContent,
                   trainerWorkoutFormatSummary(item),
@@ -845,10 +878,14 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
                   stacked: true,
                   running: _libraryRunning,
                   format: _libraryFormat,
-                  onRunningChanged: (value) =>
-                      setState(() => _libraryRunning = value),
-                  onFormatChanged: (value) =>
-                      setState(() => _libraryFormat = value),
+                  onRunningChanged: (value) {
+                    setState(() => _libraryRunning = value);
+                    _searchLibrary();
+                  },
+                  onFormatChanged: (value) {
+                    setState(() => _libraryFormat = value);
+                    _searchLibrary();
+                  },
                 ),
                 leadingOf: (s) => Icon(
                   s.isRunning ? Icons.directions_run : Icons.fitness_center,

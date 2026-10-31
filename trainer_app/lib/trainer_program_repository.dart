@@ -29,7 +29,10 @@ class TrainerProgramEntry {
 }
 
 abstract class TrainerProgramRepository {
-  Future<List<TrainerProgram>> programs({TrainerProgram? before});
+  Future<List<TrainerProgram>> programs({
+    TrainerProgram? before,
+    String query = '',
+  });
   Future<GuidedProgram> program(String id);
   Future<String> save(
     String operationId,
@@ -68,11 +71,20 @@ class SupabaseTrainerProgramRepository implements TrainerProgramRepository {
   }
 
   @override
-  Future<List<TrainerProgram>> programs({TrainerProgram? before}) async =>
-      (await _rpc('list_trainer_programs', {
-            'p_before_at': before?.createdAt.toUtc().toIso8601String(),
-            'p_before_id': before?.program.id,
-          }) as List)
+  Future<List<TrainerProgram>> programs({
+    TrainerProgram? before,
+    String query = '',
+  }) async =>
+      (await _rpc(
+            query.trim().isEmpty
+                ? 'list_trainer_programs'
+                : 'search_trainer_programs',
+            {
+              if (query.trim().isNotEmpty) 'p_query': query.trim(),
+              'p_before_at': before?.createdAt.toUtc().toIso8601String(),
+              'p_before_id': before?.program.id,
+            },
+          ) as List)
           .map(
             (r) => TrainerProgram.fromJson(Map<String, dynamic>.from(r as Map)),
           )
