@@ -599,6 +599,16 @@ vigente. Son dos asuntos distintos: guardar un borrador no exige elegibilidad
 comercial, mientras publicar sí la exige. Se solicita el mensaje de «Guardar
 ficha» antes de atribuir el fallo a una causa concreta o recargar el formulario.
 
+**Recomprobación del 31/10, tras el guardado:** Dev contiene una ficha en
+borrador, con visibilidad solo app y sin suspensión; ninguna está publicada.
+La publicación global sigue apagada y no hay ofertas con derecho de directorio.
+Por tanto, el guardado ya tiene evidencia, pero la ficha no aparece al buscar
+desde la cuenta de Isabel. «Buscar preparador» abre el directorio; la pantalla
+Resumen muestra el contenido recibido y el acceso a vínculos/historial. Se
+mantiene pendiente concretar la elegibilidad del ensayo y los textos antes de
+habilitar el piloto; el titular deberá aceptar su publicación desde el formulario.
+Esta comprobación es de lectura y no cambia cuentas, ofertas ni consentimientos.
+
 Para el piloto se propone concretar el derecho del directorio en la oferta de
 ensayo y limitar su alcance a la cuenta de Javier en Dev, sin convertirla en un
 plan comercial aprobado ni simular pagos. Esta propuesta sigue pendiente de
