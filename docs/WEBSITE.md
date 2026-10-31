@@ -1,5 +1,37 @@
 # Web pública de EntrenaOP
 
+## Corrección del movimiento · WEB-011 · 31/10/2026
+
+Javier aporta una grabación de Kotcha y descarta las tarjetas enormes de WEB-010.
+Se refiere a objetos que entran desde posiciones separadas, cambian perspectiva
+y se reúnen al desplazar la página, también al volver en sentido contrario.
+Los tres textos de método recuperan sus columnas originales compactas, sin
+capturas añadidas ni secciones fijadas. Se conservan los 51 párrafos y encabezados
+actuales; el HTML completo del bloque Garmin/Apple Watch permanece intacto.
+
+La escena de producto reúne el móvil con tres etiquetas decorativas. La escena
+de disponibilidad reúne la pantalla real de la app, el icono propio y dos
+ilustraciones de relojes. La portada acerca y desenfoca la pista mientras el
+móvil gira, se reduce y sale al bajar; vuelve al invertir el desplazamiento.
+No se cambia la foto, el vídeo ni los textos. La entrada inicial de texto/móvil
+es breve y se desactiva junto a los demás efectos con movimiento reducido.
+En móvil, texto y vídeo de portada mantienen su posición y visibilidad para que
+el vídeo no desaparezca antes de que se alcance su fila; la pista y las dos
+escenas de objetos conservan el tratamiento visual adaptado al ancho.
+
+`assembly-motion.css` contiene las poses; `scroll-experience.js` interpola escala,
+traslación, perspectiva, opacidad y desenfoque en una única tarea por fotograma.
+No se intercepta el desplazamiento ni se introduce una librería. Sin JavaScript
+se muestra la composición final. El diseño de dispositivos de WEB-010 sigue
+vigente; su propuesta de tarjetas apiladas queda descartada por esta corrección.
+
+Comprobado en el navegador: montaje reunido y parcialmente separado al volver,
+salida de portada a 324 px y regreso a cero, tamaños 320/390/1440 sin desbordar,
+vídeo móvil con opacidad completa y sin transformación de salida, sin errores
+de consola. Cinco scripts con sintaxis correcta. Capturas y observaciones en
+`website/reviews/2026-10-31-assembly/`. Commit web local `7186120`, con historial
+completo verificado en `docs/audits/website-2026-10-31-assembly.bundle`.
+
 ## Fotografía, recorrido visual y relojes · WEB-010 · 31/10/2026
 
 Javier confirma que los textos le gustan, añade contenido desde VS Code y pide

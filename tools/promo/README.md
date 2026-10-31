@@ -43,7 +43,7 @@ y con `faststart`; también extrae los pósteres WebP. El temporizador se captur
 a tiempo real. Se exportan las capturas de calculadoras y un JSON de capítulos
 para enlazar a las escenas exactas desde el bloque gratuito de la web.
 Las capturas `still-week/session/coach.png` generan también `story-*.webp` para
-las tarjetas de la web, manteniéndolas sincronizadas con la toma.
+las composiciones de la web, manteniéndolas sincronizadas con la toma.
 
 Los PNG y manifiestos quedan en `build/promo/take-*/`, fuera de Git. Los vídeos
 y pósteres se escriben en `website/next/assets/`. Regrabar es una acción local:
