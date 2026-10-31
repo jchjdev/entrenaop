@@ -4,6 +4,23 @@ Javier autoriza el 28/10/2026 comenzar Apple Watch después de acreditar el
 recorrido Garmin. Garmin conserva sus funciones, evidencias y límites. No se
 reabre el editor ni se convierte la receta común en un contrato de fabricante.
 
+## Prueba física comunicada · 31/10/2026
+
+Javier identifica el reloj de Isabel como Apple Watch SE de segunda generación,
+con watchOS 26.6 según el dispositivo. Confirma que EntrenaOP muestra
+«Programación autorizada» y comunica que, tras enviar manualmente una carrera
+existente, ve una fecha futura y sus pasos durante la prueba del reloj.
+Es evidencia comunicada de autorización y recepción de la pauta; no se da por
+comprobado el comportamiento completo de fases, avisos, cambios o retirada.
+
+La ejecución se declara ficticia. Quedan por contrastar su guardado y aparición
+en Fitness/Salud del iPhone emparejado y la lectura explícita desde EntrenaOP.
+No acredita un entrenamiento deportivo real ni completa la cita semanal.
+Se conserva la separación entre pauta programada, actividad registrada por Apple
+y observación importada en el historial propio. Este último recorrido todavía no
+asocia automáticamente la actividad Apple a la cita ni registra sus resultados
+por pasos en la semana.
+
 ## Primer recorrido de desarrollo
 
 - Carrera exterior pautada por entrenador o algoritmo, en los próximos 14 días.
@@ -111,9 +128,10 @@ es intencional en el esquema privado, sin acceso directo de clientes y con acces
 mediante el comando autenticado. No se añaden políticas de lectura a la tabla.
 
 No se acredita instalación ni recepción Apple con una compilación o un ACK.
-**Siguiente recorrido único:** en el Ultra y su iPhone emparejado, autorizar,
-programar una carrera con fases/series/recuperaciones, comprobarla en Entreno,
-modificarla y retirarla; después ejecutar y contrastar lo que devuelve Salud.
+**Siguiente recorrido único:** contrastar la actividad ficticia en Fitness/Salud
+del iPhone emparejado con el SE de segunda generación y su lectura desde
+EntrenaOP. Después quedan la ejecución real de fases/avisos, el cambio y la
+retirada de la pauta. La recepción comunicada no cierra esas comprobaciones.
 El bloque permanece abierto hasta esa aceptación física.
 
 ## Referencias oficiales

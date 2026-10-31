@@ -1,5 +1,13 @@
 # Registro de decisiones vigentes
 
+**INT-023 · 31/10/2026 · primera recepción Apple comunicada:** Javier confirma
+SE de segunda generación con watchOS 26.6, autorización de programación y
+visualización de una pauta enviada manualmente con fecha y pasos. La ejecución
+es ficticia; no se acredita resultado deportivo ni cierre semanal. El siguiente
+paso es contrastar el guardado en Fitness/Salud y la lectura explícita desde
+EntrenaOP. La asociación automática con la cita sigue pendiente.
+[Alcance de la prueba](DEVICE_APPLE_WATCH.md).
+
 **Contactos, avisos e invitación · revisión del 31/10/2026:** Javier señala que
 el aviso aparece en Conversaciones mientras la solicitud está en otra bandeja,
 pide aclarar cuándo se puede escribir y cómo pasar de contacto a alumno. La

@@ -265,8 +265,12 @@ en CI. Consulta autenticada real de planificación comprobada en el navegador.
 La preparación y el ACK local no
 cierran el bloque ni acreditan recepción física. Aún no hay envío automático ni
 asociación automática de los resultados Apple con la semana.
-**Siguiente recorrido único de Apple:** autorizar y comprobar alta, cambio,
-retirada y devolución por Salud en el Ultra y su iPhone emparejado.
+**Prueba física comunicada del 31/10:** autorización y pauta con fecha/pasos
+visibles en un SE de segunda generación con watchOS 26.6. Ejecución ficticia;
+no se acredita resultado real ni cierre de semana.
+**Siguiente recorrido único de Apple:** comprobar su guardado en Fitness/Salud
+y leer la actividad desde EntrenaOP en el iPhone emparejado. Cambios, retirada
+y ejecución real de fases/avisos siguen pendientes.
 [Contrato, validación y límites](DEVICE_APPLE_WATCH.md).
 
 **COM-022 · 28/10/2026 · contratación profesional web en curso:** Javier retoma
