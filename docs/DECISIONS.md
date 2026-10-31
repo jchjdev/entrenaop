@@ -1,5 +1,27 @@
 # Registro de decisiones vigentes
 
+**Planificación por grupos · 31/10/2026:** Javier pide cerrar el recorrido de
+planificar para varios alumnos, revisar fechas/coincidencias, adaptar a uno,
+comprobar avisos agrupados y revisar resultados. Se reutilizan los envíos
+atómicos, sus huellas/UUID, las copias semanales y las variantes individuales.
+La propuesta de fechas del programa comparte la separación de dos días civiles
+que ya usa el envío individual; las fechas existentes solo se reemplazan con
+confirmación. El recibo permite visitar la planificación de cada destinatario
+en la primera semana enviada y regresar al mismo recibo. No se añaden permisos,
+contratos SQL, algoritmo adaptativo ni repeticiones por duración de fase.
+[Recorrido](TRAINER_PLATFORM.md#planificación-de-grupos-y-revisión-por-alumno--31102026).
+
+**Web comercial privada · planteamiento del 31/10/2026:** Javier propone hacer
+la web con el chat de webs y mantenerla privada durante el desarrollo. Se prepara
+un alcance para una copia separada con contraseña y HTTPS, complementada por
+`noindex`, reutilizando Dev y los circuitos de Trainer. Subdominio, despliegue y
+contraseña de esa copia no se crean en este bloque; tampoco se activa producción
+ni cobros reales. Javier pide contrastar además el chat «Valorar portal de
+entrenadores»: la web reutiliza su directorio y respeta consentimiento por canal;
+el piloto con visibilidad en app no autoriza publicación web.
+[Guía para el chat de webs](WEBSITE_PRIVATE_PREVIEW.md).
+
+
 **Portátiles, calendario y columnas · 31/10/2026:** Javier pide reducir el alto
 del calendario en 14 pulgadas y dar espacio al área de propiedades de los
 creadores de Trainer y ADMIN. Agenda ofrece altura automática (compacta en

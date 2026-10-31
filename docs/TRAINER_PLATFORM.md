@@ -122,6 +122,47 @@ SHA-256 del JavaScript, cabeceras y MIME de WebAssembly. Ambos portales sirven
 La aceptación de Javier sigue pendiente; la app compartida necesita su próxima
 compilación/instalación. No se publica producción ni se genera APK.
 
+### Planificación de grupos y revisión por alumno · 31/10/2026
+
+El envío de programas propone fechas en una sola acción, reutilizando el mismo
+planificador civil del envío individual: una pasada de las fases elegidas, cada
+dos días. Es una propuesta editable; no desarrolla las semanas de duración ni
+prescribe cargas. Se confirma antes de reemplazar fechas elegidas y se preservan
+las de fases que no se están proponiendo. Revisar muestra sesiones/fechas con
+acceso a la receta común y las coincidencias por cada destinatario. El envío
+conserva el límite de 100 alumnos/256 pautas, huella revisada, UUID y atomicidad.
+
+El recibo ofrece **Ver y adaptar planificación** por alumno. La ficha abre la
+primera fecha del envío y se apila sobre el recibo, para regresar y seguir con
+otro destinatario de la misma tanda confirmada. La URL admite fecha civil
+canónica en el rango del selector existente; una fecha inválida usa la entrada
+normal. La adaptación mantiene sus operaciones y versiones individuales; no
+edita la plantilla común ni las pautas de los demás alumnos. Los resultados
+continúan en la bandeja de revisión existente.
+
+El contrato SQL `trainer_group_planning_journey.sql` conecta dos alumnos, tres
+sesiones por alumno, coincidencia previa, reintento, adaptación individual,
+consulta aislada, ejecución y revisión. Comprueba una cola de planificación por
+alumno y su espera de agrupación. Las cuentas, sesiones y colas temporales se
+revierten; no se invoca al despachador ni se acredita recepción física de push.
+Se conservan las pruebas de grupos/copia, operación individual y política de
+avisos. No se modifica esquema, RLS, servidores, credenciales ni suscripciones.
+
+Validación local del 31/10: análisis limpios de raíz y Trainer; 401 pruebas de
+Trainer correctas, incluidas seis nuevas regresiones del recorrido. Treinta
+pruebas centradas en grupos/programas y capturas reales de revisión/recibo
+correctas; selección y recibo con texto doble a 320 px. Los cuatro contratos SQL
+`trainer_group_planning_journey`, `trainer_groups_and_week_copy`,
+`trainer_operational_workflow` y `trainer_notification_policy` terminan
+correctamente con ROLLBACK en `entrenaop-dev`; después quedan cero cuentas del
+ensayo nuevo. CLI contrastó 255 migraciones locales/remotas coincidentes antes
+de la ampliación del piloto del directorio en curso, que queda fuera de este bloque.
+La web privada queda documentada como propuesta, sin configurar otro dominio.
+
+**Siguiente aceptación humana:** preparar una semana para dos cuentas del piloto,
+adaptar una, realizarla y revisar, observando los avisos del teléfono. El circuito
+automatizado no sustituye esa comprobación con Javier y Ervi.
+
 ### Inventario de los dieciséis puntos · 29/10/2026
 
 Javier pide el estado de los dieciséis puntos y añade gestión de borrado de
@@ -139,7 +180,7 @@ otra carencia funcional básica en este inventario.
 | 4. Adaptación individual | Receta individual manual y recuperación persistente | La adaptación automática profesional pertenece al motor pendiente |
 | 5. Creador ágil | Editores compartidos, arrastre y recuperación de biblioteca, hijos y adaptaciones | — |
 | 6. Biblioteca eficiente | Fotos, origen oficial/propio, colecciones, búsqueda interna, formatos, papelera y limpieza protegida de archivos | Filtros actuales sobre filas cargadas |
-| 7. Grupos y envío conjunto | Grupos, asignación conjunta y copia semanal | Aceptación completa con varios alumnos y revisión por destinatario |
+| 7. Grupos y envío conjunto | Grupos, asignación conjunta y copia semanal | Aceptación humana con varias cuentas; recorrido automatizado y accesos por destinatario ampliados el 31/10 |
 | 8. Evolución | Métricas por periodo y evolución del servicio | — |
 | 9. Bandeja de revisión | Resultados, revisión persistente y correcciones | — |
 | 10. Vídeos en ambas direcciones | Archivos propios, enlaces externos, demostraciones y técnica; eliminación protegida de demostraciones, recuperación de reservas y aviso Android aceptado | La técnica histórica se conserva; no se habilita borrado libre de vídeos de alumnos |

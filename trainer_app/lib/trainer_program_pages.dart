@@ -16,6 +16,7 @@ import 'package:workout_editor_ui/workout_template_content.dart';
 import 'package:workout_core/workout_template.dart';
 
 import 'trainer_program_repository.dart';
+import 'trainer_program_date_plan.dart';
 import 'trainer_workout_repository.dart';
 import 'trainer_session_work_editor.dart';
 import 'trainer_catalog_trash_page.dart';
@@ -1018,22 +1019,7 @@ class _TrainerProgramAssignmentDialogState
       _program = program;
       _phase = phase ?? (program.sessionCount > 256 ? 0 : -1);
       _entries.clear();
-      for (var pi = 0; pi < program.phases.length; pi++) {
-        if (_phase != -1 && pi != _phase) continue;
-        for (var si = 0; si < program.phases[pi].sessions.length; si++) {
-          _entries.add(
-            TrainerProgramEntry(
-              pi,
-              si,
-              DateTime(
-                today.year,
-                today.month,
-                today.day + _entries.length * 2,
-              ),
-            ),
-          );
-        }
-      }
+      _entries.addAll(proposeTrainerProgramDates(program, _phase, today));
     });
   }
 

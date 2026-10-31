@@ -1,5 +1,6 @@
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:trainer_access/trainer_access.dart';
 import 'package:workout_core/guided_program.dart';
@@ -7,6 +8,7 @@ import 'package:workout_editor_ui/workout_template_content.dart';
 
 import 'trainer_groups_repository.dart';
 import 'trainer_program_repository.dart';
+import 'trainer_program_date_plan.dart';
 import 'trainer_workout_repository.dart';
 
 class TrainerGroupsPage extends StatefulWidget {
@@ -82,6 +84,11 @@ class _TrainerGroupsPageState extends State<TrainerGroupsPage> {
         workouts: widget.workouts,
         programs: widget.programs,
         group: group,
+        onOpenClient: (clientId, date) {
+          // La planificación se apila encima del recibo: al volver se puede
+          // continuar con otro destinatario de la misma entrega confirmada.
+          context.push(trainerClientPlanningLocation(clientId, date));
+        },
       ),
     );
     if (mounted) await _load();
@@ -441,12 +448,14 @@ class TrainerBatchAssignmentDialog extends StatefulWidget {
     required this.workouts,
     required this.programs,
     this.group,
+    this.onOpenClient,
   });
   final TrainerGroupsRepository repository;
   final TrainerRepository access;
   final TrainerWorkoutRepository workouts;
   final TrainerProgramRepository programs;
   final TrainerGroup? group;
+  final void Function(String clientId, DateTime firstDate)? onOpenClient;
   @override
   State<TrainerBatchAssignmentDialog> createState() =>
       _TrainerBatchAssignmentDialogState();
@@ -556,6 +565,73 @@ class _TrainerBatchAssignmentDialogState
       });
     }
   }
+
+  Future<void> _proposeDates() async {
+    if (_busy || _frozen || _program == null || _slots.isEmpty) return;
+    final existing = [
+      for (final slot in _slots)
+        if (_dates[slot] != null) _dates[slot]!,
+    ]..sort();
+    final first = existing.isEmpty
+        ? DateUtils.dateOnly(DateTime.now())
+        : existing.first;
+    final start = await showDatePicker(
+      context: context,
+      helpText: 'Primera sesión · propuesta cada 2 días',
+      initialDate: first.year >= 2020 && first.year <= 2100
+          ? first
+          : DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100, 12, 31),
+    );
+    if (start == null || !mounted) return;
+    final proposed = proposeTrainerProgramDates(_program!, _phase, start);
+    if (proposed.any((entry) => entry.date.isAfter(DateTime(2100, 12, 31)))) {
+      setState(
+        () => _error = 'La propuesta termina después de 2100. Elige una fecha de inicio anterior.',
+      );
+      return;
+    }
+    if (existing.isNotEmpty) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => EntrenaDialog(
+          title: const Text('Reemplazar las fechas de las fases elegidas'),
+          content: Text(
+            'Se propondrán ${proposed.length} sesiones desde ${_dateLabel(start)}, separadas dos días. Después podrás ajustar cada fecha antes de revisar.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Conservar fechas'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Reemplazar fechas'),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true || !mounted) return;
+    }
+    setState(() {
+      for (final entry in proposed) {
+        _dates[(entry.phase, entry.session)] = entry.date;
+      }
+      _error = null;
+    });
+  }
+
+  DateTime? get _firstDeliveryDate {
+    final request = _request;
+    if (request == null) return null;
+    if (request.date != null) return request.date;
+    final dates = request.entries.map((entry) => entry.date).toList()..sort();
+    return dates.firstOrNull;
+  }
+
+  String _entryName(TrainerProgramEntry entry) =>
+      _program!.phases[entry.phase].sessions[entry.session].name;
 
   Future<void> _recipe(String id) async {
     try {
@@ -678,6 +754,14 @@ class _TrainerBatchAssignmentDialogState
     return PopScope(
       canPop: !_busy,
       child: _GroupDialogFrame(
+        // Cada etapa empieza arriba; fechas, receta y UUID siguen en el padre.
+        key: ValueKey(
+          'trainer-batch-${receipt != null
+              ? 'receipt'
+              : preview != null
+              ? 'preview'
+              : 'selection'}',
+        ),
         title: receipt != null
             ? 'Entrega confirmada'
             : widget.group == null
@@ -695,9 +779,36 @@ class _TrainerBatchAssignmentDialogState
             ),
           if (receipt != null) ...[
             Text('${receipt.assignmentCount} citas entregadas.'),
+            const Text(
+              'Cada alumno tiene sus propias pautas. Puedes adaptar su receta desde su planificación y revisar después sus resultados.',
+            ),
             for (final result in receipt.recipients)
-              Text(
-                '${_selected[result.clientId]?.name ?? 'Alumno'}: ${result.assignmentIds.length} ${result.assignmentIds.length == 1 ? 'cita confirmada' : 'citas confirmadas'}.',
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        '${_selected[result.clientId]?.name ?? 'Alumno'}: ${result.assignmentIds.length} ${result.assignmentIds.length == 1 ? 'cita confirmada' : 'citas confirmadas'}.',
+                      ),
+                      if (widget.onOpenClient != null &&
+                          _firstDeliveryDate != null &&
+                          _selected.containsKey(result.clientId))
+                        TextButton.icon(
+                          key: ValueKey(
+                            'trainer-batch-open-${result.clientId}',
+                          ),
+                          onPressed: () => widget.onOpenClient!(
+                            result.clientId,
+                            _firstDeliveryDate!,
+                          ),
+                          icon: const Icon(Icons.person_outline),
+                          label: const Text('Ver y adaptar planificación'),
+                        ),
+                    ],
+                  ),
+                ),
               ),
           ] else if (preview != null) ...[
             Text(
@@ -707,6 +818,43 @@ class _TrainerBatchAssignmentDialogState
             const Text(
               'Las coincidencias son por fecha: no sustituyen citas ni evalúan horarios o carga deportiva. Los planes personales se conservan.',
             ),
+            Text(
+              'Alumnos con coincidencias de fecha: ${preview.recipients.where((recipient) => recipient.coincidences.isNotEmpty).length}.',
+            ),
+            const Text('Planificación común que recibirá cada alumno:'),
+            if (_request!.programId == null)
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text('${_workout!.name} · v${_workout!.version}'),
+                subtitle: Text(_dateLabel(_request!.date)),
+                trailing: IconButton(
+                  tooltip: 'Ver receta común',
+                  onPressed: _busy
+                      ? null
+                      : () => _recipe(_request!.templateId!),
+                  icon: const Icon(Icons.visibility_outlined),
+                ),
+              )
+            else
+              for (final entry in _request!.entries)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    '${_dateLabel(entry.date)} · ${_entryName(entry)}',
+                  ),
+                  trailing: IconButton(
+                    tooltip: 'Ver receta de ${_entryName(entry)}',
+                    onPressed: _busy
+                        ? null
+                        : () => _recipe(
+                            _program!
+                                .phases[entry.phase]
+                                .sessions[entry.session]
+                                .templateId,
+                          ),
+                    icon: const Icon(Icons.visibility_outlined),
+                  ),
+                ),
             for (final recipient in preview.recipients)
               Card(
                 child: Padding(
@@ -884,6 +1032,15 @@ class _TrainerBatchAssignmentDialogState
                       ? null
                       : (phase) => setState(() => _phase = phase ?? 0),
                 ),
+                OutlinedButton.icon(
+                  key: const ValueKey('trainer-batch-propose-dates'),
+                  onPressed: _busy || _frozen ? null : _proposeDates,
+                  icon: const Icon(Icons.date_range_outlined),
+                  label: const Text('Proponer fechas cada 2 días'),
+                ),
+                const Text(
+                  'Es una propuesta editable de las fases elegidas. Revisa la disponibilidad de los alumnos antes de confirmar.',
+                ),
                 for (final slot in _slots)
                   Card(
                     child: Padding(
@@ -970,6 +1127,7 @@ class _TrainerBatchAssignmentDialogState
 
 class _GroupDialogFrame extends StatelessWidget {
   const _GroupDialogFrame({
+    super.key,
     required this.title,
     required this.body,
     required this.actions,

@@ -92,7 +92,12 @@ class GroupsFixture extends TrainerGroupsRepository {
             ],
             'coincidences': member.clientId == 'ana'
                 ? [
-                    {'date': '2026-10-22'},
+                    {
+                      'date': (request.date ?? request.entries.first.date)
+                          .toIso8601String()
+                          .split('T')
+                          .first,
+                    },
                   ]
                 : [],
           },

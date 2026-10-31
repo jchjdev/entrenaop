@@ -1,5 +1,19 @@
 # Roadmap de EntrenaOP
 
+**31/10/2026 · planificación por grupos y revisión individual:** propuesta de
+fechas común con envío individual, previsualización de recetas y coincidencias,
+recibo con acceso a la semana de cada alumno y vuelta al mismo recibo. Se
+contrasta el circuito transaccional completo en Dev y los contratos existentes
+de grupos, adaptación y avisos. La recepción física de push no se da por probada
+con los fixtures. **Siguiente recorrido:** aceptación con dos cuentas reales del
+piloto, adaptación de una pauta, ejecución y revisión.
+[Contrato](TRAINER_PLATFORM.md#planificación-de-grupos-y-revisión-por-alumno--31102026).
+
+Javier plantea la futura web comercial en privado con el chat de webs. Se deja
+[la guía de la copia privada](WEBSITE_PRIVATE_PREVIEW.md), sin crear dominio,
+publicación ni cobros reales en este bloque.
+
+
 **31/10/2026 · portátiles y distribución compartida:** Agenda incorpora altura
 automática/compacta/amplia; los creadores de Trainer y ADMIN comparten columnas
 ajustables con ratón o teclado, límites de ancho y conservación del borrador.

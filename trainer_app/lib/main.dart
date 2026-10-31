@@ -43,6 +43,7 @@ import 'trainer_workout_work_repository.dart';
 import 'trainer_session_work_editor.dart';
 import 'trainer_program_repository.dart';
 import 'trainer_program_pages.dart';
+import 'trainer_program_date_plan.dart';
 import 'trainer_program_work_repository.dart';
 import 'trainer_program_work_pages.dart';
 import 'trainer_agenda_page.dart';
@@ -1176,7 +1177,12 @@ class _TrainerAppState extends State<TrainerApp> {
                 return guarded(
                   state,
                   TrainerClientPlanningPage(
-                    key: ValueKey('client-planning-$identity-$id'),
+                    key: ValueKey(
+                      'client-planning-$identity-$id-${state.uri.queryParameters['date']}',
+                    ),
+                    initialDate: parseTrainerPlanningDate(
+                      state.uri.queryParameters['date'],
+                    ),
                     clientId: id,
                     workspace: workspace(),
                     access: access(),
