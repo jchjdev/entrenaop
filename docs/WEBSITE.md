@@ -4,9 +4,47 @@
 
 Javier descarta que la imagen anterior represente por sí sola la oferta actual
 y elige una grabación real de EntrenaOP para el espacio visual de portada.
-La selección final de pantallas y el archivo de vídeo están pendientes.
-La pieza se preparará con datos de demostración. Esta decisión todavía no
-sustituye la imagen ni acredita que exista un vídeo integrado.
+El 31/10 Javier autoriza preparar la demo y grabarla, manteniendo todo en local.
+La imagen se sustituye en `website/next/` por una grabación de la interfaz real,
+con datos ficticios. La web publicada y las aplicaciones publicadas no cambian.
+
+### Resultado local · 31/10/2026
+
+- Portada: `assets/athlete-demo.mp4`, H.264, 390 × 844, 20 fps, 30,25 segundos,
+  sin audio. Inicio, plan, semana, biblioteca, detalle de ejercicio, comparación
+  de marcas, espacio del preparador y conversación de ejemplo.
+- Página Trainer: `assets/trainer-demo.mp4`, H.264, 1280 × 800, 20 fps,
+  15,05 segundos, sin audio. Cuatro alumnos, ficha, agenda y conversación.
+- Los formatos se separan para conservar legibilidad en cada página. Hay
+  pósteres WebP, pausa/reproducción, enlace al vídeo grande y rótulo de datos
+  ficticios. Se intenta reproducción automática en bucle cuando el vídeo está
+  visible; se respeta movimiento reducido y se pausa fuera de vista o al ocultar
+  la pestaña. El navegador puede requerir que el usuario pulse reproducir.
+- `tools/promo/` y `trainer_app/tool/promo/` contienen entradas de demo, datos y
+  recorridos. Reutilizan widgets y Cubits existentes con repositorios en memoria.
+  No inicializan Supabase, push ni compras; no crean cuentas, derechos o datos en
+  Dev/producción. No modifican los `main.dart`, rutas o Cubits de producto.
+- `tools/promo/record.ps1` reproduce los recorridos, captura los fotogramas
+  reales del motor Flutter y los codifica con FFmpeg. No son pantallas dibujadas
+  para el vídeo ni una sucesión de capturas históricas. Fuentes y limitaciones
+  en `tools/promo/README.md`. PNG y manifiestos originales en `build/promo/`.
+- Los builds navegables se sirven en `http://127.0.0.1:8780/` y
+  `http://127.0.0.1:8781/` con `node tools/promo/serve.mjs`. Solo los recorridos
+  preparados están conectados; las demás rutas muestran un aviso de demo.
+  Cada proceso tiene datos locales: no se simula un backend compartido real.
+- La maqueta se revisa con Live Server en `http://127.0.0.1:5500/`. Mantener
+  abierta su ventana de VS Code. Las demos tienen servidor propio separado.
+
+Comprobaciones: análisis de Flutter en raíz y Trainer sin incidencias, dos
+recorridos de grabación correctos, script completo de exportación correcto,
+compilaciones web de ambas demos y revisión de los vídeos en navegador con
+vistas de 1440 y 390 px. Las dos páginas cargan los MP4 y sus dimensiones sin
+errores; pausa/reproducción y pausa fuera de vista contrastadas. No equivale a
+una prueba en un iPhone físico ni valida las funciones ajenas a la demo.
+Capturas en `website/reviews/2026-10-31-video/`.
+Copia recuperable completa de la web: `docs/audits/website-2026-10-31-video.bundle`,
+con el commit local `14f2faf`. Se conserva la copia anterior y no se añade un
+gitlink ni un remoto al repositorio independiente.
 
 ### Guion de demostración propuesto · 31/10/2026
 
@@ -40,16 +78,15 @@ Hay herramientas de capturas con widgets reales y repositorios ficticios en
 `trainer_app/tool/capture_clients.dart`. Son base de trabajo; no constituyen
 una grabación de navegación ni una app demo completa.
 
-La ruta propuesta es una demo local aislada que reutilice las pantallas y sus
-fronteras de repositorio existentes. Antes de implementarla se concretarán el
-punto de entrada y la herramienta de captura. No se necesitan altas en Dev ni
-cambios en los Cubits, rutas de producción o reglas de negocio para redactar
-este guion. El MP4 y su integración en portada siguen pendientes.
+El guion anterior orienta el rodaje; el resultado se concreta en dos piezas
+según la relación de pantallas del apartado «Resultado local». La demo utiliza
+las fronteras de repositorio existentes. No se han necesitado altas en Dev ni
+cambios en los Cubits, rutas de producción o reglas de negocio.
 
-Para recorrer y revisar la maqueta se utiliza el servidor local en
-`http://127.0.0.1:8765/`; debe permanecer abierto durante la revisión.
-El cierre del servidor anterior dejaba sin servicio los enlaces HTTP de esa
-vista. La navegación entre portada, Trainer y privacidad se vuelve a comprobar.
+Para recorrer y revisar la maqueta se mantiene Live Server en
+`http://127.0.0.1:5500/`. El servidor auxiliar `preview.mjs` utiliza el puerto
+8765. El origen elegido debe permanecer abierto durante la revisión: cerrar
+el servidor anterior dejaba sin servicio sus enlaces HTTP.
 
 ## App del deportista y oferta Trainer · WEB-007 · 31/10/2026
 
