@@ -274,10 +274,13 @@ incorporación automática de resultados por pasos ni cierre de la semana.
 visibles en un SE de segunda generación con watchOS 26.6. Ejecución ficticia;
 no se acredita resultado real ni cierre de semana. Javier confirma posteriormente
 que la actividad aparece en Fitness y que la leyó y guardó en EntrenaOP.
-**Retorno en validación · 31/10:** recogida automática de pautas propias al
+**Retorno técnico validado · 31/10:** recogida automática de pautas propias al
 arrancar/reanudar el iPhone, con consentimiento por cuenta, referencia exacta de
 WorkoutKit, revisiones y resumen plegable en la semana y en Trainer. No completa
 pasos ni inventa RPE; los datos de prueba se conservan separados.
+`b2497f26` compila iOS Release y simulador, pasa los consumidores y está publicado
+y comprobado por HTTPS en Trainer y ADMIN Dev. La recepción física del nuevo
+lector sigue pendiente.
 **Siguiente recorrido único de Apple:** recompilar el iPhone, activar el retorno
 y comprobar la referencia y el resumen de esta actividad de prueba en ambas
 vistas, sin completar la cita. Cambios, retirada

@@ -80,8 +80,18 @@ cuenta/sesión, replay, enriquecimiento, conflictos, pruebas y acceso profesiona
 regresiones de programación Apple, retorno y progreso Garmin correctas. Las
 261 migraciones coinciden. Endpoint Apple Dev v6 ACTIVE, JWT obligatorio y sus
 tres archivos contrastados con el código local. Índices de las nuevas referencias
-comprobados; tablas privadas con RLS y sin acceso directo. La compilación nativa
-de esta ampliación se valida en CI antes de pedir instalarla.
+comprobados; tablas privadas con RLS y sin acceso directo.
+
+**Publicación técnica comprobada:** `b2497f26` pasa
+[iOS Release y consumidor](https://github.com/jchjdev/entrenaop/actions/runs/41222195025),
+[Salud Android/iOS](https://github.com/jchjdev/entrenaop/actions/runs/41222194981),
+[Trainer Dev](https://github.com/jchjdev/entrenaop/actions/runs/41222195784) y
+[ADMIN Dev](https://github.com/jchjdev/entrenaop/actions/runs/41222195015).
+Los manifiestos HTTPS de Trainer y ADMIN acreditan exactamente esa revisión,
+entorno development y Supabase `sxbxfjqgoddzhtcyhalw`. El lector conserva una clase
+separada en el archivo Swift ya registrado en CocoaPods, para mantener el flujo
+habitual GitHub Desktop → Xcode del Mac al incorporar este código nativo.
+
 Falta contrastar el nuevo lector y la referencia
 de la actividad en el iPhone recompilado; la importación manual ya comprobada
 no acredita esta nueva recogida automática.
