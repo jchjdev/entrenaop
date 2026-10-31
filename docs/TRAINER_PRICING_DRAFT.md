@@ -8,6 +8,13 @@ borrador. Todo continúa en sandbox/Dev; producción y cobros reales quedan fuer
 
 ## Hipótesis mensual para debatir
 
+**Maqueta web autorizada · 31/10/2026:** Javier pide mostrar estos importes y
+prestaciones como provisionales en la presentación local de Trainer. Autoriza
+su comparación orientativa, no su conversión en ofertas definitivas. El registro
+y la contratación enlazan al portal existente, cuyo catálogo de ensayo conserva
+su propio estado. No se activan cobros reales ni un algoritmo profesional, ni
+se duplican el registro o el panel. Detalle en [WEBSITE.md](WEBSITE.md).
+
 Importes en EUR usados como propuesta comercial de simulación; no se anuncian
 como PVP final ni se fija su tratamiento fiscal. No son un cálculo de coste ni
 una garantía de rentabilidad. Cruzar almacenamiento/transferencia y presupuesto
