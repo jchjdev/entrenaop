@@ -21,9 +21,17 @@ class ConversationEntry {
 }
 
 class ConversationHeader {
-  const ConversationHeader({required this.title, required this.canSend});
+  const ConversationHeader({
+    required this.title,
+    required this.canSend,
+    this.notice,
+    this.readOnlyMessage,
+    this.actions,
+  });
   final String title;
   final bool canSend;
+  final String? notice, readOnlyMessage;
+  final List<Widget> Function(Future<void> Function() refresh)? actions;
 }
 
 /// Presentación compartida: identidad, acceso y persistencia se inyectan.
@@ -37,6 +45,7 @@ class ConversationView extends StatefulWidget {
     required this.errorLabel,
     this.refreshInterval,
     this.onDisplayed,
+    this.messageLabel = 'Mensaje para la preparación',
   });
   final Future<ConversationHeader> Function() header;
   final Future<List<ConversationEntry>> Function(ConversationEntry? before)
@@ -46,6 +55,7 @@ class ConversationView extends StatefulWidget {
   final String Function(Object error) errorLabel;
   final Duration? refreshInterval;
   final Future<void> Function(List<ConversationEntry> entries)? onDisplayed;
+  final String messageLabel;
   @override
   State<ConversationView> createState() => _ConversationViewState();
 }
@@ -271,12 +281,17 @@ class _ConversationViewState extends State<ConversationView>
       TextField(
         controller: _body,
         enabled: !_sending && _pending == null,
+        readOnly: _header?.canSend != true,
         maxLength: 4000,
         minLines: 1,
         maxLines: 4,
         onChanged: (_) => setState(() {}),
-        decoration: const InputDecoration(
-          labelText: 'Mensaje para la preparación',
+        decoration: InputDecoration(
+          labelText: widget.messageLabel,
+          helperText: _header?.canSend != true && _pending == null
+              ? 'Puedes copiar tu borrador.'
+              : null,
+          helperMaxLines: 2,
         ),
       ),
       if (_sendError != null) Text(_sendError!),
@@ -284,7 +299,10 @@ class _ConversationViewState extends State<ConversationView>
         alignment: Alignment.centerRight,
         child: FilledButton.icon(
           onPressed:
-              _busy || _sending || (_pending ?? _body.text.trim()).isEmpty
+              (_header?.canSend != true && _pending == null) ||
+                  _busy ||
+                  _sending ||
+                  (_pending ?? _body.text.trim()).isEmpty
               ? null
               : _send,
           icon: const Icon(Icons.send_outlined),
@@ -323,6 +341,9 @@ class _ConversationViewState extends State<ConversationView>
                 padding: const EdgeInsets.all(20),
                 children: [
                   if (_busy) const LinearProgressIndicator(),
+                  if (_header?.notice case final notice?) Text(notice),
+                  if (_header?.actions case final actions?)
+                    Wrap(spacing: 8, runSpacing: 8, children: actions(_load)),
                   if (_error != null) ...[
                     Text(_error!),
                     TextButton(
@@ -408,16 +429,18 @@ class _ConversationViewState extends State<ConversationView>
             label: const Text('Ver mensajes nuevos'),
           ),
         if (_header?.canSend == false)
-          const SafeArea(
+          SafeArea(
             top: false,
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Text(
-                'Conversación conservada en consulta. El servicio no admite nuevos envíos ahora.',
+                _header?.readOnlyMessage ?? 'Conversación conservada en consulta. El servicio no admite nuevos envíos ahora.',
               ),
             ),
           ),
-        if (_header?.canSend == true || _pending != null)
+        if (_header?.canSend == true ||
+            _pending != null ||
+            _body.text.trim().isNotEmpty)
           Material(
             color: Theme.of(context).colorScheme.surface,
             child: SafeArea(

@@ -23,6 +23,8 @@ DirectoryProfile _directoryProfileFromJson(_Json j) => DirectoryProfile(
   price: j['price'] as String,
   accepting: j['accepting'] as bool,
   favorite: j['favorite'] == true,
+  appContactEnabled: j['app_contact_enabled'] == true,
+  isOwner: j['is_owner'] == true,
 );
 
 _Json _directoryProfileToJson(DirectoryProfile p) => {
@@ -39,6 +41,7 @@ _Json _directoryProfileToJson(DirectoryProfile p) => {
   'whatsapp': p.whatsapp.trim(),
   'price': p.price.trim(),
   'accepting': p.accepting,
+  'app_contact_enabled': p.appContactEnabled,
 };
 
 class SupabaseDirectoryRepository implements DirectoryRepository {

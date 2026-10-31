@@ -105,6 +105,18 @@ Las fichas no se publican por el chat; el recorrido con cuentas reales sigue abi
 y comprueba fichas, contacto y favoritos.
 [Contrato y evidencia](TRAINER_PLATFORM.md#piloto-con-javier-y-ervi--31102026).
 
+**TRN-040 · 31/10/2026 · contacto por el chat existente, validado técnicamente:**
+Javier aprueba primer mensaje, aceptación/rechazo/bloqueo y continuación en el
+chat compartido. La solicitud no da de alta alumnos ni abre acceso a sus datos
+de preparación. Al formalizar el vínculo se conserva el historial. Backend
+aplicado en Dev y cuatro pruebas SQL transaccionales correctas; contacto todavía
+desactivado hasta verificar la interfaz publicada. Se preservan e integran los
+cambios de chat/agenda del otro chat (`bd50a9f7`/`213a6e0c`). Los cuatro análisis
+y las baterías completas pasan (deportista 1537, Trainer 412, ADMIN 365 y UI 59;
+tres omisiones previas). El siguiente recorrido será
+Isabel → ficha de Javier → primer mensaje → aceptación/respuesta en Trainer.
+[Contrato y comprobaciones](TRAINER_PLATFORM.md#primer-contacto-en-el-chat-existente--31102026).
+
 **TRN-040 · 30/10/2026 · primera entrega técnica del directorio en Dev:**
 Javier autoriza comenzar, preservando el trabajo paralelo de Arquitectura.
 Preparador siempre visible, búsqueda/ficha común para web/app, favoritos,

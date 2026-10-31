@@ -20,6 +20,8 @@ class DirectoryProfile {
     this.price = '',
     this.accepting = true,
     this.favorite = false,
+    this.appContactEnabled = false,
+    this.isOwner = false,
   });
   final String id, name, description, city, email, website, whatsapp, price;
   final List<String> specialties, services;
@@ -27,6 +29,7 @@ class DirectoryProfile {
   final DirectoryMode mode;
   final DirectoryVisibility visibility;
   final bool accepting, favorite;
+  final bool appContactEnabled, isOwner;
 
   List<({String label, Uri uri})> get contacts => [
     if (email.isNotEmpty)

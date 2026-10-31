@@ -1,5 +1,18 @@
 # Arquitectura de EntrenaOP
 
+**Contacto desde el directorio · 31/10/2026:** `trainer_access/contact` separa
+dominio y puerto Dart puros, adaptador Supabase fijado a la cuenta y composición
+de `ConversationView`. La entidad `TrainerMessage` se extrae sin cambiar su
+contrato y se reexporta para los consumidores actuales. Se declara el paquete
+interno `entrena_ui`, ya utilizado por las apps; no se añaden paquetes externos.
+`contact_threads` guarda participantes/estado/aviso. Los mensajes y lecturas
+siguen en sus tablas existentes; el contexto exige relación o contacto, nunca
+ambos. Al insertar el vínculo activo, un trigger enlaza los mensajes conservando
+sus identificadores y lecturas; los reintentos y la transición comparten bloqueo
+por alumno. No cambia el contrato de invitaciones ni sus cupos. RPC invoker
+públicas, implementación privada y acceso directo a tablas revocado.
+[Contrato y evidencia](TRAINER_PLATFORM.md#primer-contacto-en-el-chat-existente--31102026).
+
 **Fotos personales de usuarios · 31/10/2026:** `trainer_access/profile_photo`
 separa el contrato Dart puro, el adaptador Supabase fijado a la cuenta y el
 avatar compartido. Perfil compone selección/encuadre y edición mediante inyección;

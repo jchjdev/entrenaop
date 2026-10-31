@@ -14,6 +14,8 @@ import 'package:entrenaop/features/trainers/presentation/pages/student_appointme
 import 'dart:async';
 
 import 'package:trainer_access/directory/data.dart';
+import 'package:trainer_access/contact/data.dart';
+import 'package:trainer_access/contact/presentation.dart';
 import 'package:trainer_access/directory/links.dart';
 import 'package:trainer_access/directory/presentation.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -202,6 +204,48 @@ class AppRouter {
         return null;
       },
       routes: [
+        _workflowRoute(
+          path: '/contacts',
+          builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
+            bloc: authCubit,
+            builder: (_, auth) => auth is! AuthAuthenticated
+                ? const SizedBox.shrink()
+                : ContactInboxPage(
+                    key: ValueKey('contacts-${auth.user.id}'),
+                    repository: SupabaseContactRepository(
+                      sl<SupabaseClient>(),
+                      auth.user.id,
+                    ),
+                    onOpen: (c) => config.push(
+                      c.relationId != null
+                          ? '/my-trainer/conversations/${c.relationId}'
+                          : '/contacts/${c.id}',
+                    ),
+                  ),
+          ),
+        ),
+        for (final initial in [true, false])
+          _workflowRoute(
+            path: initial ? '/contact-profile/:id' : '/contacts/:id',
+            builder: (_, state) => BlocBuilder<AuthCubit, AuthState>(
+              bloc: authCubit,
+              builder: (_, auth) => auth is! AuthAuthenticated
+                  ? const SizedBox.shrink()
+                  : ContactConversationPage(
+                      key: ValueKey(
+                        'contact-${auth.user.id}-$initial-${state.pathParameters['id']}',
+                      ),
+                      repository: SupabaseContactRepository(
+                        sl<SupabaseClient>(),
+                        auth.user.id,
+                      ),
+                      profileId: initial ? state.pathParameters['id'] : null,
+                      contactId: initial ? null : state.pathParameters['id'],
+                      onService: (id) =>
+                          config.replace('/my-trainer/conversations/$id'),
+                    ),
+            ),
+          ),
         for (final directoryPath in ['/directory', '/directory/:profileId'])
           materialAppRoute(
             path: directoryPath,
@@ -221,6 +265,8 @@ class AppRouter {
                   loadPhoto: repository.photo,
                   profileId: state.pathParameters['profileId'],
                   onOpen: (id) => config.push('/directory/$id'),
+                  onContactInApp: (id) => config.push('/contact-profile/$id'),
+                  onContacts: () => config.push('/contacts'),
                   onContact: (uri) =>
                       launchUrl(uri, mode: LaunchMode.externalApplication),
                   publicBase: trainerDirectoryPublicBase,

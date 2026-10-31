@@ -74,6 +74,8 @@ class TrainerDirectoryPage extends StatefulWidget {
     required this.onContact,
     required this.publicBase,
     this.profileId,
+    this.onContactInApp,
+    this.onContacts,
   });
   final DirectoryRepository repository;
   final DirectoryPhotoLoader loadPhoto;
@@ -81,6 +83,8 @@ class TrainerDirectoryPage extends StatefulWidget {
   final Future<bool> Function(Uri uri) onContact;
   final Uri publicBase;
   final String? profileId;
+  final ValueChanged<String>? onContactInApp;
+  final VoidCallback? onContacts;
   @override
   State<TrainerDirectoryPage> createState() => _TrainerDirectoryPageState();
 }
@@ -320,6 +324,16 @@ class _TrainerDirectoryPageState extends State<TrainerDirectoryPage>
             const SizedBox(height: 12),
             Text('Servicios: ${p.services.join(', ')}'),
             if (p.price.isNotEmpty) Text('Precio orientativo: ${p.price}'),
+            if (p.appContactEnabled &&
+                p.accepting &&
+                !p.isOwner &&
+                widget.repository.signedIn &&
+                widget.onContactInApp != null)
+              FilledButton.icon(
+                onPressed: () => widget.onContactInApp!(p.id),
+                icon: const Icon(Icons.chat_bubble_outline),
+                label: const Text('Contactar en EntrenaOP'),
+              ),
             const SizedBox(height: 12),
             const Text(
               'Contactar no crea un vínculo ni da acceso a tus datos. El acuerdo se realiza con el profesional.',
@@ -406,6 +420,12 @@ class _TrainerDirectoryPageState extends State<TrainerDirectoryPage>
             padding: const EdgeInsets.all(16),
             children: [
               const DirectoryPrivacyButton(),
+              if (widget.repository.signedIn && widget.onContacts != null)
+                TextButton.icon(
+                  onPressed: widget.onContacts,
+                  icon: const Icon(Icons.chat_bubble_outline),
+                  label: const Text('Mis contactos y solicitudes'),
+                ),
               if (widget.profileId == null) ...[
                 TextField(
                   controller: _query,

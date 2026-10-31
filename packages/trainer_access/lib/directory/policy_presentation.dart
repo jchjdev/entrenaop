@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'policy.dart';
+import '../contact/policy.dart';
 
 class DirectoryPrivacyButton extends StatelessWidget {
   const DirectoryPrivacyButton({super.key});
@@ -22,6 +23,8 @@ class DirectoryPrivacyButton extends StatelessWidget {
               SelectableText(directoryPrivacyInformation),
               SizedBox(height: 20),
               SelectableText(directoryPublicationConditions),
+              SizedBox(height: 20),
+              SelectableText(contactPrivacyInformation),
             ],
           ),
         ),

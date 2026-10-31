@@ -1,5 +1,21 @@
 # Producto EntrenaOP
 
+## Primer contacto desde el directorio · 31/10/2026
+
+Javier aprueba «Contactar en EntrenaOP» para ensayarlo con Isabel. El profesional
+elige recibir consultas dentro de la app; correo y WhatsApp se mantienen. Se
+envía un primer mensaje y el preparador acepta, rechaza o bloquea. Hasta aceptar
+no se permite continuar. Aceptar hablar permite la conversación privada y no
+crea una relación de alumno, acceso a fotos privadas o entrenamientos, ni ocupa
+una de las dos plazas de preparador.
+
+El contacto utiliza el mismo chat y almacén de mensajes. Si después se acepta
+el vínculo formal, conserva mensajes, fechas y lecturas. El servidor protege
+participantes, MFA del preparador, límites y denuncia; la información del primer
+envío es adicional al consentimiento de publicación V2. La entrega tiene
+validación técnica completa en Dev; publicación y activación pendientes.
+[Contrato y evidencia](TRAINER_PLATFORM.md#primer-contacto-en-el-chat-existente--31102026).
+
 ## Fotos personales de los usuarios · 31/10/2026
 
 Javier confirma que la foto pertenece a la cuenta del usuario de la app; Ervi

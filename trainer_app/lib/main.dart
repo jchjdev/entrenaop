@@ -2,6 +2,8 @@ import 'trainer_invitation_landing.dart';
 import 'trainer_directory_editor.dart';
 
 import 'package:trainer_access/directory/data.dart';
+import 'package:trainer_access/contact/data.dart';
+import 'package:trainer_access/contact/presentation.dart';
 import 'package:trainer_access/profile_photo/data.dart';
 import 'package:trainer_access/directory/links.dart';
 import 'package:trainer_access/directory/presentation.dart';
@@ -540,6 +542,37 @@ class _TrainerAppState extends State<TrainerApp> {
             ),
           ),
           routes: [
+            GoRoute(
+              path: '/contacts',
+              builder: (_, _) => ContactInboxPage(
+                key: ValueKey('contacts-$identity'),
+                repository: SupabaseContactRepository(widget.client, identity!),
+                onOpen: (c) => _router.push(
+                  c.relationId != null
+                      ? '/conversations/${c.relationId}'
+                      : '/contacts/${c.id}',
+                ),
+              ),
+            ),
+            GoRoute(
+              path: '/contacts/:id',
+              onExit: (_, state) => exits.requestExit(state.pageKey),
+              builder: (_, state) => guarded(
+                state,
+                ContactConversationPage(
+                  key: ValueKey(
+                    'contact-$identity-${state.pathParameters['id']}',
+                  ),
+                  repository: SupabaseContactRepository(
+                    widget.client,
+                    identity!,
+                  ),
+                  contactId: state.pathParameters['id']!,
+                  onRead: () => _messageChanges.value++,
+                  onService: (id) => _router.replace('/conversations/$id'),
+                ),
+              ),
+            ),
             GoRoute(
               path: '/directory-profile',
               onExit: (_, state) => exits.requestExit(state.pageKey),

@@ -537,10 +537,11 @@ y el piloto con cuentas reales siguen sujetos al catálogo y textos pendientes.
   La concreción del 30/10 añade
   fichas solo para la app: la solución ya no puede depender únicamente de abrir
   el directorio público; la secuencia de entregas web/app queda por diseñar.
-- El primer contacto será externo al chat de EntrenaOP. Cada profesional elige
-  qué canales publicar entre correo profesional, web o WhatsApp. El botón
-  «Contactar» ofrece únicamente los canales publicados voluntariamente; no se
-  utiliza por defecto el correo privado de acceso a la cuenta.
+- El primer contacto se inició con canales externos publicados voluntariamente:
+  correo profesional, web o WhatsApp, sin tomar el correo privado de acceso.
+  El acuerdo del 31/10 amplía esos canales con contacto dentro de EntrenaOP,
+  activable por el profesional y con aceptación previa a continuar la charla.
+  [Contrato del contacto](#primer-contacto-en-el-chat-existente--31102026).
 - Se reafirma el máximo actual de **dos preparadores externos activos por
   alumno** de TRN-028. Consultar una ficha o contactar no consume plaza, acepta
   una invitación ni concede acceso al calendario, resultados u otros datos
@@ -739,7 +740,72 @@ inicial, con el piloto comercial y la aceptación física pendientes.
 Lectura final en Dev:
 publicación deshabilitada, cero ofertas elegibles y cero fichas publicadas.
 
+### Primer contacto en el chat existente · 31/10/2026
+
+Javier aprueba primer mensaje, aceptación/rechazo/bloqueo y continuación dentro
+de EntrenaOP, manteniendo el contacto externo. El preparador puede activar
+«Recibir contactos por EntrenaOP» en su ficha. El primer mensaje muestra su
+finalidad y límites; registrar el aviso de contacto no sustituye la aceptación
+de publicación V2, que conserva su contenido y alcance.
+
+Se reutilizan `ConversationView`, `TrainerMessage`, `trainer_private.messages`,
+los UUID de reintento y los recibos de lectura. `contact_threads` representa la
+solicitud y sus participantes; no duplica los mensajes ni el motor del chat.
+El dominio/puerto de contacto es Dart puro; el adaptador Supabase y la composición
+visual están separados. El paquete declara la dependencia interna en `entrena_ui`,
+ya usada en las apps, sin paquetes externos nuevos. El chat de alumnos conserva
+sus interfaces y valores por defecto.
+
+Un usuario con correo confirmado puede iniciar como máximo cinco primeras
+consultas en las últimas 24 horas y solo una por pareja. Mientras está pendiente hay un único
+mensaje. El preparador conserva MFA; aceptar no crea relación ni consume cupos.
+Ambos participantes pueden bloquear la consulta; el bloqueo conserva la lectura
+y detiene envíos. En el piloto no se reabre una solicitud rechazada o bloqueada.
+La denuncia del preparador usa la revisión existente del directorio; el bloqueo
+permite al profesional detener contactos no deseados. No se muestran fotos
+personales privadas ni se abren permisos sobre historiales o entrenamientos.
+
+Si ya existe vínculo, se abre su chat. Al formalizarlo después del primer contacto
+pendiente o aceptado, los mensajes se enlazan a la relación conservando UUID,
+autor, fecha y lecturas. Una consulta rechazada o bloqueada permanece en consulta.
+Al reactivar un vínculo, el acceso continúa en su nueva etapa y el historial
+anterior permanece en la etapa original.
+La transición y los envíos comparten exclusión por alumno; el reintento también
+se confirma si la relación se creó durante el envío. Los recibos de lectura
+admiten las etapas de esa pareja y rechazan lotes mixtos sin escribir parcialmente.
+Si el cambio a alumno ocurre mientras se escribe, el borrador sigue visible para
+copiarlo antes de salir; no se envía automáticamente. La bandeja y avisos de
+Trainer incluyen las solicitudes y mensajes de contactos con el mismo sondeo
+existente. Un intento distinto desde otra pestaña recibe error explícito y
+conserva el texto: no se confirma como enviado un mensaje no almacenado.
+Desactivar la captación retira nuevas solicitudes; conserva la consulta de
+contactos previos. La suspensión impide aceptar o enviar en el contacto.
+No se dan por acreditados mensajes reales, aceptación o push hasta
+probarlos con las cuentas; no se envían mensajes por Isabel ni por Javier.
+
+**Verificación técnica · 31/10/2026:** las migraciones `20261031114038` y
+`20261031123938` están aplicadas solo en `entrenaop-dev`: 259 migraciones
+sincronizadas. Pasan los contratos SQL
+de contactos, resumen del chat existente, historial/reactivación y fotos privadas;
+todos terminan con `ROLLBACK`. Cero contactos reales creados. Sin avisos WARN
+nuevos en Advisors; el INFO adicional corresponde a la tabla privada con RLS y
+sin acceso directo. La validación final integrada con los cambios de chat/agenda
+`bd50a9f7` y `213a6e0c` pasa los cuatro análisis y baterías completas: deportista
+1537 (una omisión previa), Trainer 412, ADMIN 365 (dos omisiones previas),
+`entrena_ui` 59. Incluye siete pruebas del contacto y su borrador, avisos en
+Trainer y uso a 320 píxeles con texto doble. La publicación y activación siguen
+pendientes; el contacto permanece desactivado hasta verificarlas.
+
+**Siguiente recorrido:** Isabel inicia el contacto en la ficha publicada; Javier
+lo revisa en Solicitudes de contacto, acepta y responde. Después se comprueba
+que la invitación y aceptación del vínculo conservan esa misma conversación.
+
 ### Piloto con Javier y Ervi · 31/10/2026
+
+El recorrido inicial de publicación ya está confirmado: tras actualizar la
+pestaña antigua, Javier publica con aceptación V2 y visualiza su ficha desde
+localhost. Confirma que correo y WhatsApp se abren; su nueva petición es poder
+iniciar el contacto mediante la conversación de EntrenaOP.
 
 Javier confirma el alcance del ensayo e incluye a Ervi para comparar varios
 preparadores y filtrar por localidad. Solo se habilitan estas dos cuentas en

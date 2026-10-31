@@ -8,6 +8,18 @@ moderación. No concede Pro ni algoritmo, no fija importes, cupos ni posiciones
 preferentes y no cambia cuentas ni ofertas existentes. Toda preparación comercial
 continúa en pruebas. [Borrador de precios](TRAINER_PRICING_DRAFT.md).
 
+**Contacto por el chat existente · 31/10/2026:** Javier confirma ampliar el
+directorio con «Contactar en EntrenaOP» y probarlo con Isabel y su cuenta.
+El solicitante envía un primer mensaje; el preparador acepta, rechaza o bloquea
+y no se permite insistir mientras esté pendiente. Aceptar hablar no crea un
+vínculo de alumno ni concede acceso a entrenamientos o historial. Se mantienen
+las dos plazas de preparador al formalizar el vínculo. Se reutilizan interfaz,
+almacén y mecanismos de envío/lectura del chat existente; al crear el vínculo,
+la conversación continúa con sus mensajes previos. Correo y WhatsApp siguen
+disponibles. Permisos, límites y denuncia se comprueban en servidor. Clean
+Architecture y conservación del trabajo de los otros chats son requisitos
+expresos. [Contrato](TRAINER_PLATFORM.md#primer-contacto-en-el-chat-existente--31102026).
+
 **Búsqueda completa en Trainer · 31/10/2026:** Javier pide buscar sesiones y
 programas en toda la biblioteca, sin cargar previamente las páginas. Las
 consultas y filtros se aplican en servidor antes de paginar, conservando MFA,

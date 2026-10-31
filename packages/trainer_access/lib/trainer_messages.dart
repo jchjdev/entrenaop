@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'authenticated_rpc.dart';
+import 'trainer_message.dart';
+export 'trainer_message.dart';
 
 String trainerMessageOperationId() {
   final random = Random.secure();
@@ -11,19 +13,6 @@ String trainerMessageOperationId() {
   bytes[8] = (bytes[8] & 63) | 128;
   final hex = bytes.map((v) => v.toRadixString(16).padLeft(2, '0')).join();
   return '${hex.substring(0, 8)}-${hex.substring(8, 12)}-${hex.substring(12, 16)}-${hex.substring(16, 20)}-${hex.substring(20)}';
-}
-
-class TrainerMessage {
-  TrainerMessage.fromJson(Map<String, dynamic> row, String userId)
-    : id = row['id'] as String,
-      body = row['body'] as String,
-      mine = row['sender_id'] == userId,
-      createdAt = DateTime.parse(row['created_at'] as String),
-      assignmentId = row['assignment_id'] as String?;
-  final String id, body;
-  final bool mine;
-  final DateTime createdAt;
-  final String? assignmentId;
 }
 
 class TrainerConversationContext {
@@ -153,10 +142,14 @@ class TrainerMessageInbox {
     required this.totalUnread,
     required this.conversations,
     this.clients = const {},
+    this.contactPending = 0,
+    this.contactUnread = 0,
   });
   factory TrainerMessageInbox.fromJson(Map<String, dynamic> json) =>
       TrainerMessageInbox(
         totalUnread: (json['total_unread'] as num).toInt(),
+        contactPending: (json['contact_pending_count'] as num?)?.toInt() ?? 0,
+        contactUnread: (json['contact_unread_count'] as num?)?.toInt() ?? 0,
         clients: {
           for (final entry in (json['clients'] as Map? ?? const {}).entries)
             entry.key as String: TrainerClientMessageSummary.fromJson(
@@ -172,6 +165,7 @@ class TrainerMessageInbox {
             .toList(),
       );
   final int totalUnread;
+  final int contactPending, contactUnread;
   final List<TrainerUnreadConversation> conversations;
   final Map<String, TrainerClientMessageSummary> clients;
 }

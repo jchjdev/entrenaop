@@ -34,6 +34,7 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
   DirectoryVisibility _visibility = DirectoryVisibility.app;
   String? _photo, _savedPhoto, _error;
   bool _accepting = true,
+      _appContact = false,
       _published = false,
       _consent = false,
       _busy = false,
@@ -78,6 +79,7 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
     _photo = p?.photoPath;
     _savedPhoto = _photo;
     _accepting = p?.accepting ?? true;
+    _appContact = p?.appContactEnabled ?? false;
     _published = state.published;
     _consent = state.consent && p?.visibility == _visibility;
     _dirty = false;
@@ -197,6 +199,7 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
     visibility: _visibility,
     photoPath: _photo,
     accepting: _accepting,
+    appContactEnabled: _appContact,
   );
   Future<void> _save() async {
     if (_busy || _state == null) return;
@@ -375,6 +378,20 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
                         }),
                 ),
                 const DirectoryPrivacyButton(),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Recibir contactos por EntrenaOP'),
+                  subtitle: const Text(
+                    'Recibirás un primer mensaje y decidirás si aceptas hablar. No crea un vínculo de alumno.',
+                  ),
+                  value: _appContact,
+                  onChanged: _busy
+                      ? null
+                      : (v) => setState(() {
+                          _appContact = v;
+                          _dirty = true;
+                        }),
+                ),
                 const Text(
                   'La publicación está sujeta a las condiciones del directorio.',
                 ),

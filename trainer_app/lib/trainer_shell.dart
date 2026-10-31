@@ -39,6 +39,7 @@ class TrainerShell extends StatefulWidget {
     ('/reports', 'Informes', Icons.insights),
     ('/settings', 'Mi cuenta', Icons.settings_outlined),
     ('/directory-profile', 'Mi ficha pública', Icons.badge_outlined),
+    ('/contacts', 'Solicitudes de contacto', Icons.forum_outlined),
   ];
   @override
   State<TrainerShell> createState() => _TrainerShellState();
@@ -49,7 +50,7 @@ class _TrainerShellState extends State<TrainerShell>
   TrainerMessageInbox? _inbox;
   bool _checking = false, _checkFailed = false;
   Timer? _timer;
-  int get _unread => _inbox?.totalUnread ?? 0;
+  int get _unread => (_inbox?.totalUnread ?? 0) + (_inbox?.contactUnread ?? 0);
   bool get _foreground =>
       WidgetsBinding.instance.lifecycleState == null ||
       WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
@@ -127,6 +128,16 @@ class _TrainerShellState extends State<TrainerShell>
             shrinkWrap: true,
             children: [
               const ListTile(title: Text('Mensajes sin leer')),
+              if ((_inbox?.contactPending ?? 0) > 0 ||
+                  (_inbox?.contactUnread ?? 0) > 0)
+                ListTile(
+                  leading: const Icon(Icons.forum_outlined),
+                  title: const Text('Contactos del directorio'),
+                  subtitle: Text(
+                    '${_inbox?.contactPending ?? 0} solicitudes pendientes · ${_inbox?.contactUnread ?? 0} mensajes sin leer',
+                  ),
+                  onTap: () => Navigator.pop(sheetContext, '@contacts'),
+                ),
               if (_checkFailed)
                 const ListTile(
                   title: Text(
@@ -161,7 +172,13 @@ class _TrainerShellState extends State<TrainerShell>
       ),
     );
     if (!mounted || relationId == null) return;
-    context.go(relationId.isEmpty ? '/messages' : '/conversations/$relationId');
+    context.go(
+      relationId == '@contacts'
+          ? '/contacts'
+          : relationId.isEmpty
+          ? '/messages'
+          : '/conversations/$relationId',
+    );
   }
 
   Widget _noticeButton() => IconButton(
