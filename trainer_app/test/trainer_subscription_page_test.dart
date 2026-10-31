@@ -41,7 +41,139 @@ class SubscriptionFixture implements TrainerSubscriptionRepository {
   }
 }
 
+class PlanCatalogueFixture extends SubscriptionFixture {
+  String? selected;
+  @override
+  Future<SubscriptionJson> status() async => {
+    'sandbox': true,
+    'enabled': true,
+    'subscription': pending
+        ? {
+            'id': 'order',
+            'state': 'open',
+            'offer_id': 'professional-10',
+            'title': 'professional 10',
+            'amount': 2000,
+            'interval': 'month',
+          }
+        : null,
+    'offers': [
+      for (final capacity in [5, 10]) ...[
+        for (final plan in ['basic', 'professional', 'complete'])
+          {
+            'id': '$plan-$capacity',
+            'title': '$plan $capacity',
+            'amount': capacity * 100 + 1000,
+            'currency': 'EUR',
+            'interval': 'month',
+            'capacity': capacity,
+            'plan_key': plan,
+            'directory_option': plan != 'basic',
+          },
+        {
+          'id': 'basic-directory-$capacity',
+          'title': 'Básico con directorio $capacity',
+          'amount': capacity * 100 + 1490,
+          'currency': 'EUR',
+          'interval': 'month',
+          'capacity': capacity,
+          'plan_key': 'basic',
+          'directory_option': true,
+        },
+      ],
+    ],
+  };
+  @override
+  Future<SubscriptionJson> act(String action, {String? offerId}) async {
+    selected = offerId;
+    return super.act(action, offerId: offerId);
+  }
+}
+
+class ConcurrentPlanFixture extends PlanCatalogueFixture {
+  @override
+  Future<SubscriptionJson> act(String action, {String? offerId}) async {
+    pending = true;
+    throw StateError('Otra pestaña ya preparó un pago');
+  }
+}
+
 void main() {
+  testWidgets(
+    'recupera la oferta de otra pestaña tras un conflicto al preparar',
+    (t) async {
+      final repo = ConcurrentPlanFixture();
+      await t.pumpWidget(
+        MaterialApp(home: TrainerSubscriptionPage(repository: repo)),
+      );
+      await t.pumpAndSettle();
+      await t.scrollUntilVisible(find.text('Contratar en pruebas').first, 200);
+      await t.tap(find.text('Contratar en pruebas').first);
+      await t.pumpAndSettle();
+      expect(find.byType(DropdownButtonFormField<int>), findsNothing);
+      expect(find.text('basic 5'), findsNothing);
+      expect(find.text('professional 10'), findsWidgets);
+    },
+  );
+
+  testWidgets('un pago pendiente conserva oferta y cupo al continuar', (
+    t,
+  ) async {
+    final repo = PlanCatalogueFixture()..pending = true;
+    await t.pumpWidget(
+      MaterialApp(
+        home: TrainerSubscriptionPage(
+          repository: repo,
+          openPayment: (uri) async => true,
+        ),
+      ),
+    );
+    await t.pumpAndSettle();
+    expect(find.byType(DropdownButtonFormField<int>), findsNothing);
+    expect(find.text('basic 5'), findsNothing);
+    final button = find.text('Continuar pago de prueba');
+    await t.ensureVisible(button);
+    await t.pumpAndSettle();
+    await t.tap(button);
+    await t.pumpAndSettle();
+    expect(repo.selected, 'professional-10');
+  });
+  testWidgets(
+    'elige cupo y extra usando el catálogo del servidor sin precios enviados por Flutter',
+    (t) async {
+      final repo = PlanCatalogueFixture();
+      await t.pumpWidget(
+        MaterialApp(home: TrainerSubscriptionPage(repository: repo)),
+      );
+      await t.pumpAndSettle();
+      expect(find.text('basic 5'), findsOneWidget);
+      expect(find.text('professional 10'), findsNothing);
+      await t.tap(find.byType(DropdownButtonFormField<int>));
+      await t.pumpAndSettle();
+      await t.tap(find.text('Hasta 10 alumnos').last);
+      await t.pumpAndSettle();
+      final toggle = find.byType(SwitchListTile);
+      await t.ensureVisible(toggle);
+      await t.pumpAndSettle();
+      await t.tap(toggle);
+      await t.pumpAndSettle();
+      final name = find.text('Básico con directorio 10');
+      await t.ensureVisible(name);
+      await t.pumpAndSettle();
+      final card = find.ancestor(of: name, matching: find.byType(Column)).first;
+      final button = find.descendant(
+        of: card,
+        matching: find.text('Contratar en pruebas'),
+      );
+      await t.ensureVisible(button);
+      await t.pumpAndSettle();
+      await t.tap(button);
+      await t.pumpAndSettle();
+      expect(repo.selected, 'basic-directory-10');
+      expect(t.takeException(), isNull);
+    },
+  );
+
   test(
     'solo acepta los destinos Stripe esperados, sin credenciales ni puertos',
     () {

@@ -69,6 +69,7 @@ Widget _app({
   Future<List<WorkoutEditorExercise>> Function()? load,
   Future<WorkoutEditorExercise?> Function(BuildContext)? create,
   ExerciseCatalogPreferences? preferences,
+  Future<List<WorkoutTemplate>> Function()? warmups,
   double scale = 1,
   WorkoutTemplate original = _original,
 }) => RepaintBoundary(
@@ -84,6 +85,7 @@ Widget _app({
       controller: exit ?? WorkflowExitController(),
       child: WorkoutEditorPage(
         loadExercises: load ?? () async => _catalog,
+        loadWarmups: warmups,
         onCreateExercise: create,
         exercisePreferences: preferences,
         onSave: save,
@@ -153,6 +155,126 @@ Future<void> _setField(WidgetTester tester, Finder field, String text) async {
 }
 
 void main() {
+  testWidgets(
+    'la fila vacía abre directamente el selector y el bloque muestra su configuración',
+    (t) async {
+      await t.binding.setSurfaceSize(const Size(1600, 1100));
+      addTearDown(() => t.binding.setSurfaceSize(null));
+      await t.pumpWidget(
+        ProfessionalWorkspaceScope(
+          desktop: true,
+          child: _app(save: (_) async => 's', saved: (_) {}),
+        ),
+      );
+      await t.pumpAndSettle();
+      await t.tap(find.text('Añadir ejercicio o estación'));
+      await t.pumpAndSettle();
+      final row = find.text('Elegir ejercicio').last;
+      await t.ensureVisible(row);
+      await t.pumpAndSettle();
+      await t.tap(row);
+      await t.pumpAndSettle();
+      expect(find.text('Buscar ejercicio'), findsOneWidget);
+      await t.tap(find.text('Ejercicio privado de Alba').last);
+      await t.pumpAndSettle();
+      expect(find.text('Buscar ejercicio'), findsNothing);
+      final tile = t.widget<ExpansionTile>(
+        find.widgetWithText(ExpansionTile, 'Configuración del bloque'),
+      );
+      expect(tile.initiallyExpanded, isTrue);
+      expect(find.textContaining('Ejercicio privado de Alba'), findsWidgets);
+      expect(t.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'inserta el calentamiento como copia y conserva receta y dosis diferentes',
+    (t) async {
+      final warmup = WorkoutTemplate(
+        id: 'warmup',
+        name: 'Activación general',
+        description: null,
+        estimatedDurationMinutes: 5,
+        version: 1,
+        blocks: [
+          WorkoutBlock(
+            id: 'warm-block',
+            name: 'Movilidad',
+            format: WorkoutBlockFormat.warmUp,
+            rounds: 1,
+            restAfterSeconds: 0,
+            items: [
+              const WorkoutItem(
+                id: 'first',
+                exerciseId: 'base',
+                exerciseName: 'Base',
+                sets: [
+                  WorkoutSet(
+                    id: 'a',
+                    order: 0,
+                    targetReps: 8,
+                    restAfterSeconds: 20,
+                  ),
+                  WorkoutSet(
+                    id: 'b',
+                    order: 1,
+                    targetReps: 9,
+                    restAfterSeconds: 30,
+                  ),
+                ],
+              ),
+              const WorkoutItem(
+                id: 'second',
+                exerciseId: 'private',
+                exerciseName: 'Privado',
+                sets: [
+                  WorkoutSet(
+                    id: 'c',
+                    order: 0,
+                    targetReps: 12,
+                    restAfterSeconds: 40,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      );
+      CreatePersonalWorkoutInput? result;
+      await t.pumpWidget(
+        _app(
+          save: (input) async {
+            result = input;
+            return 'saved';
+          },
+          saved: (_) {},
+          warmups: () async => [warmup],
+        ),
+      );
+      await t.pumpAndSettle();
+      await t.ensureVisible(find.text('Insertar calentamiento'));
+      await t.pumpAndSettle();
+      await t.tap(find.text('Insertar calentamiento'));
+      await t.pumpAndSettle();
+      await t.tap(find.text('Activación general'));
+      await t.pumpAndSettle();
+      await _save(t);
+      expect(result, isNotNull);
+      expect(result!.blocks.length, 2);
+      expect(result!.blocks.first.name, 'Calentamiento · Movilidad');
+      expect(result!.blocks.first.exercises.first.sets.length, 2);
+      expect(result!.blocks.first.exercises[1].sets.length, 1);
+      expect(
+        result!.blocks.first.exercises.first.sets.map((e) => e.targetValue),
+        [8, 9],
+      );
+      expect(result!.blocks.last.name, 'Bloque principal');
+      expect(warmup.blocks.single.format, WorkoutBlockFormat.warmUp);
+      expect(warmup.blocks.single.items.first.sets.first.targetReps, 8);
+      expect(t.takeException(), isNull);
+    },
+  );
+
   setUpAll(() => loadReviewFont(always: true));
   testWidgets(
     'catálogo activo sin el ejercicio conserva el nombre original como referencia',

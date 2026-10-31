@@ -1143,3 +1143,36 @@ JavaScript, cabeceras sin caché y MIME WebAssembly verificados en ambos portale
 El código móvil está guardado en main; esta publicación no instala una nueva
 versión de iOS o Android. La aceptación con el iPhone queda para su siguiente
 compilación, a cargo de Javier conforme a lo acordado.
+
+## Creación compartida y planes sandbox · 31/10/2026
+
+El creador compartido abre el selector al pulsar una posición vacía «Elegir
+ejercicio», conservando las dosis. La configuración del bloque del inspector
+se abre inicialmente. Trainer y ADMIN permiten insertar calentamientos
+publicados desde «Insertar calentamiento» en sesiones de fuerza, también al
+crear sesiones dentro de programas. El consumidor aporta la lectura autorizada;
+el editor solo compone recetas. Se usa una fachada SQL paginada, con identidad,
+MFA y autoría profesional activa (o ADMIN). Solo entrega versiones publicadas
+oficiales cuyos ejercicios son públicos; no se abre la RLS de sus plantillas.
+
+Insertar **copia** los bloques a la sesión editable, sin modificar ni vincular
+la plantilla oficial. El formato interno warm_up se convierte a series
+convencionales, como al editar calentamientos en ADMIN, para conservar incluso
+cantidades de series diferentes por ejercicio. No concede autoría oficial ni
+cambia la prohibición de enlazar calentamientos oficiales en programas privados.
+Los segmentos de calentamiento de carrera conservan su circuito existente.
+
+Suscripción muestra un selector de cupo y tres niveles del catálogo sandbox;
+Básico permite ensayar el suplemento de directorio como una oferta conjunta.
+Un pago pendiente muestra y conserva su oferta. Por ahora el pago solo activa
+acceso/cupo: Pro y concesión comercial del directorio siguen pendientes y así
+se indica en pantalla. [Contrato](TRAINER_COMMERCIAL_CONTRACT.md).
+
+Validación del bloque: análisis sin incidencias en una copia de HEAD con los
+cambios propios; 1.549 pruebas de raíz (una omisión declarada), 365 de ADMIN
+(dos omisiones declaradas), 421 de Trainer, 246 del editor compartido y 40 del adaptador de
+contratación. Los contratos SQL de catálogo, cupo, identidad, MFA e idempotencia
+terminan en ROLLBACK. Se contrastan cuatro migraciones propias aplicadas en Dev
+y los veinte precios activos del sandbox contra sus ofertas del servidor.
+No se incorporan los cambios Apple o promocionales abiertos en otros trabajos.
+La aceptación manual del Checkout con los precios nuevos sigue pendiente.

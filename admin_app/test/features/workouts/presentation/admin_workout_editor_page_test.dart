@@ -29,6 +29,8 @@ class _CreateExercise extends Fake implements AdminExerciseRepository {
 
 class _FakeWorkouts implements AdminWorkoutRepository {
   @override
+  Future<List<WorkoutTemplate>> warmups() async => [];
+  @override
   Future<WorkoutTemplate?> getTemplateById(String templateId) async => null;
 
   CreatePersonalWorkoutInput? saved;
@@ -673,6 +675,8 @@ void main() {
     final catalogSelectors = find.text('Buscar ejercicio del catálogo');
     expect(catalogSelectors, findsNWidgets(2));
     for (var index = 0; index < 2; index++) {
+      await _showSharedField(tester, catalogSelectors.first);
+      await tester.pumpAndSettle();
       await tester.tap(catalogSelectors.first);
       await tester.pumpAndSettle();
       await tester.tap(find.text('Flexiones').last);

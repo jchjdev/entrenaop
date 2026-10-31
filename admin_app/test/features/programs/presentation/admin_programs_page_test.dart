@@ -291,6 +291,8 @@ class _FakeRepository implements AdminProgramRepository {
 
 class _FakeWorkouts implements AdminWorkoutRepository {
   @override
+  Future<List<WorkoutTemplate>> warmups() async => [];
+  @override
   Future<void> setLibraryVisibility(
     String templateId,
     bool value, {

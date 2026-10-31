@@ -928,6 +928,7 @@ class _PrivateSessionWorkspaceState extends State<_PrivateSessionWorkspace> {
                           return WorkflowExitScope(
                             controller: _exit,
                             child: WorkoutEditorPage(
+                              loadWarmups: widget.repository.warmups,
                               embedded: true,
                               onCreateExercise: widget.onCreateExercise,
                               exercisePreferences: widget.exercisePreferences,

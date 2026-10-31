@@ -189,17 +189,20 @@ void main() {
             await t.pumpAndSettle();
           }
           final fields = format == WorkoutBlockFormat.running
-              ? find.byType(RunningStepFields).first
+              ? find.byType(RunningStepFields)
               : format == WorkoutBlockFormat.tabata
-              ? find.text('20 s de trabajo · 10 s de recuperación').first
-              : find.byType(StrengthSetFields).first;
-          await t.scrollUntilVisible(
-            fields,
-            250,
-            scrollable: find.byType(Scrollable).first,
-            maxScrolls: 100,
-          );
-          await t.ensureVisible(fields);
+              ? find.text('20 s de trabajo · 10 s de recuperación')
+              : find.byType(StrengthSetFields);
+          // La lista construye estas filas al entrar en pantalla, también con texto 2x.
+          for (
+            var attempt = 0;
+            fields.evaluate().isEmpty && attempt < 100;
+            attempt++
+          ) {
+            await t.drag(find.byType(Scrollable).first, const Offset(0, -250));
+            await t.pumpAndSettle();
+          }
+          await t.ensureVisible(fields.first);
           await t.pumpAndSettle();
           final position = t
               .state<ScrollableState>(find.byType(Scrollable).first)

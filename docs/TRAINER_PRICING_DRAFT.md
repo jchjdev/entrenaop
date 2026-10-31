@@ -1,10 +1,10 @@
 # Precios y cupos profesionales · borrador del 31/10/2026
 
-Estado: propuesta para ensayar, **importes y cupos no aprobados**. El único
-acuerdo nuevo es directorio incluido en Profesional/Completo y extra opcional
-pagado en Básico. No se crean productos/precios de Stripe ni ofertas de servidor,
-no se cambia el ensayo vigente de 1 EUR/cinco plazas ni se concede Pro por este
-borrador. Todo continúa en sandbox/Dev; producción y cobros reales quedan fuera.
+Estado: **catálogo provisional autorizado solo para pruebas**, sin precios
+comerciales definitivos ni cobros reales. Javier autoriza el 31/10 convertir la
+tabla en ofertas sandbox para probar registro, pago y habilitación del cupo.
+Directorio incluido en Profesional/Completo y extra opcional en Básico conserva
+su acuerdo de producto; **su concesión comercial y Pro aún no están conectados**.
 
 ## Hipótesis mensual para debatir
 
@@ -28,7 +28,7 @@ antes de decidir venta, anualidad o descuentos.
 | 50 | 59,90 | 66,90 | 116,90 |
 | 100 | 99,90 | 106,90 | 206,90 |
 
-Hipótesis para explicar la tabla, todas pendientes:
+Hipótesis comerciales de la tabla; sus prestaciones siguen pendientes:
 
 - Profesional suma 7 EUR a Básico e incluiría directorio y Pro personal.
 - Completo suma a Profesional 1 EUR por **plaza contratada**, no un cargo variable
@@ -61,3 +61,27 @@ no se promete almacenamiento o vídeo ilimitado.
 Referencia: [contrato comercial](TRAINER_COMMERCIAL_CONTRACT.md),
 [directorio y observaciones de uso](TRAINER_PLATFORM.md),
 [control de costes](COST_CONTROL.md).
+
+## Catálogo de ensayo conectado · 31/10/2026
+
+Veinte precios mensuales inmutables en el entorno de prueba de EntrenaOP:
+cinco cupos por cada nivel y cinco ofertas conjuntas Básico + directorio.
+El suplemento de 4,90 EUR se integra en una oferta única, con una renovación.
+El servidor conserva importe, moneda, precio Stripe y capacidad; el cliente
+solo elige el identificador de oferta. Un pedido pendiente mantiene esa oferta.
+El pago acreditado concede acceso profesional y cupo, **no concede todavía Pro
+ni publica/habilita comercialmente una ficha de directorio**. La pantalla avisa
+del alcance limitado. El ensayo antiguo de 1 EUR sigue disponible para pedidos
+anteriores; el selector moderno no lo mezcla con las nuevas tarifas.
+
+Antes de venta real hay que estudiar una curva por alumnos adicionales y su
+coste marginal. Los saltos 5/10/20/50/100 sirven para validar cupos, no aprueban
+que añadir un alumno obligue a saltar a una tarifa desproporcionada. No se crean
+cargos automáticos por alta, ni se asume la curva o los precios de Harbiz.
+Impuestos y Stripe Tax quedan por configurar tras concretar la fiscalidad; el
+ensayo no aprueba PVP con/sin IVA ni activa cálculo fiscal automático.
+
+Validación: pruebas SQL transaccionales de las veinte ofertas, sin altas ni
+pagos persistentes de fixtures; regresiones de identidad, MFA, pago, regalos e
+idempotencia. La aceptación con tarjeta ficticia del catálogo nuevo queda como
+prueba manual posterior; no se confunde con los pagos simulados del contrato SQL.

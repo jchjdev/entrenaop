@@ -308,6 +308,7 @@ class _TrainerAssignmentAdaptationPageState
             child: WorkflowExitScope(
               controller: _editorExit,
               child: WorkoutEditorPage(
+                loadWarmups: widget.workouts.warmups,
                 loadExercises: () => widget.workouts.exercises(
                   retainedIds: {
                     for (final block in template.blocks)

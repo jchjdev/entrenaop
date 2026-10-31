@@ -774,3 +774,25 @@ Evidencia local ignorada: `build/trainer-commerce-paid.png` y
 recorrido comercial recomendado es acordar tarifas y políticas de contratación
 para ampliar el ensayo. Citas con hora permanecen como propuesta TRN-041. No se
 declara cerrada la comercialización real ni el circuito alumno → preparador.
+
+### Catálogo ampliado de sandbox · 31/10/2026
+
+El catálogo de prueba añade veinte ofertas mensuales: Básico, Profesional,
+Completo y Básico con directorio, con 5/10/20/50/100 plazas. Importes en
+[el borrador autorizado para ensayo](TRAINER_PRICING_DRAFT.md). Son ofertas de
+**acceso profesional y capacidad**: no se atribuyen todavía derechos Pro o de
+directorio comercial a sus etiquetas. La interfaz declara ese límite.
+La oferta previa de 1 EUR se conserva para continuidad, pero se oculta del
+selector moderno. El estado público de la contratación incluye su oferta y
+precio. Un reintento sobre el mismo pedido conserva la oferta; elegir otra con
+un pedido preparado/abierto no reutiliza silenciosamente el pago anterior.
+La confirmación sigue dependiendo de evidencia canónica del proveedor, no del
+retorno del navegador. Se conservan regalos, separación de Pro y cancelación
+al final del periodo acreditado. No se implementan aún cambios de plan, prorrateo,
+cobros alumno → preparador ni precios reales. Fiscalidad/Stripe Tax pendientes.
+
+Las veinte combinaciones pasan el contrato SQL con ROLLBACK: preparar no concede
+acceso; la evidencia simulada de pago proyecta exactamente su cupo; se rechazan
+identidad ajena y aal1. Esto no acredita veinte pagos con tarjeta en Checkout.
+La aceptación con tarjeta ficticia de la oferta antigua del 28/10 conserva su
+alcance histórico; la del catálogo nuevo está pendiente de prueba manual.

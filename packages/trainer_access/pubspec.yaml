@@ -11,6 +11,9 @@ dependencies:
   # El primer contacto utiliza el mismo componente de conversación de las apps.
   entrena_ui:
     path: ../entrena_ui
+  # Recetas comunes del catálogo oficial, sin SDK dentro del núcleo.
+  workout_core:
+    path: ../workout_core
 dev_dependencies:
   flutter_test:
     sdk: flutter

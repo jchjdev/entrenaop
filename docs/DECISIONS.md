@@ -1,5 +1,26 @@
 # Registro de decisiones vigentes
 
+**Planes y cupos en sandbox · 31/10/2026:** Javier autoriza preparar la tabla
+provisional para probar registro, pago y habilitación profesional, sin cobros
+reales. Se crean veinte precios mensuales de prueba: Básico, Profesional,
+Completo y Básico con directorio, cada uno con 5/10/20/50/100 plazas. El ensayo
+activa únicamente acceso profesional y cupo; Pro y elegibilidad comercial del
+directorio siguen pendientes de conectar. El selector lo explica expresamente.
+La oferta de un pago pendiente queda fijada para evitar continuar otro importe.
+El ensayo previo de 1 EUR se conserva, sin mostrarse como nueva tarifa junto al
+catálogo moderno. Antes de vender se revisarán la curva de precio por alumnos,
+impuestos, cambios y coberturas. [Precios](TRAINER_PRICING_DRAFT.md) y
+[contrato](TRAINER_COMMERCIAL_CONTRACT.md).
+
+**Calentamientos y elección en el creador · 31/10/2026:** Javier pide abrir el
+selector desde «Elegir ejercicio», mostrar inicialmente la configuración del
+bloque y reutilizar calentamientos predeterminados. Trainer y ADMIN consumen
+el mismo editor. El catálogo autorizado exige identidad y MFA; el preparador
+necesita acceso profesional de autoría. Insertar copia los bloques de una
+versión publicada a la receta privada, conservando sus dosis sin enlazar o
+modificar el original oficial. No amplía permisos de administración ni cambia
+el contrato de programas privados. [Entrega](TRAINER_PLATFORM.md).
+
 **INT-023 · 31/10/2026 · primera recepción Apple comunicada:** Javier confirma
 SE de segunda generación con watchOS 26.6, autorización de programación y
 visualización de una pauta enviada manualmente con fecha y pasos. La ejecución

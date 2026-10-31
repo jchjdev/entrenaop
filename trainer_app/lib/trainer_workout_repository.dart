@@ -1,3 +1,4 @@
+import 'package:trainer_access/published_warmup_catalog.dart';
 import 'package:workout_core/workout_result_review.dart';
 
 import 'dart:math';
@@ -105,6 +106,7 @@ class TrainerAssignment {
 }
 
 abstract class TrainerWorkoutRepository {
+  Future<List<WorkoutTemplate>> warmups() async => [];
   Future<List<TrainerWorkout>> workouts({
     TrainerWorkout? before,
     String query = '',
@@ -145,6 +147,9 @@ class SupabaseTrainerWorkoutRepository implements TrainerWorkoutRepository {
   const SupabaseTrainerWorkoutRepository(this.client, this.userId);
   final SupabaseClient client;
   final String userId;
+  @override
+  Future<List<WorkoutTemplate>> warmups() =>
+      SupabasePublishedWarmupCatalog(client, userId).load();
   void _identity() {
     if (client.auth.currentUser?.id != userId) {
       throw StateError('La cuenta ha cambiado.');

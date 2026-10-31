@@ -60,6 +60,8 @@ class _SessionTrash extends Fake implements AdminGuidedTrashRepository {
 
 class _FakeWorkouts implements AdminWorkoutRepository {
   @override
+  Future<List<WorkoutTemplate>> warmups() async => [];
+  @override
   Future<void> setLibraryVisibility(
     String templateId,
     bool value, {

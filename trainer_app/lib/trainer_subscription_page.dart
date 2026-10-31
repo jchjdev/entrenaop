@@ -84,6 +84,8 @@ class TrainerSubscriptionPage extends StatefulWidget {
 
 class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
   SubscriptionJson? _data;
+  int? _capacity;
+  bool _directoryAddon = false;
   bool _busy = false;
   String? _error, _notice;
   @override
@@ -164,6 +166,14 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
           () => _error = 'No se pudo completar la comprobación. Puedes reintentar sin crear otro pedido.',
         );
       }
+      // Otra pestaña puede haber preparado una oferta diferente. Recuperamos
+      // el pedido autorizado antes de permitir reintentar con una selección vieja.
+      try {
+        final current = await widget.repository.status();
+        if (mounted) setState(() => _data = current);
+      } catch (_) {
+        // El error se conserva si tampoco podemos confirmar el estado del servidor.
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -174,6 +184,45 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
     final sub = _data?['subscription'] as Map?;
     final offers = (_data?['offers'] as List?) ?? const [];
     final state = sub?['state'];
+    final pendingOffer = ['prepared', 'open'].contains(state)
+        ? (sub?['offer_id'] as String?)
+        : null;
+    final catalogue = offers
+        .where(
+          (o) => ['basic', 'professional', 'complete'].contains(o['plan_key']),
+        )
+        .toList();
+    final capacities =
+        catalogue.map((o) => o['capacity'] as int).toSet().toList()..sort();
+    final selected = capacities.contains(_capacity)
+        ? _capacity
+        : capacities.firstOrNull;
+    final visibleOffers = pendingOffer != null
+        ? offers.where((o) => o['id'] == pendingOffer).toList()
+        : catalogue.isEmpty
+        ? offers
+        : catalogue
+              .where(
+                (o) =>
+                    o['capacity'] == selected &&
+                    (o['plan_key'] != 'basic' ||
+                        (o['directory_option'] == true) == _directoryAddon),
+              )
+              .toList();
+    final basic = catalogue
+        .where((o) => o['capacity'] == selected && o['plan_key'] == 'basic')
+        .toList();
+    final withDirectory = basic
+        .where((o) => o['directory_option'] == true)
+        .firstOrNull;
+    final withoutDirectory = basic
+        .where((o) => o['directory_option'] != true)
+        .firstOrNull;
+    final addon = withDirectory == null || withoutDirectory == null
+        ? null
+        : ((withDirectory['amount'] as num) -
+                  (withoutDirectory['amount'] as num)) /
+              100;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Suscripción profesional'),
@@ -216,6 +265,15 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
                     'expired' => 'Intento de contratación caducado',
                     _ => 'Contratación pendiente',
                   }, style: Theme.of(context).textTheme.titleLarge),
+                  if (sub['title'] case final String title) Text(title),
+                  if (sub['amount'] case final num amount)
+                    Text(
+                      '${(amount / 100).toStringAsFixed(2)} € / ${sub['interval'] == 'year' ? 'año' : 'mes'}',
+                    ),
+                  if (pendingOffer != null)
+                    const Text(
+                      'Continúa esta contratación. No se cambia de plan mientras el pago esté pendiente.',
+                    ),
                   if (sub['paid_until'] != null)
                     Text('Periodo pagado hasta ${_date(sub['paid_until'])}'),
                   if (sub['cancel_at_period_end'] == true)
@@ -251,11 +309,52 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
             ),
             const SizedBox(height: 20),
           ],
+          if (pendingOffer == null &&
+              catalogue.isNotEmpty &&
+              (sub == null ||
+                  [
+                    'prepared',
+                    'open',
+                    'expired',
+                    'canceled',
+                  ].contains(state))) ...[
+            DropdownButtonFormField<int>(
+              key: ValueKey(selected),
+              initialValue: selected,
+              decoration: const InputDecoration(
+                labelText: 'Cupo de alumnos activos',
+              ),
+              items: [
+                for (final capacity in capacities)
+                  DropdownMenuItem(
+                    value: capacity,
+                    child: Text('Hasta $capacity alumnos'),
+                  ),
+              ],
+              onChanged: _busy
+                  ? null
+                  : (value) => setState(() => _capacity = value),
+            ),
+            if (addon != null)
+              SwitchListTile.adaptive(
+                title: Text(
+                  'Directorio en Básico (+${addon.toStringAsFixed(2)} €/mes)',
+                ),
+                value: _directoryAddon,
+                onChanged: _busy
+                    ? null
+                    : (value) => setState(() => _directoryAddon = value),
+              ),
+            const Text(
+              'Ensayo de acceso y cupo. Las coberturas Pro y la presencia en el directorio de estos planes siguen pendientes de conectar.',
+            ),
+            const SizedBox(height: 16),
+          ],
           if (sub == null ||
               ['prepared', 'open', 'expired', 'canceled'].contains(state))
             ProfessionalCatalogGrid(
               children: [
-                for (final offer in offers)
+                for (final offer in visibleOffers)
                   EntrenaCard(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

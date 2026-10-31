@@ -139,6 +139,7 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
         ? 'Nueva sesión'
         : 'Revisar sesión';
     return WorkoutEditorPage(
+      loadWarmups: widget.repository.warmups,
       loadExercises: _loadExercises,
       workBinding: _binding,
       exercisePreferences: widget.exercisePreferences,

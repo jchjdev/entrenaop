@@ -2,17 +2,18 @@ begin;
 set local statement_timeout='30s';
 do $$
 declare owner uuid:=gen_random_uuid();other uuid:=gen_random_uuid();pupil uuid:=gen_random_uuid();
- offer uuid:='9d50b521-de26-48b0-8da7-d1fd3e85a660';order_id uuid;again uuid;j jsonb;token uuid;
+ offer uuid:='9d50b521-de26-48b0-8da7-d1fd3e85a660';order_id uuid;again uuid;j jsonb;token uuid;catalog_count integer;
 begin
  insert into auth.users(id,email,email_confirmed_at) values(owner,owner||'@commerce.invalid',now()),(other,other||'@commerce.invalid',now()),(pupil,pupil||'@commerce.invalid',now());
  insert into auth.mfa_factors(id,user_id,factor_type,status,created_at,updated_at)
  values(gen_random_uuid(),owner,'totp','verified',now(),now());
  update commerce_private.settings set enabled=true;
+ select count(*) into catalog_count from commerce_private.offers where active;
  perform set_config('request.jwt.claim.sub',owner::text,true);
  perform set_config('request.jwt.claims',jsonb_build_object('sub',owner,'role','authenticated','aal','aal1')::text,true);
  set local role authenticated;
  j:=public.get_my_trainer_subscription(owner);
- if j->'subscription'<>'null'::jsonb or jsonb_array_length(j->'offers')<>1 then raise exception 'Estado de cuenta nueva incorrecto';end if;
+ if j->'subscription'<>'null'::jsonb or jsonb_array_length(j->'offers')<>catalog_count then raise exception 'Estado de cuenta nueva incorrecto';end if;
  begin perform public.prepare_trainer_subscription(owner,offer);raise exception 'AAL1 compra';exception when insufficient_privilege then null;end;
  begin perform public.get_my_trainer_subscription(other);raise exception 'Lee compra ajena';exception when insufficient_privilege then null;end;
  begin perform public.trainer_commerce_server('claim','{}');raise exception 'El cliente usa RPC privilegiada';exception when insufficient_privilege then null;end;

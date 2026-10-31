@@ -36,6 +36,7 @@ class WorkoutEditorPage extends StatefulWidget {
   const WorkoutEditorPage({
     super.key,
     required this.loadExercises,
+    this.loadWarmups,
     required this.onSave,
     required this.onSaved,
     required this.title,
@@ -61,6 +62,9 @@ class WorkoutEditorPage extends StatefulWidget {
   });
 
   final Future<List<WorkoutEditorExercise>> Function() loadExercises;
+
+  /// Recetas autorizadas: el consumidor aporta acceso y el editor composición.
+  final Future<List<WorkoutTemplate>> Function()? loadWarmups;
 
   /// El consumidor crea en su catálogo autorizado y devuelve la identidad guardada.
   final Future<WorkoutEditorExercise?> Function(BuildContext)? onCreateExercise;
@@ -114,6 +118,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
   bool _running = true;
   bool _busy = false;
   bool _creatingExercise = false;
+  bool _loadingWarmups = false;
   ExercisePreferencesController? _exercisePreferences;
   String? _error;
   WorkoutEditorWorkController? _work;
@@ -1148,6 +1153,19 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
           else
             _modeSelector(),
         ?widget.additionalFields,
+        if (!_running && !widget.warmup && widget.loadWarmups != null)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: OutlinedButton.icon(
+              onPressed: _busy || _loadingWarmups ? null : _insertWarmup,
+              icon: const Icon(Icons.wb_sunny_outlined),
+              label: Text(
+                _loadingWarmups
+                    ? 'Cargando calentamientos…'
+                    : 'Insertar calentamiento',
+              ),
+            ),
+          ),
         const SizedBox(height: 20),
         if (_running)
           _catalogDrop<RunningStepKind>(
@@ -1251,6 +1269,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
             key: ValueKey('block-properties-${identityHashCode(block)}'),
             tilePadding: EdgeInsets.zero,
             maintainState: true,
+            initiallyExpanded: true,
             title: const Text('Configuración del bloque'),
             children: [_strengthSettings(block)],
           ),
@@ -1307,12 +1326,21 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
               title: Text(exercise?.name ?? 'Elegir ejercicio'),
               subtitle: Text(detail),
               trailing: const Icon(Icons.tune, size: 18),
-              onTap: () {
+              onTap: () async {
                 FocusScope.of(context).unfocus();
                 setState(() {
                   _expandedStrengthBlock = block;
                   _selectedStrengthExercise = item;
                 });
+                if (item.exerciseId == null && !_busy && !_creatingExercise) {
+                  final selected = await _chooseExercise();
+                  if (selected != null &&
+                      mounted &&
+                      block.exercises.contains(item)) {
+                    setState(() => item.exerciseId = selected.id);
+                    _exercisePreferences?.recordSelection(selected.id);
+                  }
+                }
               },
             ),
           ),
@@ -2871,6 +2899,88 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
         ],
       ),
     );
+  }
+
+  Future<void> _insertWarmup() async {
+    if (_busy || _running || _loadingWarmups) return;
+    setState(() => _loadingWarmups = true);
+    try {
+      final recipes = await widget.loadWarmups!();
+      if (!mounted || _busy || _running) return;
+      final available = _catalog
+          .where((e) => e.selectable)
+          .map((e) => e.id)
+          .toSet();
+      final options = recipes
+          .where(
+            (t) =>
+                t.blocks.isNotEmpty &&
+                t.blocks.every(
+                  (b) =>
+                      b.format != WorkoutBlockFormat.running &&
+                      b.items.isNotEmpty &&
+                      b.items.every((i) => available.contains(i.exerciseId)),
+                ),
+          )
+          .toList();
+      final chosen = await showDialog<WorkoutTemplate>(
+        context: context,
+        builder: (dialog) => SimpleDialog(
+          title: const Text('Calentamientos predeterminados'),
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text(
+                'Se insertan al principio como bloques editables de esta sesión. El original de EntrenaOP se conserva.',
+              ),
+            ),
+            if (options.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: Text(
+                  'No hay calentamientos compatibles con los ejercicios disponibles.',
+                ),
+              ),
+            for (final template in options)
+              SimpleDialogOption(
+                onPressed: () => Navigator.pop(dialog, template),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Text(template.name),
+                ),
+              ),
+          ],
+        ),
+      );
+      if (chosen == null || !mounted || _busy || _running) return;
+      final blocks = chosen.blocks.map((source) {
+        final block = _StrengthBlock.fromBlock(source);
+        // Misma conversión que al editar el calentamiento en ADMIN; conserva
+        // el número de series de cada ejercicio, también cuando son distintos.
+        if (block.format == WorkoutBlockFormat.warmUp) {
+          block.format = WorkoutBlockFormat.straightSets;
+        }
+        block.name.text = 'Calentamiento · ${source.name}';
+        return block;
+      }).toList();
+      setState(() {
+        _blocks.insertAll(0, blocks);
+        _expandedStrengthBlock = blocks.first;
+        _selectedStrengthExercise = blocks.first.exercises.first;
+      });
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'No se pudieron cargar los calentamientos. Vuelve a intentarlo.',
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _loadingWarmups = false);
+    }
   }
 
   Future<WorkoutEditorExercise?> _chooseExercise() async {

@@ -160,6 +160,7 @@ class _TrainerSessionWorkEditorState extends State<TrainerSessionWorkEditor> {
       final revision =
           work.origin['baseId'] != null && work.origin['duplicate'] != true;
       return WorkoutEditorPage(
+        loadWarmups: widget.workouts.warmups,
         embedded: widget.embedded,
         key: ValueKey('trainer-session-work-${work.id}'),
         workBinding: _TrainerSessionWorkBinding(

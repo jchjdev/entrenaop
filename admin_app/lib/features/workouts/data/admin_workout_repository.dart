@@ -1,3 +1,4 @@
+import 'package:trainer_access/published_warmup_catalog.dart';
 import 'package:workout_core/workout_draft_codec.dart';
 import 'package:workout_core/workout_draft_validator.dart';
 import 'package:workout_core/workout_template.dart';
@@ -29,6 +30,7 @@ class AdminExercise {
 }
 
 abstract class AdminWorkoutRepository implements ProgramSessionCatalog {
+  Future<List<WorkoutTemplate>> warmups() async => [];
   Future<List<AdminWorkoutSummary>> listForProgram(String programId);
   @override
   Future<List<AdminWorkoutSummary>> listGeneral();
@@ -61,6 +63,12 @@ class SupabaseAdminWorkoutRepository
   const SupabaseAdminWorkoutRepository(this._client);
 
   final SupabaseClient _client;
+  @override
+  Future<List<WorkoutTemplate>> warmups() {
+    final owner = _client.auth.currentUser?.id;
+    if (owner == null) throw StateError('La sesión ha cambiado.');
+    return SupabasePublishedWarmupCatalog(_client, owner).load();
+  }
 
   @override
   Future<List<AdminWorkoutSummary>> listForProgram(String programId) async {

@@ -484,6 +484,7 @@ class _TrainerWorkoutEditorPageState extends State<TrainerWorkoutEditorPage> {
     }
     final revision = widget.templateId != null;
     return WorkoutEditorPage(
+      loadWarmups: widget.repository.warmups,
       onCreateExercise: widget.onCreateExercise,
       exercisePreferences: widget.exercisePreferences,
       loadExercises: () => widget.repository.exercises(
