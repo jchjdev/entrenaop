@@ -209,6 +209,16 @@ del componente real correctas. Historial Dev contrastado: 257 migraciones
 coincidentes, sin pendientes. El asesor de seguridad no añade avisos sobre las
 funciones nuevas; no se presenta como una auditoría global de hallazgos previos.
 
+Publicación Dev comprobada el 31/10: revisión
+`c4a4d99f114ff9777cd3265ae97b516399248699`, con
+[Trainer 41189757858](https://github.com/jchjdev/entrenaop/actions/runs/41189757858)
+y [ADMIN 41189757872](https://github.com/jchjdev/entrenaop/actions/runs/41189757872)
+correctos. Verificación HTTPS independiente de ambos manifiestos y recursos,
+entorno `development`, proyecto `sxbxfjqgoddzhtcyhalw` y revisión coincidentes.
+SHA-256 de JavaScript: Trainer
+`f55c107ea971d0992323a81e1c91396d74b2661cf43efa2a41bbef8f5fbb7d32`;
+ADMIN `66e8109c5901de776a93407526570863efa93b65a404b3c78f10003d9974526f`.
+
 **Aceptación humana acordada:** Javier indica la semana del 2 al 8 de noviembre
 para probar la planificación de Ervi y comenzar el seguimiento de Isabel,
 comprobando recepción, ejecución y resultados. No se da ese recorrido por probado

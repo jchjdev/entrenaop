@@ -5,6 +5,9 @@ en servidor antes de paginar, contenido y filtros de sesión, programas por
 nombre/descripción/fases/sesiones y conexión a bibliotecas/selectores del portal.
 Pulsaciones agrupadas, respuesta antigua descartada y continuación al desplazar.
 [Contrato y comprobaciones](TRAINER_PLATFORM.md#búsqueda-completa-de-biblioteca--31102026).
+Publicado y verificado por HTTPS en Trainer y ADMIN Dev con revisión `c4a4d99f`;
+[Trainer](https://github.com/jchjdev/entrenaop/actions/runs/41189757858) y
+[ADMIN](https://github.com/jchjdev/entrenaop/actions/runs/41189757872) correctos.
 **Siguiente recorrido:** aceptación con las pautas de Ervi y el seguimiento de
 Isabel durante la semana del 2 al 8 de noviembre, incluyendo recepción y resultados.
 
