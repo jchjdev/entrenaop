@@ -1,5 +1,10 @@
 # Roadmap de EntrenaOP
 
+**31/10/2026 · portátiles y distribución compartida:** Agenda incorpora altura
+automática/compacta/amplia; los creadores de Trainer y ADMIN comparten columnas
+ajustables con ratón o teclado, límites de ancho y conservación del borrador.
+[Contrato y evidencia](TRAINER_DESKTOP_2026_10_25.md#portátiles-densidad-y-columnas-ajustables--31102026).
+
 **31/10/2026 · recorrido completo de Agenda, ficha y revisión de resultados:**
 se completan los cinco ajustes acordados: asignación directa y panel de Agenda
 ya publicados, cabecera semanal con objetivo compacto, resumen de resultados

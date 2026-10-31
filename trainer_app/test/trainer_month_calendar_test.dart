@@ -1,6 +1,7 @@
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop_trainer/trainer_agenda_page.dart';
 import 'package:entrenaop_trainer/trainer_month_calendar.dart';
+import 'package:entrenaop_trainer/trainer_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -43,6 +44,116 @@ void main() {
   );
 
   setUpAll(loadReviewFont);
+
+  testWidgets('altura compacta conserva entradas, detalle y escala de texto', (
+    t,
+  ) async {
+    await resize(t, const Size(1366, 768));
+    Widget page(bool compact, {double scale = 1}) => MaterialApp(
+      theme: EntrenaTheme.light,
+      home: MediaQuery(
+        data: MediaQueryData(textScaler: TextScaler.linear(scale)),
+        child: Scaffold(
+          body: SingleChildScrollView(
+            child: TrainerMonthCalendar(
+              compact: compact,
+              anchor: DateTime(2026, 10, 21),
+              today: DateTime(2026, 10, 21),
+              entries: [
+                for (var i = 0; i < 3; i++)
+                  TrainerCalendarEntry(
+                    id: '$i',
+                    date: DateTime(2026, 10, 21),
+                    personId: 'client',
+                    personName: 'Ana Soria',
+                    title: 'Sesión $i',
+                    stateLabel: 'Pendiente',
+                    onTap: () {},
+                  ),
+              ],
+              onSelectDate: (_) {},
+              dropTargetBuilder: (_, child) => child,
+            ),
+          ),
+        ),
+      ),
+    );
+    await t.pumpWidget(page(false));
+    await t.pumpAndSettle();
+    final fullHeight = t.getSize(find.byType(TrainerMonthCalendar)).height;
+    await t.pumpWidget(page(true));
+    await t.pumpAndSettle();
+    expect(
+      t.getSize(find.byType(TrainerMonthCalendar)).height,
+      lessThan(fullHeight * .75),
+    );
+    expect(find.text('Sesión 0'), findsOneWidget);
+    expect(find.text('Sesión 1'), findsNothing);
+    final more = find.byKey(const ValueKey('agenda-month-more-2026-10-21'));
+    await t.ensureVisible(more);
+    await t.tap(more);
+    await t.pumpAndSettle();
+    expect(find.text('Sesión 2\nPendiente'), findsOneWidget);
+    await t.tap(find.text('Cerrar'));
+    await t.pumpAndSettle();
+    await t.pumpWidget(page(true, scale: 2));
+    await t.pumpAndSettle();
+    expect(t.takeException(), isNull);
+  });
+
+  testWidgets('cambiar densidad conserva fecha y datos sin recargar', (
+    t,
+  ) async {
+    await resize(t, const Size(1366, 768));
+    final repository = AgendaEditFixture();
+    await t.pumpWidget(
+      MaterialApp(
+        home: ProfessionalWorkspaceScope(
+          desktop: true,
+          child: TrainerAgendaPage(
+            repository: repository,
+            now: DateTime(2026, 10, 21),
+          ),
+        ),
+      ),
+    );
+    await t.pumpAndSettle();
+    expect(
+      t.widget<TrainerMonthCalendar>(find.byType(TrainerMonthCalendar)).compact,
+      isTrue,
+    );
+    final calls = repository.calls.length;
+    await t.ensureVisible(find.byKey(const ValueKey('agenda-day-21')));
+    await t.pumpAndSettle();
+    await t.tap(find.byKey(const ValueKey('agenda-day-21')));
+    await t.pumpAndSettle();
+    final selected = t
+        .widget<TrainerMonthCalendar>(find.byType(TrainerMonthCalendar))
+        .selected;
+    expect(selected, DateTime(2026, 10, 21));
+    final density = find.byKey(const ValueKey('agenda-calendar-density'));
+    await t.scrollUntilVisible(
+      density,
+      -300,
+      scrollable: find
+          .descendant(
+            of: find.byKey(const PageStorageKey('trainer-agenda-scroll')),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    await t.tap(density);
+    await t.pumpAndSettle();
+    await t.tap(find.text('Mes amplio').last);
+    await t.pumpAndSettle();
+    final calendar = t.widget<TrainerMonthCalendar>(
+      find.byType(TrainerMonthCalendar),
+    );
+    expect(calendar.compact, isFalse);
+    expect(calendar.selected, selected);
+    expect(repository.calls.length, calls);
+    expect(t.takeException(), isNull);
+  });
 
   testWidgets(
     'ratón mueve la tira sin pulsación larga en una ventana compacta',
@@ -313,11 +424,14 @@ void main() {
             key: const ValueKey('review-boundary'),
             child: ProfessionalWorkspaceScope(
               desktop: true,
-              child: TrainerAgendaPage(
-                repository: repo,
-                now: DateTime(2026, 10, 27),
-                workouts: WorkoutFixture(),
-                onMove: (_, _) async {},
+              child: TrainerShell(
+                location: '/agenda',
+                child: TrainerAgendaPage(
+                  repository: repo,
+                  now: DateTime(2026, 10, 27),
+                  workouts: WorkoutFixture(),
+                  onMove: (_, _) async {},
+                ),
               ),
             ),
           ),
@@ -326,6 +440,16 @@ void main() {
       await t.pumpAndSettle();
       expect(t.takeException(), isNull);
       await capturePerformanceWidget(t, 'trainer-month-calendar');
+      t.view.physicalSize = const Size(1366, 768);
+      await t.pumpAndSettle();
+      expect(
+        t
+            .widget<TrainerMonthCalendar>(find.byType(TrainerMonthCalendar))
+            .compact,
+        isTrue,
+      );
+      expect(t.takeException(), isNull);
+      await capturePerformanceWidget(t, 'trainer-month-1366-compact');
     },
   );
 }

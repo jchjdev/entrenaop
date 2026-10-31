@@ -1,5 +1,16 @@
 # Registro de decisiones vigentes
 
+**Portátiles, calendario y columnas · 31/10/2026:** Javier pide reducir el alto
+del calendario en 14 pulgadas y dar espacio al área de propiedades de los
+creadores de Trainer y ADMIN. Agenda ofrece altura automática (compacta en
+ventanas de menos de 900 píxeles lógicos de alto), mes compacto y mes amplio.
+Compacto conserva letra y tira de alumno/sesión, con acceso a las demás entradas
+del día. El marco compartido permite ajustar biblioteca y propiedades mediante
+separadores, teclado y restablecimiento. Propiedades parte de 400 px y biblioteca
+de 196 px; se acotan sin aplastar el lienzo. Preferencia local a la página, sin
+modelo, permisos, dependencias ni configuración por cuenta nuevos.
+[Presentación](TRAINER_DESKTOP_2026_10_25.md#portátiles-densidad-y-columnas-ajustables--31102026).
+
 **Cierre del recorrido profesional · 31/10/2026:** Javier pide completar los
 cinco ajustes propuestos de Agenda → ficha → resultados. La ficha muestra un
 resumen de las pautas visibles de la semana, pendientes de revisión cargados y

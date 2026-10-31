@@ -68,6 +68,72 @@ Future<void> dragTo(
 
 void main() {
   setUpAll(loadReviewFont);
+  for (final running in [false, true]) {
+    testWidgets(
+      'creador a 1366 × 768 ajusta columnas y conserva receta: $running',
+      (t) async {
+        await resize(t, const Size(1366, 768));
+        await t.pumpWidget(
+          MaterialApp(
+            theme: EntrenaTheme.dark,
+            home: RepaintBoundary(
+              key: const ValueKey('review-boundary'),
+              child: TrainerShell(
+                location: '/workouts/new',
+                child: WorkoutEditorPage(
+                  title: 'Crear sesión',
+                  heading: 'Receta',
+                  instructions: 'Prepara tu sesión',
+                  saveLabel: 'Guardar sesión',
+                  fixedRunningMode: running,
+                  originalTemplate: running ? null : privateRecipe,
+                  loadExercises: () async => [
+                    const WorkoutEditorExercise(
+                      id: 'exercise',
+                      name: 'Dominadas',
+                    ),
+                  ],
+                  onSave: (_) async => 'saved',
+                  onSaved: (_) {},
+                ),
+              ),
+            ),
+          ),
+        );
+        await t.pumpAndSettle();
+        final name = find.byKey(const ValueKey('workout-name'));
+        await t.enterText(
+          name,
+          running ? 'Series de carrera' : 'Fuerza de la semana',
+        );
+        final controller = t.widget<TextField>(name).controller;
+        final inspector = find.byKey(
+          const ValueKey('professional-inspector-pane'),
+        );
+        final handle = find.byKey(
+          const ValueKey('professional-inspector-resize'),
+        );
+        final before = t.getSize(inspector).width;
+        expect(before, 400);
+        await t.drag(handle, const Offset(-60, 0));
+        await t.pumpAndSettle();
+        expect(t.getSize(inspector).width, greaterThan(before));
+        expect(t.widget<TextField>(name).controller, same(controller));
+        expect(
+          controller!.text,
+          running ? 'Series de carrera' : 'Fuerza de la semana',
+        );
+        expect(find.text('Guardar sesión').hitTestable(), findsOneWidget);
+        expect(t.takeException(), isNull);
+        await capturePerformanceWidget(
+          t,
+          running
+              ? 'trainer-running-1366-resized'
+              : 'trainer-strength-1366-resized',
+        );
+      },
+    );
+  }
   testWidgets(
     'marco real de escritorio mantiene navegación y biblioteca visibles',
     (t) async {

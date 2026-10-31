@@ -123,7 +123,10 @@ class TrainerAgendaPage extends StatefulWidget {
   State<TrainerAgendaPage> createState() => _TrainerAgendaPageState();
 }
 
+enum _CalendarDensity { automatic, compact, comfortable }
+
 class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
+  _CalendarDensity _calendarDensity = _CalendarDensity.automatic;
   late DateTime _anchor = DateUtils.dateOnly(widget.now ?? DateTime.now());
   DateTime? _selected;
   _AgendaView _view = _AgendaView.month;
@@ -1407,6 +1410,46 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
                             ? null
                             : (_) => _changeView(entry.key),
                       ),
+                    if (_view == _AgendaView.month)
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 240),
+                        child: DropdownButton<_CalendarDensity>(
+                          isExpanded: true,
+                          key: const ValueKey('agenda-calendar-density'),
+                          value: _calendarDensity,
+                          items: const [
+                            DropdownMenuItem(
+                              value: _CalendarDensity.automatic,
+                              child: Text(
+                                'Altura automática',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            DropdownMenuItem(
+                              value: _CalendarDensity.compact,
+                              child: Text(
+                                'Mes compacto',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            DropdownMenuItem(
+                              value: _CalendarDensity.comfortable,
+                              child: Text(
+                                'Mes amplio',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                          onChanged: (value) {
+                            if (value != null) {
+                              setState(() => _calendarDensity = value);
+                            }
+                          },
+                        ),
+                      ),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -1916,6 +1959,11 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
     today: DateUtils.dateOnly(widget.now ?? DateTime.now()),
     selected: _selected ?? (_view == _AgendaView.week ? _anchor : null),
     week: _view == _AgendaView.week,
+    compact:
+        _view == _AgendaView.month &&
+        (_calendarDensity == _CalendarDensity.compact ||
+            (_calendarDensity == _CalendarDensity.automatic &&
+                MediaQuery.sizeOf(context).height < 900)),
     enabled: !_locked,
     partial: _more || _moreAssessments || _moreAppointments || _morePersonal,
     onSelectDate: (date) => setState(() => _selected = date),

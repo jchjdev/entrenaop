@@ -152,6 +152,7 @@ class TrainerMonthCalendar extends StatelessWidget {
     required this.dropTargetBuilder,
     this.selected,
     this.week = false,
+    this.compact = false,
     this.enabled = true,
     this.partial = false,
     this.onSelectAdjacentDate,
@@ -159,7 +160,7 @@ class TrainerMonthCalendar extends StatelessWidget {
   final DateTime anchor, today;
   final DateTime? selected;
   final List<TrainerCalendarEntry> entries;
-  final bool week, enabled, partial;
+  final bool week, enabled, partial, compact;
   final ValueChanged<DateTime> onSelectDate;
   final ValueChanged<DateTime>? onSelectAdjacentDate;
   final Widget Function(DateTime date, Widget child) dropTargetBuilder;
@@ -230,7 +231,9 @@ class TrainerMonthCalendar extends StatelessWidget {
     final theme = Theme.of(context);
     final scale = MediaQuery.textScalerOf(context).scale(12) / 12;
     final entryHeight = 34 * scale + 12;
-    final cellHeight = entryHeight * 2 + 72 * scale;
+    final cellHeight = compact
+        ? entryHeight + 40 * scale + 12
+        : entryHeight * 2 + 72 * scale;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -299,6 +302,26 @@ class TrainerMonthCalendar extends StatelessWidget {
     );
   }
 
+  Widget _moreButton(
+    BuildContext context,
+    DateTime date,
+    List<TrainerCalendarEntry> rows,
+    int remaining,
+  ) => TextButton(
+    key: ValueKey('agenda-month-more-${date.year}-${date.month}-${date.day}'),
+    style: TextButton.styleFrom(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      minimumSize: const Size(44, 26),
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    ),
+    onPressed: !enabled ? null : () => _showDay(context, date, rows),
+    child: Text(
+      '+$remaining más',
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    ),
+  );
+
   Widget _dayCell(
     BuildContext context,
     DateTime date,
@@ -357,8 +380,17 @@ class TrainerMonthCalendar extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Align(alignment: Alignment.centerRight, child: day),
-            for (final entry in rows.take(2))
+            Row(
+              children: [
+                Expanded(
+                  child: compact && rows.length > 1
+                      ? _moreButton(context, date, rows, rows.length - 1)
+                      : const SizedBox.shrink(),
+                ),
+                day,
+              ],
+            ),
+            for (final entry in rows.take(compact ? 1 : 2))
               Padding(
                 padding: const EdgeInsets.only(top: 3),
                 child: SizedBox(
@@ -376,30 +408,10 @@ class TrainerMonthCalendar extends StatelessWidget {
                       ),
                 ),
               ),
-            if (rows.length > 2)
+            if (!compact && rows.length > 2)
               Align(
                 alignment: Alignment.centerLeft,
-                child: TextButton(
-                  key: ValueKey(
-                    'agenda-month-more-${date.year}-${date.month}-${date.day}',
-                  ),
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
-                    minimumSize: const Size(44, 26),
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  onPressed: !enabled
-                      ? null
-                      : () => _showDay(context, date, rows),
-                  child: Text(
-                    '+${rows.length - 2} más',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
+                child: _moreButton(context, date, rows, rows.length - 2),
               ),
           ],
         ),

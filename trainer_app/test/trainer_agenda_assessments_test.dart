@@ -50,10 +50,14 @@ void main() {
       await tester.pumpAndSettle();
       expect(tests.calls.single.start, DateTime(2026, 10, 1));
       expect(tests.calls.single.end, DateTime(2026, 11, 1));
-      expect(
-        find.byKey(const ValueKey('agenda-month-event-assessment-0')),
-        findsOneWidget,
+      // En compacto las entradas adicionales se consultan en el día completo.
+      await tapVisible(
+        tester,
+        find.byKey(const ValueKey('agenda-month-more-2026-10-21')),
       );
+      expect(find.text('Simulacro 0\nPendiente'), findsOneWidget);
+      await tapVisible(tester, find.text('Cerrar'));
+
       await tester.scrollUntilVisible(
         find.text('Cargar más pruebas del periodo'),
         800,

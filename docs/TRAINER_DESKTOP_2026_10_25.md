@@ -1,5 +1,40 @@
 # Escritorio profesional · TRN-030 · 25/10/2026
 
+## Portátiles, densidad y columnas ajustables · 31/10/2026
+
+Tras revisar el vídeo de Javier, se sustituye el ancho fijo de los paneles del
+marco compartido por separadores arrastrables. Biblioteca parte de 196 px
+(176–300) y propiedades de 400 px (320–560). El lienzo conserva un mínimo de
+440 px cuando se muestran paneles. Los máximos efectivos dependen del espacio
+real; estrechar temporalmente la ventana no borra la preferencia anterior.
+Las flechas ajustan el separador enfocado, Inicio o doble clic restablecen ese
+panel. El área de interacción ocupa 12 px y comunica su ancho a accesibilidad.
+La composición mantiene montado el editor al pasar a vista estrecha. Se
+reutiliza en sesiones, programas y otras áreas que consumen el mismo marco;
+Trainer y ADMIN conservan sus adaptadores y operaciones.
+
+Agenda permite Altura automática, Mes compacto y Mes amplio. Automática elige
+compacto por debajo de 900 px lógicos de alto. Compacto reduce alrededor del
+40 % la altura del tablero de cinco semanas: una tira de alumno/sesión por día
+y «+N más» en la cabecera para abrir todas las entradas con sus acciones. No
+reduce fuentes ni modifica selección, fechas, filtros, consultas, permisos,
+confirmaciones, solo lectura o arrastres existentes. Texto ampliado conserva
+el espacio necesario y el desplazamiento horizontal. La densidad y los anchos
+son estado local de presentación, no configuración de cuenta ni contrato SQL.
+
+**Siguiente recorrido de aceptación:** probar en el portátil de Javier ambas
+alturas, mover los dos separadores y editar dosis en fuerza/carrera, tanto en
+Trainer como en ADMIN. No se genera APK para este ajuste web.
+
+Validación local: análisis limpios de raíz, Trainer, ADMIN e interfaz común.
+Baterías completas: raíz 1.523 (una omisión previa), Trainer 395, ADMIN 365
+(dos omisiones previas) e interfaz común 57. Las regresiones cubren arrastre,
+teclado, límites, conservación del borrador y anchos al estrechar/ampliar la
+ventana, selección/paginación del calendario y texto doble a 320 px. Capturas
+de widgets reales a 1366 × 768 revisadas: agenda compacta, fuerza y carrera con
+navegación completa del portal. El arrastre de biblioteca, reordenación y
+asignación mantienen sus pruebas existentes.
+
 ## Acuerdo y alcance
 
 Javier aprueba implementar en Trainer y ADMIN la propuesta de escritorio y sus

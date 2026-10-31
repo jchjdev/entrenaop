@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 
 import 'professional_theme.dart';
 
@@ -390,7 +392,7 @@ class _ProfessionalLibraryPaneState<T>
 
 /// Composición común: biblioteca y zona de trabajo con scroll independiente.
 /// En ancho reducido se mantiene el flujo y sus controles de añadir existentes.
-class ProfessionalEditorWorkspace extends StatelessWidget {
+class ProfessionalEditorWorkspace extends StatefulWidget {
   const ProfessionalEditorWorkspace({
     super.key,
     required this.library,
@@ -407,28 +409,89 @@ class ProfessionalEditorWorkspace extends StatelessWidget {
       constraints.maxWidth >= 1100;
 
   @override
+  State<ProfessionalEditorWorkspace> createState() =>
+      _ProfessionalEditorWorkspaceState();
+}
+
+class _ProfessionalEditorWorkspaceState
+    extends State<ProfessionalEditorWorkspace> {
+  double _libraryWidth = 196, _inspectorWidth = 400;
+  final _content = GlobalKey();
+
+  @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
       final desktop =
           ProfessionalWorkspaceScope.isDesktop(context) &&
           constraints.hasBoundedHeight;
       final panels = desktop && constraints.maxWidth >= 900;
+      final showInspector =
+          widget.inspector != null &&
+          ProfessionalEditorWorkspace.hasInspector(context, constraints);
+      // Las preferencias locales nunca pueden aplastar el lienzo ni sus campos.
+      // Al estrechar la ventana se acotan, sin perder el ancho elegido al volver.
+      final space = constraints.maxWidth - 440 - (showInspector ? 24 : 12);
+      final maxLibraryWidth = (space - (showInspector ? 320 : 0)).clamp(
+        176.0,
+        300.0,
+      );
+      final libraryWidth = panels
+          ? _libraryWidth.clamp(176.0, maxLibraryWidth)
+          : 196.0;
+      final maxInspectorWidth = (space - libraryWidth).clamp(320.0, 560.0);
+      final inspectorWidth = showInspector
+          ? _inspectorWidth.clamp(320.0, maxInspectorWidth)
+          : 400.0;
+      final content = KeyedSubtree(key: _content, child: widget.child);
       final body = panels
           ? Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                SizedBox(width: 216, child: library),
-                const VerticalDivider(width: 1),
-                Expanded(child: child),
-                if (inspector != null &&
-                    hasInspector(context, constraints)) ...[
-                  const VerticalDivider(width: 1),
-                  SizedBox(width: 320, child: inspector),
+                SizedBox(
+                  key: const ValueKey('professional-library-pane'),
+                  width: libraryWidth,
+                  child: widget.library,
+                ),
+                _ProfessionalResizeHandle(
+                  key: const ValueKey('professional-library-resize'),
+                  label: 'Ancho de la biblioteca',
+                  width: libraryWidth,
+                  minWidth: 176,
+                  maxWidth: maxLibraryWidth,
+                  onDelta: (delta) => setState(
+                    () => _libraryWidth =
+                        (_libraryWidth.clamp(176.0, maxLibraryWidth) + delta)
+                            .clamp(176.0, maxLibraryWidth),
+                  ),
+                  onReset: () => setState(() => _libraryWidth = 196),
+                ),
+                Expanded(child: content),
+                if (showInspector) ...[
+                  _ProfessionalResizeHandle(
+                    key: const ValueKey('professional-inspector-resize'),
+                    label: 'Ancho de las propiedades',
+                    width: inspectorWidth,
+                    minWidth: 320,
+                    maxWidth: maxInspectorWidth,
+                    reverse: true,
+                    onDelta: (delta) => setState(
+                      () => _inspectorWidth =
+                          (_inspectorWidth.clamp(320.0, maxInspectorWidth) -
+                                  delta)
+                              .clamp(320.0, maxInspectorWidth),
+                    ),
+                    onReset: () => setState(() => _inspectorWidth = 400),
+                  ),
+                  SizedBox(
+                    key: const ValueKey('professional-inspector-pane'),
+                    width: inspectorWidth,
+                    child: widget.inspector,
+                  ),
                 ],
               ],
             )
-          : child;
-      if (!desktop || footer == null) return body;
+          : content;
+      if (!desktop || widget.footer == null) return body;
       return Column(
         children: [
           Expanded(child: body),
@@ -442,7 +505,7 @@ class ProfessionalEditorWorkspace extends StatelessWidget {
                   horizontal: 20,
                   vertical: 12,
                 ),
-                child: footer,
+                child: widget.footer,
               ),
             ),
           ),
@@ -450,6 +513,113 @@ class ProfessionalEditorWorkspace extends StatelessWidget {
       );
     },
   );
+}
+
+class _ResizePanelIntent extends Intent {
+  const _ResizePanelIntent(this.delta);
+  final double delta;
+}
+
+class _ProfessionalResizeHandle extends StatefulWidget {
+  const _ProfessionalResizeHandle({
+    super.key,
+    required this.label,
+    required this.width,
+    required this.minWidth,
+    required this.maxWidth,
+    required this.onDelta,
+    required this.onReset,
+    this.reverse = false,
+  });
+  final String label;
+  final double width, minWidth, maxWidth;
+  final bool reverse;
+  final ValueChanged<double> onDelta;
+  final VoidCallback onReset;
+  @override
+  State<_ProfessionalResizeHandle> createState() =>
+      _ProfessionalResizeHandleState();
+}
+
+class _ProfessionalResizeHandleState extends State<_ProfessionalResizeHandle> {
+  final _focus = FocusNode();
+  bool _highlight = false, _hover = false;
+  @override
+  void dispose() {
+    _focus.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final active = _highlight || _hover;
+    return FocusableActionDetector(
+      focusNode: _focus,
+      mouseCursor: SystemMouseCursors.resizeColumn,
+      onShowFocusHighlight: (value) => setState(() => _highlight = value),
+      onShowHoverHighlight: (value) => setState(() => _hover = value),
+      shortcuts: const {
+        SingleActivator(LogicalKeyboardKey.arrowLeft): _ResizePanelIntent(-24),
+        SingleActivator(LogicalKeyboardKey.arrowRight): _ResizePanelIntent(24),
+        SingleActivator(LogicalKeyboardKey.home): _ResizePanelIntent(0),
+      },
+      actions: {
+        _ResizePanelIntent: CallbackAction<_ResizePanelIntent>(
+          onInvoke: (intent) {
+            if (intent.delta == 0) {
+              widget.onReset();
+            } else {
+              widget.onDelta(intent.delta);
+            }
+            return null;
+          },
+        ),
+      },
+      child: Semantics(
+        label: widget.label,
+        value: '${widget.width.round()} píxeles',
+        increasedValue:
+            '${(widget.width + 24).clamp(widget.minWidth, widget.maxWidth).round()} píxeles',
+        decreasedValue:
+            '${(widget.width - 24).clamp(widget.minWidth, widget.maxWidth).round()} píxeles',
+        onIncrease: () => widget.onDelta(widget.reverse ? -24 : 24),
+        onDecrease: () => widget.onDelta(widget.reverse ? 24 : -24),
+        child: Tooltip(
+          message:
+              '${widget.label}: arrastra o usa las flechas. Doble clic o Inicio para restablecer.',
+          child: GestureDetector(
+            dragStartBehavior: DragStartBehavior.down,
+            behavior: HitTestBehavior.opaque,
+            onTap: _focus.requestFocus,
+            onDoubleTap: widget.onReset,
+            onHorizontalDragStart: (_) => _focus.requestFocus(),
+            onHorizontalDragUpdate: (event) => widget.onDelta(event.delta.dx),
+            child: SizedBox(
+              width: 12,
+              child: ColoredBox(
+                color: active
+                    ? theme.colorScheme.primary.withValues(alpha: .1)
+                    : Colors.transparent,
+                child: Center(
+                  child: Container(
+                    width: active ? 3 : 1,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: active
+                          ? theme.colorScheme.primary
+                          : theme.dividerColor,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// Propiedades con desplazamiento propio: el lienzo y las acciones siguen visibles.
