@@ -13,13 +13,18 @@ existente, ve una fecha futura y sus pasos durante la prueba del reloj.
 Es evidencia comunicada de autorización y recepción de la pauta; no se da por
 comprobado el comportamiento completo de fases, avisos, cambios o retirada.
 
-La ejecución se declara ficticia. Quedan por contrastar su guardado y aparición
-en Fitness/Salud del iPhone emparejado y la lectura explícita desde EntrenaOP.
+La ejecución se declara ficticia. Javier confirma después su aparición en Fitness
+del iPhone emparejado. Quedan por contrastar su lectura explícita desde Salud en
+EntrenaOP y el guardado de la observación en el historial propio.
 No acredita un entrenamiento deportivo real ni completa la cita semanal.
 Se conserva la separación entre pauta programada, actividad registrada por Apple
 y observación importada en el historial propio. Este último recorrido todavía no
 asocia automáticamente la actividad Apple a la cita ni registra sus resultados
-por pasos en la semana.
+por pasos en la semana. La lectura existente se abre desde Apple Watch → «Leer
+actividades de Salud» → «Leer carreras de Salud»; requiere autorizar lectura de
+entrenamientos, revisar la actividad y pulsar «Guardar seleccionadas». Importar
+esta observación no da por completada una sesión ni convierte la prueba ficticia
+en un resultado deportivo real.
 
 ## Primer recorrido de desarrollo
 

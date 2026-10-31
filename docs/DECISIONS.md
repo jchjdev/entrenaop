@@ -3,9 +3,11 @@
 **INT-023 · 31/10/2026 · primera recepción Apple comunicada:** Javier confirma
 SE de segunda generación con watchOS 26.6, autorización de programación y
 visualización de una pauta enviada manualmente con fecha y pasos. La ejecución
-es ficticia; no se acredita resultado deportivo ni cierre semanal. El siguiente
-paso es contrastar el guardado en Fitness/Salud y la lectura explícita desde
-EntrenaOP. La asociación automática con la cita sigue pendiente.
+es ficticia; no se acredita resultado deportivo ni cierre semanal. Confirma
+después que la actividad aparece en Fitness. El siguiente paso es contrastar
+la lectura explícita desde Salud y guardar la observación en EntrenaOP.
+El enlace de esa observación con la cita semanal sigue pendiente; la importación
+al historial privado no realiza esa asociación ni completa la sesión.
 [Alcance de la prueba](DEVICE_APPLE_WATCH.md).
 
 **Contactos, avisos e invitación · revisión del 31/10/2026:** Javier señala que

@@ -267,9 +267,10 @@ cierran el bloque ni acreditan recepción física. Aún no hay envío automátic
 asociación automática de los resultados Apple con la semana.
 **Prueba física comunicada del 31/10:** autorización y pauta con fecha/pasos
 visibles en un SE de segunda generación con watchOS 26.6. Ejecución ficticia;
-no se acredita resultado real ni cierre de semana.
-**Siguiente recorrido único de Apple:** comprobar su guardado en Fitness/Salud
-y leer la actividad desde EntrenaOP en el iPhone emparejado. Cambios, retirada
+no se acredita resultado real ni cierre de semana. Javier confirma posteriormente
+que la actividad aparece en Fitness del iPhone emparejado.
+**Siguiente recorrido único de Apple:** leer explícitamente desde Salud y guardar
+la observación en EntrenaOP; todavía no se enlaza con la cita semanal. Cambios, retirada
 y ejecución real de fases/avisos siguen pendientes.
 [Contrato, validación y límites](DEVICE_APPLE_WATCH.md).
 
