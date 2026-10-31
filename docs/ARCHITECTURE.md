@@ -1,5 +1,14 @@
 # Arquitectura de EntrenaOP
 
+**Fotos personales de usuarios · 31/10/2026:** `trainer_access/profile_photo`
+separa el contrato Dart puro, el adaptador Supabase fijado a la cuenta y el
+avatar compartido. Perfil compone selección/encuadre y edición mediante inyección;
+Trainer recibe solo la referencia opcional y el lector autorizado. No hay imports
+entre aplicaciones ni paquetes nuevos. Metadatos en `profile_private.photos` y
+archivos en un bucket privado: el servidor decide titular/vínculo/acceso/MFA y
+protege revisiones y limpieza. La ficha pública conserva su foto independiente.
+[Contrato y evidencia](PRODUCT.md#fotos-personales-de-los-usuarios--31102026).
+
 **TRN-048 · 30/10/2026 · acciones profesionales móviles:**
 `CoachPlanningRepository` separa biblioteca y escrituras de la proyección de
 consulta anterior. Su adaptador Supabase usa las fachadas profesionales vigentes,

@@ -42,9 +42,26 @@ Comprobación aislada desde `dd7521c8` más este bloque: análisis limpios, raí
 y editor compartido 238 correctas. Selección cancelada, respuesta perdida,
 reintento con el mismo archivo, retirada y cambio desde otra sesión quedan
 cubiertos; encuadre a 320 píxeles y texto 2× sin desbordamiento. Se preserva el
-trabajo paralelo sobre ficha/resultados de Trainer; CI contrastará la integración
-final en main. Publicación y beta móvil pendientes; no acredita instalación en
-dispositivos ni aceptación del recorrido real por los usuarios.
+trabajo paralelo sobre ficha/resultados de Trainer. La integración final en main,
+`825e3b07`, pasa análisis y pruebas en CI: raíz 1.523 (una omisión previa),
+Trainer 391 y ADMIN 365 (dos omisiones previas), además de ambos publicadores.
+[Trainer](https://github.com/jchjdev/entrenaop/actions/runs/41180440939) y
+[ADMIN](https://github.com/jchjdev/entrenaop/actions/runs/41180440787).
+Compilaciones iOS Release con Garmin y comprobación de Salud en Android/iOS
+correctas; iOS sin firma y ninguna publicación en las tiendas:
+[Garmin](https://github.com/jchjdev/entrenaop/actions/runs/41180440819),
+[Salud](https://github.com/jchjdev/entrenaop/actions/runs/41180440769).
+
+APK debug Dev `1.0.0+3` generado en Windows desde `825e3b07`, con fuentes
+guardadas, revisión y proyecto Dev contrastados dentro del instalador; paquete
+`com.entrenaOp.entrenaop`, 187.927.944 bytes y SHA-256
+`5b54d545ef5a0941f93bfda00c0f41f918f140d80f9909813c50cfde19ea2e6b`.
+No acredita instalación en dispositivos ni aceptación del recorrido real por los
+usuarios. Trainer y ADMIN Dev sirven `825e3b07`: comprobación HTTPS independiente
+de revisión, entorno/proyecto Dev, fuentes guardadas, SHA-256 del JavaScript,
+entrada activa, cabeceras y MIME WebAssembly correcta. El siguiente recorrido
+sigue siendo instalar la beta, elegir/cambiar/quitar foto en Perfil y comprobarla
+desde el preparador autorizado en listado y ficha.
 
 **Directorio profesional · TRN-040 · 30/10/2026:** Javier autoriza iniciar la
 primera entrega Dev con Clean Architecture. Preparador queda siempre visible

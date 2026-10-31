@@ -25,8 +25,15 @@ compartido con reglas de servidor. Dos migraciones aplicadas solo en Dev,
 255 revisiones coincidentes y contrato SQL correcto con ROLLBACK. Comprobación
 aislada: análisis limpios, raíz 1.516, Trainer 375, ADMIN 365 y editor 238 pruebas
 correctas, con las omisiones previas indicadas en el contrato. Encuadre a 320 y
-texto 2× comprobado. CI/publicación y beta móvil pendientes; se conserva el
-trabajo paralelo de los otros chats.
+texto 2× comprobado. Integración final `825e3b07` en main con el trabajo de los
+otros chats: CI limpio, raíz 1.523, Trainer 391 y ADMIN 365 pruebas correctas,
+con las mismas omisiones previas. Trainer y ADMIN Dev publicados y contrastados
+por HTTPS, incluida identidad y recursos:
+[Trainer](https://github.com/jchjdev/entrenaop/actions/runs/41180440939),
+[ADMIN](https://github.com/jchjdev/entrenaop/actions/runs/41180440787).
+Comprobaciones nativas de Garmin/Salud correctas; APK debug Dev `1.0.0+3`
+generado con fuentes guardadas, revisión/proyecto contrastados dentro del
+instalador y huella registrada en el contrato. Sin publicación en tiendas.
 **Siguiente recorrido:** instalar la beta actualizada, elegir foto en Perfil y
 verla como preparador en listado/ficha; cambiarla y quitarla. La aceptación real
 y la comprobación física permanecen abiertas.
