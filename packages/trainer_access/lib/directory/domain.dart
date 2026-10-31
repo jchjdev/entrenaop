@@ -96,10 +96,14 @@ class DirectoryOwnerProfile {
     required this.blocked,
     required this.consent,
     required this.enabled,
+    this.pilotUntil,
+    this.webAllowed = true,
   });
   final DirectoryProfile? profile;
   final int revision;
   final bool eligible, published, blocked, consent, enabled;
+  final DateTime? pilotUntil;
+  final bool webAllowed;
 }
 
 class DirectoryPage {

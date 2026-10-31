@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:trainer_access/directory/domain.dart';
 import 'package:trainer_access/directory/presentation.dart';
+import 'package:trainer_access/directory/policy.dart';
+import 'package:trainer_access/directory/policy_presentation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:workout_editor_ui/program_cover_image_draft.dart';
 
@@ -70,11 +72,14 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
     }
     _mode = p?.mode ?? DirectoryMode.online;
     _visibility = p?.visibility ?? DirectoryVisibility.app;
+    if (state.pilotUntil != null && !state.webAllowed) {
+      _visibility = DirectoryVisibility.app;
+    }
     _photo = p?.photoPath;
     _savedPhoto = _photo;
     _accepting = p?.accepting ?? true;
     _published = state.published;
-    _consent = state.consent;
+    _consent = state.consent && p?.visibility == _visibility;
     _dirty = false;
   }
 
@@ -255,6 +260,11 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
                   child: const Text('Reintentar'),
                 ),
               if (_state case final state?) ...[
+                if (state.pilotUntil case final until?)
+                  Text(
+                    'Piloto Dev habilitado hasta ${until.toLocal().day}/${until.toLocal().month}/${until.toLocal().year}. '
+                    'Tu ficha puede aparecer solo dentro de la app.',
+                  ),
                 if (!state.enabled)
                   const Text(
                     'La publicación del directorio está en preparación. Puedes guardar tu ficha como borrador.',
@@ -334,15 +344,16 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
                   decoration: const InputDecoration(
                     labelText: 'Dónde quieres aparecer',
                   ),
-                  items: const [
-                    DropdownMenuItem(
+                  items: [
+                    const DropdownMenuItem(
                       value: DirectoryVisibility.app,
                       child: Text('Solo dentro de la app'),
                     ),
-                    DropdownMenuItem(
-                      value: DirectoryVisibility.web,
-                      child: Text('App y web pública'),
-                    ),
+                    if (state.pilotUntil == null || state.webAllowed)
+                      const DropdownMenuItem(
+                        value: DirectoryVisibility.web,
+                        child: Text('App y web pública'),
+                      ),
                   ],
                   onChanged: _busy
                       ? null
@@ -363,11 +374,13 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
                           _dirty = true;
                         }),
                 ),
+                const DirectoryPrivacyButton(),
+                const Text(
+                  'La publicación está sujeta a las condiciones del directorio.',
+                ),
                 CheckboxListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text(
-                    'Acepto publicar mi foto, presentación y contactos ${_visibility == DirectoryVisibility.web ? 'en la app y en la web pública, accesible sin cuenta' : 'dentro de la app para usuarios identificados'}. Puedo retirar la publicación.',
-                  ),
+                  title: Text(directoryPublicationConsent(_visibility)),
                   value: _consent,
                   onChanged: _busy
                       ? null

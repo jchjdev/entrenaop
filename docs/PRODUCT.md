@@ -68,10 +68,14 @@ primera entrega Dev con Clean Architecture. Preparador queda siempre visible
 para buscar, también sin vínculo; fichas voluntarias, favoritos y contacto
 externo se separan de la aceptación de los dos vínculos permitidos. Publicación
 directa con denuncias y moderación posterior, visibilidad solo app o también
-web. Trainer prepara la ficha y ADMIN atiende incidencias. La publicación real
-queda apagada hasta concretar los planes pagados intermedio/superior y los
-textos de publicación/privacidad; no se habilitan cuentas ni pagos. Centros y
+web. Trainer prepara la ficha y ADMIN atiende incidencias. La publicación
+comercial permanece pendiente de concretar los planes pagados intermedio/superior.
+El 31/10 Javier aprueba el piloto de su cuenta y Ervi, solo Dev y solo app,
+con permisos individuales hasta el fin de su ensayo vigente, aceptación V2,
+privacidad y condiciones específicas. Cada titular acepta y publica su ficha;
+el chat no publica en su nombre. No cambia ofertas, planes ni pagos. Centros y
 revisión automática mantienen su fase posterior.
+[Piloto y evidencia](TRAINER_PLATFORM.md#piloto-con-javier-y-ervi--31102026).
 [Contrato, implementación y límites](TRAINER_PLATFORM.md#primera-entrega-técnica--30102026).
 
 **TRN-048 · 30/10/2026 · planificación rápida en el modo Entrenador:**

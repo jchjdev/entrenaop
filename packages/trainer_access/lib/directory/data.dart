@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'domain.dart';
+import 'policy.dart';
 
 typedef _Json = Map<String, dynamic>;
 
@@ -144,6 +145,8 @@ class SupabaseDirectoryRepository implements DirectoryRepository {
       blocked: j['blocked'] == true,
       consent: j['consent'] == true,
       enabled: j['enabled'] == true,
+      pilotUntil: DateTime.tryParse(j['pilot_until'] as String? ?? ''),
+      webAllowed: j['web_allowed'] != false,
     );
   }
 
@@ -163,7 +166,10 @@ class SupabaseDirectoryRepository implements DirectoryRepository {
       await _rpc('directory_save', {
         'p_expected_owner': owner,
         'p_revision': revision,
-        'p_data': _directoryProfileToJson(profile),
+        'p_data': {
+          ..._directoryProfileToJson(profile),
+          if (consent) 'consent_version': directoryConsentVersion,
+        },
         'p_published': published,
         'p_consent': consent,
       }),

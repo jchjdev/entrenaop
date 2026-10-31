@@ -4,6 +4,7 @@ do $$
 declare coach uuid:=gen_random_uuid(); pupil uuid:=gen_random_uuid(); stranger uuid:=gen_random_uuid();
  offer uuid:=gen_random_uuid(); j jsonb; data jsonb; pid uuid; rev integer; report_id uuid; manager uuid:=gen_random_uuid();
 begin
+ perform set_config('storage.operation','object.get_authenticated',true);
  insert into auth.users(id,email,email_confirmed_at) values(coach,coach||'@directory.invalid',now()),(pupil,pupil||'@directory.invalid',now()),(stranger,stranger||'@directory.invalid',now());
  insert into auth.mfa_factors(id,user_id,factor_type,status,created_at,updated_at) values(gen_random_uuid(),coach,'totp','verified',now(),now());
  insert into auth.users(id,email,email_confirmed_at) values(manager,manager||'@directory.invalid',now());
@@ -18,7 +19,7 @@ begin
  insert into commerce_private.orders(owner_id,offer_id,state,paid_until) values(coach,offer,'active',now()+interval '1 day');
  insert into storage.objects(bucket_id,name) values('trainer-directory',coach||'/11111111-1111-4111-8111-111111111111.jpg');
  data:=jsonb_build_object('name','Preparador prueba','description','Carrera y fuerza para oposiciones','specialties',jsonb_build_array('Carrera'),'services',jsonb_build_array('Revisión técnica'),
- 'mode','online','city','','visibility','app','photo_path',coach||'/11111111-1111-4111-8111-111111111111.jpg','email','coach@example.test','website','','whatsapp','','price','','accepting',true);
+ 'mode','online','city','','visibility','app','photo_path',coach||'/11111111-1111-4111-8111-111111111111.jpg','email','coach@example.test','website','','whatsapp','','price','','accepting',true,'consent_version',2);
  perform set_config('request.jwt.claim.sub',coach::text,true);
  perform set_config('request.jwt.claims',jsonb_build_object('sub',coach,'role','authenticated','aal','aal2')::text,true);
  set local role authenticated;

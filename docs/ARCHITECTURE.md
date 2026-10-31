@@ -9,6 +9,15 @@ archivos en un bucket privado: el servidor decide titular/vínculo/acceso/MFA y
 protege revisiones y limpieza. La ficha pública conserva su foto independiente.
 [Contrato y evidencia](PRODUCT.md#fotos-personales-de-los-usuarios--31102026).
 
+**Directorio · piloto Dev · 31/10/2026:** el permiso temporal individual se
+separa de las ofertas comerciales en `directory_private.dev_pilot_members`.
+La elegibilidad valida periodo, revocación, acceso profesional y emisor Auth Dev;
+el servidor limita el ensayo a fichas solo app. Se mantiene la firma de las RPC;
+el payload de publicación exige la aceptación V2, registrada por revisión.
+`directory/policy.dart` conserva los textos independientes de Flutter; búsqueda,
+ficha y editor comparten su presentación, y el adaptador incorpora la versión.
+[Contrato](TRAINER_PLATFORM.md#piloto-con-javier-y-ervi--31102026).
+
 **TRN-048 · 30/10/2026 · acciones profesionales móviles:**
 `CoachPlanningRepository` separa biblioteca y escrituras de la proyección de
 consulta anterior. Su adaptador Supabase usa las fachadas profesionales vigentes,

@@ -10,7 +10,7 @@ class DraftRepository implements DirectoryRepository {
   bool? published;
   bool failSave = false;
   DirectoryProfile? submitted;
-  final value = const DirectoryOwnerProfile(
+  DirectoryOwnerProfile value = const DirectoryOwnerProfile(
     profile: DirectoryProfile(
       id: 'draft',
       name: 'Preparador de prueba',
@@ -70,6 +70,55 @@ void main() {
     await tester.tap(find.text('Guardar ficha'));
     await tester.pumpAndSettle();
   }
+
+  testWidgets('piloto ofrece publicación solo app sin aceptar por el titular', (
+    tester,
+  ) async {
+    final repository = DraftRepository();
+    repository.value = DirectoryOwnerProfile(
+      profile: repository.value.profile,
+      revision: 1,
+      eligible: true,
+      published: false,
+      blocked: false,
+      consent: false,
+      enabled: true,
+      webAllowed: false,
+      pilotUntil: DateTime.utc(2026, 11, 28),
+    );
+    await tester.pumpWidget(editor(repository));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Piloto Dev habilitado hasta'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Dónde quieres aparecer'),
+      400,
+      scrollable: find.byType(Scrollable).first,
+    );
+    final visibility = tester.widget<DropdownButton<DirectoryVisibility>>(
+      find.byType(DropdownButton<DirectoryVisibility>),
+    );
+    expect(visibility.items!.map((item) => item.value), [
+      DirectoryVisibility.app,
+    ]);
+    await tester.scrollUntilVisible(
+      find.text('Publicar ficha'),
+      400,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(
+      tester.widget<CheckboxListTile>(find.byType(CheckboxListTile)).value,
+      false,
+    );
+    expect(
+      tester
+          .widget<SwitchListTile>(
+            find.widgetWithText(SwitchListTile, 'Publicar ficha'),
+          )
+          .onChanged,
+      isNotNull,
+    );
+    expect(repository.writes, 0);
+  });
 
   testWidgets('validación visible al guardar desde el final del formulario', (
     tester,

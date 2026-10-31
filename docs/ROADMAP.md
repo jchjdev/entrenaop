@@ -79,6 +79,16 @@ arrastrar → confirmar → abrir receta/resultados → volver a la misma semana
 El directorio profesional y sus condiciones siguen en su recorrido propio.
 [Contrato y límites](TRAINER_PLATFORM.md#agenda-y-seguimiento-directo--31102026).
 
+**TRN-040 · piloto con Javier y Ervi · 31/10/2026:** Javier confirma ambas
+cuentas para comparar preparadores y buscar por localidad. Permisos individuales
+solo Dev y solo app, con caducidad ligada al ensayo de Javier; sin cambiar ofertas
+ni planes. Aceptación V2 y privacidad/condiciones compartidas, registro por
+revisión y publicación voluntaria de cada titular. La validación y habilitación
+real se documentan al cerrar esta entrega; las fichas no se publican por el chat.
+**Siguiente recorrido:** ambos revisan/aceptan/publican; Isabel busca por localidad
+y comprueba fichas, contacto y favoritos.
+[Contrato y evidencia](TRAINER_PLATFORM.md#piloto-con-javier-y-ervi--31102026).
+
 **TRN-040 · 30/10/2026 · primera entrega técnica del directorio en Dev:**
 Javier autoriza comenzar, preservando el trabajo paralelo de Arquitectura.
 Preparador siempre visible, búsqueda/ficha común para web/app, favoritos,

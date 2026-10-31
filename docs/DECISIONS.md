@@ -222,6 +222,19 @@ guarda el modelo de cobro directo del entrenador a sus alumnos. Esto no fija
 comisiones, no conecta credenciales al servidor ni habilita pagos reales.
 [Evidencia y límites](TRAINER_COMMERCIAL_CONTRACT.md#conexion-del-entorno-de-pruebas--28102026).
 
+**TRN-040 · piloto con Javier y Ervi · 31/10/2026:** Javier aprueba habilitar
+el ensayo inicialmente propuesto para su cuenta e incluye a Ervi para comparar
+preparadores y filtrar por localidad. Ambos tendrán permiso individual y
+temporal solo en Dev, hasta el fin del ensayo vigente de Javier; no se alteran
+planes, ofertas ni pagos. La ficha será solo app, accesible a usuarios
+identificados con correo confirmado, incluida Isabel. Cada titular conserva
+su ficha y acepta/publica desde Trainer; no se acepta ni publica en su nombre.
+Aprueba contacto externo, ausencia de vínculo automático, dos preparadores por
+alumno, publicación directa con denuncias y condiciones/información de privacidad
+específicas, con aceptación versionada y fecha. Ervi dispone de acceso profesional
+pero no de una contratación propia: participa en el mismo periodo de piloto.
+[Contrato del piloto](TRAINER_PLATFORM.md#piloto-con-javier-y-ervi--31102026).
+
 **TRN-040 · preparación del piloto propio · 31/10/2026:** Javier solicita
 comenzar el piloto con su cuenta y comunica que ha rellenado la ficha pero no
 consigue subirla. Se comprueba solo en Dev: publicación deshabilitada, única

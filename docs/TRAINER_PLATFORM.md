@@ -637,6 +637,58 @@ inicial, con el piloto comercial y la aceptación física pendientes.
 Lectura final en Dev:
 publicación deshabilitada, cero ofertas elegibles y cero fichas publicadas.
 
+### Piloto con Javier y Ervi · 31/10/2026
+
+Javier confirma el alcance del ensayo e incluye a Ervi para comparar varios
+preparadores y filtrar por localidad. Solo se habilitan estas dos cuentas en
+Dev, hasta el 28/11/2026 a las 21:07:47 UTC, fin del ensayo vigente de Javier.
+Ervi mantiene su acceso profesional y participa en ese mismo periodo sin crearle
+contratación ni pagos. Los planes comerciales pagados intermedio/superior siguen
+siendo el criterio general futuro; precios y catálogo completo no se aprueban.
+
+`directory_private.dev_pilot_members` separa el permiso individual de las
+ofertas. La elegibilidad exige acceso profesional vigente, permiso no revocado,
+fecha vigente y periodo fuente no vencido; el JWT debe proceder de Auth Dev.
+El piloto solo admite visibilidad app, también al consultar enlaces y fotos.
+El servidor rechaza publicar en web con este permiso. Isabel y los demás usuarios
+identificados con correo confirmado pueden buscar y consultar sin comprar un
+plan profesional. Encontrar/contactar no crea vínculos; se mantienen los dos
+preparadores máximos y el contacto externo.
+
+Contrato y presentación de privacidad/condiciones compartidos en
+`trainer_access/directory`, sin dependencias nuevas ni imports entre aplicaciones.
+La aceptación V2 identifica destinatarios, finalidad y retirada; la información
+ampliada incluye responsable/contacto vigentes, datos, conservación, proveedores,
+derechos y moderación. Es accesible desde búsqueda, ficha y editor, incluso a
+320 píxeles con texto 2×. Cada propietario debe aceptarla y publicar expresamente
+desde Trainer. Guardar un borrador no publica. La versión y fecha se conservan
+por revisión en `publication_acceptances`, incluso al pausar la ficha. Los
+clientes antiguos pueden guardar borradores, pero no publicar sin la versión V2.
+Las fotos tampoco permiten firmar URLs que mantengan acceso tras retirar la ficha.
+
+La migración `20261031084002_trainer_directory_dev_pilot` pasa ambos contratos
+SQL antes y después de aplicar solo en Dev, siempre con ROLLBACK. Las 256
+revisiones locales/remotas coinciden. El asesor conserva los WARN anteriores;
+solo añade dos INFO esperados por las tablas privadas sin acceso directo.
+La copia/recuperación existente incluye `directory_private`. La búsqueda prueba
+dos preparadores/localidades, filtro parcial sin distinguir mayúsculas,
+caducidad/revocación, emisor de otro proyecto, MFA/correo confirmado,
+consentimiento antiguo, visibilidad web y rechazo de fotos firmadas.
+La habilitación real y publicación web se verifican al cerrar la entrega;
+no se da por hecha la publicación de las fichas ni su aceptación humana.
+
+Validación aislada desde `56054fc5` más este bloque, equivalente al código de
+main antes del guardado (los commits posteriores solo actualizan documentación):
+análisis limpios, app 1.526 pruebas correctas y una omisión previa, Trainer 402,
+ADMIN 365 y dos omisiones previas. Cuatro regresiones cubren comparar/filtrar,
+información ampliada móvil, versión enviada y permiso temporal, y publicación
+sin aceptación automática. Se corrige el selector de modalidad que desbordaba
+a 320 píxeles con texto 2×. CI contrastará la revisión final guardada.
+
+**Siguiente recorrido:** Javier y Ervi revisan su localidad/contactos/foto,
+aceptan y publican sus fichas desde Trainer. Isabel abre Buscar preparador,
+compara, filtra por localidad y consulta contacto/favoritos.
+
 ### Preparación del piloto con Javier · 31/10/2026
 
 Javier pide comenzar por su cuenta y comunica que ha rellenado la ficha pero

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'domain.dart';
+import 'policy_presentation.dart';
 
 typedef DirectoryPhotoLoader = Future<Uint8List> Function(String path);
 
@@ -404,6 +405,7 @@ class _TrainerDirectoryPageState extends State<TrainerDirectoryPage>
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(16),
             children: [
+              const DirectoryPrivacyButton(),
               if (widget.profileId == null) ...[
                 TextField(
                   controller: _query,
@@ -422,6 +424,7 @@ class _TrainerDirectoryPageState extends State<TrainerDirectoryPage>
                   onSubmitted: (_) => _load(),
                 ),
                 DropdownButtonFormField<DirectoryMode?>(
+                  isExpanded: true,
                   itemHeight: null,
                   initialValue: _mode,
                   decoration: const InputDecoration(labelText: 'Modalidad'),
