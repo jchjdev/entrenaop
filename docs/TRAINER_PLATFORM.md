@@ -255,6 +255,23 @@ La app requiere actualizarse desde GitHub y compilarse; no se prepara APK ni se
 acredita prueba física nueva del iPhone en esta tarea. Verificación y publicación
 web se registran cuando finalicen las comprobaciones.
 
+**Cierre comprobado · 31/10/2026:** análisis y baterías completas de raíz, Trainer y
+ADMIN correctos; 59 pruebas del UI común y 10 del chat seleccionado de forma
+independiente correctas. Capturas revisadas: planificación web y agenda recibida
+390 px con texto 1,3×; no equivalen a una prueba física nueva del iPhone.
+
+Publicación automática Dev confirmada por HTTPS, entorno `development`, proyecto
+`sxbxfjqgoddzhtcyhalw`, fuentes guardadas y SHA-256 del JavaScript verificado:
+
+- [Trainer · ejecución 41202037819](https://github.com/jchjdev/entrenaop/actions/runs/41202037819):
+  `213a6e0cf167f1e9f1a0b40153e9da01ccb9a96d-41202037819-1`;
+  SHA-256 `0e1f274b22a7f8bf052034b27888875796210848227bfe3b87d7a867222efc9d`.
+- [ADMIN · ejecución 41202037752](https://github.com/jchjdev/entrenaop/actions/runs/41202037752):
+  `213a6e0cf167f1e9f1a0b40153e9da01ccb9a96d-41202037752-1`;
+  SHA-256 `28d97c9414264546c695ff40447dd2d11dca8dd3e5414c0a80d73d30d5d60e7f`.
+
+Los precios continúan como borrador; no se crean ofertas ni se activan cobros reales.
+
 ### Inventario de los dieciséis puntos · 29/10/2026
 
 Javier pide el estado de los dieciséis puntos y añade gestión de borrado de
