@@ -1,5 +1,18 @@
 # Web pública de EntrenaOP
 
+## Portada con grabación real · WEB-008 · 31/10/2026
+
+Javier descarta que la imagen anterior represente por sí sola la oferta actual
+y elige una grabación real de EntrenaOP para el espacio visual de portada.
+La selección final de pantallas y el archivo de vídeo están pendientes.
+La pieza se preparará con datos de demostración. Esta decisión todavía no
+sustituye la imagen ni acredita que exista un vídeo integrado.
+
+Para recorrer y revisar la maqueta se utiliza el servidor local en
+`http://127.0.0.1:8765/`; debe permanecer abierto durante la revisión.
+El cierre del servidor anterior dejaba sin servicio los enlaces HTTP de esa
+vista. La navegación entre portada, Trainer y privacidad se vuelve a comprobar.
+
 ## App del deportista y oferta Trainer · WEB-007 · 31/10/2026
 
 Javier pide renovar la maqueta tras la evolución de la app y la existencia del
