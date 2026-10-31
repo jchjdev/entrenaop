@@ -8,11 +8,13 @@ de grupos, adaptación y avisos. La recepción física de push no se da por prob
 con los fixtures. **Siguiente recorrido:** aceptación con dos cuentas reales del
 piloto, adaptación de una pauta, ejecución y revisión.
 [Contrato](TRAINER_PLATFORM.md#planificación-de-grupos-y-revisión-por-alumno--31102026).
+Publicado y contrastado por HTTPS en Trainer Dev con revisión `56054fc5`,
+[ejecución 41185995965](https://github.com/jchjdev/entrenaop/actions/runs/41185995965)
+correcta y 401 pruebas de Trainer; la web comercial sigue como propuesta.
 
 Javier plantea la futura web comercial en privado con el chat de webs. Se deja
 [la guía de la copia privada](WEBSITE_PRIVATE_PREVIEW.md), sin crear dominio,
 publicación ni cobros reales en este bloque.
-
 
 **31/10/2026 · portátiles y distribución compartida:** Agenda incorpora altura
 automática/compacta/amplia; los creadores de Trainer y ADMIN comparten columnas

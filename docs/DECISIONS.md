@@ -21,7 +21,6 @@ entrenadores»: la web reutiliza su directorio y respeta consentimiento por cana
 el piloto con visibilidad en app no autoriza publicación web.
 [Guía para el chat de webs](WEBSITE_PRIVATE_PREVIEW.md).
 
-
 **Portátiles, calendario y columnas · 31/10/2026:** Javier pide reducir el alto
 del calendario en 14 pulgadas y dar espacio al área de propiedades de los
 creadores de Trainer y ADMIN. Agenda ofrece altura automática (compacta en

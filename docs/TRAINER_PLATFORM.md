@@ -159,6 +159,16 @@ ensayo nuevo. CLI contrastó 255 migraciones locales/remotas coincidentes antes
 de la ampliación del piloto del directorio en curso, que queda fuera de este bloque.
 La web privada queda documentada como propuesta, sin configurar otro dominio.
 
+Publicación del recorrido confirmada el 31/10 en Trainer Dev: revisión
+`56054fc5adda18aeb05d7e02e051b0966b3ce426`,
+[ejecución automática 41185995965](https://github.com/jchjdev/entrenaop/actions/runs/41185995965)
+con validación, compilación y publicación correctas. Una comprobación HTTPS
+independiente confirma `trainer.entrenaop.es`, entorno `development`, proyecto
+`sxbxfjqgoddzhtcyhalw`, manifiesto y recursos coherentes. SHA-256 de `main.dart.js`:
+`0744213ba57d156410148725ae79ebd75a78634e1ec5fabe1ee82bfb5d7b4187`.
+No se publica la copia comercial ni se incluyen los cambios en curso del
+directorio en esta entrega.
+
 **Siguiente aceptación humana:** preparar una semana para dos cuentas del piloto,
 adaptar una, realizarla y revisar, observando los avisos del teléfono. El circuito
 automatizado no sustituye esa comprobación con Javier y Ervi.
