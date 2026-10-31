@@ -70,8 +70,8 @@ externo se separan de la aceptación de los dos vínculos permitidos. Publicaci�
 directa con denuncias y moderación posterior, visibilidad solo app o también
 web. Trainer prepara la ficha y ADMIN atiende incidencias. La publicación
 comercial permanece pendiente de concretar los planes pagados intermedio/superior.
-El 31/10 Javier aprueba el piloto de su cuenta y Ervi, solo Dev y solo app,
-con permisos individuales hasta el fin de su ensayo vigente, aceptación V2,
+El 31/10 quedan habilitados Javier y Ervi para el piloto, solo Dev y solo app,
+con permisos individuales hasta el fin del ensayo de Javier, aceptación V2,
 privacidad y condiciones específicas. Cada titular acepta y publica su ficha;
 el chat no publica en su nombre. No cambia ofertas, planes ni pagos. Centros y
 revisión automática mantienen su fase posterior.

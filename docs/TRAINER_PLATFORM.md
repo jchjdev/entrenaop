@@ -667,15 +667,20 @@ clientes antiguos pueden guardar borradores, pero no publicar sin la versión V2
 Las fotos tampoco permiten firmar URLs que mantengan acceso tras retirar la ficha.
 
 La migración `20261031084002_trainer_directory_dev_pilot` pasa ambos contratos
-SQL antes y después de aplicar solo en Dev, siempre con ROLLBACK. Las 256
-revisiones locales/remotas coinciden. El asesor conserva los WARN anteriores;
+SQL antes y después de aplicar solo en Dev, siempre con ROLLBACK. El cotejo al
+aplicar acredita 256 revisiones locales/remotas coincidentes. El asesor conserva
+los WARN anteriores;
 solo añade dos INFO esperados por las tablas privadas sin acceso directo.
 La copia/recuperación existente incluye `directory_private`. La búsqueda prueba
 dos preparadores/localidades, filtro parcial sin distinguir mayúsculas,
 caducidad/revocación, emisor de otro proyecto, MFA/correo confirmado,
 consentimiento antiguo, visibilidad web y rechazo de fotos firmadas.
-La habilitación real y publicación web se verifican al cerrar la entrega;
-no se da por hecha la publicación de las fichas ni su aceptación humana.
+El 31/10 se habilitan exclusivamente Javier y Ervi con periodo efectivo hasta
+el 28/11/2026 a las 21:07:47 UTC. Ambos conservan acceso profesional y MFA;
+Isabel tiene correo confirmado. Lectura posterior: dos permisos activos,
+cero ofertas con derecho de directorio y cero fichas publicadas. Javier conserva
+su borrador y Ervi todavía debe crear el suyo. No se modifica ninguna aceptación
+ni se publica por los titulares.
 
 Validación aislada desde `56054fc5` más este bloque, equivalente al código de
 main antes del guardado (los commits posteriores solo actualizan documentación):
@@ -683,13 +688,35 @@ análisis limpios, app 1.526 pruebas correctas y una omisión previa, Trainer 40
 ADMIN 365 y dos omisiones previas. Cuatro regresiones cubren comparar/filtrar,
 información ampliada móvil, versión enviada y permiso temporal, y publicación
 sin aceptación automática. Se corrige el selector de modalidad que desbordaba
-a 320 píxeles con texto 2×. CI contrastará la revisión final guardada.
+a 320 píxeles con texto 2×. CI de `559051c1` reconfirma los tres análisis y las
+baterías completas, junto a las 46 pruebas de herramientas ADMIN y 17 de Trainer:
+[Trainer](https://github.com/jchjdev/entrenaop/actions/runs/41187614052),
+[ADMIN](https://github.com/jchjdev/entrenaop/actions/runs/41187614125).
+Ambos portales Dev publicados desde esa revisión y contrastados de forma
+independiente por HTTPS: identidad Dev/proyecto, fuentes guardadas, SHA-256 del
+JavaScript, entrada activa, cabeceras y MIME WebAssembly correctos. El buscador
+web público mantiene el alcance web; la comparación del piloto se hace desde
+Buscar preparador en la app. No se modifica la web comercial ni producción.
+
+**Guardado observado tras activar:** Javier comunica el error genérico de acceso.
+Los registros de las 09:24:59 y 09:25:04 UTC muestran 403 en el control de
+publicación de `directory_private.save`, línea 12. La consulta propia anterior
+responde 200; cuenta, emisor Dev, acceso profesional y permisos están vigentes.
+El borrador permanece en revisión 3, con aceptación V1 y sin publicar. La hipótesis
+principal es una pestaña anterior que no envía V2; falta contrastar el texto de
+la casilla. Se indica preservar lo editado guardando con Publicar ficha apagado
+y recargar solo tras confirmar el borrador. La publicación real y su recepción
+en la cuenta de Isabel siguen pendientes de confirmar.
 
 **Siguiente recorrido:** Javier y Ervi revisan su localidad/contactos/foto,
 aceptan y publican sus fichas desde Trainer. Isabel abre Buscar preparador,
 compara, filtra por localidad y consulta contacto/favoritos.
 
 ### Preparación del piloto con Javier · 31/10/2026
+
+Esta sección conserva el diagnóstico previo a la aprobación. El alcance
+confirmado y la habilitación vigente están en el piloto con Javier y Ervi
+documentado arriba.
 
 Javier pide comenzar por su cuenta y comunica que ha rellenado la ficha pero
 no consigue subirla. Ervi mantiene su participación posterior; no se habilita

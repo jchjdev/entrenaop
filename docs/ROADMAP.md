@@ -83,8 +83,13 @@ El directorio profesional y sus condiciones siguen en su recorrido propio.
 cuentas para comparar preparadores y buscar por localidad. Permisos individuales
 solo Dev y solo app, con caducidad ligada al ensayo de Javier; sin cambiar ofertas
 ni planes. Aceptación V2 y privacidad/condiciones compartidas, registro por
-revisión y publicación voluntaria de cada titular. La validación y habilitación
-real se documentan al cerrar esta entrega; las fichas no se publican por el chat.
+revisión y publicación voluntaria de cada titular. Dos permisos reales activados
+solo en Dev hasta el 28/11/2026, con cero ofertas habilitadas y cero fichas
+publicadas en la comprobación. Análisis limpios y pruebas completas correctas:
+app 1.526 (una omisión previa), Trainer 402, ADMIN 365 (dos omisiones previas),
+con ambos contratos SQL correctos y ROLLBACK. Trainer/ADMIN Dev publicados desde
+`559051c1`, con CI correcto y comprobación HTTPS independiente de identidad y recursos.
+Las fichas no se publican por el chat; el recorrido con cuentas reales sigue abierto.
 **Siguiente recorrido:** ambos revisan/aceptan/publican; Isabel busca por localidad
 y comprueba fichas, contacto y favoritos.
 [Contrato y evidencia](TRAINER_PLATFORM.md#piloto-con-javier-y-ervi--31102026).
