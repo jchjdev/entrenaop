@@ -36,6 +36,13 @@ import 'package:go_router/go_router.dart';
 
 import '../../test/helpers/measurement_comparison_fixtures.dart';
 import 'scenario.dart';
+import 'active_demo.dart';
+import 'calculators.dart';
+import 'recipes.dart';
+
+import 'package:entrenaop/features/physical_assessment/presentation/pages/fas_periodic_calculator_page.dart';
+import 'package:entrenaop/features/physical_assessment/domain/catalogs/fas_periodic_2027_reference.dart';
+import 'package:entrenaop/features/running_tools/presentation/pages/running_pace_calculator_page.dart';
 
 void main() => runApp(const AthleteDemo());
 
@@ -46,6 +53,9 @@ class AthleteDemo extends StatefulWidget {
 }
 
 class AthleteDemoState extends State<AthleteDemo> {
+  FasPeriodic2027Reference? fasReference;
+  final birthDate = DemoBirthDate();
+  final fasResults = DemoFasResults();
   final notices = DemoNotices();
   final overview = DemoOverview();
   late final dashboard = DashboardCubit(getOverview: overview)..load();
@@ -109,6 +119,12 @@ class AthleteDemoState extends State<AthleteDemo> {
                           create: (_) => createSchedule(overview)..load(),
                           child: const WorkoutSchedulePage(),
                         ),
+                        routes: [
+                          GoRoute(
+                            path: 'active/:id',
+                            builder: (_, _) => const DemoActiveWorkout(),
+                          ),
+                        ],
                       ),
                     if (path == '/library')
                       GoRoute(
@@ -128,6 +144,23 @@ class AthleteDemoState extends State<AthleteDemo> {
               ],
             ),
         ],
+      ),
+      GoRoute(
+        path: '/demo/session',
+        builder: (_, _) => const DemoActiveWorkout(),
+      ),
+      GoRoute(
+        path: '/assessment/fas-calculator',
+        builder: (_, _) => FasPeriodicCalculatorPage(
+          birthDateRepository: birthDate,
+          repository: fasResults,
+          reference: fasReference,
+          today: demoToday,
+        ),
+      ),
+      GoRoute(
+        path: '/tools/running-pace-calculator',
+        builder: (_, _) => const RunningPaceCalculatorPage(),
       ),
     ],
     // Los enlaces fuera del rodaje quedan contenidos en esta demo aislada.
@@ -184,14 +217,9 @@ class DemoOverview implements GetPreparationOverviewUseCase {
     for (var i = 0; i < 4; i++)
       ScheduledWorkout(
         id: 'session-$i',
-        templateId: 'template-$i',
-        templateName: [
-          'Fuerza · Tren superior',
-          'Carrera · Ritmo cómodo',
-          'Fuerza y movilidad',
-          'Carrera · Cambios de ritmo',
-        ][i],
-        templateVersion: 1,
+        templateId: demoRecipes[i].id,
+        templateName: demoRecipes[i].name,
+        templateVersion: demoRecipes[i].version,
         scheduledDate: i == 2 ? demoToday : week.add(Duration(days: i * 2)),
         source: ScheduledWorkoutSource.coach,
         coachName: 'Entrenador demo',
@@ -199,7 +227,7 @@ class DemoOverview implements GetPreparationOverviewUseCase {
             ? ScheduledWorkoutStatus.completed
             : ScheduledWorkoutStatus.planned,
         preparationGoalId: 'troop',
-        estimatedDurationMinutes: [40, 35, 45, 30][i],
+        estimatedDurationMinutes: demoRecipes[i].estimatedDurationMinutes,
       ),
   ];
   @override
@@ -363,6 +391,8 @@ WorkoutScheduleCubit createSchedule(DemoOverview overview) {
 class DemoSchedule implements WorkoutScheduleRepository {
   DemoSchedule(this.items);
   final List<ScheduledWorkout> items;
+  @override
+  Future<String> start(String scheduledId) async => 'demo-execution';
   @override
   Future<List<ScheduledWorkout>> getRange(DateTime start, DateTime end) async =>
       items

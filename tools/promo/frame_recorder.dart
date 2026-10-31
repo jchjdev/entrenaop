@@ -1,6 +1,7 @@
 // Captura cada fotograma de las animaciones reales del motor Flutter.
 // Los intervalos quietos conservan su duración sin generar PNG duplicados.
 import 'dart:io';
+import 'dart:convert';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -16,6 +17,15 @@ class DemoRecorder {
   final entries = <String>[];
   int sequence = 0;
   String? last;
+  double elapsed = 0;
+  final chapters = <String, double>{};
+  void chapter(String id) {
+    chapters[id] = double.parse(elapsed.toStringAsFixed(2));
+  }
+
+  Future<void> still(String id) async {
+    await tester.runAsync(() => File(last!).copy('$output/still-$id.png'));
+  }
 
   Future<void> mount(Widget app, Size size) async {
     tester.view.physicalSize = size;
@@ -65,11 +75,27 @@ class DemoRecorder {
       image.dispose();
       last = file.absolute.path.replaceAll('\\', '/');
       entries.add("file '$last'\nduration $duration");
+      elapsed += duration;
     });
     expect(tester.takeException(), isNull);
   }
 
   Future<void> hold(double seconds) => frame(seconds);
+  // Los temporizadores de producto usan un Stopwatch real: se filman a tiempo real.
+  Future<void> realTime(double seconds) async {
+    final clock = Stopwatch()..start();
+    for (var i = 0; i < (seconds * 20).round(); i++) {
+      final wait = (i + 1) * 50 - clock.elapsedMilliseconds;
+      if (wait > 0) {
+        await tester.runAsync(
+          () => Future<void>.delayed(Duration(milliseconds: wait)),
+        );
+      }
+      await tester.pump(const Duration(milliseconds: 50));
+      await frame(.05);
+    }
+  }
+
   Future<void> animate([double seconds = 0.5]) async {
     for (var i = 0; i < (seconds * 20).round(); i++) {
       await tester.pump(const Duration(milliseconds: 50));
@@ -95,6 +121,9 @@ class DemoRecorder {
   }
 
   Future<void> finish() async {
+    await tester.runAsync(
+      () => File('$output/chapters.json').writeAsString(jsonEncode(chapters)),
+    );
     await tester.runAsync(
       () => File('$output/frames.ffconcat').writeAsString(
         'ffconcat version 1.0\n${entries.join('\n')}\nfile \'$last\'\n',

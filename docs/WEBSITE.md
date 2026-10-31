@@ -1,5 +1,35 @@
 # Web pública de EntrenaOP
 
+## Fotografía, recorrido visual y relojes · WEB-010 · 31/10/2026
+
+Javier confirma que los textos le gustan, añade contenido desde VS Code y pide
+centrar la revisión en estilo. Se conservan sus 43 párrafos y encabezados previos,
+incluido su añadido de Policía Nacional y objetivos generales en las preguntas.
+La pista original generada vuelve al fondo de portada, junto al vídeo real.
+Se reutiliza su imagen en WebP; no se toman fotografías ni recursos de Kotcha.
+
+La referencia de Kotcha se revisa en navegador: utiliza imágenes de la app y el
+reloj, secuencias al desplazarse y una explicación del recorrido de la sesión.
+EntrenaOP adapta esa intención a tres tarjetas con sus textos ya existentes,
+pantallas actuales y superposición nativa con `position: sticky`. El efecto se
+desactiva con movimiento reducido o cuando la altura impide leer la tarjeta.
+No se interceptan rueda, teclado o gestos y no se añaden dependencias.
+
+El nuevo bloque de dispositivos muestra Garmin y Apple Watch con un recorrido
+«sesión al reloj → entrenamiento → revisión». Describe sesiones y capacidades
+compatibles; no promete compatibilidad universal ni añade otros fabricantes.
+El acceso sigue INT-006/INT-023: Pro o servicio profesional vigente para conexión
+y envío, sin Pro adicional al alumno con ese acceso; Salud conserva Free con
+permiso. No se ofrece una asociación comercial con los fabricantes ni se cambia
+el reparto de funciones. Las referencias responsables son
+`DEVICE_INTEGRATIONS.md` y `DEVICE_APPLE_WATCH.md`.
+
+Todo permanece en `website/next/` para revisión local. La web publicada no cambia.
+Se revisan escritorio y móvil a 320/390/1440 px, la superposición en navegador
+y la sintaxis de los cinco scripts; sin desbordamientos ni errores observados.
+El commit independiente `9ccd2fe` queda incluido con todo su historial en
+`docs/audits/website-2026-10-31-video-refresh.bundle`, verificado como completo.
+
 ## Portada con grabación real · WEB-008 · 31/10/2026
 
 Javier descarta que la imagen anterior represente por sí sola la oferta actual
@@ -10,11 +40,16 @@ con datos ficticios. La web publicada y las aplicaciones publicadas no cambian.
 
 ### Resultado local · 31/10/2026
 
-- Portada: `assets/athlete-demo.mp4`, H.264, 390 × 844, 20 fps, 30,25 segundos,
-  sin audio. Inicio, plan, semana, biblioteca, detalle de ejercicio, comparación
-  de marcas, espacio del preparador y conversación de ejemplo.
-- Página Trainer: `assets/trainer-demo.mp4`, H.264, 1280 × 800, 20 fps,
-  15,05 segundos, sin audio. Cuatro alumnos, ficha, agenda y conversación.
+- Portada: `assets/athlete-demo.mp4`, H.264, 390 × 844, 20 fps, 34,75 segundos,
+  sin audio. Inicio, semana, sesión activa con temporizador real, calculadoras
+  FAS/ritmos, comparación de marcas y espacio del preparador.
+- Página Trainer: `assets/trainer-demo.mp4`, H.264, 1440 × 900, 20 fps,
+  32,75 segundos, sin audio. Agenda mensual/semanal con sesiones, cuatro alumnos
+  con retratos generados, ficha, receta del circuito y gráfica de ritmo por serie.
+- Los cuatro JPEG ficticios y sus prompts quedan en
+  `tools/promo/assets/portraits/`. No representan clientes ni testimonios.
+  Las recetas comparten datos estables entre mes, semana y detalle, e incluyen
+  fases de carrera y resultados por tramo con el contrato real del editor.
 - Los formatos se separan para conservar legibilidad en cada página. Hay
   pósteres WebP, pausa/reproducción, enlace al vídeo grande y rótulo de datos
   ficticios. Se intenta reproducción automática en bucle cuando el vídeo está
@@ -41,10 +76,34 @@ compilaciones web de ambas demos y revisión de los vídeos en navegador con
 vistas de 1440 y 390 px. Las dos páginas cargan los MP4 y sus dimensiones sin
 errores; pausa/reproducción y pausa fuera de vista contrastadas. No equivale a
 una prueba en un iPhone físico ni valida las funciones ajenas a la demo.
-Capturas en `website/reviews/2026-10-31-video/`.
-Copia recuperable completa de la web: `docs/audits/website-2026-10-31-video.bundle`,
-con el commit local `14f2faf`. Se conserva la copia anterior y no se añade un
-gitlink ni un remoto al repositorio independiente.
+La revisión inicial está en `website/reviews/2026-10-31-video/`; la revisión
+renovada está en `website/reviews/2026-10-31-refresh/`. También se comprueba la
+portada a 320 px: tanto el título como los dos bloques gratuitos caben sin
+desbordamiento horizontal. Los recorridos comprueban las cuatro fotos, la receta,
+el desplazamiento hasta los resultados, las cuatro marcas FAS válidas y el
+resultado de ritmo de ejemplo: 400 m a 4:10/km equivalen a 1:40.
+
+La copia anterior `docs/audits/website-2026-10-31-video.bundle` conserva el commit
+local `14f2faf`. El cierre de esta renovación añade una copia completa en
+`docs/audits/website-2026-10-31-video-refresh.bundle`. No se añade un gitlink ni
+un remoto al repositorio independiente.
+
+### Calculadoras gratuitas visibles · WEB-009 · 31/10/2026
+
+Javier pide dar protagonismo a las calculadoras FAS y de ritmos y explicar que
+son gratuitas. Se contrasta el reparto Free vigente en `docs/PRODUCT.md`, el
+dominio de evaluación física y las rutas reales de ambas pantallas. Esta
+presentación no cambia los derechos comerciales ni las reglas de cálculo.
+
+La portada enlaza desde el hero al bloque `#herramientas-gratis`. Dos tarjetas
+explican la puntuación FAS y los ritmos/parciales, con capturas reales del rodaje
+y la indicación «Gratis en la app». No requieren Pro; se indica que se usan en
+EntrenaOP con una cuenta. No se presentan como calculadoras anónimas del HTML.
+
+Los enlaces abren el vídeo en la escena correspondiente: FAS a 13,9 s y ritmos
+a 19,8 s. `record.ps1` exporta `athlete-demo.chapters.json` y las capturas WebP;
+`demo-video.js` toma esos tiempos para evitar enlaces desfasados al regrabar.
+No se duplica el cálculo ni se crean servicios de identidad o contratación.
 
 ### Guion de demostración propuesto · 31/10/2026
 

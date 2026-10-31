@@ -1,3 +1,4 @@
+param([ValidateSet('all','athlete','trainer')][string]$Only = 'all')
 $ErrorActionPreference = 'Stop'
 $taskRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 $originalLocation = Get-Location
@@ -11,7 +12,8 @@ $assets = Join-Path $taskRoot 'website/next/assets'
 Get-Command ffmpeg -ErrorAction Stop | Out-Null
 
 try {
-  foreach ($clip in @('athlete', 'trainer')) {
+  $clips = if ($Only -eq 'all') { @('athlete', 'trainer') } else { @($Only) }
+  foreach ($clip in $clips) {
     $env:PROMO_OUTPUT = Join-Path $take $clip
     if ($clip -eq 'athlete') {
       Set-Location $taskRoot
@@ -28,6 +30,17 @@ try {
     if ($LASTEXITCODE -ne 0) { throw "Falló la exportación de $clip." }
     & ffmpeg -hide_banner -loglevel warning -i $video -frames:v 1 -c:v libwebp -quality 85 -y $poster
     if ($LASTEXITCODE -ne 0) { throw "Falló el póster de $clip." }
+    if ($clip -eq 'athlete') {
+      Copy-Item -LiteralPath (Join-Path $env:PROMO_OUTPUT 'chapters.json') -Destination (Join-Path $assets 'athlete-demo.chapters.json')
+      foreach ($calculator in @('fas', 'paces')) {
+        & ffmpeg -hide_banner -loglevel warning -i (Join-Path $env:PROMO_OUTPUT "still-$calculator.png") -frames:v 1 -c:v libwebp -quality 85 -y (Join-Path $assets "calculator-$calculator.webp")
+        if ($LASTEXITCODE -ne 0) { throw "Falló la captura de $calculator." }
+      }
+      foreach ($scene in @('week', 'session', 'coach')) {
+        & ffmpeg -hide_banner -loglevel warning -i (Join-Path $env:PROMO_OUTPUT "still-$scene.png") -frames:v 1 -c:v libwebp -quality 88 -y (Join-Path $assets "story-$scene.webp")
+        if ($LASTEXITCODE -ne 0) { throw "Falló la captura del recorrido: $scene." }
+      }
+    }
   }
   Write-Host "Vídeos locales preparados en $assets"
   Write-Host "Fotogramas originales conservados en $take"
