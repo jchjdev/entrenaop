@@ -19,6 +19,8 @@ contraseña de esa copia no se crean en este bloque; tampoco se activa producci�
 ni cobros reales. Javier pide contrastar además el chat «Valorar portal de
 entrenadores»: la web reutiliza su directorio y respeta consentimiento por canal;
 el piloto con visibilidad en app no autoriza publicación web.
+El 31/10 Javier confirma dejar la implementación de la web al otro chat;
+este chat continúa con el cierre de Trainer y sus contratos de integración.
 [Guía para el chat de webs](WEBSITE_PRIVATE_PREVIEW.md).
 
 **Portátiles, calendario y columnas · 31/10/2026:** Javier pide reducir el alto

@@ -4,6 +4,10 @@ Javier plantea trabajar la web comercial con el chat de webs y mantenerla privad
 mientras se construye. Este documento prepara el alcance; no crea un subdominio,
 no publica otra web y no modifica `entrenaop.es` ni su repositorio independiente.
 
+**Reparto confirmado el 31/10/2026:** Javier deja la implementación de la web
+al otro chat. Este chat continúa con Trainer; la web reutiliza sus contratos de
+registro, acceso y contratación y el directorio desarrollado en su bloque propio.
+
 ## Recorrido principal recomendado
 
 Crear una copia de pruebas en un subdominio separado, por ejemplo
