@@ -18,7 +18,9 @@ almacén y mecanismos de envío/lectura del chat existente; al crear el vínculo
 la conversación continúa con sus mensajes previos. Correo y WhatsApp siguen
 disponibles. Permisos, límites y denuncia se comprueban en servidor. Clean
 Architecture y conservación del trabajo de los otros chats son requisitos
-expresos. [Contrato](TRAINER_PLATFORM.md#primer-contacto-en-el-chat-existente--31102026).
+expresos. La entrega `70f0b4f4` está validada, publicada en Dev y habilitada en
+la ficha de Javier; queda la aceptación real con Isabel.
+[Contrato](TRAINER_PLATFORM.md#primer-contacto-en-el-chat-existente--31102026).
 
 **Búsqueda completa en Trainer · 31/10/2026:** Javier pide buscar sesiones y
 programas en toda la biblioteca, sin cargar previamente las páginas. Las

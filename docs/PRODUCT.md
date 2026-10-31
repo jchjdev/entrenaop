@@ -13,7 +13,8 @@ El contacto utiliza el mismo chat y almacén de mensajes. Si después se acepta
 el vínculo formal, conserva mensajes, fechas y lecturas. El servidor protege
 participantes, MFA del preparador, límites y denuncia; la información del primer
 envío es adicional al consentimiento de publicación V2. La entrega tiene
-validación técnica completa en Dev; publicación y activación pendientes.
+validación técnica completa y publicación comprobada en Dev. El contacto está
+habilitado en la ficha de Javier; queda el ensayo real con Isabel.
 [Contrato y evidencia](TRAINER_PLATFORM.md#primer-contacto-en-el-chat-existente--31102026).
 
 ## Fotos personales de los usuarios · 31/10/2026

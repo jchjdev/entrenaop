@@ -793,11 +793,24 @@ sin acceso directo. La validación final integrada con los cambios de chat/agend
 `bd50a9f7` y `213a6e0c` pasa los cuatro análisis y baterías completas: deportista
 1537 (una omisión previa), Trainer 412, ADMIN 365 (dos omisiones previas),
 `entrena_ui` 59. Incluye siete pruebas del contacto y su borrador, avisos en
-Trainer y uso a 320 píxeles con texto doble. La publicación y activación siguen
-pendientes; el contacto permanece desactivado hasta verificarlas.
+Trainer y uso a 320 píxeles con texto doble.
 
-**Siguiente recorrido:** Isabel inicia el contacto en la ficha publicada; Javier
-lo revisa en Solicitudes de contacto, acepta y responde. Después se comprueba
+**Publicación y habilitación · 31/10/2026:** fuente `70f0b4f4` publicada y
+contrastada por HTTPS en Trainer y ADMIN: entorno `development`, backend
+`sxbxfjqgoddzhtcyhalw`, árbol de fuentes limpio y hashes/recursos correctos.
+[Trainer correcto](https://github.com/jchjdev/entrenaop/actions/runs/41203875000)
+y [ADMIN correcto](https://github.com/jchjdev/entrenaop/actions/runs/41203875005).
+Tras verificarlas se activa el canal en Dev y en la ficha de Javier, preservando
+foto, presentación, contactos externos, publicación y consentimiento V2.
+La simulación SQL de solo lectura con el contexto de Isabel devuelve primer
+contacto disponible; termina en `ROLLBACK` y no equivale a iniciar sesión ni a
+probar un envío real. El acceso comercial de Ervi conserva su alcance anterior;
+puede elegir el canal desde su ficha. No se modifica producción.
+
+**Siguiente recorrido:** cargar el código nuevo mediante Hot Restart en localhost
+y recargar Trainer. Isabel entra en Mi preparador → Buscar preparador → ficha de
+Javier → Contactar en EntrenaOP y envía el primer mensaje. Javier lo revisa en
+Solicitudes de contacto, acepta y responde. Después se comprueba
 que la invitación y aceptación del vínculo conservan esa misma conversación.
 
 ### Piloto con Javier y Ervi · 31/10/2026
