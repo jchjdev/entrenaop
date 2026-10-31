@@ -105,6 +105,23 @@ temas claro/oscuro y texto ampliado comprobados en los componentes afectados.
 La aceptación humana en los dispositivos y el portal publicado sigue siendo
 el siguiente recorrido; no se genera una APK en este bloque.
 
+Publicación Dev comprobada el 31/10: código
+`10ef594e7d16fe2a198b0759aa9a6062219db8c4`. Finalizan correctamente
+[Trainer](https://github.com/jchjdev/entrenaop/actions/runs/41179229902),
+[ADMIN](https://github.com/jchjdev/entrenaop/actions/runs/41179229793) y la
+[verificación del consumidor e iOS sin firma](https://github.com/jchjdev/entrenaop/actions/runs/41179230966).
+Se verifica independientemente por HTTPS cada manifiesto, entrada activa,
+SHA-256 del JavaScript, cabeceras y MIME de WebAssembly. Ambos portales sirven
+`development`, proyecto `sxbxfjqgoddzhtcyhalw`, con la revisión indicada:
+
+- Trainer: release `10ef594e7d16fe2a198b0759aa9a6062219db8c4-41179229902-1`,
+  SHA-256 `b5b19797ea934ea53df03bb2c6efcd2a86dc2d84d1b59729a0259e2d29f3560f`.
+- ADMIN: release `10ef594e7d16fe2a198b0759aa9a6062219db8c4-41179229793-1`,
+  SHA-256 `fea2ce41fae698c393f1a7c8c18cc9e24bf1007f50bae9d44453b695f02d9966`.
+
+La aceptación de Javier sigue pendiente; la app compartida necesita su próxima
+compilación/instalación. No se publica producción ni se genera APK.
+
 ### Inventario de los dieciséis puntos · 29/10/2026
 
 Javier pide el estado de los dieciséis puntos y añade gestión de borrado de

@@ -9,6 +9,9 @@ navegación y sus guardas; refrescar la misma semana conserva contenido y scroll
 por alumno o global y conserva cursores de páginas sin coincidencias. No convierte
 datos ausentes ni AMRAP en cumplimiento ficticio ni cambia permisos, SQL o
 dependencias. Se comprueba el bloque aislado del trabajo de fotos de perfil.
+Publicación automática de Trainer y ADMIN Dev e integridad HTTPS verificadas
+con `10ef594e`; las tres comprobaciones de GitHub terminan correctamente,
+incluida la compilación de iOS sin firma.
 **Único siguiente recorrido de este bloque:** aceptación de Javier de asignar,
 consultar, comentar, revisar y avanzar, volviendo a su misma agenda o bandeja.
 [Contrato y límites](TRAINER_PLATFORM.md#ficha-resultados-y-revisión-continua--31102026).
