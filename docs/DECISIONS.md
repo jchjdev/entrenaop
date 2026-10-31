@@ -4,10 +4,13 @@
 SE de segunda generación con watchOS 26.6, autorización de programación y
 visualización de una pauta enviada manualmente con fecha y pasos. La ejecución
 es ficticia; no se acredita resultado deportivo ni cierre semanal. Confirma
-después que la actividad aparece en Fitness. El siguiente paso es contrastar
-la lectura explícita desde Salud y guardar la observación en EntrenaOP.
-El enlace de esa observación con la cita semanal sigue pendiente; la importación
-al historial privado no realiza esa asociación ni completa la sesión.
+después que la actividad aparece en Fitness y que la leyó y guardó en EntrenaOP.
+Pide automatizar el retorno y compartir el resultado con el preparador. Se
+implementa en Dev una activación por cuenta y recogida al arrancar/reanudar la
+app, mediante referencia exacta de WorkoutKit y revalidación en servidor. La
+semana y Trainer reciben el resumen; el historial general sigue privado. No se
+deducen resultados por series ni RPE ni cierre semanal a partir de los totales.
+Prueba automática en el iPhone recompilado todavía pendiente.
 [Alcance de la prueba](DEVICE_APPLE_WATCH.md).
 
 **Contactos, avisos e invitación · revisión del 31/10/2026:** Javier señala que

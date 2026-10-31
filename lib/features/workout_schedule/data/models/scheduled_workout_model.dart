@@ -1,4 +1,5 @@
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
+import 'package:workout_core/device_activity_summary.dart';
 
 abstract final class ScheduledWorkoutModel {
   static ScheduledWorkout fromJson(Map<String, dynamic> json) {
@@ -31,6 +32,10 @@ abstract final class ScheduledWorkoutModel {
       coachNote: (json['trainer_assignments'] as Map?)?['note'] as String?,
       coachName: json['trainer_name'] as String?,
       isSelfAssigned: json['is_self'] == true && json['source'] == 'coach',
+      appleResults: [
+        for (final row in json['apple_results'] as List? ?? [])
+          DeviceActivitySummary.fromJson(Map<String, dynamic>.from(row as Map)),
+      ],
     );
   }
 }

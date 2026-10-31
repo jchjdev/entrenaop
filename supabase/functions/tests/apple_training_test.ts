@@ -28,3 +28,16 @@ test('Acciones desconocidas y cuerpos grandes se rechazan antes del RPC',async()
  assert.equal((await handleAppleTraining(request({owner:'o',action:'arbitrary_sql'}),config,f)).status,400);
  assert.equal((await handleAppleTraining(request({owner:'o',action:'list',padding:'x'.repeat(4000)}),config,f)).status,413);assert.equal(calls,0);
 });
+test('Retorno Apple usa la fachada propia y conserva el bearer del alumno',async()=>{
+ const response=await handleAppleTraining(request({owner:'owner',action:'results.ingest',input:{observations:[]}}),config,async(url,init)=>{
+  assert.ok(String(url).endsWith('/rpc/apple_results_command'));
+  assert.equal(new Headers(init?.headers).get('Authorization'),'Bearer USER_FIXTURE');
+  assert.deepEqual(JSON.parse(init?.body as string),{p_owner:'owner',p_action:'ingest',p_input:{observations:[]}});
+  return Response.json({inserted:0});
+ });
+ assert.equal(response.status,200);
+});
+test('Catálogo de retorno traduce solo la receta autorizada del servidor',async()=>{
+ const response=await handleAppleTraining(request({owner:'owner',action:'results.catalog'}),config,async()=>Response.json({enabled:true,results:[],plans:[{snapshot:source,revision:'a'.repeat(64),plan_id:'plan'}]}));
+ const data=await response.json();assert.equal(data.plans[0].prescription.steps.length,2);assert.equal(data.plans[0].snapshot,undefined);
+});

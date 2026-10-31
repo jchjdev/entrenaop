@@ -2,6 +2,8 @@ import 'package:entrenaop/features/workout_schedule/data/datasources/workout_sch
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:trainer_access/authenticated_rpc.dart';
 
+import '../../../../core/config/app_config.dart';
+
 class WorkoutScheduleRemoteDataSourceImpl
     implements WorkoutScheduleRemoteDataSource {
   const WorkoutScheduleRemoteDataSourceImpl({required this.supabaseClient});
@@ -61,12 +63,32 @@ class WorkoutScheduleRemoteDataSourceImpl
         if (item['is_self'] == true) selfAssigned.add(item['id'] as String);
       }
     }
+    final apple = <String, dynamic>{};
+    if (AppConfig.environment == AppEnvironment.development) {
+      final allIds = rows.map((r) => r['id'] as String).toList();
+      for (var i = 0; i < allIds.length; i += 200) {
+        final value = await authenticatedTrainerRpc(
+          supabaseClient,
+          userId,
+          'my_apple_workout_results',
+          params: {
+            'p_owner': userId,
+            'p_ids': allIds.sublist(i, (i + 200).clamp(0, allIds.length)),
+          },
+        );
+        apple.addAll(Map<String, dynamic>.from(value as Map));
+      }
+    }
+    if (supabaseClient.auth.currentUser?.id != userId) {
+      throw StateError('La cuenta ha cambiado.');
+    }
     return rows
         .map(
           (r) => {
             ...r,
             'trainer_name': ?names[r['id']],
             'is_self': selfAssigned.contains(r['id']),
+            'apple_results': apple[r['id']] ?? const [],
           },
         )
         .toList();

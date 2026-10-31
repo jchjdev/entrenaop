@@ -269,13 +269,18 @@ correctas, 247 migraciones coincidentes y compilación iOS de `c83fc433` verific
 en CI. Consulta autenticada real de planificación comprobada en el navegador.
 La preparación y el ACK local no
 cierran el bloque ni acreditan recepción física. Aún no hay envío automático ni
-asociación automática de los resultados Apple con la semana.
+incorporación automática de resultados por pasos ni cierre de la semana.
 **Prueba física comunicada del 31/10:** autorización y pauta con fecha/pasos
 visibles en un SE de segunda generación con watchOS 26.6. Ejecución ficticia;
 no se acredita resultado real ni cierre de semana. Javier confirma posteriormente
-que la actividad aparece en Fitness del iPhone emparejado.
-**Siguiente recorrido único de Apple:** leer explícitamente desde Salud y guardar
-la observación en EntrenaOP; todavía no se enlaza con la cita semanal. Cambios, retirada
+que la actividad aparece en Fitness y que la leyó y guardó en EntrenaOP.
+**Retorno en validación · 31/10:** recogida automática de pautas propias al
+arrancar/reanudar el iPhone, con consentimiento por cuenta, referencia exacta de
+WorkoutKit, revisiones y resumen plegable en la semana y en Trainer. No completa
+pasos ni inventa RPE; los datos de prueba se conservan separados.
+**Siguiente recorrido único de Apple:** recompilar el iPhone, activar el retorno
+y comprobar la referencia y el resumen de esta actividad de prueba en ambas
+vistas, sin completar la cita. Cambios, retirada
 y ejecución real de fases/avisos siguen pendientes.
 [Contrato, validación y límites](DEVICE_APPLE_WATCH.md).
 

@@ -149,7 +149,12 @@ de carreras pautadas en Entreno de Apple, desde el iPhone emparejado, para Pro o
 alumnos con servicio vigente. Requiere iOS 18/watchOS 11 en este primer adaptador;
 no cambia el mínimo del resto de la app ni la lectura básica de Salud.
 No se presenta como envío automático, soporte de fuerza ni cierre automático de
-la semana. Recepción y ejecución físicas pendientes. [Recorrido](DEVICE_APPLE_WATCH.md).
+la semana. El 31/10 Javier confirma recepción de la pauta, actividad ficticia
+visible en Fitness e importación manual a EntrenaOP. Se añade en Dev recogida
+automática al abrir/reanudar el iPhone y resumen vinculado por referencia de
+WorkoutKit, visible al deportista y al preparador de esa pauta. No inventa
+resultados por pasos ni esfuerzo ni completa la cita con totales. La nueva
+recogida requiere recompilar y contrastar físicamente. [Recorrido](DEVICE_APPLE_WATCH.md).
 
 **Consulta profesional móvil · TRN-036 · 28/10/2026:** el deportista que
 también es entrenador puede alternar su entrenamiento personal y el seguimiento

@@ -1,3 +1,5 @@
+import 'device_activity_summary.dart';
+
 enum DeviceTrainingPhase {
   notSent,
   pending,
@@ -28,6 +30,7 @@ class DeviceTrainingProgress {
     this.resultsConfirmed = false,
     this.hasDelivery = false,
     this.executionId,
+    this.appleResults = const [],
   });
 
   factory DeviceTrainingProgress.fromJson(Map<String, dynamic> json) {
@@ -66,6 +69,10 @@ class DeviceTrainingProgress {
       resultsConfirmed: json['results_confirmed'] == true,
       hasDelivery: json['has_delivery'] == true,
       executionId: json['execution_id'] as String?,
+      appleResults: [
+        for (final row in json['apple_results'] as List? ?? [])
+          DeviceActivitySummary.fromJson(Map<String, dynamic>.from(row as Map)),
+      ],
     );
   }
 
@@ -73,4 +80,5 @@ class DeviceTrainingProgress {
   final DeviceTrainingPhase phase;
   final String? reason, executionId;
   final bool resultsConfirmed, hasDelivery;
+  final List<DeviceActivitySummary> appleResults;
 }

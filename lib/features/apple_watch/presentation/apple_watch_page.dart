@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 
 import '../domain/apple_training.dart';
+import 'apple_results_coordinator.dart';
+
+import 'package:workout_editor_ui/device_activity_summary_card.dart';
 
 class AppleWatchPage extends StatefulWidget {
   const AppleWatchPage({
     super.key,
     required this.service,
     required this.onOpenHealth,
+    this.results,
   });
   final AppleTrainingService service;
   final VoidCallback onOpenHealth;
+  final AppleResultsCoordinator? results;
   @override
   State<AppleWatchPage> createState() => _AppleWatchPageState();
 }
@@ -140,6 +145,53 @@ class _AppleWatchPageState extends State<AppleWatchPage> {
               'Usa el iPhone emparejado con tu Apple Watch. Requiere iOS 18 y watchOS 11 o posteriores; un Series 2 no es compatible.',
             ),
             const SizedBox(height: 12),
+            if (widget.results case final results?)
+              ListenableBuilder(
+                listenable: results,
+                builder: (context, _) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SwitchListTile.adaptive(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Recibir resultados automáticamente'),
+                      subtitle: const Text(
+                        'Al abrir o volver a EntrenaOP, recoge tus pautas realizadas en Apple Watch. Comparte el tiempo, la distancia y las pulsaciones disponibles con el preparador de esa sesión. Puedes desactivarlo cuando quieras.',
+                      ),
+                      value: results.catalog?.enabled == true,
+                      onChanged:
+                          results.reader.supported && !results.configuring
+                          ? results.enable
+                          : null,
+                    ),
+                    if (results.busy) const LinearProgressIndicator(),
+                    if (results.error case final error?) Text(error),
+                    if (results.lastChecked case final date?)
+                      Text(
+                        'Última comprobación: ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}',
+                      ),
+                    TextButton.icon(
+                      onPressed: results.busy ? null : results.refresh,
+                      icon: const Icon(Icons.sync),
+                      label: const Text('Comprobar resultados ahora'),
+                    ),
+                    if (results.catalog?.enabled == true &&
+                        results.catalog!.results.isEmpty)
+                      const Text(
+                        'Aún no hay resultados vinculados. Guarda el entrenamiento en el reloj y espera a que aparezca en Fitness. Salud debe permitir leer Entrenamientos. Si Apple no aporta la referencia de la pauta, no se asociará por nombre o fecha.',
+                      ),
+                    for (final result in results.catalog?.results ?? []) ...[
+                      DeviceActivitySummaryCard(result: result, showName: true),
+                      if (result.state != 'test')
+                        TextButton.icon(
+                          onPressed: () => results.classify(result.id, true),
+                          icon: const Icon(Icons.science_outlined),
+                          label: const Text('Es una actividad de prueba'),
+                        ),
+                    ],
+                    const Divider(),
+                  ],
+                ),
+              ),
             if (_busy) const LinearProgressIndicator(),
             if (_error != null)
               Card(

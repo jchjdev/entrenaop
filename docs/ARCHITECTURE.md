@@ -104,6 +104,15 @@ Referencia estable por cuenta/cita, revisión, sesión, intento y exclusión pro
 las operaciones. El ACK local no acredita recepción ni ejecución. Solo Dev y
 aceptación física pendiente. [Contrato](DEVICE_APPLE_WATCH.md).
 
+**Retorno Apple · 31/10:** un caso de uso puro separado del programador recoge
+observaciones al arrancar/reanudar la app; HealthKit y la sesión Supabase quedan
+en adaptadores. La referencia de `HKWorkout.workoutPlan` y el compilador nativo
+común identifican la pauta; servidor revalida dueño, consentimiento y fuente.
+El resumen se conserva con revisiones privadas y se proyecta por cita al
+deportista y a su preparador vigente mediante widgets comunes. No se transforma
+un total en series completadas ni se crea RPE. Garmin conserva su recorrido.
+Lectura física de este nuevo retorno pendiente. [Contrato](DEVICE_APPLE_WATCH.md#retorno-automatico-de-pautas-propias--31102026).
+
 **TRN-038 · 28/10/2026 · enlaces de invitación:** el codec se comparte en
 `trainer_access`; Trainer adapta canal de envío y página pública. La app nativa
 conserva intención en memoria y una ruta sin secreto, separada del retorno Auth.

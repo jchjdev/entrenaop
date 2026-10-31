@@ -5,9 +5,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
+import 'package:workout_core/device_activity_summary.dart';
 
 import '../../../core/config/app_config.dart';
 import '../domain/apple_training.dart';
+import '../domain/apple_results.dart';
 
 class SupabaseAppleTrainingRepository implements AppleTrainingRepository {
   SupabaseAppleTrainingRepository(this.client, this.ownerId)
@@ -35,7 +37,7 @@ class SupabaseAppleTrainingRepository implements AppleTrainingRepository {
     }
   }
 
-  Future<Map<String, dynamic>> _call(
+  Future<Map<String, dynamic>> call(
     String action, [
     Map<String, Object?> input = const {},
   ]) async {
@@ -61,7 +63,7 @@ class SupabaseAppleTrainingRepository implements AppleTrainingRepository {
 
   @override
   Future<AppleCatalog> load() async {
-    final d = await _call('list');
+    final d = await call('list');
     return AppleCatalog(
       d['allowed'] == true,
       [
@@ -109,10 +111,10 @@ class SupabaseAppleTrainingRepository implements AppleTrainingRepository {
 
   @override
   Future<ApplePlan> preview(String id) async =>
-      _plan(await _call('preview', {'scheduled_id': id}));
+      _plan(await call('preview', {'scheduled_id': id}));
   @override
   Future<ApplePlan> prepare(String id, String revision) async => _plan(
-    await _call('prepare', {
+    await call('prepare', {
       'scheduled_id': id,
       'revision': revision,
       'attempt_id': const Uuid().v4(),
@@ -120,7 +122,7 @@ class SupabaseAppleTrainingRepository implements AppleTrainingRepository {
   );
   @override
   Future<void> record(String id, ApplePlan plan) async {
-    await _call('record', {
+    await call('record', {
       'scheduled_id': id,
       'revision': plan.revision,
       'attempt_id': plan.attemptId,
@@ -129,7 +131,7 @@ class SupabaseAppleTrainingRepository implements AppleTrainingRepository {
 
   @override
   Future<AppleRemoval> removal(String id) async {
-    final d = await _call('removal', {'scheduled_id': id});
+    final d = await call('removal', {'scheduled_id': id});
     return AppleRemoval(
       d['plan_id'] as String,
       d['revision'] as String,
@@ -139,13 +141,135 @@ class SupabaseAppleTrainingRepository implements AppleTrainingRepository {
 
   @override
   Future<void> removed(String id, AppleRemoval removal) async {
-    await _call('removed', {
+    await call('removed', {
       'scheduled_id': id,
       'revision': removal.revision,
       'attempt_id': removal.attemptId,
     });
   }
 }
+
+class SupabaseAppleResultsRepository implements AppleResultsRepository {
+  SupabaseAppleResultsRepository(SupabaseClient client, String owner)
+    : _training = SupabaseAppleTrainingRepository(client, owner);
+  final SupabaseAppleTrainingRepository _training;
+  @override
+  bool get isCurrent => _training.isCurrent;
+  @override
+  Future<AppleResultCatalog> load() async {
+    final d = await _training.call('results.catalog');
+    return AppleResultCatalog(
+      d['enabled'] == true,
+      [
+        for (final plan in d['plans'] as List)
+          _training._plan(Map<String, dynamic>.from(plan as Map)),
+      ],
+      [
+        for (final row in d['results'] as List)
+          DeviceActivitySummary.fromJson(Map<String, dynamic>.from(row as Map)),
+      ],
+    );
+  }
+
+  @override
+  Future<void> enable(bool enabled) async {
+    await _training.call('results.enable', {'enabled': enabled});
+  }
+
+  @override
+  Future<void> classify(String id, bool isTest) async {
+    await _training.call('results.classify', {'id': id, 'is_test': isTest});
+  }
+
+  @override
+  Future<void> ingest(List<AppleResultObservation> observations) async {
+    await _training.call('results.ingest', {
+      'observations': [
+        for (final r in observations)
+          {
+            'workout_id': r.workoutId,
+            'plan_id': r.planId,
+            'revision': r.revision,
+            'matches_prescription': r.matchesPrescription,
+            'started_at': r.startedAt.toUtc().toIso8601String(),
+            'ended_at': r.endedAt.toUtc().toIso8601String(),
+            'timer_seconds': r.seconds,
+            if (r.meters != null) 'distance_meters': r.meters,
+            if (r.averageHeartRate != null)
+              'average_heart_rate': r.averageHeartRate,
+            if (r.maxHeartRate != null) 'max_heart_rate': r.maxHeartRate,
+          },
+      ],
+    });
+  }
+}
+
+class NativeAppleResultsReader implements AppleResultsReader {
+  const NativeAppleResultsReader();
+  @override
+  bool get supported => const NativeAppleWorkoutScheduler()._supported;
+  @override
+  Future<void> authorize() async {
+    final data = await const NativeAppleWorkoutScheduler()._call(
+      'results.authorize',
+    );
+    if (data['requested'] != true) {
+      throw const AppleTrainingFailure('health_unavailable');
+    }
+  }
+
+  @override
+  Future<List<AppleResultObservation>> read(List<ApplePlan> plans) async {
+    final data = await const NativeAppleWorkoutScheduler()._call(
+      'results.read',
+      {
+        'plans': [
+          for (final plan in plans)
+            {
+              'plan_id': plan.planId,
+              'revision': plan.revision,
+              'prescription': _applePrescription(plan.prescription),
+            },
+        ],
+      },
+    );
+    final rows = data['observations'];
+    if (rows is! List || rows.length > 200) {
+      throw const AppleTrainingFailure('health_unavailable');
+    }
+    return [
+      for (final row in rows)
+        AppleResultObservation(
+          workoutId: row['workout_id'] as String,
+          planId: row['plan_id'] as String,
+          revision: row['revision'] as String,
+          matchesPrescription: row['matches_prescription'] == true,
+          startedAt: DateTime.parse(row['started_at'] as String),
+          endedAt: DateTime.parse(row['ended_at'] as String),
+          seconds: (row['timer_seconds'] as num).toDouble(),
+          meters: (row['distance_meters'] as num?)?.toDouble(),
+          averageHeartRate: (row['average_heart_rate'] as num?)?.toDouble(),
+          maxHeartRate: (row['max_heart_rate'] as num?)?.toDouble(),
+        ),
+    ];
+  }
+}
+
+Map<String, Object?> _applePrescription(ApplePrescription p) => {
+  'name': p.name,
+  'date': p.date,
+  'steps': [
+    for (final s in p.steps)
+      {
+        'kind': s.kind,
+        'measure': s.measure,
+        'value': s.value,
+        'description': s.description,
+        if (s.fast != null && s.slow != null)
+          'pace': {'fast': s.fast, 'slow': s.slow},
+      },
+  ],
+};
 
 class NativeAppleWorkoutScheduler implements AppleWorkoutScheduler {
   const NativeAppleWorkoutScheduler();

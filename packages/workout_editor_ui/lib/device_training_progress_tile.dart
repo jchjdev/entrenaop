@@ -2,6 +2,8 @@ import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:workout_core/device_training_progress.dart';
 
+import 'device_activity_summary_card.dart';
+
 class DeviceTrainingProgressTile extends StatelessWidget {
   const DeviceTrainingProgressTile({
     super.key,
@@ -73,6 +75,28 @@ class DeviceTrainingProgressTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = progress;
+    if (p.appleResults.isNotEmpty) {
+      return Column(
+        children: [
+          for (final result in p.appleResults)
+            DeviceActivitySummaryCard(result: result),
+          if (p.hasDelivery || p.resultsConfirmed)
+            DeviceTrainingProgressTile(
+              progress: DeviceTrainingProgress(
+                id: p.id,
+                name: p.name,
+                date: p.date,
+                phase: p.phase,
+                reason: p.reason,
+                hasDelivery: p.hasDelivery,
+                resultsConfirmed: p.resultsConfirmed,
+                executionId: p.executionId,
+              ),
+              showName: showName,
+            ),
+        ],
+      );
+    }
     final date = DateTime.parse(p.date);
     final attention = {
       DeviceTrainingPhase.review,

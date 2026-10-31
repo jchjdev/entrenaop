@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:workout_core/device_activity_summary.dart';
 
 enum ScheduledWorkoutSource { library, user, preparation, algorithm, coach }
 
@@ -26,6 +27,7 @@ class ScheduledWorkout extends Equatable {
     this.coachNote,
     this.coachName,
     this.isSelfAssigned = false,
+    this.appleResults = const [],
   });
 
   final String id;
@@ -42,6 +44,7 @@ class ScheduledWorkout extends Equatable {
   final String? coachNote;
   final String? coachName;
   final bool isSelfAssigned;
+  final List<DeviceActivitySummary> appleResults;
 
   @override
   List<Object?> get props => [
@@ -59,5 +62,6 @@ class ScheduledWorkout extends Equatable {
     coachNote,
     coachName,
     isSelfAssigned,
+    appleResults,
   ];
 }

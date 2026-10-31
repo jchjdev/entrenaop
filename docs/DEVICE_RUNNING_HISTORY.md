@@ -47,6 +47,12 @@ No se conserva indefinidamente una copia de registros eliminados.
 
 ## Lectura, selección y revisiones
 
+El 31/10 Javier confirma la lectura y el guardado manual de una carrera ficticia
+registrada con su Apple Watch. La petición posterior de automatizar las pautas
+propias usa un consumidor separado, documentado en [Apple Watch](DEVICE_APPLE_WATCH.md#retorno-automatico-de-pautas-propias--31102026).
+No convierte este historial general en un recurso de lectura del preparador ni
+cambia el consentimiento o las revisiones de la importación manual.
+
 La apertura carga historial guardado. Solo una acción explícita consulta Salud,
 con ventana de siete días y límites del lector existente. Leer no sube carreras.
 Guardar seleccionadas es la acción explícita de subida a la cuenta mostrada.

@@ -79,6 +79,8 @@ class WorkoutScheduleCubit extends Cubit<WorkoutScheduleState> {
     emit(state.copyWith(selectedDay: _dateOnly(day), clearError: true));
   }
 
+  Future<void> refreshItems() => _reloadItems();
+
   Future<void> changeWeek(int offset) async {
     final nextStart = state.weekStart.add(Duration(days: offset * 7));
     final today = _dateOnly(_now());

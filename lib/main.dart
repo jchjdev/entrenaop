@@ -24,6 +24,8 @@ import 'features/notifications/push_notifications.dart';
 import 'features/notifications/push_data.dart';
 import 'features/notifications/firebase_push_transport.dart';
 import 'features/notifications/push_notifications_scope.dart';
+import 'features/apple_watch/data/apple_training_adapters.dart';
+import 'features/apple_watch/presentation/apple_results_coordinator.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -58,6 +60,11 @@ Future<void> main() async {
     EntrenaOpApp(
       authCubit: authCubit,
       invitations: invitationEntry,
+      appleResults: AppleResultsCoordinator(
+        (owner) =>
+            SupabaseAppleResultsRepository(Supabase.instance.client, owner),
+        const NativeAppleResultsReader(),
+      ),
       push: PushNotificationCoordinator(
         transport: FirebasePushTransport(),
         backend: SupabasePushBackend(Supabase.instance.client),
@@ -72,12 +79,14 @@ class EntrenaOpApp extends StatefulWidget {
   final AuthCubit authCubit;
   final PushNotificationCoordinator? push;
   final TrainerInvitationEntry? invitations;
+  final AppleResultsCoordinator? appleResults;
 
   const EntrenaOpApp({
     super.key,
     required this.authCubit,
     this.push,
     this.invitations,
+    this.appleResults,
   });
 
   @override
@@ -96,6 +105,7 @@ class _EntrenaOpAppState extends State<EntrenaOpApp>
     _appRouter = AppRouter(
       widget.authCubit,
       invitationEntry: widget.invitations,
+      appleResults: widget.appleResults,
     );
     widget.invitations?.addListener(_openInvitation);
     WidgetsBinding.instance.addObserver(this);
@@ -126,6 +136,9 @@ class _EntrenaOpAppState extends State<EntrenaOpApp>
   }
 
   void _syncPush(AuthState state) {
+    widget.appleResults?.setAccount(
+      state is AuthAuthenticated ? state.user.id : null,
+    );
     if (state is AuthAuthenticated) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _openInvitation());
     }
@@ -145,6 +158,7 @@ class _EntrenaOpAppState extends State<EntrenaOpApp>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    widget.appleResults?.foreground(state == AppLifecycleState.resumed);
     if (state == AppLifecycleState.resumed && widget.push != null) {
       unawaited(widget.push!.refresh());
     }
@@ -159,6 +173,7 @@ class _EntrenaOpAppState extends State<EntrenaOpApp>
     unawaited(_pushAuth?.cancel());
     unawaited(_pushOpens?.cancel());
     widget.push?.dispose();
+    widget.appleResults?.dispose();
     unawaited(widget.authCubit.close());
     super.dispose();
   }

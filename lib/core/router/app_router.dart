@@ -1,5 +1,6 @@
 import '../../features/coach_workspace/data/supabase_coach_planning_repository.dart';
 import 'apple_watch_route.dart';
+import '../../features/apple_watch/presentation/apple_results_coordinator.dart';
 import '../../features/trainers/presentation/trainer_invitation_entry.dart';
 import '../../features/trainers/presentation/trainer_invitation_page.dart';
 import 'coach_workspace_routes.dart';
@@ -158,8 +159,11 @@ class AppRouter {
   final _rootNavigatorKey = GlobalKey<NavigatorState>();
   final _workflowExits = WorkflowExitRegistry();
 
-  AppRouter(AuthCubit authCubit, {TrainerInvitationEntry? invitationEntry})
-    : _notifier = RouterNotifier(authCubit) {
+  AppRouter(
+    AuthCubit authCubit, {
+    TrainerInvitationEntry? invitationEntry,
+    AppleResultsCoordinator? appleResults,
+  }) : _notifier = RouterNotifier(authCubit) {
     // Hace que `push` actualice también la URL web. Sin esta opción la pantalla
     // cambiaba, pero el navegador seguía mostrando /home.
     GoRouter.optionURLReflectsImperativeAPIs = true;
@@ -469,6 +473,7 @@ class AppRouter {
                               DateTime.now(),
                         ),
                         child: WorkoutSchedulePage(
+                          externalResults: appleResults?.resultsChanged,
                           focusedWorkoutId:
                               state.uri.queryParameters['session'],
                         ),
@@ -1199,6 +1204,7 @@ class AppRouter {
                 builder: (_, auth) => auth is! AuthAuthenticated
                     ? const SizedBox.shrink()
                     : AppleWatchRoute(
+                        results: appleResults,
                         key: ValueKey('apple-${auth.user.id}'),
                         ownerId: auth.user.id,
                         client: sl<SupabaseClient>(),

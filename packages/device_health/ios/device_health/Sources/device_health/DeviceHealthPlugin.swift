@@ -4,6 +4,7 @@ import UIKit
 
 public final class DeviceHealthPlugin: NSObject, FlutterPlugin {
   private var applePlanner: AnyObject?
+  private var appleResults: AnyObject?
   private let store = HKHealthStore()
   private let channel: FlutterMethodChannel
   private var activeQuery: HKSampleQuery?
@@ -28,6 +29,13 @@ public final class DeviceHealthPlugin: NSObject, FlutterPlugin {
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    if call.method.hasPrefix("apple.results.") {
+      if #available(iOS 18.0, *) {
+        if appleResults == nil { appleResults = AppleActivityReader(store: store) }
+        (appleResults as! AppleActivityReader).handle(call, result)
+      } else { result(FlutterError(code: "unsupported", message: nil, details: nil)) }
+      return
+    }
     if call.method.hasPrefix("apple.") {
       if #available(iOS 18.0, *) {
         if applePlanner == nil { applePlanner = AppleWorkoutBridge() }

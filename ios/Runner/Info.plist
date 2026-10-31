@@ -44,7 +44,7 @@
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Selecciona imágenes de tu galería para tu foto de perfil y tus ejercicios personales.</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>EntrenaOP lee tus entrenamientos de carrera para que puedas revisarlos y guardar los que elijas en tu cuenta.</string>
+	<string>EntrenaOP lee tus carreras y las pulsaciones que autorices para mostrar sus datos. Si activas la recogida automática, vincula tus pautas y comparte sus resultados con tu preparador.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

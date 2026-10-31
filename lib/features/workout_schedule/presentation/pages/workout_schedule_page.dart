@@ -1,10 +1,12 @@
 import 'package:entrenaop/core/navigation/section_refresh_boundary.dart';
 import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
+import 'package:workout_editor_ui/device_activity_summary_card.dart';
 import 'package:entrenaop/features/workout_schedule/presentation/bloc/workout_schedule_cubit.dart';
 import 'package:entrenaop/features/workout_schedule/presentation/bloc/workout_schedule_state.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/adaptive_program_progress.dart';
@@ -12,10 +14,45 @@ import 'package:entrenaop/features/preparation_goal/domain/entities/adaptive_pro
 import '../widgets/week_swipe_region.dart';
 import '../widgets/coach_plan_coincidence_notice.dart';
 
-class WorkoutSchedulePage extends StatelessWidget {
-  const WorkoutSchedulePage({super.key, this.focusedWorkoutId});
+class WorkoutSchedulePage extends StatefulWidget {
+  const WorkoutSchedulePage({
+    super.key,
+    this.focusedWorkoutId,
+    this.externalResults,
+  });
 
   final String? focusedWorkoutId;
+  final ValueListenable<int>? externalResults;
+
+  @override
+  State<WorkoutSchedulePage> createState() => _WorkoutSchedulePageState();
+}
+
+class _WorkoutSchedulePageState extends State<WorkoutSchedulePage> {
+  @override
+  void initState() {
+    super.initState();
+    widget.externalResults?.addListener(_refreshResults);
+  }
+
+  void _refreshResults() {
+    if (mounted) context.read<WorkoutScheduleCubit>().refreshItems();
+  }
+
+  @override
+  void didUpdateWidget(covariant WorkoutSchedulePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.externalResults != widget.externalResults) {
+      oldWidget.externalResults?.removeListener(_refreshResults);
+      widget.externalResults?.addListener(_refreshResults);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.externalResults?.removeListener(_refreshResults);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +119,7 @@ class WorkoutSchedulePage extends StatelessWidget {
               onChangeWeek: context.read<WorkoutScheduleCubit>().changeWeek,
               child: _ScheduleContent(
                 state: state,
-                focusedWorkoutId: focusedWorkoutId,
+                focusedWorkoutId: widget.focusedWorkoutId,
               ),
             );
           },
@@ -565,6 +602,8 @@ class _ScheduledWorkoutCard extends StatelessWidget {
                   ),
                 ],
               ),
+              for (final result in item.appleResults)
+                DeviceActivitySummaryCard(result: result),
               if (item.status == ScheduledWorkoutStatus.planned ||
                   item.status == ScheduledWorkoutStatus.inProgress) ...[
                 const SizedBox(height: 16),

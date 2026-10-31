@@ -80,7 +80,7 @@ final class AppleWorkoutBridge {
     guard let value = calendar.date(from: result), calendar.component(.month, from: value) == parts[1], calendar.component(.day, from: value) == parts[2] else { throw BridgeError.invalid }
     return result
   }
-  private func plan(_ recipe: [String: Any], id: UUID) throws -> WorkoutPlan {
+  func plan(_ recipe: [String: Any], id: UUID) throws -> WorkoutPlan {
     guard let name = recipe["name"] as? String, !name.isEmpty, name.count <= 255,
       let rows = recipe["steps"] as? [[String: Any]], !rows.isEmpty, rows.count <= 100 else { throw BridgeError.invalid }
     var warmup: WorkoutStep?, cooldown: WorkoutStep?
@@ -120,5 +120,136 @@ final class AppleWorkoutBridge {
     let workout = CustomWorkout(activity: .running, location: .outdoor, displayName: name, warmup: warmup,
       blocks: [IntervalBlock(steps: intervals, iterations: 1)], cooldown: cooldown)
     return WorkoutPlan(.custom(workout), id: id)
+  }
+}
+
+// Conserva el archivo ya registrado en CocoaPods: actualizar desde Xcode no
+// necesita regenerar su lista local de fuentes para incorporar el lector.
+
+/// Solo devuelve actividades que contienen la referencia de una pauta propia.
+/// No transforma vueltas, segmentos o totales en resultados de series supuestas.
+@available(iOS 18.0, *)
+final class AppleActivityReader {
+  private let store: HKHealthStore
+  private var busy = false
+  private var planCache: [UUID: WorkoutPlan] = [:]
+  private var pending: Set<UUID> = []
+  init(store: HKHealthStore) { self.store = store }
+
+  func handle(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+    Task { @MainActor in
+      guard HKHealthStore.isHealthDataAvailable() else {
+        result(FlutterError(code: "unsupported", message: nil, details: nil)); return
+      }
+      guard !self.busy else {
+        result(FlutterError(code: "connection_busy", message: nil, details: nil)); return
+      }
+      self.busy = true
+      defer { self.busy = false }
+      if call.method == "apple.results.authorize" {
+        do {
+          var types: Set<HKObjectType> = [HKObjectType.workoutType()]
+          if let heart = HKObjectType.quantityType(forIdentifier: .heartRate) { types.insert(heart) }
+          try await self.store.requestAuthorization(toShare: [], read: types)
+          // HealthKit no permite distinguir lectura denegada de una consulta vacía.
+          result(["requested": true])
+        } catch { result(FlutterError(code: "health_unavailable", message: nil, details: nil)) }
+        return
+      }
+      guard call.method == "apple.results.read", let args = call.arguments as? [String: Any],
+        let rawPlans = args["plans"] as? [[String: Any]], rawPlans.count <= 200 else {
+        result(FlutterError(code: "invalid_prescription", message: nil, details: nil)); return
+      }
+      var plans: [UUID: (WorkoutPlan, String)] = [:]
+      do {
+        let compiler = AppleWorkoutBridge()
+        for raw in rawPlans {
+          guard let key = raw["plan_id"] as? String, let id = UUID(uuidString: key),
+            let revision = raw["revision"] as? String, revision.count == 64,
+            let recipe = raw["prescription"] as? [String: Any] else { throw ReadError.invalid }
+          plans[id] = (try compiler.plan(recipe, id: id), revision)
+        }
+        let workouts = try await self.workouts()
+        var observations: [[String: Any]] = []
+        // El SDK puede no resolver workoutPlan en una primera instalación. Un
+        // getter atascado no debe bloquear Salud ni provocar un enlace por fecha.
+        for offset in stride(from: 0, to: workouts.count, by: 8) {
+          let batch = Array(workouts[offset..<min(offset + 8, workouts.count)])
+          let found = await withTaskGroup(of: (HKWorkout, WorkoutPlan?).self) { group in
+            for workout in batch { group.addTask { (workout, await self.boundedPlan(workout)) } }
+            var values: [(HKWorkout, WorkoutPlan?)] = []
+            for await value in group { values.append(value) }
+            return values
+          }
+          for (workout, storedPlan) in found {
+            guard let plan = storedPlan, let expected = plans[plan.id] else { continue }
+            var row: [String: Any] = [
+              "workout_id": workout.uuid.uuidString.lowercased(), "plan_id": plan.id.uuidString.lowercased(),
+              "revision": expected.1, "matches_prescription": plan.workout == expected.0.workout,
+              "started_at": ISO8601DateFormatter().string(from: workout.startDate),
+              "ended_at": ISO8601DateFormatter().string(from: workout.endDate), "timer_seconds": workout.duration,
+            ]
+            if let distance = workout.totalDistance?.doubleValue(for: .meter()) { row["distance_meters"] = distance }
+            if let type = HKObjectType.quantityType(forIdentifier: .heartRate), let stats = workout.statistics(for: type) {
+              let unit = HKUnit.count().unitDivided(by: .minute())
+              if let average = stats.averageQuantity()?.doubleValue(for: unit) { row["average_heart_rate"] = average }
+              if let maximum = stats.maximumQuantity()?.doubleValue(for: unit) { row["max_heart_rate"] = maximum }
+            }
+            observations.append(row)
+          }
+        }
+        result(["observations": observations])
+      } catch { result(FlutterError(code: "health_unavailable", message: nil, details: nil)) }
+    }
+  }
+
+  private enum ReadError: Error { case invalid }
+  @MainActor private func workouts() async throws -> [HKWorkout] {
+    try await withCheckedThrowingContinuation { continuation in
+      var finished = false
+      let now = Date()
+      let predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
+        HKQuery.predicateForWorkouts(with: .running),
+        HKQuery.predicateForSamples(withStart: now.addingTimeInterval(-14 * 86400), end: now, options: [.strictStartDate, .strictEndDate]),
+      ])
+      let query = HKSampleQuery(sampleType: HKObjectType.workoutType(), predicate: predicate, limit: 201,
+        sortDescriptors: [NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)]) { _, samples, error in
+        Task { @MainActor in
+          guard !finished else { return }
+          finished = true
+          if let error = error { continuation.resume(throwing: error) }
+          else if let workouts = samples as? [HKWorkout], workouts.count <= 200 { continuation.resume(returning: workouts) }
+          else { continuation.resume(throwing: ReadError.invalid) }
+        }
+      }
+      self.store.execute(query)
+      Task { @MainActor in
+        try? await Task.sleep(nanoseconds: 10_000_000_000)
+        if !finished {
+          finished = true; self.store.stop(query); continuation.resume(throwing: ReadError.invalid)
+        }
+      }
+    }
+  }
+
+  @MainActor private func boundedPlan(_ workout: HKWorkout) async -> WorkoutPlan? {
+    if let cached = planCache[workout.uuid] { return cached }
+    guard !pending.contains(workout.uuid), pending.count < 200 else { return nil }
+    pending.insert(workout.uuid)
+    return await withCheckedContinuation { continuation in
+      var finished = false
+      // Esta tarea no pertenece al grupo: cancelar un getter no cooperativo no
+      // puede prolongar indefinidamente la espera de la interfaz.
+      Task { @MainActor in
+        let plan = try? await workout.workoutPlan
+        self.pending.remove(workout.uuid)
+        if let plan = plan { self.planCache[workout.uuid] = plan }
+        if !finished { finished = true; continuation.resume(returning: plan) }
+      }
+      Task { @MainActor in
+        try? await Task.sleep(nanoseconds: 2_000_000_000)
+        if !finished { finished = true; continuation.resume(returning: nil) }
+      }
+    }
   }
 }

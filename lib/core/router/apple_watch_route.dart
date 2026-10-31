@@ -5,15 +5,18 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../features/apple_watch/data/apple_training_adapters.dart';
 import '../../features/apple_watch/domain/apple_training.dart';
 import '../../features/apple_watch/presentation/apple_watch_page.dart';
+import '../../features/apple_watch/presentation/apple_results_coordinator.dart';
 
 class AppleWatchRoute extends StatefulWidget {
   const AppleWatchRoute({
     super.key,
     required this.ownerId,
     required this.client,
+    this.results,
   });
   final String ownerId;
   final SupabaseClient client;
+  final AppleResultsCoordinator? results;
   @override
   State<AppleWatchRoute> createState() => _AppleWatchRouteState();
 }
@@ -46,6 +49,7 @@ class _AppleWatchRouteState extends State<AppleWatchRoute> {
   Widget build(BuildContext context) => AppleWatchPage(
     key: ObjectKey(_service),
     service: _service,
+    results: widget.results,
     onOpenHealth: () => context.push('/profile/activities'),
   );
 }
