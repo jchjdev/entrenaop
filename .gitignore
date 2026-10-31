@@ -60,3 +60,5 @@ app.*.map.json
 
 # Metadatos generados por la configuración parcial de Auth en desarrollo.
 /tools/account_access_dev/supabase/.temp/
+# Artefactos locales de la vista previa de widgets de Flutter.
+.widget_preview/
