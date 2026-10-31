@@ -520,11 +520,15 @@ class _TrainerAppState extends State<TrainerApp> {
               : TrainerSecurityPage(
                   key: ValueKey('security-$identity'),
                   repository: SupabaseTrainerSecurity(widget.client, identity),
-                  onComplete: () => context.go(
-                    state.uri.queryParameters['next'] == 'subscription'
-                        ? '/subscription'
-                        : '/home',
-                  ),
+                  onComplete: () {
+                    final subscription =
+                        state.uri.queryParameters['next'] == 'subscription';
+                    if (subscription && context.canPop()) {
+                      context.pop();
+                    } else {
+                      context.go(subscription ? '/subscription' : '/home');
+                    }
+                  },
                   onSignOut: () => widget.client.auth.signOut(),
                 ),
         ),

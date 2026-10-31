@@ -83,5 +83,6 @@ ensayo no aprueba PVP con/sin IVA ni activa cálculo fiscal automático.
 
 Validación: pruebas SQL transaccionales de las veinte ofertas, sin altas ni
 pagos persistentes de fixtures; regresiones de identidad, MFA, pago, regalos e
-idempotencia. La aceptación con tarjeta ficticia del catálogo nuevo queda como
-prueba manual posterior; no se confunde con los pagos simulados del contrato SQL.
+idempotencia. Posteriormente se acredita una compra de Completo/cinco plazas por Checkout,
+sin regalo manual: véase el contrato comercial. No se confunde ese caso con
+veinte pagos por tarjeta ni con las simulaciones SQL.

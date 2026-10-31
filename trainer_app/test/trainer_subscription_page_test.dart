@@ -1,6 +1,7 @@
 import 'package:entrenaop_trainer/trainer_subscription_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 class SubscriptionFixture implements TrainerSubscriptionRepository {
   final actions = <String>[];
@@ -99,6 +100,81 @@ class ConcurrentPlanFixture extends PlanCatalogueFixture {
 }
 
 void main() {
+  testWidgets(
+    'conserva diez plazas y el complemento al volver del autenticador',
+    (t) async {
+      final repo = PlanCatalogueFixture()..mfa = false;
+      final router = GoRouter(
+        initialLocation: '/subscription',
+        routes: [
+          GoRoute(
+            path: '/subscription',
+            builder: (_, _) => TrainerSubscriptionPage(
+              repository: repo,
+              openPayment: (_) async => true,
+            ),
+          ),
+          GoRoute(
+            path: '/security',
+            builder: (context, _) => Scaffold(
+              body: TextButton(
+                onPressed: () {
+                  repo.mfa = true;
+                  context.pop();
+                },
+                child: const Text('Autenticador verificado'),
+              ),
+            ),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+      await t.pumpWidget(MaterialApp.router(routerConfig: router));
+      await t.pumpAndSettle();
+      await t.tap(find.byType(DropdownButtonFormField<int>));
+      await t.pumpAndSettle();
+      await t.tap(find.text('Hasta 10 alumnos').last);
+      await t.pumpAndSettle();
+      await t.ensureVisible(find.byType(SwitchListTile));
+      await t.pumpAndSettle();
+      await t.tap(find.byType(SwitchListTile));
+      await t.pumpAndSettle();
+      final card = find
+          .ancestor(
+            of: find.text('Básico con directorio 10'),
+            matching: find.byType(Column),
+          )
+          .first;
+      final pay = find.descendant(
+        of: card,
+        matching: find.text('Contratar en pruebas'),
+      );
+      await t.ensureVisible(pay);
+      await t.pumpAndSettle();
+      await t.tap(pay);
+      await t.pumpAndSettle();
+      expect(repo.actions, isEmpty);
+      expect(find.text('Autenticador verificado'), findsOneWidget);
+      await t.tap(find.text('Autenticador verificado'));
+      await t.pumpAndSettle();
+      await t.scrollUntilVisible(
+        find.byType(DropdownButtonFormField<int>),
+        -200,
+      );
+      await t.pumpAndSettle();
+      expect(find.text('Hasta 10 alumnos'), findsOneWidget);
+      expect(find.text('Básico con directorio 10'), findsOneWidget);
+      expect(find.text('basic 5'), findsNothing);
+      expect(repo.actions, isEmpty);
+      await t.ensureVisible(pay);
+      await t.pumpAndSettle();
+      await t.tap(pay);
+      await t.pumpAndSettle();
+      expect(repo.selected, 'basic-directory-10');
+      expect(repo.actions, ['checkout']);
+    },
+  );
+
   testWidgets(
     'recupera la oferta de otra pestaña tras un conflicto al preparar',
     (t) async {

@@ -135,7 +135,9 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
       final assured = await widget.repository.assured();
       if (!mounted) return;
       if (!assured) {
-        context.go('/security?next=subscription');
+        // Conservamos cupo, complemento y posición mientras se verifica el MFA.
+        // La vuelta solo permite revisar la oferta; no inicia el pago sola.
+        await context.push<void>('/security?next=subscription');
         return;
       }
       final result = await widget.repository.act(action, offerId: offerId);

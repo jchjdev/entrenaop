@@ -795,7 +795,7 @@ Las veinte combinaciones pasan el contrato SQL con ROLLBACK: preparar no concede
 acceso; la evidencia simulada de pago proyecta exactamente su cupo; se rechazan
 identidad ajena y aal1. Esto no acredita veinte pagos con tarjeta en Checkout.
 La aceptación con tarjeta ficticia de la oferta antigua del 28/10 conserva su
-alcance histórico; la del catálogo nuevo está pendiente de prueba manual.
+alcance histórico; la primera aceptación del catálogo nuevo se acredita más abajo.
 
 ### Publicación comprobada del catálogo y creador · 31/10/2026
 
@@ -806,11 +806,11 @@ Se verifican por HTTPS identidad, revisión, arranque y hash de JavaScript de
 ambos portales: `development`, proyecto `sxbxfjqgoddzhtcyhalw`. Publicación
 automática, sin administrador de archivos Hostinger. Las 421 pruebas de Trainer
 incluyen conservar la oferta pendiente y recuperar la contratación preparada
-por otra pestaña. La prueba manual de registro y tarjeta ficticia con el catálogo
-nuevo sigue pendiente; el ensayo activa acceso/cupo, no concede aún Pro ni la
+por otra pestaña. En esta publicación inicial aún faltaba la prueba manual, acreditada después.
+El ensayo activa acceso/cupo, no concede aún Pro ni la
 elegibilidad comercial del directorio. No se activan cobros reales.
 
-### Prueba manual del catálogo nuevo · pendiente
+### Prueba manual del catálogo nuevo · guía reutilizable
 
 1. Crear una cuenta desde Trainer, confirmar el correo y entrar. Usar una
    cuenta sin regalos previos de ADMIN para comprobar la activación desde cero.
@@ -825,3 +825,25 @@ El ensayo no concede todavía Pro ni elegibilidad comercial del directorio.
 Para ensayar compras sucesivas de otros niveles usar otra cuenta mientras no
 esté implementado el cambio de plan; no confundir cancelar renovación con
 terminar inmediatamente el periodo ya acreditado. No se valida aquí venta real.
+
+### Aceptación del primer pago del catálogo nuevo · 31/10/2026
+
+Javier completa Checkout y entra al panel. Se contrastan el pedido con su sesión
+Stripe de sandbox: estado complete, payment_status paid, livemode false,
+2.490 céntimos EUR y la misma suscripción. En Dev queda una factura registrada,
+contrato activo, cupo efectivo de cinco y manual_enabled=false: las plazas
+proceden del pago, sin regalo de ADMIN. Corresponde a Completo · 5 alumnos,
+24,90 EUR ficticios/mes y cobertura hasta el 30/11/2026. No concede todavía
+Pro o elegibilidad comercial del directorio. Se acredita este caso, no veinte
+compras por Checkout ni cobros reales.
+
+Javier indica que creía haber elegido más de cinco plazas. El contrato y Stripe
+registran cinco; no hay evidencia de qué selección mostró antes el navegador.
+La revisión detecta una vía que reiniciaba el cupo: al abrir el autenticador se
+sustituía la contratación. Se conserva ahora su pantalla apilando la verificación
+y regresando a ella; las entradas directas al autenticador mantienen la vuelta
+normal a Suscripción. Volver no inicia pagos automáticamente. La regresión
+elige diez plazas y complemento, verifica MFA, conserva la selección y envía
+solo esa oferta al confirmar de nuevo. No se modifica la suscripción probada
+ni se concede cupo manual para ocultar la diferencia. Los cambios de plan de
+una suscripción activa siguen fuera del ensayo implementado.

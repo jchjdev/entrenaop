@@ -1175,7 +1175,7 @@ contratación. Los contratos SQL de catálogo, cupo, identidad, MFA e idempotenc
 terminan en ROLLBACK. Se contrastan cuatro migraciones propias aplicadas en Dev
 y los veinte precios activos del sandbox contra sus ofertas del servidor.
 No se incorporan los cambios Apple o promocionales abiertos en otros trabajos.
-La aceptación manual del Checkout con los precios nuevos sigue pendiente.
+La primera aceptación manual de Checkout se acredita en la sección posterior.
 
 ### Publicación comprobada del catálogo y creador · 31/10/2026
 
@@ -1186,6 +1186,31 @@ Se verifican por HTTPS identidad, revisión, arranque y hash de JavaScript de
 ambos portales: `development`, proyecto `sxbxfjqgoddzhtcyhalw`. Publicación
 automática, sin administrador de archivos Hostinger. Las 421 pruebas de Trainer
 incluyen conservar la oferta pendiente y recuperar la contratación preparada
-por otra pestaña. La prueba manual de registro y tarjeta ficticia con el catálogo
-nuevo sigue pendiente; el ensayo activa acceso/cupo, no concede aún Pro ni la
+por otra pestaña. En esta publicación inicial aún faltaba la prueba manual, acreditada después.
+El ensayo activa acceso/cupo, no concede aún Pro ni la
 elegibilidad comercial del directorio. No se activan cobros reales.
+
+### Aceptación del primer pago del catálogo nuevo · 31/10/2026
+
+Javier completa Checkout y entra al panel. Se contrastan el pedido con su sesión
+Stripe de sandbox: estado complete, payment_status paid, livemode false,
+2.490 céntimos EUR y la misma suscripción. En Dev queda una factura registrada,
+contrato activo, cupo efectivo de cinco y manual_enabled=false: las plazas
+proceden del pago, sin regalo de ADMIN. Corresponde a Completo · 5 alumnos,
+24,90 EUR ficticios/mes y cobertura hasta el 30/11/2026. No concede todavía
+Pro o elegibilidad comercial del directorio. Se acredita este caso, no veinte
+compras por Checkout ni cobros reales.
+
+Javier indica que creía haber elegido más de cinco plazas. El contrato y Stripe
+registran cinco; no hay evidencia de qué selección mostró antes el navegador.
+La revisión detecta una vía que reiniciaba el cupo: al abrir el autenticador se
+sustituía la contratación. Se conserva ahora su pantalla apilando la verificación
+y regresando a ella; las entradas directas al autenticador mantienen la vuelta
+normal a Suscripción. Volver no inicia pagos automáticamente. La regresión
+elige diez plazas y complemento, verifica MFA, conserva la selección y envía
+solo esa oferta al confirmar de nuevo. No se modifica la suscripción probada
+ni se concede cupo manual para ocultar la diferencia. Los cambios de plan de
+una suscripción activa siguen fuera del ensayo implementado.
+
+La corrección pasa flutter analyze y las 422 pruebas de Trainer, incluida la
+regresión de vuelta de MFA sin cambiar diez plazas ni su complemento.
