@@ -15,6 +15,10 @@ participantes, MFA del preparador, límites y denuncia; la información del prim
 envío es adicional al consentimiento de publicación V2. La entrega tiene
 validación técnica completa y publicación comprobada en Dev. El contacto está
 habilitado en la ficha de Javier; queda el ensayo real con Isabel.
+En Trainer, la revisión del piloto reúne Alumnos y Contactos en Conversaciones con avisos
+por pestaña y textos explícitos sobre la espera, el rechazo y el bloqueo. Desde
+el chat aceptado se puede iniciar la invitación existente; requiere indicar el
+correo de la cuenta y compartir el enlace para que la otra persona lo acepte.
 [Contrato y evidencia](TRAINER_PLATFORM.md#primer-contacto-en-el-chat-existente--31102026).
 
 ## Fotos personales de los usuarios · 31/10/2026

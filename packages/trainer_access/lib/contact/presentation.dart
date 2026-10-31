@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:entrena_ui/conversation_view.dart';
 import 'package:flutter/material.dart';
 
@@ -19,14 +21,44 @@ String contactStateLabel(ContactConversation c) => c.relationId != null
         ContactState.blocked => 'Contacto bloqueado',
       };
 
+String contactReadOnlyMessage(ContactConversation c) => switch (c.state) {
+  ContactState.pending =>
+    c.isTrainer ? 'Acepta el contacto para poder responder.' : 'Tu primer mensaje está enviado. No puedes enviar más hasta que el preparador acepte el contacto.',
+  ContactState.declined =>
+    c.isTrainer
+        ? 'Has rechazado esta solicitud. No se pueden enviar más mensajes.'
+        : 'El preparador ha rechazado la solicitud. No puedes enviar más mensajes a este contacto.',
+  ContactState.blocked =>
+    'Este contacto está bloqueado. No se pueden enviar más mensajes.',
+  _ => 'Esta conversación no admite nuevos mensajes ahora. Puedes consultar el historial.',
+};
+
+String contactConversationNotice(ContactConversation c) {
+  if (c.relationId != null) {
+    return 'El vínculo de preparación ya está creado. Abre su chat para continuar.';
+  }
+  return switch (c.state) {
+    ContactState.fresh => contactNotice,
+    ContactState.pending ||
+    ContactState.declined ||
+    ContactState.blocked => contactStateLabel(c),
+    ContactState.accepted =>
+      c.isTrainer
+          ? 'Contacto aceptado. Podéis conversar. Para empezar el seguimiento, prepara una invitación de alumno; la otra persona deberá aceptarla.'
+          : 'El preparador ha aceptado el contacto. Ya puedes escribirle. Para empezar el seguimiento necesitarás aceptar su invitación de alumno.',
+  };
+}
+
 class ContactInboxPage extends StatefulWidget {
   const ContactInboxPage({
     super.key,
     required this.repository,
     required this.onOpen,
+    this.hideLinked = false,
   });
   final ContactRepository repository;
-  final ValueChanged<ContactConversation> onOpen;
+  final FutureOr<void> Function(ContactConversation) onOpen;
+  final bool hideLinked;
   @override
   State<ContactInboxPage> createState() => _ContactInboxPageState();
 }
@@ -66,50 +98,59 @@ class _ContactInboxPageState extends State<ContactInboxPage> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const Text('Contactos y solicitudes'),
-      actions: [
-        IconButton(
-          onPressed: _busy ? null : _load,
-          tooltip: 'Actualizar',
-          icon: const Icon(Icons.refresh),
-        ),
-      ],
-    ),
-    body: RefreshIndicator(
-      onRefresh: _load,
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          const Text(
-            'Hablar no crea un vínculo de alumno ni da acceso a tus entrenamientos.',
+  Widget build(BuildContext context) {
+    final visible = _items
+        .where((c) => !widget.hideLinked || c.relationId == null)
+        .toList();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Contactos y solicitudes'),
+        actions: [
+          IconButton(
+            onPressed: _busy ? null : _load,
+            tooltip: 'Actualizar',
+            icon: const Icon(Icons.refresh),
           ),
-          if (_busy) const LinearProgressIndicator(),
-          if (_error != null) ...[
-            Text(_error!),
-            TextButton(onPressed: _load, child: const Text('Reintentar')),
-          ],
-          if (!_busy && _items.isEmpty && _error == null)
-            const Text('Todavía no tienes contactos del directorio.'),
-          for (final c in _items)
-            Card(
-              child: ListTile(
-                title: Text(c.name),
-                subtitle: Text(contactStateLabel(c)),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => widget.onOpen(c),
-              ),
-            ),
-          if (_more)
-            TextButton(
-              onPressed: _busy ? null : () => _load(more: true),
-              child: const Text('Ver más contactos'),
-            ),
         ],
       ),
-    ),
-  );
+      body: RefreshIndicator(
+        onRefresh: _load,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            if (_busy) const LinearProgressIndicator(),
+            if (_error != null) ...[
+              Text(_error!),
+              TextButton(onPressed: _load, child: const Text('Reintentar')),
+            ],
+            if (!_busy && visible.isEmpty && _error == null)
+              Text(
+                widget.hideLinked
+                    ? 'No hay contactos sin vincular en esta página. Los chats de alumnos están en Alumnos.'
+                    : 'Todavía no tienes contactos del directorio.',
+              ),
+            for (final c in visible)
+              Card(
+                child: ListTile(
+                  title: Text(c.name),
+                  subtitle: Text(contactStateLabel(c)),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () async {
+                    await widget.onOpen(c);
+                    if (mounted) await _load();
+                  },
+                ),
+              ),
+            if (_more)
+              TextButton(
+                onPressed: _busy ? null : () => _load(more: true),
+                child: const Text('Ver más contactos'),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 /// Compone el chat existente con el contexto y las acciones del primer contacto.
@@ -121,11 +162,15 @@ class ContactConversationPage extends StatefulWidget {
     this.profileId,
     this.contactId,
     this.onRead,
+    this.onInviteStudent,
+    this.onStateChanged,
   }) : assert((profileId == null) != (contactId == null));
   final ContactRepository repository;
   final String? profileId, contactId;
   final ValueChanged<String> onService;
   final VoidCallback? onRead;
+  final VoidCallback? onInviteStudent;
+  final VoidCallback? onStateChanged;
   @override
   State<ContactConversationPage> createState() =>
       _ContactConversationPageState();
@@ -160,15 +205,18 @@ class _ContactConversationPageState extends State<ContactConversationPage> {
     return ConversationHeader(
       title: c.name,
       canSend: c.canSend && c.relationId == null,
-      notice: c.state == ContactState.fresh
-          ? contactNotice
-          : '${contactStateLabel(c)}. Esta conversación no da acceso a entrenamientos.',
-      readOnlyMessage: c.state == ContactState.pending
-          ? (c.isTrainer
-                ? 'Acepta para poder responder a este primer mensaje.'
-                : 'Tu primer mensaje está enviado. Podrás continuar cuando acepte el preparador.')
-          : 'Se conserva la conversación en consulta.',
+      notice: contactConversationNotice(c),
+      readOnlyMessage: contactReadOnlyMessage(c),
       actions: (refresh) => [
+        if (c.isTrainer &&
+            c.state == ContactState.accepted &&
+            c.relationId == null &&
+            widget.onInviteStudent != null)
+          FilledButton.icon(
+            onPressed: widget.onInviteStudent,
+            icon: const Icon(Icons.person_add_alt_1),
+            label: const Text('Invitar como alumno'),
+          ),
         if (c.relationId case final relation?)
           FilledButton(
             onPressed: () => widget.onService(relation),
@@ -258,6 +306,7 @@ class _ContactConversationPageState extends State<ContactConversationPage> {
     setState(() => _acting = true);
     try {
       await widget.repository.decide(_id!, state);
+      widget.onStateChanged?.call();
       await refresh();
     } catch (e) {
       if (mounted) {

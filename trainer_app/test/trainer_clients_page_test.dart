@@ -29,6 +29,51 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  testWidgets(
+    'acceso desde contacto abre la invitación existente sin crear ni vincular al entrar',
+    (tester) async {
+      final repo = FakeTrainerRepository();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: TrainerClientsPage(repository: repo, inviteOnOpen: true),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Correo del alumno'), findsOneWidget);
+      expect(repo.drafts, isEmpty);
+      expect(repo.accepts, 0);
+      await tester.enterText(find.byType(TextFormField), 'alumna@example.test');
+      await tester.tap(find.text('Crear enlace'));
+      await tester.pumpAndSettle();
+      expect(repo.drafts.single.recipientEmail, 'alumna@example.test');
+      expect(repo.accepts, 0);
+    },
+  );
+
+  testWidgets('el acceso desde contacto respeta el cupo completo', (
+    tester,
+  ) async {
+    final repo = FakeTrainerRepository()
+      ..current = TrainerAccess.fromJson({
+        'trainer_id': 'trainer-a',
+        'effective': true,
+        'enabled': true,
+        'client_limit': 1,
+        'active_clients': 1,
+        'revision': 1,
+      });
+    await tester.pumpWidget(
+      MaterialApp(
+        home: TrainerClientsPage(repository: repo, inviteOnOpen: true),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Correo del alumno'), findsNothing);
+    expect(find.textContaining('Tu cupo está completo.'), findsOneWidget);
+    expect(repo.drafts, isEmpty);
+    expect(repo.accepts, 0);
+  });
+
   testWidgets('la baja conserva la ficha inactiva y sus etapas', (
     tester,
   ) async {

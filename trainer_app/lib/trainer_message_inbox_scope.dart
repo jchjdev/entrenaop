@@ -10,6 +10,9 @@ class TrainerMessageInboxScope extends InheritedWidget {
     required super.child,
   });
   final TrainerMessageInbox? inbox;
+  static TrainerMessageInbox? of(BuildContext context) => context
+      .dependOnInheritedWidgetOfExactType<TrainerMessageInboxScope>()
+      ?.inbox;
   static TrainerClientMessageSummary? client(
     BuildContext context,
     String clientId,

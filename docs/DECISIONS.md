@@ -1,5 +1,15 @@
 # Registro de decisiones vigentes
 
+**Contactos, avisos e invitación · revisión del 31/10/2026:** Javier señala que
+el aviso aparece en Conversaciones mientras la solicitud está en otra bandeja,
+pide aclarar cuándo se puede escribir y cómo pasar de contacto a alumno. La
+corrección en Trainer reúne Alumnos y Contactos en una sola entrada Conversaciones, con
+contadores por pestaña y acceso directo desde el aviso. Desde el chat aceptado,
+«Invitar como alumno» abre el flujo existente por correo y enlace personal;
+la persona invitada conserva su aceptación y los límites vigentes. El primer
+contacto muestra estados explícitos de espera, rechazo y bloqueo. Se conserva
+el mismo chat y su historial. [Contrato](TRAINER_PLATFORM.md#primer-contacto-en-el-chat-existente--31102026).
+
 **Directorio y planes · acuerdo del 31/10/2026:** Javier confirma directorio
 incluido en Profesional y Completo, y complemento opcional de pago en Básico.
 Sustituye la exclusión absoluta del Básico acordada el 30/10. Comprar el derecho

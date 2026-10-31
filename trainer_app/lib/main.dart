@@ -1,4 +1,5 @@
 import 'trainer_invitation_landing.dart';
+import 'trainer_conversations_hub.dart';
 import 'trainer_directory_editor.dart';
 
 import 'package:trainer_access/directory/data.dart';
@@ -544,15 +545,7 @@ class _TrainerAppState extends State<TrainerApp> {
           routes: [
             GoRoute(
               path: '/contacts',
-              builder: (_, _) => ContactInboxPage(
-                key: ValueKey('contacts-$identity'),
-                repository: SupabaseContactRepository(widget.client, identity!),
-                onOpen: (c) => _router.push(
-                  c.relationId != null
-                      ? '/conversations/${c.relationId}'
-                      : '/contacts/${c.id}',
-                ),
-              ),
+              redirect: (_, _) => '/messages?tab=contacts',
             ),
             GoRoute(
               path: '/contacts/:id',
@@ -569,6 +562,8 @@ class _TrainerAppState extends State<TrainerApp> {
                   ),
                   contactId: state.pathParameters['id']!,
                   onRead: () => _messageChanges.value++,
+                  onInviteStudent: () => _router.push('/clients?invite=1'),
+                  onStateChanged: () => _messageChanges.value++,
                   onService: (id) => _router.replace('/conversations/$id'),
                 ),
               ),
@@ -811,9 +806,27 @@ class _TrainerAppState extends State<TrainerApp> {
             ),
             GoRoute(
               path: '/messages',
-              builder: (_, _) => TrainerClientDirectoryPage(
-                repository: access(),
-                reports: false,
+              builder: (_, state) => TrainerConversationsHub(
+                key: ValueKey(
+                  'messages-$identity-${state.uri.queryParameters['tab']}',
+                ),
+                initialContacts: state.uri.queryParameters['tab'] == 'contacts',
+                students: TrainerClientDirectoryPage(
+                  repository: access(),
+                  reports: false,
+                ),
+                contacts: ContactInboxPage(
+                  hideLinked: true,
+                  repository: SupabaseContactRepository(
+                    widget.client,
+                    identity!,
+                  ),
+                  onOpen: (c) => _router.push(
+                    c.relationId != null
+                        ? '/conversations/${c.relationId}'
+                        : '/contacts/${c.id}',
+                  ),
+                ),
               ),
             ),
             GoRoute(
@@ -991,9 +1004,10 @@ class _TrainerAppState extends State<TrainerApp> {
                   ? const SizedBox.shrink()
                   : TrainerClientsPage(
                       key: ValueKey(
-                        '$identity-${state.uri.queryParameters['view']}',
+                        '$identity-${state.uri.queryParameters['view']}-${state.uri.queryParameters['invite']}',
                       ),
                       repository: access(),
+                      inviteOnOpen: state.uri.queryParameters['invite'] == '1',
                       photoLoader: photos().download,
                       onSignOut: () => widget.client.auth.signOut(),
                       onOpenWorkouts: () => context.go('/workouts'),

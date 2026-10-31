@@ -39,7 +39,6 @@ class TrainerShell extends StatefulWidget {
     ('/reports', 'Informes', Icons.insights),
     ('/settings', 'Mi cuenta', Icons.settings_outlined),
     ('/directory-profile', 'Mi ficha pública', Icons.badge_outlined),
-    ('/contacts', 'Solicitudes de contacto', Icons.forum_outlined),
   ];
   @override
   State<TrainerShell> createState() => _TrainerShellState();
@@ -174,7 +173,7 @@ class _TrainerShellState extends State<TrainerShell>
     if (!mounted || relationId == null) return;
     context.go(
       relationId == '@contacts'
-          ? '/contacts'
+          ? '/messages?tab=contacts'
           : relationId.isEmpty
           ? '/messages'
           : '/conversations/$relationId',
@@ -213,13 +212,20 @@ class _TrainerShellState extends State<TrainerShell>
         : destinations.indexWhere(
             (d) =>
                 d.$1 ==
-                (location.startsWith('/conversations/')
+                (location.startsWith('/conversations/') ||
+                        location.startsWith('/contacts')
                     ? '/messages'
                     : '/agenda'),
           );
     void go(int value) {
       if (location != destinations[value].$1) {
-        context.go(destinations[value].$1);
+        context.go(
+          destinations[value].$1 == '/messages' &&
+                  (_inbox?.totalUnread ?? 0) == 0 &&
+                  (_inbox?.contactUnread ?? 0) > 0
+              ? '/messages?tab=contacts'
+              : destinations[value].$1,
+        );
       }
     }
 

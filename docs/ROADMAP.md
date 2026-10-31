@@ -105,6 +105,16 @@ Las fichas no se publican por el chat; el recorrido con cuentas reales sigue abi
 y comprueba fichas, contacto y favoritos.
 [Contrato y evidencia](TRAINER_PLATFORM.md#piloto-con-javier-y-ervi--31102026).
 
+**TRN-040 · revisión de la prueba real · 31/10/2026:** Javier muestra la
+solicitud de Isabel y pide coherencia en avisos, bandejas e invitación a alumno.
+Se reúne Conversaciones → Alumnos/Contactos con sus contadores; la solicitud
+se actualiza al volver del chat y el usuario recibe el motivo por el que no
+puede escribir. Desde el contacto aceptado se abre la invitación existente por
+correo y enlace personal. Cuatro análisis limpios y baterías completas correctas:
+1541 deportista, 415 Trainer, 365 ADMIN, 59 UI; tres omisiones previas.
+Publicación de esta corrección pendiente de verificar.
+[Recorrido](TRAINER_PLATFORM.md#primer-contacto-en-el-chat-existente--31102026).
+
 **TRN-040 · 31/10/2026 · contacto por el chat existente publicado y habilitado en Dev:**
 Javier aprueba primer mensaje, aceptación/rechazo/bloqueo y continuación en el
 chat compartido. La solicitud no da de alta alumnos ni abre acceso a sus datos

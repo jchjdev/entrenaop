@@ -23,6 +23,7 @@ class TrainerClientsPage extends StatefulWidget {
     this.techniqueMode = false,
     this.onOpenSelf,
     this.photoLoader,
+    this.inviteOnOpen = false,
   });
   final TrainerRepository repository;
   final ProfilePhotoLoader? photoLoader;
@@ -31,6 +32,7 @@ class TrainerClientsPage extends StatefulWidget {
   final ValueChanged<String>? onOpenClient;
   final ValueChanged<String>? onOpenTechnique;
   final bool techniqueMode;
+  final bool inviteOnOpen;
   final VoidCallback? onOpenSelf;
   @override
   State<TrainerClientsPage> createState() => _TrainerClientsPageState();
@@ -49,7 +51,20 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
   @override
   void initState() {
     super.initState();
-    _refresh();
+    _refresh().then((_) {
+      if (!mounted || !widget.inviteOnOpen || widget.techniqueMode) return;
+      final access = _access;
+      if (access == null) return;
+      if (access.effective && !access.full) {
+        _invite();
+      } else {
+        setState(
+          () => _notice = access.full
+              ? 'Tu cupo está completo. No puedes invitar a otro alumno ahora.'
+              : 'Necesitas acceso profesional vigente para invitar alumnos.',
+        );
+      }
+    });
   }
 
   Future<void> _load() async {

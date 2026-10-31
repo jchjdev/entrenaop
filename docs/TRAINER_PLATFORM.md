@@ -807,10 +807,36 @@ contacto disponible; termina en `ROLLBACK` y no equivale a iniciar sesión ni a
 probar un envío real. El acceso comercial de Ervi conserva su alcance anterior;
 puede elegir el canal desde su ficha. No se modifica producción.
 
+**Revisión del piloto · 31/10/2026:** Javier muestra la solicitud de Isabel y
+detecta incoherencia entre el contador de Conversaciones y la bandeja separada
+de Solicitudes. La corrección reúne ambas en Conversaciones → Alumnos/Contactos,
+con mensajes sin leer por pestaña; la campana abre Contactos directamente.
+Cuando solo hay mensajes nuevos de contactos, el acceso de navegación abre
+esa pestaña. `/contacts` conserva compatibilidad mediante redirección. Los chats
+de contactos ya vinculados pasan a Alumnos y se refresca la lista al regresar.
+Se retira la nota general de la bandeja, cuyo «tus entrenamientos» resultaba
+confuso para el profesional. En el chat se explica explícitamente la espera,
+el rechazo o el bloqueo y la posibilidad de escribir tras aceptar.
+
+El chat aceptado ofrece «Invitar como alumno» al preparador. Abre Alumnos con
+el diálogo existente de invitación: solicita el correo de la cuenta de EntrenaOP,
+prepara el enlace personal y el preparador decide cómo compartirlo. Abrir el
+diálogo no crea invitaciones ni vínculos. Se conservan cupos, MFA y aceptación
+del destinatario; no se consulta ni revela su correo privado desde el contacto.
+La preparación y los reintentos reutilizan el recorrido existente. Esta entrega
+no incorpora una invitación enviada automáticamente dentro de los mensajes.
+La corrección pasa los cuatro análisis y las baterías completas: deportista 1541
+(una omisión previa), Trainer 415, ADMIN 365 (dos omisiones previas), UI 59.
+Incluye apertura desde el aviso y la navegación, contadores a 320 píxeles y
+texto doble, solicitud aceptada al volver, traslado a Alumnos y preparación de
+la invitación sin alta automática ni desbordar el cupo. No cambia contratos SQL,
+permisos o datos reales. Publicación de la corrección pendiente de verificar.
+
 **Siguiente recorrido:** cargar el código nuevo mediante Hot Restart en localhost
 y recargar Trainer. Isabel entra en Mi preparador → Buscar preparador → ficha de
 Javier → Contactar en EntrenaOP y envía el primer mensaje. Javier lo revisa en
-Solicitudes de contacto, acepta y responde. Después se comprueba
+Conversaciones → Contactos, acepta y responde. Después abre «Invitar como alumno»,
+prepara y comparte el enlace para que Isabel lo acepte, y se comprueba
 que la invitación y aceptación del vínculo conservan esa misma conversación.
 
 ### Piloto con Javier y Ervi · 31/10/2026

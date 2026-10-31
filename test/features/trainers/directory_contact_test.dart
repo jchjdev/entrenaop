@@ -96,6 +96,7 @@ void main() {
     _Contacts repository, {
     List<String>? service,
     double textScale = 1,
+    VoidCallback? onInviteStudent,
   }) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -109,6 +110,7 @@ void main() {
           profileId: repository.state == ContactState.fresh ? 'profile' : null,
           contactId: repository.state == ContactState.fresh ? null : 'contact',
           onService: (id) => service?.add(id),
+          onInviteStudent: onInviteStudent,
         ),
       ),
     );
@@ -168,6 +170,82 @@ void main() {
     );
     expect(service, ['service']);
     expect(repository.operations, isEmpty);
+  });
+
+  testWidgets('solo el preparador puede iniciar la invitación tras aceptar', (
+    tester,
+  ) async {
+    final repository = _Contacts()
+      ..isTrainer = true
+      ..state = ContactState.pending;
+    var invited = 0;
+    await mount(tester, repository, onInviteStudent: () => invited++);
+    expect(find.text('Invitar como alumno'), findsNothing);
+    await tester.tap(find.text('Aceptar contacto'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Invitar como alumno'));
+    await tester.pumpAndSettle();
+    expect(invited, 1);
+    expect(repository.operations, isEmpty);
+    expect(repository.relationId, isNull);
+  });
+
+  testWidgets(
+    'el contacto vinculado pasa a alumnos sin duplicarse en contactos',
+    (tester) async {
+      final repository = _Contacts()
+        ..isTrainer = true
+        ..state = ContactState.accepted
+        ..relationId = 'service';
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ContactInboxPage(
+            repository: repository,
+            hideLinked: true,
+            onOpen: (_) {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Isabel'), findsNothing);
+      expect(
+        find.textContaining('Los chats de alumnos están en Alumnos.'),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets('volver del chat refresca la solicitud aceptada', (tester) async {
+    final repository = _Contacts()
+      ..isTrainer = true
+      ..state = ContactState.pending;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ContactInboxPage(
+          repository: repository,
+          onOpen: (_) {
+            repository.state = ContactState.accepted;
+          },
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Solicitud pendiente'), findsOneWidget);
+    await tester.tap(find.text('Isabel'));
+    await tester.pumpAndSettle();
+    expect(find.text('Solicitud pendiente'), findsNothing);
+    expect(find.text('Conversación aceptada'), findsOneWidget);
+  });
+
+  testWidgets('el usuario sabe que un rechazo impide nuevos mensajes', (
+    tester,
+  ) async {
+    await mount(tester, _Contacts()..state = ContactState.declined);
+    expect(
+      find.textContaining('El preparador ha rechazado la solicitud.'),
+      findsOneWidget,
+    );
+    expect(find.byType(TextField), findsNothing);
   });
 
   testWidgets('primer contacto reutiliza conversación y espera aceptación', (

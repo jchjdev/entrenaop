@@ -8,6 +8,9 @@ void main() {
   testWidgets(
     'primer contacto llega a la campana sin crear conversación de alumno',
     (t) async {
+      t.view.physicalSize = const Size(1500, 1000);
+      t.view.devicePixelRatio = 1;
+      addTearDown(t.view.reset);
       final router = GoRouter(
         routes: [
           ShellRoute(
@@ -27,9 +30,9 @@ void main() {
                 builder: (_, _) => const Scaffold(body: Text('Inicio')),
               ),
               GoRoute(
-                path: '/contacts',
-                builder: (_, _) => const Scaffold(
-                  body: Text('Bandeja de contactos de prueba'),
+                path: '/messages',
+                builder: (_, state) => Scaffold(
+                  body: Text('Bandeja ${state.uri.queryParameters['tab']}'),
                 ),
               ),
             ],
@@ -39,6 +42,14 @@ void main() {
       await t.pumpWidget(MaterialApp.router(routerConfig: router));
       await t.pumpAndSettle();
       expect(find.byTooltip('1 mensajes sin leer'), findsOneWidget);
+      expect(find.byKey(const ValueKey('trainer-nav-/contacts')), findsNothing);
+      final conversations = find.byKey(const ValueKey('trainer-nav-/messages'));
+      await t.ensureVisible(conversations);
+      await t.tap(conversations);
+      await t.pumpAndSettle();
+      expect(find.text('Bandeja contacts'), findsOneWidget);
+      router.go('/');
+      await t.pumpAndSettle();
       await t.tap(find.byKey(const ValueKey('trainer-message-notices')));
       await t.pumpAndSettle();
       expect(
@@ -47,7 +58,7 @@ void main() {
       );
       await t.tap(find.text('Contactos del directorio'));
       await t.pumpAndSettle();
-      expect(find.text('Bandeja de contactos de prueba'), findsOneWidget);
+      expect(find.text('Bandeja contacts'), findsOneWidget);
       await t.pumpWidget(const SizedBox.shrink());
       router.dispose();
     },
