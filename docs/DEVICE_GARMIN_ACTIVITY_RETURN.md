@@ -207,3 +207,38 @@ contra una pauta; la prueba usa una pauta archivada y no se restaura ni se
 completa para simular la consulta. El siguiente tramo es una bandeja de lectura
 privada en «Para mí», sin conceder a un preparador acceso al historial no
 asociado de sus alumnos ni emparejar por nombre/fecha.
+
+
+## Bandeja privada de recepción en Trainer · 01/11/2026
+
+«Para mí» → «Mi planificación» incorpora «Mis actividades recibidas», plegable,
+con tarjetas de resumen reutilizadas de `workout_editor_ui`. El puerto y DTO
+pertenecen a `workout_core`; el adaptador Supabase y la composición quedan en
+Trainer. El DTO distingue proveedor y ausencia de pauta, conserva compatibilidad
+con Apple y no permite que una actividad sin asociar declare ejecución o pauta.
+Se muestran tiempo, distancia y pulso disponibles; las vueltas Garmin no se
+confunden con los intervalos nativos Apple. No se muestra RPE ausente.
+
+La fachada `public.my_unassigned_device_activities` es invoker y delega en un
+lector privado con propietario igual a `auth.uid()` y `p_expected_owner`.
+Solo authenticated puede ejecutarla; no concede acceso directo a tablas. Dev
+aplica `20261101181643_device_activity_inbox`, sin cambiar datos existentes.
+Devuelve como máximo 30 actividades, una revisión reciente por identidad externa,
+y excluye las ya confirmadas. Conserva lectura del historial propio aunque no
+haya una conexión o un servicio de pago vigente: esto no concede nuevas
+importaciones. No devuelve identidad del proveedor, tokens, revisiones ni FIT/GPS.
+
+La bandeja solo se presenta en el contexto propio. No amplía lo que un
+preparador puede consultar de alumnos: sus resultados confirmados y los retornos
+Apple con referencia de su pauta conservan sus contratos existentes. No hay
+emparejamiento por fecha/nombre, restauración de pautas ni cierre de Core.
+
+El futuro de lectura y sus resultados se sustituyen al cambiar repositorio o
+cuenta; una respuesta tardía no recupera las mediciones anteriores. Se cubren
+carga al desplegar, ausencia de datos, credenciales cruzadas y visibilidad solo
+propia. Baterías locales: raíz 1561 correctas/una omisión previa, ADMIN 368/dos
+omisiones y Trainer 428 correctas; análisis de las tres apps y tres regresiones
+de la tarjeta compartida correctos. El contrato SQL propio pasa con ROLLBACK
+antes y después de aplicar la migración. Sin avisos nuevos del asesor de
+seguridad para estas funciones. Publicación y comprobación visual de esta
+bandeja se acreditarán después de terminar el despliegue.

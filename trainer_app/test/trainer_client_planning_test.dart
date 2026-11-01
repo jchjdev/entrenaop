@@ -11,6 +11,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trainer_access/trainer_calendar.dart';
 import 'package:workout_core/professional_opposition_goal.dart';
+import 'package:workout_core/device_activity_inbox.dart';
+import 'package:workout_core/device_activity_summary.dart';
 import 'package:entrenaop_trainer/trainer_client_goals.dart';
 
 import '../../test/helpers/performance_visual_review.dart';
@@ -72,6 +74,7 @@ Future<void> mount(
   String client = 'client',
   WorkspaceFixture? workspace,
   Widget? goals,
+  DeviceActivityInboxRepository? receivedActivities,
 }) async {
   t.view.physicalSize = Size(width, 1200);
   t.view.devicePixelRatio = 1;
@@ -100,6 +103,7 @@ Future<void> mount(
           operations: OperationsFixture(),
           initialDate: DateTime(2026, 10, 26),
           goals: goals,
+          receivedActivities: receivedActivities,
           onCreateSession: createSession,
           onCreateProgram: createProgram,
         ),
@@ -164,7 +168,27 @@ class FutureCoachCalendar extends CalendarFixture {
   }
 }
 
+class EmptyDeviceInbox implements DeviceActivityInboxRepository {
+  @override
+  Future<List<DeviceActivitySummary>> load() async => const [];
+}
+
 void main() {
+  testWidgets(
+    'la bandeja privada solo se muestra en Para mí, nunca en la ficha de otro alumno',
+    (t) async {
+      final inbox = EmptyDeviceInbox();
+      await mount(t, receivedActivities: inbox);
+      expect(find.text('Mis actividades recibidas'), findsNothing);
+      await mount(
+        t,
+        client: 'self',
+        workspace: SelfWorkspace(),
+        receivedActivities: inbox,
+      );
+      expect(find.text('Mis actividades recibidas'), findsOneWidget);
+    },
+  );
   setUpAll(loadReviewFont);
   testWidgets(
     'actualizar la misma semana conserva contenido y scroll durante la lectura',

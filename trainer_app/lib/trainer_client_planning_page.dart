@@ -1,4 +1,5 @@
 import 'trainer_catalog_search.dart';
+import 'trainer_device_activity_inbox_panel.dart';
 
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,7 @@ import 'package:workout_core/workout_template.dart';
 import 'package:workout_core/guided_program_codec.dart';
 import 'package:workout_core/workout_template_model.dart';
 import 'package:workout_core/device_training_progress.dart';
+import 'package:workout_core/device_activity_inbox.dart';
 import 'package:workout_editor_ui/device_training_progress_tile.dart';
 import 'package:workout_editor_ui/workout_template_content.dart';
 
@@ -110,8 +112,10 @@ class TrainerClientPlanningPage extends StatefulWidget {
     this.initialDate,
     this.onCreateSession,
     this.onCreateProgram,
+    this.receivedActivities,
   });
   final ProfilePhotoLoader? photoLoader;
+  final DeviceActivityInboxRepository? receivedActivities;
   final String clientId;
   final TrainerClientWorkspaceRepository workspace;
   final TrainerRepository access;
@@ -375,6 +379,11 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
             Text(
               'Semana seleccionada · ${trainerDate(_from)} – ${trainerDate(_to)}',
             ),
+            if (_client!.client.isSelf && widget.receivedActivities != null)
+              TrainerDeviceActivityInboxPanel(
+                key: ValueKey('received-${widget.clientId}'),
+                repository: widget.receivedActivities!,
+              ),
             if (_error == null)
               Text(
                 'Pautas visibles · ${entries.where((e) => !e.running).length} de fuerza · ${entries.where((e) => e.running).length} de carrera · ${entries.where((e) => e.status == 'completed').length} realizadas',

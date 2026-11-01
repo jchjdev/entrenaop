@@ -2188,3 +2188,13 @@ archivada. Para satisfacer la consulta de Javier se añade a continuación una
 bandeja privada de actividades recibidas en «Para mí»; no autoriza lectura de
 actividades no asociadas de otros alumnos ni asociación automática por fecha.
 El detalle y la validación están en [retorno Garmin](DEVICE_GARMIN_ACTIVITY_RETURN.md#desfase-de-fronteras-fit-y-reenvío-real--01112026).
+
+
+**INT-023 · 01/11/2026 · bandeja propia implementada:** consulta de actividades
+Garmin recibidas sin asociarlas ni completar la pauta archivada, en Trainer/Para
+mí. Puerto, resumen y tarjeta compartidos; lectura autenticada restringida al
+titular, últimas 30 revisiones actuales y sin resultados ya confirmados. No da
+al entrenador acceso a actividad privada no asociada de alumnos. Conserva la
+compatibilidad Apple y descarta respuestas tras cambio de cuenta. Migración,
+contrato SQL transaccional, análisis y baterías de las tres apps comprobados;
+publicación/aceptación visual pendientes en el punto de guardado de implementación.

@@ -50,8 +50,8 @@ Javier aclara que la aceptación de este ensayo es ver los datos en Trainer,
 no cerrar la cita. La importación manual de Salud es otro recorrido: que muestre
 un registro de Garmin no acredita el retorno de la conexión directa Garmin.
 
-El aviso directo de la nueva actividad Garmin llega a Dev, pero el importador
-lo deja en revisión con `invalid_activity`. Los registros anteriores y las
+En la primera comprobación, el aviso directo de la nueva actividad Garmin llega
+a Dev, pero el importador lo deja en revisión con `invalid_activity`. Los registros anteriores y las
 pruebas Garmin aceptadas no acreditan este archivo nuevo. Queda localizar la
 validación que falla mediante el original de Garmin Connect; la consulta pública
 confirma su existencia, pero la exportación original requiere iniciar sesión.
@@ -64,6 +64,13 @@ Apple está comprobada en servidor y consulta propia de Trainer; cierre de una
 cita, consulta física por otro preparador, avisos, cambios y retirada conservan
 sus aceptaciones pendientes. Este ensayo no requiere otra carrera ni completar
 la pauta archivada.
+
+**Actualización posterior del 01/11:** el FIT original identifica el rechazo por
+un desfase acotado de fronteras. Se corrige el validador y un reenvío oficial ya
+acredita recepción de todas sus vueltas en Dev. Se implementa una bandeja privada
+en Trainer/Para mí para consultar este retorno sin cerrar la pauta archivada.
+[Corrección, consulta y validación actual](DEVICE_GARMIN_ACTIVITY_RETURN.md#bandeja-privada-de-recepción-en-trainer--01112026).
+La comprobación visual publicada queda pendiente de terminar el despliegue.
 
 ### Sesiones realizadas otro día · propuesta abierta
 

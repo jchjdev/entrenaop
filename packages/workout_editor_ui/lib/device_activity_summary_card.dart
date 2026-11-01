@@ -13,21 +13,24 @@ class DeviceActivitySummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final r = result;
+    final source = r.provider == 'garmin' ? 'Garmin' : 'Apple Watch';
     final date = r.startedAt.toLocal();
     final seconds = r.seconds.round();
     final time =
         '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}';
     final label = switch (r.state) {
+      'unassigned' =>
+        '${r.provider == 'garmin' ? 'Garmin' : 'Apple Watch'} · Pendiente de asociar',
       'test' => 'Prueba · no completa la sesión',
       'review' => 'Resultado pendiente de revisión',
       _ =>
         r.executionId == null
-            ? 'Resultado recibido de Apple Watch'
+            ? 'Resultado recibido de $source'
             : 'Resultados incorporados a la sesión',
     };
     return Card(
       child: ExpansionTile(
-        key: PageStorageKey('apple-result-${r.id}'),
+        key: PageStorageKey('device-result-${r.provider}-${r.id}'),
         leading: Icon(
           Icons.watch_outlined,
           color: r.state == 'associated'
@@ -50,11 +53,15 @@ class DeviceActivitySummaryCard extends StatelessWidget {
           if (r.effortScore case final value?)
             Text('Esfuerzo registrado en Salud: $value/10'),
           if (r.intervalCount > 0)
-            Text('${r.intervalCount} intervalos disponibles'),
+            Text(
+              '${r.intervalCount} ${r.provider == 'garmin' ? 'vueltas' : 'intervalos'} disponibles',
+            ),
           const SizedBox(height: 8),
           if (r.executionId == null)
             Text(
-              r.state == 'test'
+              r.state == 'unassigned'
+                  ? 'Actividad recibida en tu cuenta. Todavía no está asociada a una pauta ni completa una sesión.'
+                  : r.state == 'test'
                   ? 'Actividad identificada como prueba. Se conserva separada del resultado deportivo.'
                   : r.state == 'review'
                   ? 'La receta o sus datos necesitan revisión antes de incorporarlos como entrenamiento completado.'

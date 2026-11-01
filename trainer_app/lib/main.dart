@@ -21,6 +21,7 @@ import 'trainer_auth_browser.dart';
 import 'trainer_client_goals_repository.dart';
 import 'trainer_client_goals.dart';
 import 'trainer_client_planning_repository.dart';
+import 'trainer_device_activity_inbox_repository.dart';
 import 'trainer_client_planning_page.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -1242,6 +1243,10 @@ class _TrainerAppState extends State<TrainerApp> {
                     planning: SupabaseTrainerClientPlanningRepository(
                       widget.client,
                       identity!,
+                    ),
+                    receivedActivities: SupabaseDeviceActivityInboxRepository(
+                      widget.client,
+                      identity,
                     ),
                     sharedCalendar: SupabaseTrainerSharedCalendarRepository(
                       widget.client,

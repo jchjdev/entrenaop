@@ -6,6 +6,41 @@ import 'package:workout_editor_ui/device_activity_summary_card.dart';
 import 'package:workout_editor_ui/device_training_progress_tile.dart';
 
 void main() {
+  testWidgets(
+    'Garmin sin pauta muestra sus datos sin anunciar una sesión completada',
+    (tester) async {
+      final garmin = DeviceActivitySummary.fromJson({
+        'id': 'garmin',
+        'scheduled_id': null,
+        'provider': 'garmin',
+        'state': 'unassigned',
+        'name': 'Carrera sintética',
+        'started_at': '2026-10-20T08:00:00Z',
+        'timer_seconds': 120.125,
+        'distance_meters': 420.25,
+        'interval_count': 3,
+        'average_heart_rate': 125,
+      });
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: DeviceActivitySummaryCard(result: garmin, showName: true),
+          ),
+        ),
+      );
+      expect(
+        find.textContaining('Garmin · Pendiente de asociar'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('2:00 · 0.42 km'), findsOneWidget);
+      expect(find.textContaining('FC media'), findsNothing);
+      await tester.tap(find.byType(ExpansionTile));
+      await tester.pumpAndSettle();
+      expect(find.text('FC media: 125 ppm'), findsOneWidget);
+      expect(find.text('3 vueltas disponibles'), findsOneWidget);
+      expect(find.textContaining('Todavía no está asociada'), findsOneWidget);
+    },
+  );
   final result = DeviceActivitySummary.fromJson({
     'id': 'activity',
     'scheduled_id': 'appointment',

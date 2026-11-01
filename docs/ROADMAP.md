@@ -323,12 +323,14 @@ ensayo. Retorno automático Apple y tres actividades medidas recibidos en Dev;
 resumen contrastado en Trainer/Para mí incluso con la pauta original archivada.
 La prueba ficticia anterior sigue separada. Javier fija como objetivo de esta
 comprobación la recepción y consulta, sin restaurar ni completar la cita.
-El aviso nuevo Garmin llega, pero su archivo queda en revisión con
-`invalid_activity`; falta investigar el original autenticado. La lectura manual
+El primer archivo Garmin quedó en revisión con `invalid_activity`. El original
+autenticado permite corregir un desfase acotado entre fronteras; el reenvío
+oficial posterior ya guarda sus ocho vueltas en Dev. La lectura manual
 de ese registro desde Salud no acredita la conexión directa Garmin.
-**Siguiente recorrido único de integraciones:** resolver el rechazo del nuevo
-archivo Garmin y contrastar sus datos en Trainer con la misma carrera, sin pedir
-otra ejecución física. La consulta por otro preparador y las pruebas Apple de
+**Siguiente recorrido único de integraciones:** publicar y comprobar la bandeja
+privada de actividades recibidas en Trainer/Para mí con esta misma carrera. La
+lectura, la tarjeta compartida y el aislamiento de cuentas están implementados y
+validados localmente; no restaura ni completa la pauta archivada. La consulta por otro preparador y las pruebas Apple de
 cierre, fases/avisos, cambios y retirada conservan sus verificaciones pendientes.
 La flexibilidad para realizar sesiones otro día queda por concretar; siete días
 es propuesta, sin un nuevo límite implantado.

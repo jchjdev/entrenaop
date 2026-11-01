@@ -201,11 +201,12 @@ class _AppleWatchPageState extends State<AppleWatchPage> {
                           icon: const Icon(Icons.history),
                           label: const Text('Ver en mi historial'),
                         )
-                      else if (widget.onReviewResult != null)
+                      else if (widget.onReviewResult != null &&
+                          result.scheduledId != null)
                         TextButton.icon(
                           onPressed: () => widget.onReviewResult!(
                             result.id,
-                            result.scheduledId,
+                            result.scheduledId!,
                           ),
                           icon: const Icon(Icons.fact_check_outlined),
                           label: Text(
