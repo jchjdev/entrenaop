@@ -3,11 +3,19 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 import '../domain/apple_results.dart';
+import '../domain/apple_results_wakeup.dart';
 import '../domain/apple_training.dart';
 
 /// El ciclo de vida solo dispara el caso de uso. No conoce HealthKit ni RPC.
 class AppleResultsCoordinator extends ChangeNotifier {
-  AppleResultsCoordinator(this._repositoryFor, this.reader);
+  AppleResultsCoordinator(this._repositoryFor, this.reader, {this.wakeup});
+  final AppleResultsWakeup? wakeup;
+  bool backgroundEnabled = false;
+  bool _wakeupConfigured = false;
+  bool _accountInitialized = false;
+  int _wakeupGeneration = -1;
+  String? _wakeupOwner;
+  Future<void>? _activeRefresh;
   final AppleResultsRepository Function(String) _repositoryFor;
   final AppleResultsReader reader;
   SyncAppleResults? _sync;
@@ -39,12 +47,23 @@ class AppleResultsCoordinator extends ChangeNotifier {
   }
 
   void setAccount(String? owner) {
-    if (owner == _owner && (_sync?.repository.isCurrent ?? owner == null)) {
+    if (_accountInitialized &&
+        owner == _owner &&
+        (_sync?.repository.isCurrent ?? owner == null)) {
       return;
     }
+    _accountInitialized = true;
+    final hadAccount = _owner != null;
     _sync?.dispose();
     _owner = owner;
     _configuration++;
+    _activeRefresh = null;
+    backgroundEnabled = false;
+    _wakeupConfigured = false;
+    _wakeupOwner = null;
+    if (hadAccount || owner == null) {
+      unawaited(wakeup?.configure(null, () async => false));
+    }
     catalog = null;
     error = null;
     lastChecked = null;
@@ -68,7 +87,54 @@ class AppleResultsCoordinator extends ChangeNotifier {
     if (value && _sync != null) unawaited(refresh());
   }
 
-  Future<void> refresh() async {
+  Future<void> refresh() {
+    if (_sync == null || _disposed) return Future.value();
+    if (_activeRefresh case final pending?) return pending;
+    final completed = Completer<void>();
+    _activeRefresh = completed.future;
+    unawaited(
+      _refreshOnce().whenComplete(() {
+        if (identical(_activeRefresh, completed.future)) _activeRefresh = null;
+        completed.complete();
+      }),
+    );
+    return completed.future;
+  }
+
+  Future<void> _configureWakeup() async {
+    final sync = _sync;
+    final owner = catalog?.enabled == true && sync != null ? _owner : null;
+    if (wakeup == null ||
+        (_wakeupConfigured &&
+            owner == _wakeupOwner &&
+            _wakeupGeneration == _configuration)) {
+      return;
+    }
+    final generation = _configuration;
+    _wakeupConfigured = true;
+    _wakeupOwner = owner;
+    _wakeupGeneration = generation;
+    final enabled = await wakeup!.configure(owner, () async {
+      // Un aviso durante otra lectura exige una pasada posterior: la consulta
+      // anterior podría haberse iniciado antes de guardarse el entrenamiento.
+      if (_activeRefresh case final pending?) await pending;
+      if (_disposed || _sync != sync || generation != _configuration) {
+        return false;
+      }
+      await refresh();
+      return !_disposed &&
+          _sync == sync &&
+          generation == _configuration &&
+          error == null &&
+          catalog?.enabled == true;
+    });
+    if (!_disposed && _sync == sync && generation == _configuration) {
+      backgroundEnabled = enabled;
+      _wakeupConfigured = enabled || owner == null;
+    }
+  }
+
+  Future<void> _refreshOnce() async {
     final sync = _sync;
     if (sync == null || busy || _disposed) return;
     busy = true;
@@ -80,6 +146,7 @@ class AppleResultsCoordinator extends ChangeNotifier {
       if (_sync != sync || _disposed) return;
       if (result != null && configuration == _configuration) _catalog(result);
       lastChecked = DateTime.now();
+      await _configureWakeup();
     } catch (e) {
       if (_sync == sync && !_disposed) error = _message(e);
     } finally {
@@ -105,6 +172,7 @@ class AppleResultsCoordinator extends ChangeNotifier {
       final next = await sync.repository.load();
       if (_sync != sync || _disposed || configuration != _configuration) return;
       _catalog(next);
+      await _configureWakeup();
       configuring = false;
       error = null;
       _notify();
@@ -157,6 +225,7 @@ class AppleResultsCoordinator extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
+    unawaited(wakeup?.dispose());
     _timer?.cancel();
     _sync?.dispose();
     resultsChanged.dispose();

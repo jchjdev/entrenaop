@@ -187,6 +187,12 @@ class _AppleWatchPageState extends State<AppleWatchPage> {
                       icon: const Icon(Icons.sync),
                       label: const Text('Comprobar resultados ahora'),
                     ),
+                    if (results.catalog?.enabled == true)
+                      Text(
+                        results.backgroundEnabled
+                            ? 'Recogida en segundo plano activada. iOS decide cuándo entrega los avisos de Salud; también se comprueba al abrir EntrenaOP.'
+                            : 'Se comprueban los resultados al abrir EntrenaOP. La recogida en segundo plano aún no está activada en esta instalación.',
+                      ),
                     if (results.catalog?.enabled == true &&
                         results.catalog!.results.isEmpty)
                       const Text(

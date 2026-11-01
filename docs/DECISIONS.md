@@ -2225,3 +2225,27 @@ comprobados por HTTPS; sus CI y la de Garmin/iOS son correctas. Se abre la carre
 real en la bandeja publicada de «Para mí» y se contrastan tiempo, distancia, pulso
 y ocho vueltas sin cerrar la pauta archivada. Esta aceptación propia no acredita
 consulta por otro preparador ni asociación automática. [Evidencia y límites](DEVICE_GARMIN_ACTIVITY_RETURN.md#bandeja-privada-de-recepción-en-trainer--01112026).
+
+
+## INT-023 · Retorno autónomo y RPE pendiente · 01/11/2026
+
+Javier pide terminar la recogida y presentación automática al preparador y
+confirma expresamente cerrar una sesión acreditada aunque falte RPE, conservando
+null y permitiendo añadirlo después. La identificación de la pauta y sus pasos
+debe apoyarse en referencias fiables; la ambigüedad, las pruebas, los conflictos
+y las pautas archivadas/canceladas conservan revisión, sin cierres inventados.
+Se implementa primero el aviso HealthKit hacia el sincronizador autenticado,
+sin credenciales ni recetas duplicadas en el adaptador nativo. Cierre sin RPE y
+asociación automática siguen pendientes de su implementación y comprobación.
+[Contrato de recogida](DEVICE_APPLE_WATCH.md#recogida-por-avisos-de-salud--01112026).
+
+Javier también confirma el objetivo de que Isabel pueda autorizar a ambos
+preparadores a consultar resultados deportivos. Es un permiso separado del
+calendario, apagado por defecto y revocable; no incluye conversaciones, notas,
+medios privados ni acceso a su historial general de Salud. Esta ampliación está
+acordada, todavía no implementada ni activada en ninguna cuenta.
+
+Javier confirma también un margen de hasta siete días después de la fecha
+prevista para asociar/cerrar una pauta realizada otro día. Se utiliza la fecha
+real de realización, no la llegada de la sincronización, y se conserva revisión
+ante candidatos dudosos. Su aplicación se desarrolla en el siguiente tramo.

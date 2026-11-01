@@ -76,12 +76,12 @@ pauta archivada sigue sin completar. CI de Trainer, ADMIN y Garmin/iOS correctas
 La aceptación de consulta propia de ambos proveedores queda acreditada; esto
 no certifica el recorrido completo Apple ni otro contexto alumno/preparador.
 
-### Sesiones realizadas otro día · propuesta abierta
+### Sesiones realizadas otro día · margen acordado
 
 Javier plantea que una sesión pendiente pueda completarse al realizarla días
 después de la fecha prevista, con un límite razonable. Se conservarían la fecha
 pautada y la fecha real, tomando la realización y no la llegada de la sincronización.
-El agente recomienda siete días; Javier no ha confirmado ese plazo y no se ha
+Javier confirma el 01/11 el margen de hasta siete días posteriores. Aún no se ha
 implementado un nuevo límite. Una anulación o sustitución explícita se distingue
 de una sesión simplemente pendiente. El criterio será común a los proveedores;
 queda concretar y validar su efecto en planificación e historial antes de aplicarlo.
@@ -343,3 +343,44 @@ El bloque permanece abierto hasta esa aceptación física.
 - [WorkoutScheduler](https://developer.apple.com/documentation/workoutkit/workoutscheduler).
 - [Paso con nombre: iOS 18/watchOS 11](https://developer.apple.com/documentation/workoutkit/WorkoutStep/init(goal:alert:displayName:)).
 - [Diseño y programación de entrenamientos, WWDC23](https://developer.apple.com/videos/play/wwdc2023/10016/).
+
+
+## Recogida por avisos de Salud · 01/11/2026
+
+Javier pide terminar el recorrido autónomo. Se añade un puerto de avisos del
+sistema, separado del lector y repositorio: el observador nativo de HealthKit
+solo despierta el mismo caso de uso autenticado. No crea otro almacén de tokens,
+no refresca sesiones por su cuenta y no guarda mediciones en preferencias.
+El AppDelegate prepara el observador al arrancar, antes de la hidratación Auth;
+solo se registra si la recogida ya estaba activada. Se incorpora el entitlement
+HealthKit Background Delivery, conservando el mínimo iOS general y la barrera
+iOS 18 para el lector de pautas Apple.
+
+Un aviso durante otra consulta espera y vuelve a leer para recoger datos
+posteriores. Cambiar/salir de cuenta invalida la respuesta anterior. El apagado
+retira el observador y sus avisos; destruir el motor conserva la preferencia para
+un arranque posterior. El aviso al sistema siempre se acusa en un plazo acotado,
+y un fallo conserva un marcador de relectura, nunca un resultado importado falso.
+La app muestra si la instalación ha podido activar el segundo plano. Una versión
+anterior conserva la recogida al abrir la app.
+
+La entrega depende de iOS, permisos, sesión/red y disponibilidad de los datos
+protegidos. No se promete inmediatez ni ejecución ilimitada con cierre forzado.
+Es necesario actualizar una vez el iPhone para incorporar el código nativo y
+contrastar el retorno con la app en segundo plano. La compilación sin firma y
+las pruebas no sustituyen esa aceptación física. Fuerza Apple continúa fuera
+del alcance implementado; las recetas de carrera incluyen sus fases y series.
+
+Javier confirma que el RPE ausente no debe bloquear un cierre acreditado: debe
+quedar pendiente para añadirlo después. Es el criterio del siguiente tramo de
+automatización, todavía no una modificación de los cierres SQL en este punto.
+
+Referencias: [observadores](https://developer.apple.com/documentation/healthkit/executing-observer-queries)
+y [entitlement y entrega](https://developer.apple.com/documentation/healthkit/hkhealthstore/enablebackgrounddelivery(for:frequency:withcompletion:)).
+
+Validación local de este tramo: análisis raíz sin incidencias y 1.565 pruebas
+correctas con la omisión previa; cuatro regresiones cubren aviso en segundo
+plano, aviso durante una lectura, reautorización y respuesta tras salir de cuenta.
+La compilación iOS sin firma se comprueba en CI después de subir este punto.
+No cambia aún la asociación Garmin, el cierre SQL sin RPE ni la compartición
+adicional de resultados entre preparadores.

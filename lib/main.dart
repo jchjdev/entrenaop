@@ -25,6 +25,7 @@ import 'features/notifications/push_data.dart';
 import 'features/notifications/firebase_push_transport.dart';
 import 'features/notifications/push_notifications_scope.dart';
 import 'features/apple_watch/data/apple_training_adapters.dart';
+import 'features/apple_watch/data/native_apple_results_wakeup.dart';
 import 'features/apple_watch/presentation/apple_results_coordinator.dart';
 
 Future<void> main() async {
@@ -64,6 +65,7 @@ Future<void> main() async {
         (owner) =>
             SupabaseAppleResultsRepository(Supabase.instance.client, owner),
         const NativeAppleResultsReader(),
+        wakeup: NativeAppleResultsWakeup(),
       ),
       push: PushNotificationCoordinator(
         transport: FirebasePushTransport(),
@@ -136,9 +138,13 @@ class _EntrenaOpAppState extends State<EntrenaOpApp>
   }
 
   void _syncPush(AuthState state) {
-    widget.appleResults?.setAccount(
-      state is AuthAuthenticated ? state.user.id : null,
-    );
+    // Un arranque por Salud no revoca la recogida durante la hidratación de
+    // Auth. Solo una identidad resuelta o una salida real cambia la cuenta.
+    if (state is AuthAuthenticated) {
+      widget.appleResults?.setAccount(state.user.id);
+    } else if (state is AuthUnauthenticated || state is AuthPasswordRecovery) {
+      widget.appleResults?.setAccount(null);
+    }
     if (state is AuthAuthenticated) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _openInvitation());
     }

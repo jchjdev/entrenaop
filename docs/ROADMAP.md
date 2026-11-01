@@ -341,12 +341,18 @@ de su resumen real asociado a la referencia de la pauta. No se restaura ni se
 completa la pauta archivada. CI de Trainer, ADMIN y Garmin/iOS correctas; ambos
 portales Dev y su revisión se comprueban por HTTPS. La bandeja es privada del
 titular, sin ampliar el acceso profesional a actividades no asociadas.
-**Siguiente recorrido único de integraciones:** comprobar el retorno sobre una
-pauta vigente en el contexto de alumno y preparador diferentes, con asociación
-explícita y sin completar por coincidencia de nombre/fecha. Las pruebas Apple
+**Ampliación iniciada · 01/11/2026:** observadores HealthKit preparados al
+arrancar despiertan el caso de uso autenticado; no se duplican credenciales ni
+mediciones en preferencias. Pruebas locales correctas; compilación iOS y
+aceptación física del segundo plano se registran en su contrato.
+**Siguiente recorrido único de integraciones:** cerrar el resultado acreditado
+con una referencia fiable a su pauta y RPE pendiente cuando no exista, según
+la confirmación de Javier. La ambigüedad conserva revisión. La consulta desde
+otro alumno/preparador y el permiso separado para compartir resultados siguen
+pendientes de implementación y aceptación. Las pruebas Apple
 de cierre, fases/avisos, cambios y retirada conservan sus verificaciones pendientes.
-La flexibilidad para realizar sesiones otro día queda por concretar; siete días
-es propuesta, sin un nuevo límite implantado.
+Javier confirma hasta siete días posteriores para realizar una pauta otro día;
+la aplicación de ese margen y el enlace inequívoco se implementan en este tramo.
 [Contrato, validación y límites](DEVICE_APPLE_WATCH.md).
 
 **COM-022 · 28/10/2026 · contratación profesional web en curso:** Javier retoma

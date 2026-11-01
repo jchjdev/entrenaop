@@ -1,6 +1,7 @@
 import Flutter
 import UIKit
 import firebase_messaging
+import device_health
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
@@ -10,6 +11,7 @@ import firebase_messaging
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+    DeviceHealthBackgroundDelivery.prepareAtLaunch()
     FLTFirebaseMessagingPlugin.configureNotificationCenterDelegate()
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }

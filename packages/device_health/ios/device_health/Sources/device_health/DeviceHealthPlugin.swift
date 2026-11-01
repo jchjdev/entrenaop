@@ -15,6 +15,7 @@ public final class DeviceHealthPlugin: NSObject, FlutterPlugin {
   private var backgroundObserver: NSObjectProtocol?
 
   public static func register(with registrar: FlutterPluginRegistrar) {
+    DeviceHealthBackgroundDelivery.attach(messenger: registrar.messenger())
     let instance = DeviceHealthPlugin(messenger: registrar.messenger())
     registrar.addMethodCallDelegate(instance, channel: instance.channel)
     registrar.publish(instance)
