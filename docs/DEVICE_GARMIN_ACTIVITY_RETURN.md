@@ -9,8 +9,9 @@ explícitamente para recibir fuerza. La evidencia permanece en la misma cuenta.
 
 Javier solicita recibir la actividad realizada, asociarla a la cita de su semana
 y completarla con mediciones reales. La recepción guarda evidencia; completar
-requiere revisión del titular. No se atribuyen vueltas por nombre o fecha ni se
-reparten totales para rellenar series. La carrera física ya realizada será la
+requería revisión del titular en la primera entrega. La ampliación autónoma del
+01/11 descrita al final permite cerrar coincidencias acreditadas. No se atribuyen
+vueltas por nombre o fecha ni se reparten totales para rellenar series. La carrera física ya realizada será la
 aceptación externa; su esfuerzo global lo declara el alumno, separado del reloj.
 
 ## Arquitectura y recorrido
@@ -254,3 +255,42 @@ acceso por otro preparador ni de asociación/cierre automático.
 [servidor, consumidor e iOS Release sin firma](https://github.com/jchjdev/entrenaop/actions/runs/41337673288)
 correctos. ADMIN también publica la misma revisión y Dev comprobado por HTTPS.
 No es necesario reinstalar el iPhone para esta corrección de servidor/web.
+
+## Conciliación automática y esfuerzo pendiente · 01/11/2026
+
+El receptor Dev conserva primero el FIT y concilia exactamente la revisión
+guardada, bajo el mismo lease y generación de conexión. Una repetición antigua
+no toma otra observación posterior del mismo identificador. El cierre del
+servidor se apoya en la autorización Garmin vigente, sin crear una sesión Auth
+ficticia ni necesitar que la app esté abierta. Se restauran los claims del
+trabajador tanto al terminar como ante errores.
+
+El adaptador normaliza el contenido exportable de los pasos nativos: orden,
+tipo, terminación, objetivo, variante conocida y peso. Convierte explícitamente
+las unidades FIT/API y no usa nombre o fecha como identidad. El dominio compara
+esa referencia con versiones actuales y anteriores enviadas. Dos citas con la
+misma pauta, una versión retirada o datos insuficientes quedan para revisión.
+Los ejercicios sin equivalencia verificada y los conjuntos sin repeticiones o
+peso requeridos tampoco se completan automáticamente.
+
+Una coincidencia única solo se cierra si la cita, los permisos y la versión
+siguen vigentes y todas sus filas tienen evidencia nativa, sin intervalos activos
+sobrantes ni repartos estimados. Se admite realizarla hasta siete días después,
+según el día local observado. Se reutilizan inicio, correspondencias y cierre
+Core, conservando precisión, totales y pulso. El RPE ausente queda NULL; añadirlo
+después es una operación del titular que no reabre ni duplica el entrenamiento.
+
+Si falla la conciliación, la recepción sigue guardada y no se vuelve a consumir
+el callback. El recibo hace idempotente un reintento incluso tras perder la
+respuesta. La cancelación, desconexión y cambios de pauta conservan sus barreras.
+
+Dev: migraciones `20261101195418` y `20261101204224` aplicadas. Los seis contratos
+SQL iniciales de Apple, Garmin, fuerza, cierre autónomo y RPE pasan con ROLLBACK.
+La migración adicional `20261101212131` aplica el mismo margen a la confirmación
+manual y conserva la barrera de reloj futuro del cierre automático. Su prueba
+acepta el séptimo día y rechaza el octavo y una fecha anterior; los siete contratos
+pasan con ROLLBACK. Los tipos TypeScript estrictos y 241 pruebas de servidor
+pasan; el FIT real conserva su
+referencia nativa sin publicar sus métricas. No se restaura su pauta archivada.
+`garmin-activity-ingest` v18 y `garmin-activities` v19 están activos, conservando
+la autenticación propia y todos los módulos remotos ajenos al cambio.

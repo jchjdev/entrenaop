@@ -1,3 +1,5 @@
+import '../../domain/usecases/record_workout_effort.dart';
+
 import 'package:workout_core/workout_result_review.dart';
 
 import '../../domain/usecases/workout_result_review_usecase.dart';
@@ -136,10 +138,56 @@ class WorkoutHistoryDetailCubit extends Cubit<WorkoutHistoryDetailState> {
     required GetWorkoutExecutionUseCase getExecution,
     required CorrectWorkoutSetUseCase correctSet,
     GetWorkoutComparisonPage? getComparison,
-  }) : _getComparison = getComparison,
+    RecordWorkoutEffort? recordEffort,
+  }) : _recordEffort = recordEffort,
+       _getComparison = getComparison,
        _getExecution = getExecution,
        _correctSet = correctSet,
        super(const WorkoutHistoryDetailState());
+
+  final RecordWorkoutEffort? _recordEffort;
+  bool get canRecordEffort =>
+      _recordEffort != null &&
+      state.execution?.status == WorkoutExecutionStatus.completed &&
+      state.execution?.resultSource == WorkoutResultSource.device &&
+      state.execution?.finalRpe == null;
+
+  Future<void> recordEffort(int rpe) async {
+    final execution = state.execution;
+    if (!canRecordEffort || execution == null || state.isCorrecting || isClosed) {
+      return;
+    }
+    emit(
+      WorkoutHistoryDetailState(
+        status: WorkoutHistoryDetailStatus.loaded,
+        execution: execution,
+        isCorrecting: true,
+      ),
+    );
+    try {
+      await _recordEffort!(execution.id, rpe);
+      if (isClosed) return;
+      final updated = await _getExecution(executionId);
+      if (isClosed) return;
+      if (updated == null) throw StateError('No se encuentra la sesión.');
+      emit(
+        WorkoutHistoryDetailState(
+          status: WorkoutHistoryDetailStatus.loaded,
+          execution: updated,
+          correctionMessage: 'Esfuerzo registrado.',
+        ),
+      );
+    } catch (_) {
+      if (isClosed) return;
+      emit(
+        WorkoutHistoryDetailState(
+          status: WorkoutHistoryDetailStatus.loaded,
+          execution: execution,
+          correctionMessage: 'No se pudo añadir el esfuerzo. Actualiza la sesión y vuelve a intentarlo.',
+        ),
+      );
+    }
+  }
 
   final GetWorkoutComparisonPage? _getComparison;
   ReviewHistoryLoader? get comparisonLoader {

@@ -9,6 +9,7 @@ export type ObservedLap = {
   workoutStepIndex: number | null;
 };
 export type ObservedRunningActivity = {
+  prescriptionReference?: string;
   schemaVersion: 1;
   externalId: string;
   name: string;

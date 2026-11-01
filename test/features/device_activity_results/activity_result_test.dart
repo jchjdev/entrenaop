@@ -52,6 +52,24 @@ class FakeRepository implements ActivityResultRepository {
 
 void main() {
   test(
+    'La revisión permite cerrar sin inventar RPE y lo envía como ausente',
+    () async {
+      final repository = FakeRepository()..fail = false;
+      final cubit = ActivityResultCubit(repository, () => 'operation');
+      await cubit.preview('activity', 'scheduled');
+      expect(cubit.state.rpe, isNull);
+      expect(cubit.state.canConfirm, isFalse);
+      cubit.edit(rpe: 7);
+      cubit.edit(clearRpe: true);
+      cubit.edit(reviewed: true);
+      expect(cubit.state.canConfirm, isTrue);
+      await cubit.confirm();
+      expect(repository.calls.single.rpe, isNull);
+      expect(cubit.state.executionId, 'execution');
+      await cubit.close();
+    },
+  );
+  test(
     'exige una vuelta distinta para la recuperación y no inventa la ausente',
     () {
       expect(validLapAssignments([row], [lap0, lap1]), isTrue);

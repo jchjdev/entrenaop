@@ -19,7 +19,7 @@ begin
     'target_duration_seconds',120,'rest_after_seconds',0,'target_pace_min_seconds_per_km',300,'target_pace_max_seconds_per_km',360,
     'recovery_type','walking','recovery_duration_seconds',30)))))));
  template:=trainer_private.save_trainer_workout(gen_random_uuid(),recipe);
- perform trainer_private.assign_trainer_workout(scheduled,relation,template,current_date+1,null);
+ perform trainer_private.assign_trainer_workout(scheduled,relation,template,current_date,null);
  perform trainer_private.assign_trainer_workout(second,relation,template,current_date+2,null);
 
  perform set_config('fixture.owner',pupil::text,true);perform set_config('fixture.session',ps::text,true);
@@ -45,8 +45,14 @@ do $$declare owner uuid:=current_setting('fixture.owner')::uuid; sid uuid:=curre
  -- Llega primero un intervalo sin distancia; después la distancia, FC y recuperación.
  perform public.apple_results_command(owner,'ingest',jsonb_build_object('observations',jsonb_build_array(
   jsonb_set(obs,'{intervals}',jsonb_build_array((obs->'intervals'->0)-'distance_meters')))));
+ -- Mantiene el recorrido de revisión manual sin recurrir a una pauta futura,
+ -- que ya no se puede completar antes de su fecha.
+ result_id:=(public.apple_results_command(owner,'catalog')->'results'->0->>'id')::uuid;
+ perform public.apple_results_command(owner,'classify',jsonb_build_object('id',result_id,'is_test',true));
  obs:=jsonb_set(obs,'{intervals,0,average_heart_rate}','150');
  perform public.apple_results_command(owner,'ingest',jsonb_build_object('observations',jsonb_build_array(obs)));
+ if exists(select 1 from public.workout_executions where user_id=owner) then raise exception 'Completa una prueba automáticamente';end if;
+ perform public.apple_results_command(owner,'classify',jsonb_build_object('id',result_id,'is_test',false));
  result_id:=(public.apple_results_command(owner,'catalog')->'results'->0->>'id')::uuid;
  review:=public.apple_results_command(owner,'preview',jsonb_build_object('activity_id',result_id,'scheduled_id',sid));
  if jsonb_array_length(review->'activity'->'laps')<>2 or review->>'recorded_rpe'<>'4' then raise exception 'Pierde intervalos o esfuerzo observado';end if;

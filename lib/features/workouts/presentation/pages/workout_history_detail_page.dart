@@ -72,6 +72,43 @@ class _DetailContentState extends State<_DetailContent> {
   bool _onlyDifferences = false;
   WorkoutExecution get execution => widget.execution;
 
+  Future<void> _addEffort(BuildContext context) async {
+    double? effort;
+    final value = await showDialog<int>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Añadir esfuerzo'),
+          content: SizedBox(
+            width: 320,
+            child: WorkoutEffortField(
+              label: 'Esfuerzo de la sesión (RPE)',
+              minimum: 1,
+              value: effort,
+              enabled: true,
+              onChanged: (value) => setDialogState(() => effort = value),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: effort == null
+                  ? null
+                  : () => Navigator.of(dialogContext).pop(effort!.toInt()),
+              child: const Text('Guardar'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (value != null && context.mounted) {
+      await context.read<WorkoutHistoryDetailCubit>().recordEffort(value);
+    }
+  }
+
   @override
   void didUpdateWidget(covariant _DetailContent oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -130,7 +167,16 @@ class _DetailContentState extends State<_DetailContent> {
                   style: const TextStyle(color: Colors.white60),
                 ),
                 const SizedBox(height: 18),
-                _SummaryCard(execution: execution),
+                _SummaryCard(
+                  execution: execution,
+                  onAddEffort:
+                      context
+                              .read<WorkoutHistoryDetailCubit>()
+                              .canRecordEffort &&
+                          !widget.isCorrecting
+                      ? () => _addEffort(context)
+                      : null,
+                ),
                 WorkoutTechniqueSection(execution: execution),
                 if (execution.notes case final notes?
                     when notes.trim().isNotEmpty) ...[
@@ -330,9 +376,10 @@ WorkoutExecutionSet? _findExercise(
 }
 
 class _SummaryCard extends StatelessWidget {
-  const _SummaryCard({required this.execution});
+  const _SummaryCard({required this.execution, this.onAddEffort});
 
   final WorkoutExecution execution;
+  final VoidCallback? onAddEffort;
 
   @override
   Widget build(BuildContext context) {
@@ -399,6 +446,12 @@ class _SummaryCard extends StatelessWidget {
               ),
             if (execution.finalRpe case final rpe?)
               _SummaryMetric(value: '$rpe/10', label: 'RPE final'),
+            if (onAddEffort != null)
+              TextButton.icon(
+                onPressed: onAddEffort,
+                icon: const Icon(Icons.add),
+                label: const Text('Añadir esfuerzo'),
+              ),
             if (execution.averageHeartRateBpm case final heartRate?)
               _SummaryMetric(value: '$heartRate', label: 'FC media'),
             if (execution.maxHeartRateBpm case final heartRate?)

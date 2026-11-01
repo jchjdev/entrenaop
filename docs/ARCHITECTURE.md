@@ -140,6 +140,15 @@ No hay dependencia de OAuth ni del repositorio Garmin; ambos conservan la misma
 revisión de correspondencias y los controles del servidor. Las pruebas ficticias
 no crean ejecuciones. Lectura física de este nuevo retorno pendiente. [Contrato](DEVICE_APPLE_WATCH.md#retorno-automatico-de-pautas-propias--31102026).
 
+**Retorno acreditado · 01/11:** el aviso HealthKit despierta el mismo sincronizador
+autenticado mediante un puerto, sin otra bóveda de tokens. Apple enlaza por
+WorkoutKit; Garmin normaliza en su adaptador los pasos nativos y el dominio los
+contrasta con versiones enviadas. PostgreSQL revalida concesión, lease, fuente,
+revisión y día real dentro de siete días. Se reutiliza la ejecución Core,
+idempotente y transaccional, con RPE NULL si no existe. Una operación separada
+del titular permite añadirlo después. Ambigüedad o falta de evidencia conserva
+revisión. El consentimiento para otro preparador continúa separado y pendiente.
+
 **TRN-038 · 28/10/2026 · enlaces de invitación:** el codec se comparte en
 `trainer_access`; Trainer adapta canal de envío y página pública. La app nativa
 conserva intención en memoria y una ruta sin secreto, separada del retorno Auth.

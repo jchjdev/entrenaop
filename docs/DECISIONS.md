@@ -2265,8 +2265,10 @@ null y permitiendo añadirlo después. La identificación de la pauta y sus paso
 debe apoyarse en referencias fiables; la ambigüedad, las pruebas, los conflictos
 y las pautas archivadas/canceladas conservan revisión, sin cierres inventados.
 Se implementa primero el aviso HealthKit hacia el sincronizador autenticado,
-sin credenciales ni recetas duplicadas en el adaptador nativo. Cierre sin RPE y
-asociación automática siguen pendientes de su implementación y comprobación.
+sin credenciales ni recetas duplicadas en el adaptador nativo. En Dev ya se
+implementan y validan el cierre acreditado sin RPE, su incorporación posterior y
+la asociación automática protegida. La aceptación física del segundo plano
+sigue pendiente de actualizar y probar la instalación iOS.
 [Contrato de recogida](DEVICE_APPLE_WATCH.md#recogida-por-avisos-de-salud--01112026).
 
 Javier también confirma el objetivo de que Isabel pueda autorizar a ambos
@@ -2278,4 +2280,9 @@ acordada, todavía no implementada ni activada en ninguna cuenta.
 Javier confirma también un margen de hasta siete días después de la fecha
 prevista para asociar/cerrar una pauta realizada otro día. Se utiliza la fecha
 real de realización, no la llegada de la sincronización, y se conserva revisión
-ante candidatos dudosos. Su aplicación se desarrolla en el siguiente tramo.
+ante candidatos dudosos. El margen ya se aplica al cierre automático y a la
+confirmación manual; fuera de él se conserva la actividad sin completar la pauta. Apple
+exige la referencia WorkoutKit y todas las fases medidas; Garmin contrasta el
+contenido exportable del FIT con las versiones enviadas. Dos citas iguales,
+referencias insuficientes o versiones retiradas conservan revisión. No se
+identifica una cita por nombre o fecha.

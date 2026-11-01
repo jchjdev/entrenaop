@@ -7,7 +7,8 @@ import {runningPrescription} from '../device_training/prescription.ts';
 import type {AccessGrant, AccountGateway, GrantCipher} from '../device_training/delivery.ts';
 type Json = Record<string, unknown>;
 export interface ActivityReturnStore {command(action: string, owner: string | null, session: string | null, input: Json): Promise<Json>}
-export interface ActivityFileGateway {read(callback: string, accessToken: string, metadata: Json): Promise<ObservedActivity>}
+export interface ActivityFileGateway {read(callback: string, accessToken: string, metadata: Json): Promise<ObservedActivity>;
+  reference?(snapshot:unknown):string|null}
 export type ActivityJob = {id: string; owner: string; generation: number; lease: string; callback: string; metadata: Json;
   tokens: string; accessExpiresAt: string; refreshExpiresAt: string; providerUserId: string};
 
@@ -45,7 +46,17 @@ export class ActivityReturnService {
       const activity = await this.files.read(callback, grant.accessToken, job.metadata);
       received = true;
       if(isStrengthActivity(activity))validateStrengthObservation(activity);else validateRunningObservation(activity);
-      await command('save', {activity});
+      const saved=await command('save', {activity});
+      if(this.files.reference){
+        // La ingesta ya está guardada. Conciliar nunca vuelve a descargar el
+        // callback ni presenta una recepción válida como un fallo de descarga.
+        const bound=(action:string,input:Json={})=>command(action,{activity_id:saved.activity_id,activity_revision:saved.activity_revision,...input});
+        try {
+          if(activity.prescriptionReference)await this.automaticallyComplete(activity,bound);
+          else await bound('automatic.review',{code:'prescription_not_identified'});
+        }
+        catch { try { await bound('automatic.review',{code:'review_required'}); } catch { /* La evidencia permanece recibida. */ } }
+      }
     } catch (error) {
       const allowed = ['connection_changed', 'permission_denied', 'reauthorization_required', 'activity_file_expired',
         'activity_file_too_large', 'invalid_activity', 'invalid_activity_file', 'unsupported_activity',
@@ -58,6 +69,38 @@ export class ActivityReturnService {
       // Una retirada concurrente puede haber liberado ya este lease.
       try { await command('release'); } catch { /* El checkpoint durable resuelve la caída. */ }
     }
+  }
+  private async automaticallyComplete(activity:ObservedActivity,command:(action:string,extra?:Json)=>Promise<Json>):Promise<void>{
+    const context=await command('automatic.context');
+    if(context.completed||context.blocked)return;
+    const candidates=context.candidates as Json[];
+    if(!Array.isArray(candidates))return;
+    const matched=candidates.filter(c=>this.files.reference!(c.snapshot)===activity.prescriptionReference);
+    const schedules=new Set(matched.map(c=>c.scheduled_id));
+    if(schedules.size!==1){await command('automatic.review',{code:schedules.size?'ambiguous_prescription':'prescription_not_identified'});return;}
+    const current=matched.find(c=>c.current===true);
+    if(!current){await command('automatic.review',{code:'stale_prescription'});return;}
+    const review=activityReview({snapshot:current.snapshot,activity});
+    const rows=review.rows as Json[];
+    if(!rows.length||rows.some(r=>!(r.lap_indices as number[])?.length||r.requires_recovery&&!(r.recovery_lap_indices as number[])?.length)){
+      await command('automatic.review',{code:'intervals_require_review'});return;
+    }
+    const covered=new Set(rows.flatMap(r=>[...(r.lap_indices as number[]),...((r.recovery_lap_indices as number[])??[])]));
+    const expected=isStrengthActivity(activity)?activity.sets.filter(s=>s.kind==='active').map(s=>s.index):activity.laps.map(l=>l.index);
+    if(expected.some(i=>!covered.has(i))){await command('automatic.review',{code:'intervals_require_review'});return;}
+    if(isStrengthActivity(activity)){
+      const work=strengthPrescription(current.snapshot).steps.filter(s=>s.kind==='strength');
+      if(work.some((s,i)=>{
+        const actual=activity.sets.find(a=>a.index===(rows[i].lap_indices as number[])[0]);
+        return !actual||s.measure==='reps'&&actual.repetitions===null||s.loadKg!==null&&actual.loadKg===null;
+      })){
+        await command('automatic.review',{code:'intervals_require_review'});return;
+      }
+    }
+    await command('automatic.complete',{activity_id:context.activity_id,activity_revision:context.activity_revision,
+      scheduled_id:current.scheduled_id,delivery_revision:current.revision,
+      mapping:rows.map(r=>({block_order:r.block_order,item_order:r.item_order,set_order:r.set_order,
+        lap_indices:r.lap_indices,recovery_lap_indices:r.recovery_lap_indices??[],skipped:false}))});
   }
 }
 

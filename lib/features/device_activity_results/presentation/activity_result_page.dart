@@ -295,13 +295,16 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
       DropdownButtonFormField<int>(
         initialValue: state.rpe,
         decoration: const InputDecoration(
-          labelText: 'Tu esfuerzo global (1–10)',
+          labelText: 'Esfuerzo (1–10, opcional)',
         ),
         items: [
+          const DropdownMenuItem<int>(value: null, child: Text('Pendiente')),
           for (var value = 1; value <= 10; value++)
             DropdownMenuItem(value: value, child: Text('$value / 10')),
         ],
-        onChanged: locked ? null : (value) => cubit.edit(rpe: value),
+        onChanged: locked
+            ? null
+            : (value) => cubit.edit(rpe: value, clearRpe: value == null),
       ),
       CheckboxListTile(
         contentPadding: EdgeInsets.zero,
@@ -509,6 +512,7 @@ String _problem(String code) => switch (code) {
   'source_not_available' || 'source_not_allowed' =>
     'La sesión ya no está disponible para completar con esta carrera.',
   'invalid_mapping' => 'Revisa las vueltas: no pueden repetirse ni faltar recuperaciones prescritas.',
+  'completion_window_required' => 'La actividad debe realizarse el día de la pauta o en los siete días posteriores. Sus datos se conservan en el historial.',
   'invalid_activity_clock' ||
   'invalid_offset' => 'Revisa la fecha y la zona horaria de la actividad.',
   _ => 'No se ha podido confirmar la operación. Puedes reintentar o actualizar su estado.',

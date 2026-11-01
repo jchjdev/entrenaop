@@ -371,9 +371,27 @@ contrastar el retorno con la app en segundo plano. La compilación sin firma y
 las pruebas no sustituyen esa aceptación física. Fuerza Apple continúa fuera
 del alcance implementado; las recetas de carrera incluyen sus fases y series.
 
-Javier confirma que el RPE ausente no debe bloquear un cierre acreditado: debe
-quedar pendiente para añadirlo después. Es el criterio del siguiente tramo de
-automatización, todavía no una modificación de los cierres SQL en este punto.
+Javier confirma que el RPE ausente no debe bloquear un cierre acreditado: queda
+pendiente para añadirlo después. El cierre SQL automático ya está aplicado en
+Dev: exige referencia WorkoutKit, pauta vigente y correspondencia completa de
+fases nativas. El día local de realización debe estar entre la fecha prevista y
+los siete días posteriores; la llegada tardía del aviso no cambia ese día.
+El mismo margen se aplica al confirmar manualmente la asociación. Fuera de él,
+la actividad se conserva sin completar esa pauta.
+
+Una prueba, un conflicto, una pauta cancelada/archivada o intervalos insuficientes
+conservan revisión. Se reutilizan los comandos de ejecución, sin distribuir el
+total entre series. La operación es idempotente; un fallo no deja una ejecución
+parcial ni descarta la observación. El titular puede añadir después un esfuerzo
+de 1 a 10 a su resultado de dispositivo, sin volver a cerrar la sesión. Repetir
+el mismo valor es seguro; otro valor no sobrescribe una valoración existente.
+Un esfuerzo posterior de Salud solo rellena el campo si continúa vacío.
+
+Validación del 01/11: compilación iOS Release sin firma y CI de Salud correctas
+en `f7621d6e`; contratos SQL de retorno, cierre automático, permisos, replay y
+RPE diferido correctos con ROLLBACK antes y después del despliegue. La raíz pasa
+`flutter analyze` y 1.601 pruebas (una exclusión previa). Esto no sustituye la
+aceptación física del nuevo segundo plano ni amplía Apple a fuerza.
 
 Referencias: [observadores](https://developer.apple.com/documentation/healthkit/executing-observer-queries)
 y [entitlement y entrega](https://developer.apple.com/documentation/healthkit/hkhealthstore/enablebackgrounddelivery(for:frequency:withcompletion:)).
@@ -381,6 +399,6 @@ y [entitlement y entrega](https://developer.apple.com/documentation/healthkit/hk
 Validación local de este tramo: análisis raíz sin incidencias y 1.565 pruebas
 correctas con la omisión previa; cuatro regresiones cubren aviso en segundo
 plano, aviso durante una lectura, reautorización y respuesta tras salir de cuenta.
-La compilación iOS sin firma se comprueba en CI después de subir este punto.
-No cambia aún la asociación Garmin, el cierre SQL sin RPE ni la compartición
-adicional de resultados entre preparadores.
+La compilación iOS sin firma de ese punto ya ha terminado correctamente en CI.
+El cierre SQL y la asociación posteriores se describen arriba; la compartición
+adicional de resultados entre preparadores sigue pendiente.

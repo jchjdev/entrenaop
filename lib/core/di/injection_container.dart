@@ -1,3 +1,6 @@
+import '../../features/workouts/data/repositories/workout_effort_repository.dart';
+import '../../features/workouts/domain/usecases/record_workout_effort.dart';
+
 import 'package:entrenaop/features/workouts/domain/usecases/workout_result_review_usecase.dart';
 import 'package:trainer_access/profile_photo/domain.dart';
 import 'package:trainer_access/profile_photo/data.dart';
@@ -424,6 +427,12 @@ Future<void> initDependencies() async {
       getExecution: sl(),
       correctSet: sl(),
       getComparison: GetWorkoutComparisonPage(sl()),
+      recordEffort: RecordWorkoutEffort(
+        SupabaseWorkoutEffortRepository(
+          sl<SupabaseClient>(),
+          sl<SupabaseClient>().auth.currentUser?.id ?? '',
+        ),
+      ),
     )..load(),
   );
 

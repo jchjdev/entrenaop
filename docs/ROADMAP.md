@@ -373,15 +373,19 @@ titular, sin ampliar el acceso profesional a actividades no asociadas.
 **Ampliación iniciada · 01/11/2026:** observadores HealthKit preparados al
 arrancar despiertan el caso de uso autenticado; no se duplican credenciales ni
 mediciones en preferencias. Pruebas locales correctas; compilación iOS y
-aceptación física del segundo plano se registran en su contrato.
-**Siguiente recorrido único de integraciones:** cerrar el resultado acreditado
-con una referencia fiable a su pauta y RPE pendiente cuando no exista, según
-la confirmación de Javier. La ambigüedad conserva revisión. La consulta desde
-otro alumno/preparador y el permiso separado para compartir resultados siguen
-pendientes de implementación y aceptación. Las pruebas Apple
+aceptación física del segundo plano se registran en su contrato. La compilación
+iOS y CI de Salud han terminado correctamente.
+**Tramo técnico verificado · 01/11/2026:** cierre acreditado Apple/Garmin y RPE
+pendiente, con incorporación posterior, contratos SQL transaccionales y pruebas
+de servidor/cliente. Dev exige referencia fiable y pauta vigente, admite hasta
+siete días posteriores según el día real y conserva revisión ante ambigüedad.
+**Siguiente recorrido único de integraciones:** permiso separado y revocable
+para consultar resultados completados desde otro preparador activo, sin notas
+ni historial general de Salud. Su implementación y aceptación siguen pendientes.
+Las pruebas Apple
 de cierre, fases/avisos, cambios y retirada conservan sus verificaciones pendientes.
 Javier confirma hasta siete días posteriores para realizar una pauta otro día;
-la aplicación de ese margen y el enlace inequívoco se implementan en este tramo.
+el margen está aplicado al cierre automático y a la asociación manual en Dev.
 [Contrato, validación y límites](DEVICE_APPLE_WATCH.md).
 
 **COM-022 · 28/10/2026 · contratación profesional web en curso:** Javier retoma

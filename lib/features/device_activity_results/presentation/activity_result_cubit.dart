@@ -24,9 +24,7 @@ class ActivityResultState {
   bool get canConfirm =>
       !busy &&
       reviewed &&
-      rpe != null &&
-      rpe! >= 1 &&
-      rpe! <= 10 &&
+      (rpe == null || (rpe! >= 1 && rpe! <= 10)) &&
       offsetMinutes != null &&
       offsetMinutes!.abs() <= 840 &&
       review != null &&
@@ -90,6 +88,7 @@ class ActivityResultCubit extends Cubit<ActivityResultState> {
   void edit({
     List<LapAssignment>? rows,
     int? rpe,
+    bool clearRpe = false,
     int? offsetMinutes,
     bool? reviewed,
   }) {
@@ -99,7 +98,7 @@ class ActivityResultCubit extends Cubit<ActivityResultState> {
         catalog: state.catalog,
         review: state.review,
         rows: rows == null ? state.rows : List.unmodifiable(rows),
-        rpe: rpe ?? state.rpe,
+        rpe: clearRpe ? null : rpe ?? state.rpe,
         offsetMinutes: offsetMinutes ?? state.offsetMinutes,
         reviewed: reviewed ?? (rows == null && state.reviewed),
       ),
@@ -112,7 +111,7 @@ class ActivityResultCubit extends Cubit<ActivityResultState> {
     _pending ??= ConfirmActivityResult(
       operationId: newOperation(),
       review: state.review!,
-      rpe: state.rpe!,
+      rpe: state.rpe,
       offsetMinutes: state.offsetMinutes!,
       rows: state.rows,
     );

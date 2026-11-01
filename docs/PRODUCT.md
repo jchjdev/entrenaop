@@ -310,6 +310,17 @@ Apple/APNs sigue pendiente. Los avisos internos y la campana condicionada a
 novedades conservan su acceso independiente.
 [Alcance y activación](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md).
 
+**Retorno acreditado de relojes · 01/11/2026:** en Dev, una actividad con referencia
+fiable, pasos medidos y pauta vigente puede completar la cita sin confirmación
+manual. Se admiten hasta siete días posteriores a la fecha prevista, según el
+día de realización. Los casos dudosos conservan revisión. El esfuerzo ausente
+queda pendiente y el deportista puede añadirlo después; no se inventa ni se
+sobrescribe una valoración existente. El segundo plano Apple requiere actualizar
+el iPhone y conserva su aceptación física pendiente; depende de iOS y permisos.
+Los detalles del propio alumno llegan a su preparador autor. Compartir resultados
+completados con otro preparador requerirá el permiso separado aún pendiente.
+[Apple](DEVICE_APPLE_WATCH.md) y [Garmin](DEVICE_GARMIN_ACTIVITY_RETURN.md).
+
 **Preparación compartida · TRN-028 · 24/10/2026:** El alumno puede recibir pautas de dos
 preparadores. Decide si ambos pueden consultar su calendario y pautas para coordinar
 carga; no comparte los demás alumnos, conversaciones, resultados ni notas privadas de

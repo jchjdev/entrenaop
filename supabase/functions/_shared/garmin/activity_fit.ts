@@ -3,6 +3,7 @@ import {ActivityReturnError, validateRunningObservation} from '../device_activit
 import type {ObservedRunningActivity} from '../device_activity/running_result.ts';
 import {validateStrengthObservation} from '../device_activity/strength_result.ts';
 import type {ObservedActivity, ObservedStrengthActivity} from '../device_activity/strength_result.ts';
+import {nativeGarminPrescriptionReference} from './activity_reference.ts';
 
 export const maxActivityFileBytes = 4 * 1024 * 1024;
 type Message = Record<string, unknown>;
@@ -34,6 +35,8 @@ export function garminFitObservation(bytes: Uint8Array, metadata: {activityId: s
     throw new ActivityReturnError('unsupported_activity_file');
   }
   const session = messages.sessionMesgs[0] as Message;
+  const reference=nativeGarminPrescriptionReference((messages.workoutMesgs??[]) as unknown as Message[],
+    (messages.workoutStepMesgs??[]) as unknown as Message[]);
   const activity = messages.activityMesgs?.[0] as Message | undefined;
   let offset: number | null = null;
   if (activity?.localTimestamp != null && activity.timestamp != null) {
@@ -41,6 +44,7 @@ export function garminFitObservation(bytes: Uint8Array, metadata: {activityId: s
   }
   if(session.sport==='training'&&session.subSport==='strengthTraining'){
     const result:ObservedStrengthActivity={schemaVersion:2,sport:'strength',externalId:metadata.activityId,name:metadata.activityName,
+      ...(reference===null?{}:{prescriptionReference:reference}),
       startedAt:date(session.startTime),offsetSeconds:offset,elapsedSeconds:number(session.totalElapsedTime),timerSeconds:number(session.totalTimerTime),
       distanceMeters:null,averageHeartRate:optional(session.avgHeartRate),maxHeartRate:optional(session.maxHeartRate),
       sets:(messages.setMesgs??[]).map((raw,index)=>{
@@ -58,6 +62,7 @@ export function garminFitObservation(bytes: Uint8Array, metadata: {activityId: s
   }
   if (session.sport !== 'running') throw new ActivityReturnError('unsupported_activity');
   const result: ObservedRunningActivity = {
+    ...(reference===null?{}:{prescriptionReference:reference}),
     schemaVersion: 1, externalId: metadata.activityId, name: metadata.activityName,
     startedAt: date(session.startTime), offsetSeconds: offset,
     elapsedSeconds: number(session.totalElapsedTime), timerSeconds: number(session.totalTimerTime),

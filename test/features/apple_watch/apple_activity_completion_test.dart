@@ -137,7 +137,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.byType(ExpansionTile), findsOneWidget);
-      expect(find.text('Tu esfuerzo global (1–10)'), findsOneWidget);
+      expect(find.text('Esfuerzo (1–10, opcional)'), findsOneWidget);
       expect(find.text('Paso no realizado'), findsNothing);
       await tester.tap(find.text('Asignar intervalos en orden y revisar'));
       await tester.pumpAndSettle();

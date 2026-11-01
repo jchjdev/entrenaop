@@ -140,7 +140,8 @@ class ConfirmActivityResult {
   }) : rows = List.unmodifiable(rows);
   final String operationId;
   final ActivityResultReview review;
-  final int rpe, offsetMinutes;
+  final int? rpe;
+  final int offsetMinutes;
   final List<LapAssignment> rows;
 }
 
