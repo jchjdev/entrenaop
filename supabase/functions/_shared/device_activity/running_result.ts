@@ -40,16 +40,20 @@ export function validateRunningObservation(value: ObservedRunningActivity): void
   if (value.averageHeartRate !== null && value.maxHeartRate !== null && value.maxHeartRate < value.averageHeartRate) {
     throw new ActivityReturnError('invalid_activity');
   }
-  let previousEnd = Date.parse(value.startedAt), timer = 0, distance = 0;
+  let previousStart = Date.parse(value.startedAt), previousEnd = previousStart, timer = 0, distance = 0;
   for (const [index, lap] of value.laps.entries()) {
     const start = Date.parse(lap.startedAt);
-    if (lap.index !== index || !timestamp(lap.startedAt) || start < previousEnd - 1100 ||
+    // Las marcas FIT tienen segundos y las duraciones, milisegundos. Se admite
+    // un desfase máximo de 2 s entre fronteras, sin corregir ninguna medición.
+    // El orden de inicios y las sumas siguen siendo obligatorios, incluso para
+    // vueltas cortas que cabrían enteras dentro de ese margen.
+    if (lap.index !== index || !timestamp(lap.startedAt) || start < previousStart || start < previousEnd - 2000 ||
         !positive(lap.elapsedSeconds) || !positive(lap.timerSeconds, true) || lap.timerSeconds > lap.elapsedSeconds + .01 ||
         !positive(lap.distanceMeters, true) || lap.workoutStepIndex !== null &&
           (!Number.isInteger(lap.workoutStepIndex) || lap.workoutStepIndex < 0 || lap.workoutStepIndex > 10000)) {
       throw new ActivityReturnError('invalid_activity');
     }
-    previousEnd = start + lap.elapsedSeconds * 1000;
+    previousStart = start; previousEnd = start + lap.elapsedSeconds * 1000;
     timer += lap.timerSeconds; distance += lap.distanceMeters;
   }
   if (previousEnd > Date.parse(value.startedAt) + value.elapsedSeconds * 1000 + 2000 ||

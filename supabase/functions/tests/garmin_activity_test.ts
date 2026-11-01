@@ -4,7 +4,7 @@ import {Encoder, Profile} from '@garmin/fitsdk';
 import {garminFitActivity, garminActivityCallback, downloadGarminFit} from '../_shared/garmin/activity_fit.ts';
 import {historicalSeconds, proposeLapMapping, validateRunningObservation} from '../_shared/device_activity/running_result.ts';
 
-function syntheticFit(sport = 'running') {
+function syntheticFit(sport = 'running', lapStartOffsets: readonly number[] = []) {
   const encoder = new Encoder(), start = new Date('2026-10-20T08:00:00Z');
   encoder.onMesg(Profile.MesgNum.FILE_ID, {type: 'activity', manufacturer: 'garmin', product: 1, timeCreated: start});
   const parts = [
@@ -15,7 +15,7 @@ function syntheticFit(sport = 'running') {
   ];
   let elapsed = 0;
   parts.forEach((p, index) => {
-    encoder.onMesg(Profile.MesgNum.LAP, {messageIndex: index, startTime: new Date(start.getTime() + elapsed * 1000),
+    encoder.onMesg(Profile.MesgNum.LAP, {messageIndex: index, startTime: new Date(start.getTime() + (elapsed + (lapStartOffsets[index] ?? 0)) * 1000),
       totalElapsedTime: p.time, totalTimerTime: p.time, totalDistance: p.distance, intensity: p.intensity, wktStepIndex: index});
     elapsed += p.time;
   });
@@ -54,6 +54,28 @@ test('rechaza tiempos imposibles, vueltas superpuestas y pulso invertido', () =>
   assert.throws(() => validateRunningObservation({...value, timerSeconds: value.elapsedSeconds + 10}));
   assert.throws(() => validateRunningObservation({...value, averageHeartRate: 180}));
   assert.throws(() => validateRunningObservation({...value, laps: value.laps.map(l => ({...l, startedAt: value.startedAt}))}));
+});
+
+test('admite el desfase acotado entre marcas FIT y tiempos medidos sin alterar la evidencia', () => {
+  const activity = garminFitActivity(syntheticFit('running', [0, 0, -1]), metadata);
+  assert.equal(activity.laps[2].startedAt, '2026-10-20T08:02:26.000Z');
+  assert.equal(activity.laps[1].timerSeconds, 87.3);
+  assert.equal(activity.laps[2].timerSeconds, 50);
+  assert.equal(activity.timerSeconds, 297.3);
+  assert.deepEqual(activity.laps.map(lap => lap.workoutStepIndex), [0, 1, 2, 3]);
+});
+
+test('el margen de marcas horarias no admite más de dos segundos ni invierte vueltas cortas', () => {
+  const activity = garminFitActivity(syntheticFit(), metadata);
+  const end = Date.parse(activity.laps[1].startedAt) + activity.laps[1].elapsedSeconds * 1000;
+  const shifted = (milliseconds: number) => ({...activity, laps: activity.laps.map((lap, index) =>
+    index === 2 ? {...lap, startedAt: new Date(end - milliseconds).toISOString()} : lap)});
+  assert.doesNotThrow(() => validateRunningObservation(shifted(2000)));
+  assert.throws(() => validateRunningObservation(shifted(2001)), /invalid_activity/);
+  const short = {...activity, laps: activity.laps.map((lap, index) => index === 1
+    ? {...lap, elapsedSeconds: .5, timerSeconds: .5} : index === 2
+      ? {...lap, startedAt: new Date(Date.parse(activity.laps[1].startedAt) - 100).toISOString()} : lap)};
+  assert.throws(() => validateRunningObservation(short), /invalid_activity/);
 });
 test('descarga solo del recurso Garmin autorizado; bloquea SSRF y redirecciones', async () => {
   for (const url of ['http://apis.garmin.com/wellness-api/rest/activityFile?id=1&token=a',

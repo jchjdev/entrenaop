@@ -176,3 +176,34 @@ observación, una confirmación y el callback consumido vacío, sin error pendie
 Nuevo menú físico iPhone y publicación de los dos totales nuevos en Trainer Dev
 siguen pendientes de distribución/aceptación; no impiden consultar la ejecución
 ya completada por el contrato profesional existente.
+
+
+## Desfase de fronteras FIT y reenvío real · 01/11/2026
+
+Se reproduce `invalid_activity` con el FIT original de una carrera física. Una
+frontera entre vueltas presenta un desfase inferior a dos segundos entre la
+marca horaria y la duración acumulada. El SDK valida el archivo y las sumas
+coinciden con la sesión; el rechazo procedía del margen de 1,1 segundos del
+dominio. Se admite un máximo de dos segundos, conservando marcas y mediciones
+sin normalizarlas. Se exige además que los inicios no retrocedan y se mantienen
+los controles de temporizador, duración, distancia, sumas y tamaño.
+
+Dos regresiones sintéticas reproducen el límite y rechazan tanto 2,001 segundos
+como el retroceso de una vuelta corta. Pasan 234 pruebas Node, tipos estrictos
+y el contrato SQL de retorno en Dev con ROLLBACK; 268 migraciones locales/remotas
+coinciden. No cambia el esquema, Flutter, las credenciales ni producción.
+`garmin-activity-ingest` v17 y `garmin-activities` v18 quedan activos en Dev;
+la lectura posterior acredita el módulo publicado exacto. Los demás archivos
+desplegados y los controles de autenticación se conservan.
+
+Summary Resender genera un callback nuevo y la vía oficial guarda la carrera
+con sus ocho vueltas, sin repetir el callback consumido ni reconstruir datos.
+El FIT local y las mediciones/identificadores exactos quedan fuera de Git.
+La [documentación FIT de Garmin](https://developer.garmin.com/fit/articles/cookbook/decoding_activity_files.html)
+distingue las marcas temporales y los campos de resumen.
+
+La importación queda acreditada. Trainer aún muestra Garmin tras confirmación
+contra una pauta; la prueba usa una pauta archivada y no se restaura ni se
+completa para simular la consulta. El siguiente tramo es una bandeja de lectura
+privada en «Para mí», sin conceder a un preparador acceso al historial no
+asociado de sus alumnos ni emparejar por nombre/fecha.

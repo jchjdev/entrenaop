@@ -2176,3 +2176,15 @@ agente, no un plazo confirmado ni implementado. Cancelación o sustitución expl
 se diferencia de una sesión pendiente de otro día. No se restaura ni completa la
 pauta de prueba como parte de comprobar recepción.
 [Prueba, límites y siguiente recorrido](DEVICE_APPLE_WATCH.md#recepción-real-y-consulta-en-trainer--01112026).
+
+
+## INT-023 · Retorno Garmin recuperado y consulta privada · 01/11/2026
+
+El archivo original reproduce un rechazo por desfase acotado entre fronteras
+FIT. La corrección conserva las mediciones, admite hasta dos segundos y exige
+orden de inicios, además de los límites existentes. Reenvío oficial posterior
+acredita recepción completa en Dev. El ensayo no restaura ni completa su pauta
+archivada. Para satisfacer la consulta de Javier se añade a continuación una
+bandeja privada de actividades recibidas en «Para mí»; no autoriza lectura de
+actividades no asociadas de otros alumnos ni asociación automática por fecha.
+El detalle y la validación están en [retorno Garmin](DEVICE_GARMIN_ACTIVITY_RETURN.md#desfase-de-fronteras-fit-y-reenvío-real--01112026).
