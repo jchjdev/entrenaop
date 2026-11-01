@@ -1,5 +1,16 @@
 # Registro de decisiones vigentes
 
+**Identidad de Inicio y referencia de navegación interna · 01/11/2026:** Javier
+descarta el Inicio simplificado del primer prototipo y pide conservar la estética
+y las cards existentes. Valora los pendientes, teniendo en cuenta la tarjeta
+compacta actual de novedades del preparador. Aporta un vídeo como referencia para
+una fila de accesos desplazable dentro de una sección, manteniendo la barra
+inferior. Mi plan y Preparador deben tener cometidos distintos. Se revisa la
+propuesta con esos accesos dentro de Entrenar y Evolución dentro de Perfil, a
+sugerencia suya. Las cinco entradas inferiores y el reparto interno siguen
+pendientes de aceptación; no autorizan todavía cambios de navegación en Flutter.
+[Propuesta y límites](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#referencia-visual-y-ajuste-de-la-propuesta--01112026).
+
 **Revisión global de navegación del deportista · 01/11/2026:** Javier aclara
 que los puntos 1 y 2 de la revisión no abarcan su malestar: señala más recorridos,
 botones y mezclas entre entrenador, Mi plan y otros espacios. Rechaza como

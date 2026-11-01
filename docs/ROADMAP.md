@@ -1,5 +1,12 @@
 # Roadmap de EntrenaOP
 
+**01/11/2026 · revisión visual antes de cambiar la app:** Javier pide conservar
+la identidad y las cards de Inicio y aporta una referencia de accesos horizontales
+dentro de una sección con barra inferior estable. La propuesta interactiva prueba
+Mi semana, Mis planes y Preparaciones dentro de Entrenar, Preparador separado y
+Evolución en Perfil. El reparto continúa pendiente de aceptación; no se modifican
+Flutter, rutas ni permisos. [Criterios y límites](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#referencia-visual-y-ajuste-de-la-propuesta--01112026).
+
 **01/11/2026 · navegación global del deportista reabierta:** Javier aclara que
 la mezcla afecta a más recorridos y botones y rechaza Perfil en la cabecera como
 solución satisfactoria. El siguiente tramo amplía los puntos 1 y 2: ordenar

@@ -17,7 +17,7 @@ En las cuentas profesionales, el selector superior añade además el acceso al
 trabajo con alumnos propios. El código separa esos espacios, pero hay que revisar
 si esa diferencia se entiende en la interfaz.
 
-### Propuesta inicial pendiente de revisión con Javier
+### Propuesta visual pendiente de revisión con Javier
 
 Repartir las tareas entre cinco entradas inferiores, con un destino principal
 por tarea. Los accesos contextuales pueden llevar a ese mismo destino conservando
@@ -25,16 +25,48 @@ fecha, pauta y origen; no deben crear otro resumen independiente.
 
 | Entrada propuesta | Contenido principal |
 | --- | --- |
-| Inicio | Sesión de hoy y asuntos pendientes. Acceso directo a la pauta concreta. |
-| Entrenar | Calendario personal común, historial y progreso; objetivos y configuración del programa en un área propia. El origen distingue pautas del preparador, automáticas y personales. |
+| Inicio | Conservar calendario, cards de preparaciones, programas y herramientas; revisar su orden. Sesión del día y tarjeta compacta de novedades del preparador. |
+| Entrenar | Calendario personal común y accesos internos a planes, preparaciones y disponibilidad. El origen distingue pautas del preparador, automáticas y personales. |
 | Biblioteca | Descubrir, consultar y crear sesiones y ejercicios; programas guiados. |
 | Preparador | Personas con quienes se entrena, conversaciones, formularios, citas y gestión de vínculos. Las pautas abren el calendario personal común. |
-| Perfil | Identidad, foto, cuenta, preferencias, conexiones, suscripción y ajustes. |
+| Perfil | Probar Evolución junto a identidad, foto, cuenta, preferencias, conexiones, suscripción y ajustes. |
 
 Esta propuesta devuelve Perfil abajo y retira su acceso repetido de la cabecera.
-El coste es que Evolución deja de ser una entrada inferior independiente y pasa
-al área de progreso de Entrenar. Esa pérdida de acceso directo debe valorarse
-con Javier antes de aceptar la distribución. Los nombres también son provisionales.
+Evolución deja de ser una entrada inferior independiente y se prueba dentro de
+Perfil, a sugerencia de Javier. Sustituye la primera propuesta de alojarla en
+Entrenar. Mantendría accesos contextuales desde resultados. La distribución y
+los nombres continúan pendientes de aceptación.
+
+### Referencia visual y ajuste de la propuesta · 01/11/2026
+
+Javier descarta la simplificación visual de Inicio del primer prototipo: quiere
+conservar sus cards y su identidad. Valora la idea de pendientes, pero recuerda
+que la tarjeta actual de novedades del preparador ya cubre parte de esa función.
+El prototipo revisado conserva esa tarjeta compacta y recupera calendario,
+preparaciones, programas seguidos y herramientas, sin añadir otro resumen de
+pendientes equivalente.
+
+El vídeo aportado muestra una barra inferior estable y, dentro de Correr, una
+fila horizontal de accesos que abre páginas con retorno. También permite
+desplazar semanas. La referencia justifica explorar esos dos niveles de
+navegación; no implica unir Mi plan y Preparador, que Javier señala como asuntos
+distintos, ni sustituir la estética de EntrenaOP.
+
+La propuesta interactiva prueba esa fila dentro de Entrenar: Mi semana, Mis
+planes, Preparaciones y Disponibilidad. La semana reúne las sesiones fechadas;
+Mis planes permite distinguir el plan automático y los programas guiados que se
+siguen; Preparaciones reúne los objetivos y sus pruebas. Preparador conserva la
+relación, conversación y seguimiento. Biblioteca permite descubrir contenido;
+seguir un programa tiene su acceso principal en Mis planes. Los accesos desde
+Inicio llevan a esos mismos destinos conservando el origen.
+
+Los programas del prototipo son ficticios. Este reparto no concede al deportista
+acceso al programa privado completo de un profesional: se mantiene el contrato
+de sesiones asignadas. Tampoco modifica niveles de suscripción ni permisos.
+
+La propuesta se revisa con datos de ejemplo, fila horizontal, cambio de semanas,
+detalle de sesión y Evolución en Perfil; no modifica rutas ni pantallas de
+Flutter. La aceptación de estos recorridos precede a su implementación.
 
 El trabajo con alumnos propios mantendría un espacio profesional con agenda,
 alumnos y mensajes. Su entrada y retorno deben ser explícitos y conservar el
@@ -52,7 +84,7 @@ preparador, un alumno con pautas y una cuenta que también trabaja con alumnos.
 La implementación transversal comienza después de concretar esa estructura.
 Esta revisión documental no modifica Flutter, datos, permisos ni rutas.
 
-## Elección de Javier
+## Elección del 22/10 e implementación actual
 
 Preparador abajo, Perfil arriba e Inicio despejado. La campana se oculta por
 completo con cero avisos sin leer, para que no parezca un control de sonido.
