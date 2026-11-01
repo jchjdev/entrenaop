@@ -327,11 +327,17 @@ El primer archivo Garmin quedó en revisión con `invalid_activity`. El original
 autenticado permite corregir un desfase acotado entre fronteras; el reenvío
 oficial posterior ya guarda sus ocho vueltas en Dev. La lectura manual
 de ese registro desde Salud no acredita la conexión directa Garmin.
-**Siguiente recorrido único de integraciones:** publicar y comprobar la bandeja
-privada de actividades recibidas en Trainer/Para mí con esta misma carrera. La
-lectura, la tarjeta compartida y el aislamiento de cuentas están implementados y
-validados localmente; no restaura ni completa la pauta archivada. La consulta por otro preparador y las pruebas Apple de
-cierre, fases/avisos, cambios y retirada conservan sus verificaciones pendientes.
+**Recorrido de recepción y consulta propia comprobado · 01/11/2026:** Trainer Dev
+`a1997319` muestra la carrera Garmin real en «Mis actividades recibidas», con
+su tarjeta plegable, tiempo, distancia, pulso y ocho vueltas; Apple ya dispone
+de su resumen real asociado a la referencia de la pauta. No se restaura ni se
+completa la pauta archivada. CI de Trainer, ADMIN y Garmin/iOS correctas; ambos
+portales Dev y su revisión se comprueban por HTTPS. La bandeja es privada del
+titular, sin ampliar el acceso profesional a actividades no asociadas.
+**Siguiente recorrido único de integraciones:** comprobar el retorno sobre una
+pauta vigente en el contexto de alumno y preparador diferentes, con asociación
+explícita y sin completar por coincidencia de nombre/fecha. Las pruebas Apple
+de cierre, fases/avisos, cambios y retirada conservan sus verificaciones pendientes.
 La flexibilidad para realizar sesiones otro día queda por concretar; siete días
 es propuesta, sin un nuevo límite implantado.
 [Contrato, validación y límites](DEVICE_APPLE_WATCH.md).

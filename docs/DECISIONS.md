@@ -2197,4 +2197,8 @@ titular, últimas 30 revisiones actuales y sin resultados ya confirmados. No da
 al entrenador acceso a actividad privada no asociada de alumnos. Conserva la
 compatibilidad Apple y descarta respuestas tras cambio de cuenta. Migración,
 contrato SQL transaccional, análisis y baterías de las tres apps comprobados;
-publicación/aceptación visual pendientes en el punto de guardado de implementación.
+Trainer y ADMIN Dev publican `a1997319`, con revisión, entorno y destino
+comprobados por HTTPS; sus CI y la de Garmin/iOS son correctas. Se abre la carrera
+real en la bandeja publicada de «Para mí» y se contrastan tiempo, distancia, pulso
+y ocho vueltas sin cerrar la pauta archivada. Esta aceptación propia no acredita
+consulta por otro preparador ni asociación automática. [Evidencia y límites](DEVICE_GARMIN_ACTIVITY_RETURN.md#bandeja-privada-de-recepción-en-trainer--01112026).

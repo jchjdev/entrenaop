@@ -202,11 +202,10 @@ El FIT local y las mediciones/identificadores exactos quedan fuera de Git.
 La [documentación FIT de Garmin](https://developer.garmin.com/fit/articles/cookbook/decoding_activity_files.html)
 distingue las marcas temporales y los campos de resumen.
 
-La importación queda acreditada. Trainer aún muestra Garmin tras confirmación
-contra una pauta; la prueba usa una pauta archivada y no se restaura ni se
-completa para simular la consulta. El siguiente tramo es una bandeja de lectura
-privada en «Para mí», sin conceder a un preparador acceso al historial no
-asociado de sus alumnos ni emparejar por nombre/fecha.
+La importación queda acreditada. La consulta previa de Trainer exigía confirmar
+Garmin contra una pauta; la bandeja descrita a continuación permite consultar
+esta prueba sin restaurar ni completar su pauta archivada. No concede al
+preparador acceso al historial no asociado de alumnos ni empareja por nombre/fecha.
 
 
 ## Bandeja privada de recepción en Trainer · 01/11/2026
@@ -240,5 +239,18 @@ propia. Baterías locales: raíz 1561 correctas/una omisión previa, ADMIN 368/d
 omisiones y Trainer 428 correctas; análisis de las tres apps y tres regresiones
 de la tarjeta compartida correctos. El contrato SQL propio pasa con ROLLBACK
 antes y después de aplicar la migración. Sin avisos nuevos del asesor de
-seguridad para estas funciones. Publicación y comprobación visual de esta
-bandeja se acreditarán después de terminar el despliegue.
+seguridad para estas funciones. Las 269 migraciones locales/remotas coinciden.
+
+Trainer Dev publica `a1997319` y la comprobación por HTTPS acredita esa revisión,
+entorno development y proyecto Dev. En la sesión real de «Para mí», al desplegar
+la bandeja y su tarjeta aparecen nombre, fecha, tiempo, distancia, pulso y ocho
+vueltas de la carrera recibida oficialmente. La pauta original sigue archivada
+sin completar y el esfuerzo ausente no se muestra. La captura privada y las
+mediciones exactas quedan fuera de Git. Es aceptación de consulta propia, no de
+acceso por otro preparador ni de asociación/cierre automático.
+
+[CI y publicación Trainer](https://github.com/jchjdev/entrenaop/actions/runs/41337673132),
+[ADMIN](https://github.com/jchjdev/entrenaop/actions/runs/41337673185) y
+[servidor, consumidor e iOS Release sin firma](https://github.com/jchjdev/entrenaop/actions/runs/41337673288)
+correctos. ADMIN también publica la misma revisión y Dev comprobado por HTTPS.
+No es necesario reinstalar el iPhone para esta corrección de servidor/web.

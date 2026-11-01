@@ -52,25 +52,29 @@ un registro de Garmin no acredita el retorno de la conexión directa Garmin.
 
 En la primera comprobación, el aviso directo de la nueva actividad Garmin llega
 a Dev, pero el importador lo deja en revisión con `invalid_activity`. Los registros anteriores y las
-pruebas Garmin aceptadas no acreditan este archivo nuevo. Queda localizar la
-validación que falla mediante el original de Garmin Connect; la consulta pública
-confirma su existencia, pero la exportación original requiere iniciar sesión.
+pruebas Garmin aceptadas no acreditaban este archivo nuevo. Se localiza después
+la validación que falla mediante el original autenticado de Garmin Connect;
+la corrección y el reenvío oficial se acreditan a continuación.
 No se reintenta un callback de descarga ya consumido ni se inventan sus vueltas.
 Identificadores privados, métricas exactas y capturas del ensayo quedan fuera de Git.
 
-**Siguiente recorrido único:** corregir y verificar el retorno directo Garmin
-con esta misma actividad y comprobar sus datos en Trainer. La recepción real de
-Apple está comprobada en servidor y consulta propia de Trainer; cierre de una
-cita, consulta física por otro preparador, avisos, cambios y retirada conservan
-sus aceptaciones pendientes. Este ensayo no requiere otra carrera ni completar
-la pauta archivada.
+La recepción real de Apple está comprobada en servidor y consulta propia de
+Trainer. El ensayo del retorno directo Garmin también queda comprobado después
+de la corrección siguiente. No requiere otra carrera ni completar la pauta
+archivada. La consulta sobre una pauta vigente por otro alumno y preparador
+es la siguiente aceptación de retorno; los recorridos Apple de cierre,
+fases/avisos, cambios y retirada conservan sus aceptaciones pendientes.
 
 **Actualización posterior del 01/11:** el FIT original identifica el rechazo por
 un desfase acotado de fronteras. Se corrige el validador y un reenvío oficial ya
 acredita recepción de todas sus vueltas en Dev. Se implementa una bandeja privada
 en Trainer/Para mí para consultar este retorno sin cerrar la pauta archivada.
 [Corrección, consulta y validación actual](DEVICE_GARMIN_ACTIVITY_RETURN.md#bandeja-privada-de-recepción-en-trainer--01112026).
-La comprobación visual publicada queda pendiente de terminar el despliegue.
+Trainer Dev publica `a1997319`; la sesión real muestra la carrera Garmin en
+«Mis actividades recibidas», con tiempo, distancia, pulso y ocho vueltas. La
+pauta archivada sigue sin completar. CI de Trainer, ADMIN y Garmin/iOS correctas.
+La aceptación de consulta propia de ambos proveedores queda acreditada; esto
+no certifica el recorrido completo Apple ni otro contexto alumno/preparador.
 
 ### Sesiones realizadas otro día · propuesta abierta
 
