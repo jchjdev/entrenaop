@@ -26,6 +26,55 @@ entrenamientos, revisar la actividad y pulsar «Guardar seleccionadas». Importa
 esta observación no da por completada una sesión ni convierte la prueba ficticia
 en un resultado deportivo real.
 
+## Recepción real y consulta en Trainer · 01/11/2026
+
+Javier completa una carrera real registrándola con Garmin y Apple Watch para
+comparar las integraciones. Confirma y muestra su registro en Fitness, con sus
+fases e información deportiva. La doble grabación es un ensayo, no un nuevo
+requisito de uso simultáneo de fabricantes.
+
+Tras activar la recogida automática en el iPhone actualizado, Dev recibe la
+actividad real y la prueba ficticia anterior, conservadas por separado. La
+referencia de WorkoutKit enlaza ambas a la pauta original; HealthKit entrega
+las tres actividades internas y sus mediciones. Se contrasta el resumen real
+en el servidor y en Trainer → Para mí → Planificación → Todas → pauta original:
+fecha de ejecución, tiempo, distancia, FC y número de intervalos. La tarjeta
+plegable mantiene la prueba ficticia identificada. Esta comprobación utiliza
+la misma cuenta en su espacio profesional propio; no acredita una aceptación
+física con otro alumno y otro preparador.
+
+La pauta original estaba archivada y anulada; el resultado se conserva como
+recibido y pendiente de revisión para incorporarlo a una ejecución. Se verifica
+la consulta profesional sin restaurar la pauta ni completar una sesión.
+Javier aclara que la aceptación de este ensayo es ver los datos en Trainer,
+no cerrar la cita. La importación manual de Salud es otro recorrido: que muestre
+un registro de Garmin no acredita el retorno de la conexión directa Garmin.
+
+El aviso directo de la nueva actividad Garmin llega a Dev, pero el importador
+lo deja en revisión con `invalid_activity`. Los registros anteriores y las
+pruebas Garmin aceptadas no acreditan este archivo nuevo. Queda localizar la
+validación que falla mediante el original de Garmin Connect; la consulta pública
+confirma su existencia, pero la exportación original requiere iniciar sesión.
+No se reintenta un callback de descarga ya consumido ni se inventan sus vueltas.
+Identificadores privados, métricas exactas y capturas del ensayo quedan fuera de Git.
+
+**Siguiente recorrido único:** corregir y verificar el retorno directo Garmin
+con esta misma actividad y comprobar sus datos en Trainer. La recepción real de
+Apple está comprobada en servidor y consulta propia de Trainer; cierre de una
+cita, consulta física por otro preparador, avisos, cambios y retirada conservan
+sus aceptaciones pendientes. Este ensayo no requiere otra carrera ni completar
+la pauta archivada.
+
+### Sesiones realizadas otro día · propuesta abierta
+
+Javier plantea que una sesión pendiente pueda completarse al realizarla días
+después de la fecha prevista, con un límite razonable. Se conservarían la fecha
+pautada y la fecha real, tomando la realización y no la llegada de la sincronización.
+El agente recomienda siete días; Javier no ha confirmado ese plazo y no se ha
+implementado un nuevo límite. Una anulación o sustitución explícita se distingue
+de una sesión simplemente pendiente. El criterio será común a los proveedores;
+queda concretar y validar su efecto en planificación e historial antes de aplicarlo.
+
 ## Retorno automático de pautas propias · 31/10/2026
 
 Javier pide eliminar la selección/guardado repetitivos y compartir con el
@@ -152,8 +201,9 @@ SQL; no añade otra actualización nativa ni necesita republicar las webs.
 Las primeras publicaciones de `bbbef362` se detuvieron al avanzar main; sus
 pruebas habían pasado. No se fuerza una publicación obsoleta.
 
-**Aceptación física pendiente:** nueva lectura de la referencia/intervalos desde
-el iPhone, mediciones por fase y cierre de una sesión real. La prueba ficticia
+**Aceptación física pendiente al 31/10:** nueva lectura de la referencia/intervalos
+desde el iPhone, mediciones por fase y cierre de una sesión real. El apartado del
+01/11 actualiza la aceptación del retorno y su consulta en Trainer. La prueba ficticia
 anterior permanece separada y no acredita ese cierre. Siguiente recorrido único:
 una sola instalación y contrastar lo que Salud entrega antes de confirmar una
 actividad real. Las fases/avisos, cambios y retirada conservan sus pruebas físicas

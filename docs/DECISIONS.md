@@ -2142,3 +2142,18 @@ abrir/reanudar es automática con consentimiento. No se promete ejecución con l
 app cerrada ni programación automática Apple desde nube. Solo Dev; nueva lectura
 y cierre real en el reloj pendientes de aceptación física.
 [Contrato y comprobaciones](DEVICE_APPLE_WATCH.md#intervalos-y-cierre-de-la-cita--31102026).
+
+## INT-023 · Criterio del ensayo de retorno real · 01/11/2026
+
+Javier aclara que quiere verificar la recuperación y consulta en Trainer de las
+actividades Garmin y Apple Watch. No necesita completar la cita de estas pruebas.
+Registrar la misma carrera con dos relojes sirve para este ensayo, sin añadir un
+requisito de producto de uso simultáneo. Se acredita retorno real Apple y consulta
+en Trainer/Para mí; el archivo nuevo Garmin sigue en revisión por validación.
+
+Plantea admitir la realización posterior de una sesión pendiente, conservando
+fecha prevista y real, con límite por concretar. Siete días es recomendación del
+agente, no un plazo confirmado ni implementado. Cancelación o sustitución explícita
+se diferencia de una sesión pendiente de otro día. No se restaura ni completa la
+pauta de prueba como parte de comprobar recepción.
+[Prueba, límites y siguiente recorrido](DEVICE_APPLE_WATCH.md#recepción-real-y-consulta-en-trainer--01112026).
