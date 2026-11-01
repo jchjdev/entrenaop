@@ -38,6 +38,7 @@ class WorkoutScheduleCubit extends Cubit<WorkoutScheduleState> {
   final GetPersonalWorkoutsUseCase _getPersonalWorkouts;
   final DateTime Function() _now;
   int _loadVersion = 0;
+  Future<void>? _libraryRequest;
 
   Future<void> load() async {
     if (isClosed) return;
@@ -49,8 +50,6 @@ class WorkoutScheduleCubit extends Cubit<WorkoutScheduleState> {
     try {
       final programs = await _programs.refreshPrograms();
       final items = await _getSchedule(start, end);
-      final publicTemplates = await _getPublicWorkouts();
-      final personalTemplates = await _getPersonalWorkouts();
       if (isClosed || version != _loadVersion) return;
       emit(
         state.copyWith(
@@ -58,8 +57,6 @@ class WorkoutScheduleCubit extends Cubit<WorkoutScheduleState> {
           hasLoaded: true,
           items: items,
           programs: programs,
-          publicTemplates: publicTemplates,
-          personalTemplates: personalTemplates,
           clearBusy: true,
         ),
       );
@@ -72,6 +69,35 @@ class WorkoutScheduleCubit extends Cubit<WorkoutScheduleState> {
           errorMessage: 'No hemos podido cargar tu semana.',
         ),
       );
+    }
+  }
+
+  Future<void> loadLibrary() {
+    if (isClosed) return Future.value();
+    return _libraryRequest ??= _loadLibrary().whenComplete(() {
+      _libraryRequest = null;
+    });
+  }
+
+  Future<void> _loadLibrary() async {
+    emit(state.copyWith(libraryStatus: ScheduleLibraryStatus.loading));
+    try {
+      // El catálogo solo pertenece al selector: su carga no bloquea la agenda.
+      final catalogs = await Future.wait([
+        _getPublicWorkouts(),
+        _getPersonalWorkouts(),
+      ], eagerError: true);
+      if (isClosed) return;
+      emit(
+        state.copyWith(
+          libraryStatus: ScheduleLibraryStatus.ready,
+          publicTemplates: catalogs[0],
+          personalTemplates: catalogs[1],
+        ),
+      );
+    } catch (_) {
+      if (isClosed) return;
+      emit(state.copyWith(libraryStatus: ScheduleLibraryStatus.failure));
     }
   }
 

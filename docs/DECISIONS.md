@@ -1,5 +1,14 @@
 # Registro de decisiones vigentes
 
+**Agenda independiente del catálogo · 01/11/2026:** Javier autoriza corregir
+el punto 3 de la revisión transversal mientras prueba los puntos 1 y 2. Mi semana
+consulta las sesiones sin esperar a las bibliotecas pública/personal. Estas se
+cargan al abrir Añadir entrenamiento; su fallo muestra aviso y reintento en el
+selector, sin ocultar la agenda ni impedir empezar una sesión pautada. Se conserva
+la recuperación del programa antes de consultar la semana. No cambia la jerarquía
+de Mi plan ni el comportamiento de tocar una tarjeta.
+[Contrato y comprobación](UX_REVIEW_2026_10_09.md#agenda-independiente-del-catálogo--01112026).
+
 **Suspensión profesional y retirada de regalos · 01/11/2026:** Javier confirma
 dos acciones independientes en ADMIN. Retirar la concesión manual conserva
 el acceso derivado de un pago vigente. Suspender al entrenador bloquea sus

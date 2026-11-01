@@ -658,22 +658,179 @@ void main() {
       expect(find.text('Resultado execution-1'), findsOneWidget);
     },
   );
+  test('carga la semana sin consultar catálogos y los carga al pedir la biblioteca', () async {
+    final scheduleRepository = _FakeScheduleRepository(items: [_scheduled()]);
+    final workoutRepository = _FakeWorkoutRepository();
+    final cubit = _cubit(scheduleRepository, workoutRepository);
+
+    await cubit.load();
+
+    expect(scheduleRepository.lastStart, DateTime(2026, 9, 21));
+    expect(scheduleRepository.lastEnd, DateTime(2026, 9, 27));
+    expect(cubit.state.status, WorkoutScheduleStatus.ready);
+    expect(cubit.state.selectedItems, [_scheduled()]);
+    expect(workoutRepository.publicLoads, 0);
+    expect(workoutRepository.personalLoads, 0);
+    expect(cubit.state.libraryStatus, ScheduleLibraryStatus.initial);
+
+    await cubit.loadLibrary();
+
+    expect(cubit.state.libraryStatus, ScheduleLibraryStatus.ready);
+    expect(cubit.state.publicTemplates.single.id, 'public-1');
+    expect(cubit.state.personalTemplates.single.id, 'personal-1');
+    await cubit.close();
+  });
+
+  for (final failingCatalog in ['público', 'personal']) {
+    test(
+      'el fallo del catálogo $failingCatalog no bloquea la agenda',
+      () async {
+        final repository = _FakeWorkoutRepository();
+        Future<List<WorkoutTemplateSummary>> fail() async =>
+            throw StateError('catálogo no disponible');
+        if (failingCatalog == 'público') {
+          repository.onPublic = fail;
+        } else {
+          repository.onPersonal = fail;
+        }
+        final cubit = _cubit(
+          _FakeScheduleRepository(items: [_scheduled()]),
+          repository,
+        );
+        addTearDown(cubit.close);
+
+        await cubit.load();
+        await cubit.loadLibrary();
+
+        expect(cubit.state.status, WorkoutScheduleStatus.ready);
+        expect(cubit.state.hasLoaded, isTrue);
+        expect(cubit.state.selectedItems, [_scheduled()]);
+        expect(cubit.state.errorMessage, isNull);
+        expect(cubit.state.libraryStatus, ScheduleLibraryStatus.failure);
+        expect(await cubit.start('scheduled-1'), 'execution-1');
+        expect(cubit.state.status, WorkoutScheduleStatus.ready);
+      },
+    );
+  }
+
   test(
-    'carga la semana natural y separa biblioteca de sesiones propias',
+    'una biblioteca lenta no retrasa ni revierte el cambio de semana',
     () async {
-      final scheduleRepository = _FakeScheduleRepository(items: [_scheduled()]);
-      final workoutRepository = _FakeWorkoutRepository();
-      final cubit = _cubit(scheduleRepository, workoutRepository);
-
+      final pending = Completer<List<WorkoutTemplateSummary>>();
+      final workouts = _FakeWorkoutRepository()
+        ..onPublic = () => pending.future;
+      final schedule = _FakeScheduleRepository(items: [_scheduled()])
+        ..onRange = (start, _) async =>
+            start == DateTime(2026, 9, 21) ? [_scheduled()] : [];
+      final cubit = _cubit(schedule, workouts);
+      addTearDown(cubit.close);
       await cubit.load();
-
-      expect(scheduleRepository.lastStart, DateTime(2026, 9, 21));
-      expect(scheduleRepository.lastEnd, DateTime(2026, 9, 27));
-      expect(cubit.state.status, WorkoutScheduleStatus.ready);
+      final library = cubit.loadLibrary();
+      final sameRequest = cubit.loadLibrary();
+      expect(workouts.publicLoads, 1);
+      expect(workouts.personalLoads, 1);
+      expect(cubit.state.libraryStatus, ScheduleLibraryStatus.loading);
       expect(cubit.state.selectedItems, [_scheduled()]);
-      expect(cubit.state.publicTemplates.single.id, 'public-1');
-      expect(cubit.state.personalTemplates.single.id, 'personal-1');
+
+      await cubit.changeWeek(1);
+      expect(cubit.state.status, WorkoutScheduleStatus.ready);
+      expect(cubit.state.items, isEmpty);
+
+      pending.complete(workouts.public);
+      await Future.wait([library, sameRequest]);
+      expect(cubit.state.weekStart, DateTime(2026, 9, 28));
+      expect(cubit.state.selectedDay, DateTime(2026, 9, 28));
+      expect(cubit.state.items, isEmpty);
+      expect(cubit.state.libraryStatus, ScheduleLibraryStatus.ready);
+    },
+  );
+
+  test(
+    'cerrar la agenda durante la carga de biblioteca descarta la respuesta',
+    () async {
+      final pending = Completer<List<WorkoutTemplateSummary>>();
+      final workouts = _FakeWorkoutRepository()
+        ..onPublic = () => pending.future;
+      final cubit = _cubit(_FakeScheduleRepository(), workouts);
+      final request = cubit.loadLibrary();
       await cubit.close();
+      pending.completeError(StateError('respuesta después de salir'));
+      await request;
+      await cubit.loadLibrary();
+      expect(workouts.publicLoads, 1);
+    },
+  );
+
+  testWidgets(
+    'el selector reintenta su error sin ocultar ni vaciar la agenda',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final workouts = _FakeWorkoutRepository()
+        ..onPublic = () async => throw StateError('catálogo no disponible');
+      final schedule = _FakeScheduleRepository(items: [_scheduled()]);
+      final cubit = _cubit(schedule, workouts);
+      addTearDown(cubit.close);
+      await cubit.load();
+      cubit.selectDay(DateTime(2026, 9, 24));
+      final router = GoRouter(
+        initialLocation: '/plan/week',
+        routes: [
+          GoRoute(
+            path: '/plan/week',
+            builder: (_, _) => BlocProvider.value(
+              value: cubit,
+              child: const WorkoutSchedulePage(),
+            ),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        MaterialApp.router(
+          routerConfig: router,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: const TextScaler.linear(2)),
+            child: child!,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final add = find.widgetWithText(
+        FilledButton,
+        'Añadir entrenamiento al día',
+      );
+      await tester.ensureVisible(add);
+      await tester.pumpAndSettle();
+      await tester.tap(add);
+      await tester.pumpAndSettle();
+      expect(
+        find.text('No hemos podido cargar las sesiones para añadir.'),
+        findsOneWidget,
+      );
+      expect(find.text('No hay sesiones disponibles.'), findsNothing);
+      expect(cubit.state.status, WorkoutScheduleStatus.ready);
+      expect(cubit.state.items, [_scheduled()]);
+      expect(cubit.state.errorMessage, isNull);
+      expect(tester.takeException(), isNull);
+
+      workouts.onPublic = null;
+      await tester.ensureVisible(find.text('Reintentar'));
+      await tester.pumpAndSettle();
+      expect(find.text('Reintentar').hitTestable(), findsOneWidget);
+      await tester.tap(find.text('Reintentar'));
+      await tester.pumpAndSettle();
+      expect(find.text('Mi sesión de dominadas'), findsOneWidget);
+      await tester.ensureVisible(find.text('Mi sesión de dominadas'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Mi sesión de dominadas'));
+      await tester.pumpAndSettle();
+      expect(schedule.scheduledTemplateId, 'personal-1');
+      expect(schedule.scheduledDate, DateTime(2026, 9, 24));
+      expect(cubit.state.selectedDay, DateTime(2026, 9, 24));
+      expect(tester.takeException(), isNull);
     },
   );
 
@@ -812,6 +969,10 @@ class _FakeScheduleRepository implements WorkoutScheduleRepository {
 }
 
 class _FakeWorkoutRepository implements WorkoutRepository {
+  int publicLoads = 0;
+  int personalLoads = 0;
+  Future<List<WorkoutTemplateSummary>> Function()? onPublic;
+  Future<List<WorkoutTemplateSummary>> Function()? onPersonal;
   final public = const [
     WorkoutTemplateSummary(
       id: 'public-1',
@@ -834,10 +995,16 @@ class _FakeWorkoutRepository implements WorkoutRepository {
   ];
 
   @override
-  Future<List<WorkoutTemplateSummary>> getPublicTemplates() async => public;
+  Future<List<WorkoutTemplateSummary>> getPublicTemplates() async {
+    publicLoads++;
+    return onPublic == null ? public : await onPublic!();
+  }
 
   @override
-  Future<List<WorkoutTemplateSummary>> getPersonalTemplates() async => personal;
+  Future<List<WorkoutTemplateSummary>> getPersonalTemplates() async {
+    personalLoads++;
+    return onPersonal == null ? personal : await onPersonal!();
+  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

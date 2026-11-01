@@ -1,5 +1,16 @@
 # Roadmap de EntrenaOP
 
+**01/11/2026 · corrección autorizada del punto 3 de la revisión:** Mi semana
+carga las sesiones sin consultar los catálogos. Añadir entrenamiento carga su
+biblioteca al abrir el selector y ofrece error/reintento propios, conservando la
+agenda y la fecha elegida. Se cubren fallos de ambos catálogos, carga lenta,
+cambio de semana y cierre durante la consulta, con reintento a 320 px y texto 2×.
+[Contrato](UX_REVIEW_2026_10_09.md#agenda-independiente-del-catálogo--01112026).
+Análisis limpio, 32 pruebas focalizadas y batería completa de raíz: 1.558
+correctas y una omisión previa. Requiere actualizar la compilación instalada.
+Los puntos 1 y 2 siguen pendientes de la prueba y decisión de Javier; esta
+corrección no modifica la jerarquía de Mi plan ni cómo se inicia una sesión.
+
 **01/11/2026 · revisión transversal solicitada por Javier:** deportista, Trainer,
 ADMIN y web revisados sobre `c08e2971`; análisis limpios y baterías completas
 correctas (raíz 1.553, Trainer 424 y ADMIN 368, con las omisiones previas).

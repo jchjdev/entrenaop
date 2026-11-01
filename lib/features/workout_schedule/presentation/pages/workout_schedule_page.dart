@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:entrenaop/core/navigation/section_refresh_boundary.dart';
 import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
@@ -72,8 +74,6 @@ class _WorkoutSchedulePageState extends State<WorkoutSchedulePage> {
         floatingActionButton:
             BlocBuilder<WorkoutScheduleCubit, WorkoutScheduleState>(
               buildWhen: (previous, current) =>
-                  previous.publicTemplates != current.publicTemplates ||
-                  previous.personalTemplates != current.personalTemplates ||
                   previous.programs != current.programs ||
                   previous.items != current.items ||
                   previous.hasLoaded != current.hasLoaded ||
@@ -133,14 +133,15 @@ Future<void> _showTemplatePicker(
   BuildContext context,
   WorkoutScheduleState state,
 ) async {
+  final cubit = context.read<WorkoutScheduleCubit>();
+  unawaited(cubit.loadLibrary());
   final selected = await showModalBottomSheet<WorkoutTemplateSummary>(
     context: context,
     showDragHandle: true,
     isScrollControlled: true,
-    builder: (context) => _TemplatePicker(
-      date: state.selectedDay,
-      personal: state.personalTemplates,
-      public: state.publicTemplates,
+    builder: (context) => BlocProvider.value(
+      value: cubit,
+      child: _TemplatePicker(date: state.selectedDay),
     ),
   );
   if (selected == null || !context.mounted) return;
@@ -701,15 +702,9 @@ class _ScheduledWorkoutCard extends StatelessWidget {
 }
 
 class _TemplatePicker extends StatelessWidget {
-  const _TemplatePicker({
-    required this.date,
-    required this.personal,
-    required this.public,
-  });
+  const _TemplatePicker({required this.date});
 
   final DateTime date;
-  final List<WorkoutTemplateSummary> personal;
-  final List<WorkoutTemplateSummary> public;
 
   @override
   Widget build(BuildContext context) {
@@ -737,24 +732,60 @@ class _TemplatePicker extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
-                children: [
-                  if (personal.isNotEmpty) ...[
-                    const _PickerSectionTitle('Mis sesiones'),
-                    ...personal.map(
-                      (template) => _TemplateTile(template: template),
-                    ),
-                    const SizedBox(height: 12),
-                  ],
-                  const _PickerSectionTitle('Biblioteca'),
-                  if (public.isEmpty)
-                    const ListTile(title: Text('No hay sesiones disponibles.'))
-                  else
-                    ...public.map(
-                      (template) => _TemplateTile(template: template),
-                    ),
-                ],
+              child: BlocBuilder<WorkoutScheduleCubit, WorkoutScheduleState>(
+                builder: (context, state) {
+                  if (state.libraryStatus == ScheduleLibraryStatus.initial ||
+                      state.libraryStatus == ScheduleLibraryStatus.loading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (state.libraryStatus == ScheduleLibraryStatus.failure) {
+                    return Center(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              'No hemos podido cargar las sesiones para añadir.',
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 12),
+                            OutlinedButton.icon(
+                              onPressed: () => context
+                                  .read<WorkoutScheduleCubit>()
+                                  .loadLibrary(),
+                              icon: const Icon(Icons.refresh_rounded),
+                              label: const Text('Reintentar'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+                  final personal = state.personalTemplates;
+                  final public = state.publicTemplates;
+                  return ListView(
+                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
+                    children: [
+                      if (personal.isNotEmpty) ...[
+                        const _PickerSectionTitle('Mis sesiones'),
+                        ...personal.map(
+                          (template) => _TemplateTile(template: template),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                      const _PickerSectionTitle('Biblioteca'),
+                      if (public.isEmpty)
+                        const ListTile(
+                          title: Text('No hay sesiones disponibles.'),
+                        )
+                      else
+                        ...public.map(
+                          (template) => _TemplateTile(template: template),
+                        ),
+                    ],
+                  );
+                },
               ),
             ),
           ],

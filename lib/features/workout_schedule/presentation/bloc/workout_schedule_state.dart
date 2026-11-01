@@ -5,6 +5,8 @@ import 'package:entrenaop/features/preparation_goal/domain/entities/adaptive_pro
 
 enum WorkoutScheduleStatus { initial, loading, ready, failure }
 
+enum ScheduleLibraryStatus { initial, loading, ready, failure }
+
 class WorkoutScheduleState extends Equatable {
   const WorkoutScheduleState({
     required this.weekStart,
@@ -15,6 +17,7 @@ class WorkoutScheduleState extends Equatable {
     this.programs = const [],
     this.publicTemplates = const [],
     this.personalTemplates = const [],
+    this.libraryStatus = ScheduleLibraryStatus.initial,
     this.busyItemId,
     this.errorMessage,
   });
@@ -27,6 +30,7 @@ class WorkoutScheduleState extends Equatable {
   final List<AdaptiveProgramProgress> programs;
   final List<WorkoutTemplateSummary> publicTemplates;
   final List<WorkoutTemplateSummary> personalTemplates;
+  final ScheduleLibraryStatus libraryStatus;
   final String? busyItemId;
   final String? errorMessage;
 
@@ -52,6 +56,7 @@ class WorkoutScheduleState extends Equatable {
     List<AdaptiveProgramProgress>? programs,
     List<WorkoutTemplateSummary>? publicTemplates,
     List<WorkoutTemplateSummary>? personalTemplates,
+    ScheduleLibraryStatus? libraryStatus,
     String? busyItemId,
     bool clearBusy = false,
     String? errorMessage,
@@ -65,6 +70,7 @@ class WorkoutScheduleState extends Equatable {
     programs: programs ?? this.programs,
     publicTemplates: publicTemplates ?? this.publicTemplates,
     personalTemplates: personalTemplates ?? this.personalTemplates,
+    libraryStatus: libraryStatus ?? this.libraryStatus,
     busyItemId: clearBusy ? null : busyItemId ?? this.busyItemId,
     errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
   );
@@ -79,6 +85,7 @@ class WorkoutScheduleState extends Equatable {
     programs,
     publicTemplates,
     personalTemplates,
+    libraryStatus,
     busyItemId,
     errorMessage,
   ];
