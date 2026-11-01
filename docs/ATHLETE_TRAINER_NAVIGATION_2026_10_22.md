@@ -1,5 +1,45 @@
 # Navegación del alumno y preparador · TRN-025 · 22/10/2026
 
+## Revisión de Perfil y acceso profesional · 01/11/2026
+
+Tras probar el reparto implementado, Javier rechaza la presencia del selector
+Personal/Entrenador en la cabecera. Pide un acceso más discreto o trasladarlo a
+Perfil, recuerda que la denominación visible es preparador y reabre la relación
+entre Perfil y Ajustes. Esto revisa el criterio visual del selector aprobado
+antes; el cambio de ubicación todavía no está implementado.
+
+Se ha inspeccionado el vídeo aportado, de 26,92 segundos. Su Perfil conserva la
+identidad y el historial; un engranaje abre Ajustes, donde se agrupan cuenta,
+soporte, información legal y opciones de la aplicación. No se propone copiar sus
+mensajes comerciales, restablecimientos ni funciones que EntrenaOP no tenga.
+
+El código actual mezcla en Perfil identidad, edición de nombre y nacimiento,
+evolución, conexiones, suscripción, versión y salida. El selector profesional se
+compone por encima del shell y ocupa una franja adicional en las pantallas
+principales de las cuentas habilitadas. Este es el diagnóstico comprobado.
+
+La recomendación, pendiente de aceptación, es:
+
+- Conservar **Perfil** en la barra: identidad compacta, acceso a editar datos y
+  protagonismo para Mi evolución. La información deportiva no se oculta en Ajustes.
+- Abrir **Ajustes** desde un engranaje en Perfil para conexiones, suscripción,
+  opciones de cuenta, información de la app y cerrar sesión. Se reutilizan los
+  recorridos existentes; no se añaden opciones sin funcionamiento.
+- Sustituir la franja global por una fila discreta **Entrar como preparador** en
+  Perfil, visible sólo para cuentas habilitadas. Entrar requiere dos toques desde
+  una sección personal; el espacio profesional ofrece **Volver a mi entrenamiento**
+  y conserva su última pantalla. Se utiliza preparador en los textos visibles.
+- Conservar los avisos del preparador recibido en la pestaña Preparador. Los de
+  deportistas propios se identifican en el acceso profesional; un indicador en
+  Perfil permite advertirlos desde otras secciones sin recuperar la franja global.
+
+El coste de esta recomendación es perder el cambio profesional en un único toque
+desde cualquier sección personal. La ganancia es recuperar espacio de contenido
+y separar la actividad personal del trabajo profesional. El cambio no concede
+permisos, modifica datos ni altera avisos, lecturas o procesos deportivos. Antes
+de implementarlo se concreta con Javier la ubicación y se revisan entrada,
+retorno, borradores y las cuentas con y sin acceso profesional.
+
 ## Reorganización aprobada · 01/11/2026
 
 Javier aprueba implementar el reparto revisado, conservando la estética y los

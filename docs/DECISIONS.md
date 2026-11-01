@@ -1,5 +1,15 @@
 # Registro de decisiones vigentes
 
+**Perfil, Ajustes y acceso profesional reabiertos · 01/11/2026:** tras probar la
+app, Javier rechaza el selector Personal/Entrenador de la cabecera y pide una
+entrada más discreta, posiblemente desde Perfil. Corrige el término visible a
+preparador. La referencia aportada separa Perfil de Ajustes mediante un engranaje.
+Se recomienda conservar Perfil como destino personal/deportivo, alojar Ajustes
+dentro y ofrecer allí, en Perfil, «Entrar como preparador», con retorno explícito
+al entrenamiento personal y avisos profesionales separados. La ubicación final y
+el nuevo diseño siguen pendientes de aceptación; este apunte no modifica Flutter.
+[Referencia, diagnóstico y propuesta](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#revisión-de-perfil-y-acceso-profesional--01112026).
+
 **Consulta completa del entrenamiento y nombres comprensibles · 01/11/2026:**
 Javier confirma que consultar el entrenamiento pautado antes de empezarlo es
 imprescindible y autoriza completar la vista previa con su versión exacta. Leer
