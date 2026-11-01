@@ -1,5 +1,17 @@
 # Roadmap de EntrenaOP
 
+**01/11/2026 · revisión transversal solicitada por Javier:** deportista, Trainer,
+ADMIN y web revisados sobre `c08e2971`; análisis limpios y baterías completas
+correctas (raíz 1.553, Trainer 424 y ADMIN 368, con las omisiones previas).
+Las 268 migraciones locales coinciden con Dev. Se reproducen el bloqueo de agenda
+por un catálogo caído y la prioridad del programa automático ante una pauta
+profesional; se identifican pérdidas de contexto en Trainer y ajustes de ADMIN/web.
+[Hallazgos, capturas y límites](REVIEW_2026_11_01.md). No se cambia el comportamiento
+ni se publica; el rediseño sigue como propuesta. **Único siguiente bloque recomendado:**
+estabilizar el recorrido del deportista desde la pauta del día hasta resultado y
+retorno a su semana, concretando con Javier la jerarquía antes de modificarla y
+comprobándolo en iPhone con una pauta de Ervi.
+
 **31/10/2026 · búsqueda completa de sesiones y programas:** consultas autorizadas
 en servidor antes de paginar, contenido y filtros de sesión, programas por
 nombre/descripción/fases/sesiones y conexión a bibliotecas/selectores del portal.
