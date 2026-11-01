@@ -21,8 +21,10 @@ modifican los grupos. Sustituye la exclusividad anterior de un preparador.
   podrá consultar la agenda y las pautas. Se puede retirar en cualquier momento.
 - La compartición alcanza las citas del alumno seleccionado y sus pautas
   (ejercicios, series, ritmos, descansos), incluidas sesiones personales y de
-  EntrenaOP, para cotejar la carga. No incorpora medios privados, resultados,
-  conversación, formularios ni notas internas del otro profesional.
+  EntrenaOP, para cotejar la carga. El permiso de calendario no incorpora por sí
+  solo resultados, medios privados, conversación, formularios ni notas internas
+  del otro profesional. Los resultados completados tienen el permiso adicional
+  descrito en la ampliación del 01/11.
 - El calendario identifica autor, origen, estado y vínculos finalizados. Cada
   preparador solo escribe sus propias asignaciones. Las sesiones conviven sin
   sustituciones automáticas. No se decide edición cruzada ni chat conjunto.
@@ -116,3 +118,51 @@ ADMIN también publica las fuentes `c0933f54`, release `c0933f54aceccb348ed43961
 El workflow Publicar ADMIN Dev #66 termina correctamente (validación, despliegue
 y retención), con revisión Dev y hash de JavaScript contrastados por HTTPS.
 La corrección del arrastre compartido llega a ambos portales.
+
+
+## Resultados completados con consentimiento separado · 01/11/2026
+
+El deportista dispone en Preparador → Vínculos de «Compartir resultados entre
+mis preparadores». Se presenta separado del calendario, apagado por defecto y
+requiere que el calendario esté compartido. La explicación identifica su alcance
+sobre preparadores actuales y los que acepte después; la invitación vuelve a
+avisar cuando ese permiso está activo. Aceptar una invitación no lo activa.
+
+Cada preparador conserva el acceso habitual a sus propias pautas. La ampliación
+permite a los demás preparadores activos consultar los resultados completados
+del calendario compartido, incluidos los programas de EntrenaOP y sesiones
+personales. No abre actividades sueltas del historial general de Salud ni datos
+de otros alumnos. No concede edición, corrección ni revisión privada del autor.
+
+`calendar_sharing.results_enabled` depende de `enabled`; apagar el calendario o
+finalizar el último vínculo retira ambos permisos. No se restauran al volver a
+compartir calendario. La escritura pertenece al alumno, exige sesión vigente y
+control optimista de revisión, y admite repetir la misma intención. El acceso de
+lectura exige relación y servicio profesionales vigentes, MFA y sesión aal2
+activa. Terminar un vínculo retira el acceso adicional de ese preparador.
+
+La RPC `get_trainer_shared_workout_result` devuelve únicamente una ejecución Core
+completada del alumno y cita indicados. Proyecta mediante listas positivas los
+objetivos y mediciones, incluida su precisión original, RPE/RIR si existen,
+series, repeticiones, pesos, tiempos, distancia y pulso. Filtra también las claves
+JSON deportivas: no arrastra notas, instrucciones libres, revisión profesional,
+vídeos, URL privadas, chat ni observaciones generales del dispositivo. Nuevas
+columnas o claves no se comparten automáticamente.
+
+El calendario ofrece «Ver resultado» cuando el servidor acredita el permiso y
+el resultado completado. La ruta de lectura usa el componente profesional común,
+con agrupación, colores, plegado y filtro de diferencias. No tiene edición ni
+comparación con otras ejecuciones en este recorrido adicional; el autor conserva
+su recorrido habitual. Actualizar o reanudar vuelve a autorizar y limpia primero
+los datos anteriores. Cambiar alumno/cuenta descarta respuestas pendientes.
+
+Migración Dev `20261101214030` aplicada, sin activar permisos en personas reales.
+El contrato SQL y la regresión de dos preparadores pasan con ROLLBACK antes y
+después del despliegue; cubren separación de permisos, replay, revocación, MFA y
+sesión vivos, vínculo terminado, resultados pendientes y exclusión de campos
+privados. Análisis limpios y baterías completas: deportista 1.604 (una exclusión
+previa), Trainer 432 y ADMIN 368 (dos exclusiones previas). Las pruebas de interfaz
+cubren la activación, retirada, respuesta de una identidad anterior, entrada desde
+el calendario y diseño de 320 px con texto ampliado. La lectura por dos personas
+reales con consentimiento y el segundo plano Apple conservan aceptación física
+pendiente; no se simulan como comprobados.

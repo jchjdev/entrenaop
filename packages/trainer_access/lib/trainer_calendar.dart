@@ -8,6 +8,7 @@ class TrainerCalendarSharing {
     required this.revision,
     required this.activeTrainers,
     required this.maxActiveTrainers,
+    this.resultsEnabled = false,
   });
   factory TrainerCalendarSharing.fromJson(Map<String, dynamic> json) =>
       TrainerCalendarSharing(
@@ -15,8 +16,11 @@ class TrainerCalendarSharing {
         revision: (json['revision'] as num).toInt(),
         activeTrainers: (json['active_trainers'] as num).toInt(),
         maxActiveTrainers: (json['max_active_trainers'] as num).toInt(),
+        resultsEnabled:
+            json['enabled'] == true && json['results_enabled'] == true,
       );
   final bool enabled;
+  final bool resultsEnabled;
   final int revision, activeTrainers, maxActiveTrainers;
 }
 
@@ -25,8 +29,14 @@ abstract interface class TrainerCalendarSharingRepository {
   Future<TrainerCalendarSharing> set(bool enabled, int expectedRevision);
 }
 
+abstract interface class TrainerResultSharingRepository {
+  Future<TrainerCalendarSharing> setResults(bool enabled, int expectedRevision);
+}
+
 class SupabaseTrainerCalendarSharingRepository
-    implements TrainerCalendarSharingRepository {
+    implements
+        TrainerCalendarSharingRepository,
+        TrainerResultSharingRepository {
   SupabaseTrainerCalendarSharingRepository(this.client, this.userId);
   final SupabaseClient client;
   final String userId;
@@ -52,6 +62,14 @@ class SupabaseTrainerCalendarSharingRepository
         'p_enabled': enabled,
         'p_expected_revision': expectedRevision,
       });
+  @override
+  Future<TrainerCalendarSharing> setResults(
+    bool enabled,
+    int expectedRevision,
+  ) => _call('set_my_trainer_result_sharing', {
+    'p_enabled': enabled,
+    'p_expected_revision': expectedRevision,
+  });
 }
 
 class SharedCalendarEntry {
@@ -66,12 +84,14 @@ class SharedCalendarEntry {
       own = json['is_own'] == true,
       trainerName = json['trainer_name'] as String?,
       relationActive = json['relation_active'] == true,
-      running = json['is_running'] == true;
+      running = json['is_running'] == true,
+      hasResult = json['has_result'] == true;
   final String id, name, source, status;
   final String? trainerName, time;
   final DateTime date;
   final int? minutes;
   final bool own, relationActive, running;
+  final bool hasResult;
 }
 
 class SharedCalendarPage {
@@ -105,8 +125,14 @@ abstract interface class TrainerSharedCalendarRepository {
   Future<Map<String, dynamic>> workout(String clientId, String scheduledId);
 }
 
+abstract interface class TrainerSharedWorkoutResultRepository {
+  Future<Map<String, dynamic>?> result(String clientId, String scheduledId);
+}
+
 class SupabaseTrainerSharedCalendarRepository
-    implements TrainerSharedCalendarRepository {
+    implements
+        TrainerSharedCalendarRepository,
+        TrainerSharedWorkoutResultRepository {
   SupabaseTrainerSharedCalendarRepository(this.client, this.userId);
   final SupabaseClient client;
   final String userId;
@@ -145,4 +171,21 @@ class SupabaseTrainerSharedCalendarRepository
         'p_client_id': clientId,
         'p_scheduled_id': scheduledId,
       });
+  @override
+  Future<Map<String, dynamic>?> result(
+    String clientId,
+    String scheduledId,
+  ) async {
+    final value = await authenticatedTrainerRpc(
+      client,
+      userId,
+      'get_trainer_shared_workout_result',
+      params: {
+        'p_expected_owner': userId,
+        'p_client_id': clientId,
+        'p_scheduled_id': scheduledId,
+      },
+    );
+    return value == null ? null : Map<String, dynamic>.from(value as Map);
+  }
 }

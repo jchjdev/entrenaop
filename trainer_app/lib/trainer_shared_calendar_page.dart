@@ -11,9 +11,11 @@ class TrainerSharedCalendarPage extends StatefulWidget {
     super.key,
     required this.repository,
     required this.clientId,
+    this.onOpenResult,
   });
   final TrainerSharedCalendarRepository repository;
   final String clientId;
+  final ValueChanged<SharedCalendarEntry>? onOpenResult;
   @override
   State<TrainerSharedCalendarPage> createState() =>
       _TrainerSharedCalendarPageState();
@@ -254,26 +256,40 @@ class _TrainerSharedCalendarPageState extends State<TrainerSharedCalendarPage>
                             : Icons.fitness_center,
                       ),
                       title: Text(entry.name),
-                      subtitle: Text(
-                        [
-                          if (entry.time != null) entry.time!.substring(0, 5),
-                          entry.source == 'coach'
-                              ? '${entry.trainerName}${entry.own ? ' (tú)' : ''}'
-                              : entry.source == 'user'
-                              ? 'Planificación personal'
-                              : 'EntrenaOP',
-                          if (entry.minutes != null) '${entry.minutes} min',
-                          switch (entry.status) {
-                            'planned' => 'Pendiente',
-                            'in_progress' => 'En curso',
-                            'completed' => 'Realizada',
-                            'cancelled' => 'Retirada',
-                            'skipped' => 'Omitida',
-                            'abandoned' => 'Abandonada',
-                            _ => entry.status,
-                          },
-                          if (!entry.relationActive) 'Vínculo finalizado',
-                        ].join(' · '),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            [
+                              if (entry.time != null)
+                                entry.time!.substring(0, 5),
+                              entry.source == 'coach'
+                                  ? '${entry.trainerName}${entry.own ? ' (tú)' : ''}'
+                                  : entry.source == 'user'
+                                  ? 'Planificación personal'
+                                  : 'EntrenaOP',
+                              if (entry.minutes != null) '${entry.minutes} min',
+                              switch (entry.status) {
+                                'planned' => 'Pendiente',
+                                'in_progress' => 'En curso',
+                                'completed' => 'Realizada',
+                                'cancelled' => 'Retirada',
+                                'skipped' => 'Omitida',
+                                'abandoned' => 'Abandonada',
+                                _ => entry.status,
+                              },
+                              if (!entry.relationActive) 'Vínculo finalizado',
+                            ].join(' · '),
+                          ),
+                          if (entry.hasResult && widget.onOpenResult != null)
+                            TextButton.icon(
+                              onPressed: _busy
+                                  ? null
+                                  : () => widget.onOpenResult!(entry),
+                              icon: const Icon(Icons.insights_outlined),
+                              label: const Text('Ver resultado'),
+                            ),
+                        ],
                       ),
                       trailing: const Icon(Icons.visibility_outlined),
                       onTap: _busy ? null : () => _open(entry),

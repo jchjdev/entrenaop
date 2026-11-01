@@ -15,12 +15,14 @@ class MyTrainerPage extends StatefulWidget {
     this.assessments,
     this.onOpenConversation,
     this.calendarSharing,
+    this.resultSharing,
   });
   final TrainerRepository repository;
   final TrainerStudentFormRepository? forms;
   final ProfessionalAssessmentStudentRepository? assessments;
   final ValueChanged<String>? onOpenConversation;
   final TrainerCalendarSharingRepository? calendarSharing;
+  final TrainerResultSharingRepository? resultSharing;
   @override
   State<MyTrainerPage> createState() => _MyTrainerPageState();
 }
@@ -274,7 +276,7 @@ class _MyTrainerPageState extends State<MyTrainerPage> {
                         'Compartir mi calendario con mis preparadores',
                       ),
                       subtitle: const Text(
-                        'Podrán consultar todas tus sesiones y sus pautas para coordinarse. No comparte conversaciones, resultados ni notas privadas. Puedes desactivarlo cuando quieras.',
+                        'Podrán consultar tus sesiones y sus pautas para coordinarse. Los resultados se autorizan por separado. Las conversaciones y notas privadas no se comparten.',
                       ),
                       value: sharing.enabled,
                       onChanged: _busy
@@ -294,6 +296,33 @@ class _MyTrainerPageState extends State<MyTrainerPage> {
                     ),
                   ),
               ],
+              if (_sharing case final sharing?
+                  when _active.isNotEmpty && widget.resultSharing != null)
+                Card(
+                  child: SwitchListTile(
+                    title: const Text(
+                      'Compartir resultados entre mis preparadores',
+                    ),
+                    subtitle: Text(
+                      sharing.enabled
+                          ? 'Métricas de las sesiones completadas del calendario para tus preparadores actuales y los que aceptes después. No comparte notas, chat, vídeos ni el historial general de Salud.'
+                          : 'Activa primero el calendario compartido. Este permiso es opcional.',
+                    ),
+                    value: sharing.resultsEnabled,
+                    onChanged: _busy || !sharing.enabled
+                        ? null
+                        : (enabled) => _run(() async {
+                            try {
+                              final value = await widget.resultSharing!
+                                  .setResults(enabled, sharing.revision);
+                              if (mounted) setState(() => _sharing = value);
+                            } catch (_) {
+                              await _load();
+                              rethrow;
+                            }
+                          }),
+                  ),
+                ),
               if (_active.isEmpty)
                 const Card(
                   child: Padding(
@@ -359,6 +388,10 @@ class _MyTrainerPageState extends State<MyTrainerPage> {
                           if (_sharing?.enabled == true)
                             const Text(
                               'Tienes la agenda compartida: este preparador también podrá consultar tu calendario y las pautas de tus sesiones al aceptar.',
+                            ),
+                          if (_sharing?.resultsEnabled == true)
+                            const Text(
+                              'También podrá consultar los resultados deportivos completados que has decidido compartir. Las notas y conversaciones siguen siendo privadas.',
                             ),
                           FilledButton(
                             onPressed:

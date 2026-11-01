@@ -1077,6 +1077,11 @@ class AppRouter {
                         builder: (context, auth) => auth is! AuthAuthenticated
                             ? const SizedBox.shrink()
                             : MyTrainerPage(
+                                resultSharing:
+                                    SupabaseTrainerCalendarSharingRepository(
+                                      sl<SupabaseClient>(),
+                                      auth.user.id,
+                                    ),
                                 calendarSharing:
                                     SupabaseTrainerCalendarSharingRepository(
                                       sl<SupabaseClient>(),

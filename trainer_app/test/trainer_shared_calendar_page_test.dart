@@ -7,6 +7,7 @@ import 'package:entrenaop_trainer/trainer_shared_calendar_page.dart';
 
 class CalendarFixture implements TrainerSharedCalendarRepository {
   bool shared = true, denied = false;
+  bool completed = false, resultAllowed = false;
   int reads = 0;
   Completer<SharedCalendarPage>? pending;
   @override
@@ -35,7 +36,8 @@ class CalendarFixture implements TrainerSharedCalendarRepository {
                   'scheduled_date': from.toIso8601String(),
                   'template_name': i == 0 ? 'Fuerza' : 'Series fuertes',
                   'source': 'coach',
-                  'status': 'planned',
+                  'status': completed && i == 0 ? 'completed' : 'planned',
+                  'has_result': completed && resultAllowed && i == 0,
                   'trainer_name': i == 0 ? 'Javier' : 'Ervi',
                   'is_own': i == 0,
                   'relation_active': true,
@@ -58,6 +60,31 @@ class CalendarFixture implements TrainerSharedCalendarRepository {
 }
 
 void main() {
+  testWidgets('abre el resultado solo cuando el servidor lo ofrece', (
+    tester,
+  ) async {
+    final repository = CalendarFixture()..completed = true;
+    String? selected;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: TrainerSharedCalendarPage(
+          repository: repository,
+          clientId: 'student',
+          onOpenResult: (entry) => selected = entry.id,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Ver resultado'), findsNothing);
+    repository.resultAllowed = true;
+    await tester.tap(find.byTooltip('Actualizar calendario'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Ver resultado'), 200);
+    await tester.tap(find.text('Ver resultado'));
+    await tester.pump();
+    expect(selected, '0');
+    expect(find.text('Cerrar pauta'), findsNothing);
+  });
   testWidgets('calendario legible a 320 con texto doble', (tester) async {
     tester.view.physicalSize = const Size(320, 900);
     tester.view.devicePixelRatio = 1;

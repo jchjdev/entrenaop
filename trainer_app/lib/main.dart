@@ -16,6 +16,7 @@ import 'package:trainer_access/trainer_appointments.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'trainer_account_access.dart';
+import 'trainer_shared_result_page.dart';
 import 'trainer_account_pages.dart';
 import 'trainer_auth_browser.dart';
 import 'trainer_client_goals_repository.dart';
@@ -855,7 +856,7 @@ class _TrainerAppState extends State<TrainerApp> {
             ),
             GoRoute(
               path: '/clients/:id/calendar',
-              builder: (_, state) => TrainerSharedCalendarPage(
+              builder: (context, state) => TrainerSharedCalendarPage(
                 key: ValueKey(
                   'shared-calendar-$identity-${state.pathParameters['id']}',
                 ),
@@ -864,6 +865,23 @@ class _TrainerAppState extends State<TrainerApp> {
                   identity!,
                 ),
                 clientId: state.pathParameters['id']!,
+                onOpenResult: (entry) => context.push(
+                  '/clients/${state.pathParameters['id']}/calendar/${entry.id}/result',
+                ),
+              ),
+            ),
+            GoRoute(
+              path: '/clients/:id/calendar/:scheduled/result',
+              builder: (_, state) => TrainerSharedResultPage(
+                key: ValueKey(
+                  'shared-result-$identity-${state.pathParameters['id']}-${state.pathParameters['scheduled']}',
+                ),
+                repository: SupabaseTrainerSharedCalendarRepository(
+                  widget.client,
+                  identity!,
+                ),
+                clientId: state.pathParameters['id']!,
+                scheduledId: state.pathParameters['scheduled']!,
               ),
             ),
             GoRoute(

@@ -41,6 +41,61 @@ class _LinkRepository extends FakeTrainerRepository {
 
 void main() {
   testWidgets(
+    'compartir calendario no activa resultados y apagarlo retira ambos accesos',
+    (tester) async {
+      final repository = FakeTrainerRepository()
+        ..active = [trainerRelation('Javier')];
+      final sharing = _SharingFixture();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MyTrainerPage(
+            repository: repository,
+            calendarSharing: sharing,
+            resultSharing: sharing,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final results = find.widgetWithText(
+        SwitchListTile,
+        'Compartir resultados entre mis preparadores',
+      );
+      await tester.scrollUntilVisible(
+        results,
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(tester.widget<SwitchListTile>(results).onChanged, isNull);
+      await tester.scrollUntilVisible(
+        find.text('Compartir mi calendario con mis preparadores'),
+        -200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await press(tester, 'Compartir mi calendario con mis preparadores');
+      await tester.scrollUntilVisible(
+        results,
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(tester.widget<SwitchListTile>(results).value, isFalse);
+      await press(tester, 'Compartir resultados entre mis preparadores');
+      expect(sharing.results, isTrue);
+      await tester.scrollUntilVisible(
+        find.text('Compartir mi calendario con mis preparadores'),
+        -200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await press(tester, 'Compartir mi calendario con mis preparadores');
+      await tester.scrollUntilVisible(
+        results,
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(tester.widget<SwitchListTile>(results).value, isFalse);
+      expect(tester.widget<SwitchListTile>(results).onChanged, isNull);
+    },
+  );
+  testWidgets(
     'pegar un enlace usa el mismo secreto en vista previa y aceptación',
     (tester) async {
       final repo = _LinkRepository();
@@ -262,8 +317,12 @@ void main() {
   });
 }
 
-class _SharingFixture implements TrainerCalendarSharingRepository {
+class _SharingFixture
+    implements
+        TrainerCalendarSharingRepository,
+        TrainerResultSharingRepository {
   bool enabled = false;
+  bool results = false;
   int revision = 0, count = 1;
   @override
   Future<TrainerCalendarSharing> get() async => TrainerCalendarSharing(
@@ -271,11 +330,25 @@ class _SharingFixture implements TrainerCalendarSharingRepository {
     revision: revision,
     activeTrainers: count,
     maxActiveTrainers: 2,
+    resultsEnabled: results,
   );
   @override
   Future<TrainerCalendarSharing> set(bool value, int expectedRevision) async {
     expect(expectedRevision, revision);
     enabled = value;
+    if (!enabled) results = false;
+    revision++;
+    return get();
+  }
+
+  @override
+  Future<TrainerCalendarSharing> setResults(
+    bool value,
+    int expectedRevision,
+  ) async {
+    expect(enabled, isTrue);
+    expect(expectedRevision, revision);
+    results = value;
     revision++;
     return get();
   }

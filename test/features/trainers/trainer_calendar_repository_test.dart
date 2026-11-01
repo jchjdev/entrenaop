@@ -32,6 +32,66 @@ void main() {
     };
   });
   tearDown(() async => server.client.dispose());
+  test('resultados requieren consentimiento separado y conservan identidad y revisión', () async {
+    server.responses['set_my_trainer_result_sharing'] = {
+      'enabled': true,
+      'results_enabled': true,
+      'revision': 2,
+      'active_trainers': 2,
+      'max_active_trainers': 2,
+    };
+    final repository = SupabaseTrainerCalendarSharingRepository(
+      server.client,
+      pupil,
+    );
+    expect((await repository.get()).resultsEnabled, isFalse);
+    expect((await repository.setResults(true, 1)).resultsEnabled, isTrue);
+    expect(jsonDecode(server.requests.last.body), {
+      'p_expected_owner': pupil,
+      'p_enabled': true,
+      'p_expected_revision': 1,
+    });
+    expect(
+      TrainerCalendarSharing.fromJson({
+        'enabled': false,
+        'results_enabled': true,
+        'revision': 2,
+        'active_trainers': 2,
+        'max_active_trainers': 2,
+      }).resultsEnabled,
+      isFalse,
+    );
+    server.responses['get_trainer_shared_workout_result'] = {'id': 'completed'};
+    final results = SupabaseTrainerSharedCalendarRepository(
+      server.client,
+      pupil,
+    );
+    expect((await results.result('student', 'scheduled'))!['id'], 'completed');
+    expect(jsonDecode(server.requests.last.body), {
+      'p_expected_owner': pupil,
+      'p_client_id': 'student',
+      'p_scheduled_id': 'scheduled',
+    });
+  });
+  test(
+    'descarta un resultado compartido si cambia la cuenta durante la lectura',
+    () async {
+      server.responses['get_trainer_shared_workout_result'] = {'id': 'private'};
+      final repository = SupabaseTrainerSharedCalendarRepository(
+        server.client,
+        pupil,
+      );
+      server.started = Completer<void>();
+      server.hold = Completer<void>();
+      final response = repository.result('student', 'scheduled');
+      final check = expectLater(response, throwsStateError);
+      await server.started!.future;
+      server.account = other;
+      await server.login();
+      server.hold!.complete();
+      await check;
+    },
+  );
   test('consentimiento guarda versión e identidad; calendario se acota al alumno elegido', () async {
     final sharing = SupabaseTrainerCalendarSharingRepository(
       server.client,

@@ -379,9 +379,14 @@ iOS y CI de Salud han terminado correctamente.
 pendiente, con incorporación posterior, contratos SQL transaccionales y pruebas
 de servidor/cliente. Dev exige referencia fiable y pauta vigente, admite hasta
 siete días posteriores según el día real y conserva revisión ante ambigüedad.
-**Siguiente recorrido único de integraciones:** permiso separado y revocable
-para consultar resultados completados desde otro preparador activo, sin notas
-ni historial general de Salud. Su implementación y aceptación siguen pendientes.
+**Tramo compartido verificado · 01/11/2026:** permiso separado, apagado por defecto
+y revocable para consultar resultados completados desde otro preparador activo.
+SQL contrasta consentimiento, relación, servicio, MFA y sesión; la proyección
+excluye notas, medios e historial general de Salud. Sin activaciones en cuentas
+reales. Análisis y baterías de deportista, Trainer y ADMIN correctos.
+**Siguiente recorrido único de integraciones:** actualizar una vez el iPhone y
+contrastar el retorno Apple en segundo plano con una pauta vigente, RPE ausente
+y lectura por ambos preparadores tras el consentimiento explícito del alumno.
 Las pruebas Apple
 de cierre, fases/avisos, cambios y retirada conservan sus verificaciones pendientes.
 Javier confirma hasta siete días posteriores para realizar una pauta otro día;

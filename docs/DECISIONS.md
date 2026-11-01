@@ -2274,8 +2274,13 @@ sigue pendiente de actualizar y probar la instalación iOS.
 Javier también confirma el objetivo de que Isabel pueda autorizar a ambos
 preparadores a consultar resultados deportivos. Es un permiso separado del
 calendario, apagado por defecto y revocable; no incluye conversaciones, notas,
-medios privados ni acceso a su historial general de Salud. Esta ampliación está
-acordada, todavía no implementada ni activada en ninguna cuenta.
+medios privados ni acceso a su historial general de Salud. La ampliación está
+implementada en Dev, sin activar el permiso en cuentas reales. Requiere calendario
+compartido y se retira también al apagarlo o finalizar el último vínculo externo.
+Cada consulta exige servicio y vínculo vigentes, MFA y sesión activa. El autor
+conserva su acceso habitual; el permiso abre resultados completados del calendario
+a los demás preparadores activos, incluidos los que el alumno acepte después.
+[Contrato y validación](TRAINER_MULTI_COACH_2026_10_24.md).
 
 Javier confirma también un margen de hasta siete días después de la fecha
 prevista para asociar/cerrar una pauta realizada otro día. Se utiliza la fecha

@@ -147,7 +147,11 @@ contrasta con versiones enviadas. PostgreSQL revalida concesión, lease, fuente,
 revisión y día real dentro de siete días. Se reutiliza la ejecución Core,
 idempotente y transaccional, con RPE NULL si no existe. Una operación separada
 del titular permite añadirlo después. Ambigüedad o falta de evidencia conserva
-revisión. El consentimiento para otro preparador continúa separado y pendiente.
+revisión. El consentimiento para otro preparador es separado y revocable: puerto
+de preferencias en `trainer_access`, sesión fijada en el adaptador y proyección
+SQL por lista positiva. No concede edición ni expone notas, revisiones privadas
+o medios. La vista Trainer reutiliza el resultado común y revalida al reanudar,
+actualizar o cambiar identidad/alumno; descarta respuestas anteriores.
 
 **TRN-038 · 28/10/2026 · enlaces de invitación:** el codec se comparte en
 `trainer_access`; Trainer adapta canal de envío y página pública. La app nativa

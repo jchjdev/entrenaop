@@ -318,13 +318,17 @@ queda pendiente y el deportista puede añadirlo después; no se inventa ni se
 sobrescribe una valoración existente. El segundo plano Apple requiere actualizar
 el iPhone y conserva su aceptación física pendiente; depende de iOS y permisos.
 Los detalles del propio alumno llegan a su preparador autor. Compartir resultados
-completados con otro preparador requerirá el permiso separado aún pendiente.
+completados con otro preparador dispone en Dev de un permiso separado, apagado
+por defecto, dependiente del calendario y revocable. No comparte notas, chat,
+vídeos ni el historial general de Salud; consulta métricas del mismo resultado
+Core, sin copiarlo por preparador.
 [Apple](DEVICE_APPLE_WATCH.md) y [Garmin](DEVICE_GARMIN_ACTIVITY_RETURN.md).
 
 **Preparación compartida · TRN-028 · 24/10/2026:** El alumno puede recibir pautas de dos
 preparadores. Decide si ambos pueden consultar su calendario y pautas para coordinar
-carga; no comparte los demás alumnos, conversaciones, resultados ni notas privadas de
-los profesionales.
+carga; no comparte los demás alumnos, conversaciones ni notas privadas de los
+profesionales. Los resultados completados tienen un permiso adicional opcional,
+separado del calendario, disponible desde el 01/11 en Dev.
 [Contrato y evidencia](TRAINER_MULTI_COACH_2026_10_24.md).
 
 El historial del deportista y el resultado profesional permiten filtrar
