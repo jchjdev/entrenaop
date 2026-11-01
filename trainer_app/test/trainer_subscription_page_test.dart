@@ -102,6 +102,23 @@ class ConcurrentPlanFixture extends PlanCatalogueFixture {
 }
 
 void main() {
+  testWidgets('no ofrece pagar al suspendido sin suscripción activa', (
+    tester,
+  ) async {
+    final repo = SubscriptionFixture()..suspended = true;
+    await tester.pumpWidget(
+      MaterialApp(home: TrainerSubscriptionPage(repository: repo)),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.textContaining('Acceso profesional suspendido'),
+      findsOneWidget,
+    );
+    expect(find.text('Contratar en pruebas'), findsNothing);
+    expect(find.text('Continuar pago de prueba'), findsNothing);
+    expect(repo.actions, isEmpty);
+  });
+
   testWidgets(
     'la suspensión conserva gestión de cobros y oculta nuevas compras',
     (tester) async {

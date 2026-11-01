@@ -275,7 +275,7 @@ suspende ninguna cuenta real para comprobar este contrato.
 
 Verificación del cambio: análisis raíz/ADMIN/Trainer sin incidencias; 1.553
 pruebas de la app correctas (una omisión previa), 368 de ADMIN (dos omisiones
-previas), 423 de Trainer y 25 del paquete `trainer_access`. Nueve contratos SQL
+previas), 424 de Trainer y 25 del paquete `trainer_access`. Nueve contratos SQL
 correctos con ROLLBACK: suspensión, comercial, acceso/vínculos, cartera,
 operativa, catálogo comercial/calentamientos, autoentrenamiento, calendario
 conjunto y piloto de directorio. Historial local/Dev coincidente y asesor de

@@ -359,8 +359,9 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
             ),
             const SizedBox(height: 16),
           ],
-          if (sub == null ||
-              ['prepared', 'open', 'expired', 'canceled'].contains(state))
+          if (_data?['suspended'] != true &&
+              (sub == null ||
+                  ['prepared', 'open', 'expired', 'canceled'].contains(state)))
             ProfessionalCatalogGrid(
               children: [
                 for (final offer in visibleOffers)
