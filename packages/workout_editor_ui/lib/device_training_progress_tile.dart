@@ -52,7 +52,7 @@ class DeviceTrainingProgressTile extends StatelessWidget {
     'invalid_prescription' =>
       progress.hasDelivery
           ? 'Los cambios no se pueden enviar fielmente. La versión anterior puede seguir en Garmin; revisa su calendario.'
-          : 'Esta receta contiene un formato, ejercicio o paso que todavía no podemos representar fielmente en Garmin.',
+          : 'Este entrenamiento contiene un formato, ejercicio o paso que todavía no podemos representar fielmente en Garmin.',
     'delivery_uncertain' ||
     'delivery_needs_review' ||
     'invalid_provider_response' => 'No se ha podido confirmar la entrega. Revisa Garmin antes de repetir: no se creará otra copia automáticamente.',

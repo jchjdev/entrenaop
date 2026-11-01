@@ -197,7 +197,7 @@ class _TrainerSessionWorkEditorState extends State<TrainerSessionWorkEditor> {
         instructions:
             widget.instructions ??
             (revision
-                ? 'Se guarda una nueva versión. Las pautas anteriores conservan la receta que recibieron.'
+                ? 'Se guarda una nueva versión. Las pautas anteriores conservan el entrenamiento que recibieron.'
                 : 'Guárdala en tu biblioteca y después asígnala a tus alumnos.'),
         saveLabel:
             widget.saveLabel ??

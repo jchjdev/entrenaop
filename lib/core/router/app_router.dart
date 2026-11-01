@@ -117,6 +117,8 @@ import 'package:entrenaop/features/training_plan/presentation/pages/training_con
 import 'package:entrenaop/features/workout_schedule/presentation/bloc/workout_schedule_cubit.dart';
 import 'package:entrenaop/features/workout_schedule/domain/repositories/workout_schedule_repository.dart';
 import 'package:entrenaop/features/workout_schedule/presentation/pages/workout_schedule_page.dart';
+import 'package:entrenaop/features/workout_schedule/presentation/bloc/scheduled_workout_preview_cubit.dart';
+import 'package:entrenaop/features/workout_schedule/presentation/pages/scheduled_workout_preview_page.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_preview_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_history_cubit.dart';
@@ -475,21 +477,78 @@ class AppRouter {
                   routes: [
                     materialAppRoute(
                       path: 'week',
-                      builder: (context, state) => BlocProvider(
-                        create: (_) => sl<WorkoutScheduleCubit>(
-                          param1:
-                              DateTime.tryParse(
-                                state.uri.queryParameters['date'] ?? '',
-                              ) ??
-                              DateTime.now(),
-                        ),
-                        child: WorkoutSchedulePage(
-                          externalResults: appleResults?.resultsChanged,
-                          focusedWorkoutId:
-                              state.uri.queryParameters['session'],
-                        ),
-                      ),
+                      builder: (context, state) =>
+                          BlocBuilder<AuthCubit, AuthState>(
+                            bloc: authCubit,
+                            buildWhen: (_, next) =>
+                                next is AuthAuthenticated ||
+                                next is AuthUnauthenticated,
+                            builder: (_, auth) => auth is! AuthAuthenticated
+                                ? const SizedBox.shrink()
+                                : BlocProvider(
+                                    key: ValueKey(
+                                      'week-${auth.user.id}-${state.uri.queryParameters['date'] ?? ''}',
+                                    ),
+                                    create: (_) => sl<WorkoutScheduleCubit>(
+                                      param1:
+                                          DateTime.tryParse(
+                                            state.uri.queryParameters['date'] ??
+                                                '',
+                                          ) ??
+                                          DateTime.now(),
+                                    ),
+                                    child: WorkoutSchedulePage(
+                                      externalResults:
+                                          appleResults?.resultsChanged,
+                                      focusedWorkoutId:
+                                          state.uri.queryParameters['session'],
+                                    ),
+                                  ),
+                          ),
                       routes: [
+                        _workflowRoute(
+                          path: 'session/:scheduledId',
+                          builder: (_, state) => BlocBuilder<AuthCubit, AuthState>(
+                            bloc: authCubit,
+                            buildWhen: (_, next) =>
+                                next is AuthAuthenticated ||
+                                next is AuthUnauthenticated,
+                            builder: (_, auth) => auth is! AuthAuthenticated
+                                ? const SizedBox.shrink()
+                                : BlocProvider(
+                                    key: ValueKey(
+                                      'scheduled-preview-${auth.user.id}-${state.pathParameters['scheduledId']}',
+                                    ),
+                                    create: (_) =>
+                                        sl<ScheduledWorkoutPreviewCubit>(
+                                          param1: state
+                                              .pathParameters['scheduledId']!,
+                                          param2: auth.user.id,
+                                        ),
+                                    child: ScheduledWorkoutPreviewPage(
+                                      routeBase:
+                                          '/plan/week/session/${Uri.encodeComponent(state.pathParameters['scheduledId']!)}',
+                                      initialDate: DateTime.tryParse(
+                                        state.uri.queryParameters['date'] ?? '',
+                                      ),
+                                    ),
+                                  ),
+                          ),
+                          routes: [
+                            _workflowRoute(
+                              path: 'active/:executionId',
+                              builder: (_, state) => BlocProvider(
+                                create: (_) => sl<ActiveWorkoutCubit>(
+                                  param1: state.pathParameters['executionId']!,
+                                ),
+                                child: ActiveWorkoutPage(
+                                  timerStore: sl(),
+                                  cueService: sl(),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                         _workflowRoute(
                           path: 'active/:executionId',
                           builder: (context, state) => BlocProvider(

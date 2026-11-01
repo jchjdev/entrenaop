@@ -256,7 +256,7 @@ void main() {
       );
       await press(tester, 'Abrir pauta');
       await press(tester, privateRecipe.name);
-      await press(tester, 'Ver receta antes de asignar');
+      await press(tester, 'Ver entrenamiento');
       expect(find.byType(WorkoutTemplateContent), findsOneWidget);
       expect(find.text('1. Dominadas'), findsOneWidget);
       await press(tester, 'Volver a la pauta');

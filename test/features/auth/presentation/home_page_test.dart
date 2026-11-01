@@ -114,6 +114,14 @@ void main() {
           builder: (_, _) => const Scaffold(body: Text('Elegir preparación')),
         ),
         GoRoute(
+          path: '/plan/week/session/:scheduledId',
+          builder: (_, state) => Scaffold(
+            body: Text(
+              'Entrenamiento ${state.uri.queryParameters['date']} · ${state.pathParameters['scheduledId']}',
+            ),
+          ),
+        ),
+        GoRoute(
           path: '/plan/week',
           builder: (_, state) => Scaffold(
             body: Text(
@@ -174,10 +182,11 @@ void main() {
       expect(find.text('Sesión de mi preparador'), findsOneWidget);
       expect(find.text('Sesión pautada por tu preparador'), findsOneWidget);
       expect(find.text('Dos planificaciones el mismo día'), findsNothing);
-      await tester.ensureVisible(find.text('Ver sesión'));
-      await tester.tap(find.text('Ver sesión'));
+      await tester.ensureVisible(find.text('Ver entrenamiento'));
+      await tester.tap(find.text('Ver entrenamiento'));
       await tester.pumpAndSettle();
-      expect(router.state.uri.queryParameters['session'], 'coach');
+      expect(router.state.uri.path, '/plan/week/session/coach');
+      expect(router.state.uri.queryParameters['date'], homeDateParam(today));
     },
   );
 
@@ -424,21 +433,22 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
-  testWidgets('la sesión diaria abre su agenda sin iniciar una ejecución', (
-    tester,
-  ) async {
-    await mount(
-      tester,
-      overview(workouts: [workout(ScheduledWorkoutStatus.planned)]),
-    );
-    expect(find.text('Carrera de hoy'), findsOneWidget);
-    await tester.tap(find.text('Ver sesión'));
-    await tester.pumpAndSettle();
-    expect(
-      find.text('Agenda ${homeDateParam(today)} · scheduled-1'),
-      findsOneWidget,
-    );
-  });
+  testWidgets(
+    'la sesión diaria abre el entrenamiento sin iniciar una ejecución',
+    (tester) async {
+      await mount(
+        tester,
+        overview(workouts: [workout(ScheduledWorkoutStatus.planned)]),
+      );
+      expect(find.text('Carrera de hoy'), findsOneWidget);
+      await tester.tap(find.text('Ver entrenamiento'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Entrenamiento ${homeDateParam(today)} · scheduled-1'),
+        findsOneWidget,
+      );
+    },
+  );
   testWidgets('al seleccionar otro día no inventa un descanso', (tester) async {
     await mount(
       tester,

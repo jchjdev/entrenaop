@@ -638,6 +638,11 @@ void main() {
               ),
             ),
             GoRoute(
+              path: '/plan/week/session/:id',
+              builder: (_, state) =>
+                  const Scaffold(body: Text('Entrenamiento pautado')),
+            ),
+            GoRoute(
               path: '/plan/week/active/:id',
               builder: (_, state) => Scaffold(
                 body: Text('Ejecución ${state.pathParameters['id']}'),
@@ -653,7 +658,18 @@ void main() {
         await tester.pumpAndSettle();
         if (status == ScheduledWorkoutStatus.planned) {
           expect(repository.startedIds, isEmpty);
-          expect(router.state.uri.path, '/plan/week');
+          expect(router.state.uri.path, '/plan/week/session/coach-session');
+          expect(router.state.uri.queryParameters['date'], '2026-09-23');
+          expect(find.text('Entrenamiento pautado'), findsOneWidget);
+          router.pop();
+          await tester.pumpAndSettle();
+          await tester.ensureVisible(find.text('Ver entrenamiento'));
+          await tester.tap(find.text('Ver entrenamiento'));
+          await tester.pumpAndSettle();
+          expect(router.state.uri.path, '/plan/week/session/coach-session');
+          expect(repository.startedIds, isEmpty);
+          router.pop();
+          await tester.pumpAndSettle();
           await tester.ensureVisible(find.text('Comenzar sesión'));
           await tester.tap(find.text('Comenzar sesión'));
           await tester.pumpAndSettle();

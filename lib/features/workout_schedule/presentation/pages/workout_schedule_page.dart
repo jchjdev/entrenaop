@@ -508,10 +508,11 @@ class _ScheduledWorkoutCard extends StatelessWidget {
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        // Empezar una pauta pendiente requiere pulsar su acción explícita.
-        onTap: busy || item.status == ScheduledWorkoutStatus.planned
+        onTap: busy
             ? null
-            : () => _open(context),
+            : () => item.status == ScheduledWorkoutStatus.planned
+                  ? _preview(context)
+                  : _open(context),
         child: Padding(
           padding: const EdgeInsets.all(18),
           child: Column(
@@ -611,6 +612,14 @@ class _ScheduledWorkoutCard extends StatelessWidget {
               if (item.status == ScheduledWorkoutStatus.planned ||
                   item.status == ScheduledWorkoutStatus.inProgress) ...[
                 const SizedBox(height: 16),
+                if (item.status == ScheduledWorkoutStatus.planned) ...[
+                  OutlinedButton.icon(
+                    onPressed: busy ? null : () => _preview(context),
+                    icon: const Icon(Icons.visibility_outlined),
+                    label: const Text('Ver entrenamiento'),
+                  ),
+                  const SizedBox(height: 8),
+                ],
                 FilledButton.icon(
                   onPressed: busy ? null : () => _open(context),
                   icon: Icon(
@@ -654,6 +663,14 @@ class _ScheduledWorkoutCard extends StatelessWidget {
         item.status == ScheduledWorkoutStatus.inProgress) {
       await _start(context);
     }
+  }
+
+  Future<void> _preview(BuildContext context) async {
+    final date = item.scheduledDate.toIso8601String().split('T').first;
+    await context.push(
+      '/plan/week/session/${Uri.encodeComponent(item.id)}?date=$date',
+    );
+    if (context.mounted) await context.read<WorkoutScheduleCubit>().load();
   }
 
   Future<void> _start(BuildContext context) async {

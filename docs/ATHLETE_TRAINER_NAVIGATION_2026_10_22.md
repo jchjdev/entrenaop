@@ -42,18 +42,15 @@ históricas descritas más abajo.
   cambiar de cuenta sustituye sus consultas pendientes. Volver de una tarea
   refresca los datos personales como antes.
 
-### Alcance y límite de consulta de pautas
+### Consulta del entrenamiento antes de empezar
 
-Tocar una card pendiente del calendario ya no inicia una ejecución. Su botón
-Comenzar sesión utiliza el mismo inicio por identificador de pauta; reanudar y
-consultar resultados conservan sus destinos. No cambian reglas deportivas,
-algoritmo, prescripción, acceso comercial, permisos, migraciones ni dependencias.
-
-La card consulta los metadatos y notas disponibles. No se añade una vista de
-receta completa por versión: el contrato actual de agenda no ofrece esa lectura
-independiente, y consultar la plantilla actual podría presentar una versión
-distinta de la asignada. Esa ampliación requiere un bloque propio; no se simula
-ni se concede acceso al programa privado completo del preparador.
+Javier confirma después que la consulta completa es imprescindible y autoriza
+cerrarla en el mismo recorrido. La card y Ver entrenamiento abren la pauta
+exacta, sin empezar. La acción de inicio es explícita y conserva el ejecutor,
+comprobando que no se sustituya por contenido cambiado después de consultarlo.
+Esta ampliación sustituye el límite inicial que dejaba únicamente metadatos.
+No cambia reglas deportivas ni concede acceso al programa privado completo.
+[Contrato y validación de la vista previa](SCHEDULED_WORKOUT_PREVIEW_2026_11_01.md).
 
 ### Comprobación y distribución
 

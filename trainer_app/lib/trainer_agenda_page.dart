@@ -295,7 +295,7 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const Text(
-          'Arrastra a un día. Revisa alumno, fecha y receta antes de confirmar.',
+          'Arrastra a un día. Revisa alumno, fecha y entrenamiento antes de confirmar.',
         ),
         if (_libraryBusy) const LinearProgressIndicator(),
         if (_libraryError != null) Text(_libraryError!),
@@ -592,7 +592,7 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
                     (recipe.id != assignment.templateId ||
                         recipe.version != assignment.version)) {
                   throw StateError(
-                    'La receta ha cambiado. Actualiza la agenda.',
+                    'El entrenamiento ha cambiado. Actualiza la agenda.',
                   );
                 }
                 return recipe;

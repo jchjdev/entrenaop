@@ -145,7 +145,7 @@ void main() {
       );
       expect(find.textContaining(' · Fuerza A'), findsOneWidget);
       expect(find.textContaining(' · Fuerza B'), findsOneWidget);
-      await groups.tap(t, find.byTooltip('Ver receta de Fuerza A'));
+      await groups.tap(t, find.byTooltip('Ver entrenamiento de Fuerza A'));
       await groups.tap(t, find.text('Volver al envío'));
       await capturePerformanceWidget(t, 'trainer-group-program-preview');
       expect(

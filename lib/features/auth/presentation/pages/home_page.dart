@@ -456,7 +456,7 @@ class _DayHero extends StatelessWidget {
         ? 'Retomar sesión'
         : completed || abandoned
         ? 'Ver resultado'
-        : 'Ver sesión';
+        : 'Ver entrenamiento';
     final route = item == null
         ? '/plan/week?date=${homeDateParam(selectedDay)}'
         : homeWorkoutRoute(item);

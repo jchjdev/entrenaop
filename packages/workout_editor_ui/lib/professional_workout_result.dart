@@ -397,7 +397,7 @@ class _ExerciseResultCard extends StatelessWidget {
     final color = _blockStyle(format).$2;
     final doses = completed.map(_resultDose).toSet();
     final summary = recipe
-        ? 'Receta AMRAP · ${sets.length} ${sets.length == 1 ? 'posición' : 'posiciones'}'
+        ? 'Pautado · AMRAP · ${sets.length} ${sets.length == 1 ? 'posición' : 'posiciones'}'
         : [
             '${completed.length}/${sets.length} completadas',
             if (skipped > 0)
@@ -493,7 +493,7 @@ class _ResultSeriesRow extends StatelessWidget {
               children: [
                 Icon(recipe ? Icons.repeat : icon, color: color, size: 18),
                 Text(
-                  'Serie ${(set['set_order'] as int) + 1} · ${recipe ? 'Receta AMRAP' : _setStatus(set['status'])}',
+                  'Serie ${(set['set_order'] as int) + 1} · ${recipe ? 'Pautado · AMRAP' : _setStatus(set['status'])}',
                 ),
               ],
             ),

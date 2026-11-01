@@ -28,7 +28,7 @@ class WorkoutHistoryDetailPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Text('Detalle de la sesión'),
+        title: const Text('Entrenamiento'),
       ),
       body: BlocConsumer<WorkoutHistoryDetailCubit, WorkoutHistoryDetailState>(
         listener: (context, state) {

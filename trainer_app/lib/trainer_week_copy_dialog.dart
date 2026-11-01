@@ -95,7 +95,7 @@ class _TrainerWeekCopyDialogState extends State<_TrainerWeekCopyDialog> {
               ['22023', '42501', '40001', '23503', '23514'].contains(e.code);
           _error = _definitive
               ? 'La copia no se ha realizado. ${trainerError(e)} Vuelve a revisar la semana.'
-              : 'No se ha podido confirmar la copia. Reintenta esta misma orden; sus fechas y recetas se conservan.';
+              : 'No se ha podido confirmar la copia. Reintenta esta misma orden; sus fechas y entrenamientos se conservan.';
         });
       }
     } finally {
@@ -107,7 +107,7 @@ class _TrainerWeekCopyDialogState extends State<_TrainerWeekCopyDialog> {
     try {
       final template = await widget.repository.template(item.templateId);
       if (!mounted) return;
-      if (template == null) throw StateError('Receta no disponible');
+      if (template == null) throw StateError('Entrenamiento no disponible');
       await showDialog<void>(
         context: context,
         builder: (context) => EntrenaDialog(
@@ -145,7 +145,7 @@ class _TrainerWeekCopyDialogState extends State<_TrainerWeekCopyDialog> {
               'Semana del ${_date(widget.weekStart)} · desplazamiento de ${widget.offsetDays} días.',
             ),
             const Text(
-              'Se añaden citas independientes con la receta fijada. Las originales y el plan automático se conservan. La comprobación abarca toda la semana, no solo lo visible en agenda.',
+              'Se añaden citas independientes con el entrenamiento fijado. Las originales y el plan automático se conservan. La comprobación abarca toda la semana, no solo lo visible en agenda.',
             ),
             if (_busy) const LinearProgressIndicator(),
             if (_error != null)
@@ -190,7 +190,7 @@ class _TrainerWeekCopyDialogState extends State<_TrainerWeekCopyDialog> {
                         if (item.note?.isNotEmpty == true) Text(item.note!),
                         TextButton(
                           onPressed: _busy ? null : () => _recipe(item),
-                          child: const Text('Ver receta fijada'),
+                          child: const Text('Ver entrenamiento'),
                         ),
                       ],
                     ),

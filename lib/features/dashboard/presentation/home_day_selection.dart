@@ -51,6 +51,9 @@ String homeWorkoutRoute(ScheduledWorkout item) {
       item.executionId != null) {
     return '/assessment/history/workouts/${item.executionId}';
   }
-  // Se abre la agenda: empezar desde una plantilla suelta perdería su vínculo.
+  if (item.status == ScheduledWorkoutStatus.planned) {
+    // Consultar conserva la pauta y su versión; todavía no crea una ejecución.
+    return '/plan/week/session/${Uri.encodeComponent(item.id)}?date=${homeDateParam(item.scheduledDate)}';
+  }
   return '/plan/week?date=${homeDateParam(item.scheduledDate)}&session=${Uri.encodeQueryComponent(item.id)}';
 }

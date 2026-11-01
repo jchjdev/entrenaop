@@ -293,7 +293,7 @@ class _ComparisonRow extends StatelessWidget {
             ),
           if (current.format == 'amrap')
             const Text(
-              'Receta AMRAP: consulta las vueltas y parciales de cada sesión; no son series realizadas.',
+              'Pautado · AMRAP: consulta las vueltas y parciales de cada sesión; no son series realizadas.',
             ),
           for (final key in keys) ...[
             const SizedBox(height: 6),

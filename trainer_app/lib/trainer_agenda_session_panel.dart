@@ -123,7 +123,7 @@ class _TrainerAgendaSessionPanelState extends State<TrainerAgendaSessionPanel> {
     }
     if (_recipe == null) {
       return const Center(
-        child: Text('Abre la planificación para consultar la receta.'),
+        child: Text('Abre la planificación para consultar el entrenamiento.'),
       );
     }
     return FutureBuilder<WorkoutTemplate?>(
@@ -142,7 +142,9 @@ class _TrainerAgendaSessionPanelState extends State<TrainerAgendaSessionPanel> {
         }
         if (snapshot.data == null) {
           return const Center(
-            child: Text('La receta no está disponible. Actualiza la agenda.'),
+            child: Text(
+              'El entrenamiento no está disponible. Actualiza la agenda.',
+            ),
           );
         }
         return SingleChildScrollView(
@@ -215,7 +217,7 @@ class _TrainerAgendaSessionPanelState extends State<TrainerAgendaSessionPanel> {
           runSpacing: 8,
           children: [
             ChoiceChip(
-              label: const Text('Receta'),
+              label: const Text('Entrenamiento'),
               selected: !_showResult,
               onSelected: (_) => setState(() => _showResult = false),
             ),

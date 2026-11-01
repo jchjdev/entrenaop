@@ -63,7 +63,7 @@ class WorkoutPreviewPage extends StatelessWidget {
         ),
         WorkoutPreviewStatus.ready ||
         WorkoutPreviewStatus.starting ||
-        WorkoutPreviewStatus.failure => _WorkoutContent(
+        WorkoutPreviewStatus.failure => WorkoutPreviewContent(
           workout: state.workout!,
           thumbnails: state.exerciseThumbnails,
           errorMessage: state.errorMessage,
@@ -155,15 +155,18 @@ class _SessionAction extends StatelessWidget {
   );
 }
 
-class _WorkoutContent extends StatelessWidget {
-  const _WorkoutContent({
+class WorkoutPreviewContent extends StatelessWidget {
+  const WorkoutPreviewContent({
     required this.workout,
     required this.thumbnails,
     this.errorMessage,
+    this.leading,
+    super.key,
   });
   final WorkoutTemplate workout;
   final Map<String, String> thumbnails;
   final String? errorMessage;
+  final Widget? leading;
 
   @override
   Widget build(BuildContext context) => SafeArea(
@@ -179,6 +182,10 @@ class _WorkoutContent extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  if (leading case final header?) ...[
+                    header,
+                    const SizedBox(height: 18),
+                  ],
                   _Header(workout: workout),
                   const SizedBox(height: 18),
                   for (final (index, block) in workout.blocks.indexed) ...[
@@ -568,7 +575,8 @@ class _PrescriptionDetails extends StatelessWidget {
         WorkoutBlockFormat.tabata => 'Trabajo',
         WorkoutBlockFormat.straightSets => '${sets.length} series',
         WorkoutBlockFormat.intervals => '${sets.length} intervalos',
-        WorkoutBlockFormat.running => '${sets.length} tramos',
+        WorkoutBlockFormat.running =>
+          '${sets.length} ${sets.length == 1 ? 'tramo' : 'tramos'}',
         _ => '${sets.length} rondas',
       };
       return Text(
@@ -659,7 +667,7 @@ String _blockPlanSummary(WorkoutBlock block) {
     WorkoutBlockFormat.amrap =>
       '${_duration(block.timeCapSeconds ?? 0)} · todas las vueltas posibles',
     WorkoutBlockFormat.running =>
-      '${block.items.firstOrNull?.sets.length ?? 0} ${block.items.firstOrNull?.sets.length == 1 ? 'tramo' : 'tramos'} ordenados',
+      '${block.items.firstOrNull?.sets.length ?? 0} ${block.items.firstOrNull?.sets.length == 1 ? 'tramo ordenado' : 'tramos ordenados'}',
     WorkoutBlockFormat.warmUp || WorkoutBlockFormat.coolDown =>
       '$itemCount ${itemCount == 1 ? 'ejercicio' : 'ejercicios'}',
   };
@@ -743,7 +751,9 @@ String _setPrescription(
         '${_number(p.externalLoadKg!)} kg ${p.loadMode == 'assisted' ? 'de asistencia' : 'externos'}',
       if (p.usesRir && p.targetRir != null)
         'margen de ${_number(p.targetRir!)} repeticiones',
+      if (p.usesRpe && p.targetRpe != null) 'RPE ${_number(p.targetRpe!)}',
       if (includeRest) '${_duration(set.restAfterSeconds)} de descanso',
+      if (p.instructions.trim().isNotEmpty) p.instructions,
     ].join(' · ');
   }
   final target = switch ((

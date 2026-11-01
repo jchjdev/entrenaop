@@ -495,7 +495,7 @@ void main() {
       await tester.pumpWidget(openCopy(repo, scale: 2));
       await tap(tester, find.text('Abrir copia'));
       expect(tester.takeException(), isNull);
-      await tap(tester, find.text('Ver receta fijada').first);
+      await tap(tester, find.text('Ver entrenamiento').first);
       expect(find.textContaining('Dominadas'), findsWidgets);
       expect(tester.takeException(), isNull);
     });

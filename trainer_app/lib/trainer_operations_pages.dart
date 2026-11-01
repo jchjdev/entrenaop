@@ -266,7 +266,7 @@ class _TrainerAssignmentAdaptationPageState
     final template = await widget.workouts.template(
       detail.assignment.templateId,
     );
-    if (template == null) throw StateError('Receta no disponible.');
+    if (template == null) throw StateError('Entrenamiento no disponible.');
     return (detail, template);
   }
 
@@ -321,9 +321,9 @@ class _TrainerAssignmentAdaptationPageState
                 title: 'Adaptar pauta de ${detail.clientName}',
                 heading:
                     'Solo esta entrega · ${trainerCalendarDate(detail.assignment.date)}',
-                instructions: 'Se crea una receta para esta pauta. Tu biblioteca, el programa y el resto de alumnos conservan sus versiones.',
+                instructions: 'Se crea un entrenamiento para esta pauta. Tu biblioteca, el programa y el resto de alumnos conservan sus versiones.',
                 saveLabel: 'Guardar adaptación individual',
-                saveErrorMessage: 'No se ha confirmado la adaptación. Reintenta sin cambiar la receta; si el alumno ya empezó o cambió la pauta, actualiza la agenda.',
+                saveErrorMessage: 'No se ha confirmado la adaptación. Reintenta sin cambiar el entrenamiento; si el alumno ya empezó o cambió la pauta, actualiza la agenda.',
                 onSave: (input) => _submit(input, detail),
                 onSaved: (_) => _finish(),
               ),
@@ -343,7 +343,7 @@ class _TrainerAssignmentAdaptationPageState
                       Text(_saveError ?? 'Confirmando la adaptación…'),
                       if (!_saving) ...[
                         const Text(
-                          'La receta queda conservada. Reintenta el mismo envío para confirmar sin crear otra adaptación.',
+                          'El entrenamiento queda conservado. Reintenta el mismo envío para confirmar sin crear otra adaptación.',
                         ),
                         FilledButton(
                           onPressed: () async {

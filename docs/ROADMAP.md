@@ -1,5 +1,19 @@
 # Roadmap de EntrenaOP
 
+**01/11/2026 · vista previa pautada completa y comprobada:** Inicio y calendario
+abren **Ver entrenamiento**, con el contenido de la versión asignada y sin
+iniciar ni modificar la sesión. El inicio explícito comprueba que sigue siendo
+el contenido revisado; una modificación requiere volver a revisarlo. App y
+Trainer usan **Entrenamiento** y **Pautado / Realizado** en lugar de «receta» o
+«detalle de la sesión». Análisis limpio; baterías completas: raíz **1.600**
+correctas y una omisión previa, Trainer **428**, ADMIN **368** y dos omisiones
+previas, editor compartido **247**. Migración aplicada exclusivamente a Dev y
+prueba SQL transaccional posterior correcta; doce capturas reales en 320/390 px
+y texto 1×/2×. **Único siguiente bloque recomendado:** recompilar en Mac y aceptar
+los accesos desde Inicio y calendario, volver sin comenzar, comenzar de forma
+explícita y consultar resultado con una pauta real de Ervi. La instalación en
+iPhone sigue pendiente de esa compilación. [Contrato y límites](SCHEDULED_WORKOUT_PREVIEW_2026_11_01.md).
+
 **01/11/2026 · reparto del deportista implementado y comprobado:** Javier
 autoriza llevar la propuesta a Flutter. Inicio conserva cards y semana;
 Entrenar abre Planes y permite deslizar hacia Preparaciones y Disponibilidad,
@@ -9,7 +23,8 @@ conserva contexto. Se preservan URLs, procesos, permisos y Biblioteca. Tocar una
 card pendiente no inicia la pauta; el botón explícito conserva su proceso.
 Análisis Flutter limpio. Batería completa de raíz: **1.577 correctas y una omisión previa**; 14 escenarios
 visuales generan 15 capturas reales, incluidos 320 px/texto 2×. La consulta de
-receta pautada completa por versión sigue fuera del alcance. No se acredita
+entrenamiento pautado completo por versión se completa en el bloque posterior
+descrito arriba. No se acredita
 instalación en iPhone. **Único siguiente bloque recomendado:** recompilar en Mac
 y aceptar Inicio → Entrenar → Disponibilidad → semana → resultado y el cambio
 profesional con una pauta de Ervi. [Contratos y límites](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#reorganización-aprobada--01112026).

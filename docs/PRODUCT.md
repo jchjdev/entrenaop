@@ -10,9 +10,12 @@ relación y seguimiento, búsqueda e indicador de novedades. Perfil conserva cue
 y conexiones y aloja el acceso a Evolución. El cambio al trabajo profesional
 permanece visible y recupera el contexto previo.
 
-Se conservan procesos deportivos y permisos, sin cambios de datos. El inicio de
-una pauta se realiza desde su botón explícito. La card no incorpora una consulta
-nueva de receta completa versionada. [Recorridos, contratos y límites](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#reorganización-aprobada--01112026).
+Se conservan procesos deportivos y permisos. El inicio de una pauta se realiza
+desde su botón explícito. Javier pide después completar la consulta del
+entrenamiento asignado antes de empezar; ese recorrido se amplía con lectura
+autorizada de su versión exacta y comprobación al comenzar.
+[Recorridos](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#reorganización-aprobada--01112026)
+y [contrato de consulta](SCHEDULED_WORKOUT_PREVIEW_2026_11_01.md).
 
 ## Primer contacto desde el directorio · 31/10/2026
 

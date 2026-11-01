@@ -294,7 +294,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(choose, findsOneWidget);
       expect(
-        find.text('Retirado de la biblioteca · se conserva en esta receta.'),
+        find.text(
+          'Retirado de la biblioteca · se conserva en este entrenamiento.',
+        ),
         findsOneWidget,
       );
       await tester.tap(choose);
@@ -328,7 +330,9 @@ void main() {
       await tester.ensureVisible(choose);
       await tester.pumpAndSettle();
       expect(
-        find.text('Retirado de la biblioteca · se conserva en esta receta.'),
+        find.text(
+          'Retirado de la biblioteca · se conserva en este entrenamiento.',
+        ),
         findsOneWidget,
       );
       await tester.tap(choose);
@@ -342,7 +346,9 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.text('Retirado de la biblioteca · se conserva en esta receta.'),
+        find.text(
+          'Retirado de la biblioteca · se conserva en este entrenamiento.',
+        ),
         findsNothing,
       );
     },
@@ -372,7 +378,7 @@ void main() {
     await _save(tester);
     expect(writes, 0);
     final error = find.textContaining(
-      'Hay ejercicios retirados en esta receta:',
+      'Hay ejercicios retirados en este entrenamiento:',
     );
     await tester.scrollUntilVisible(
       error,

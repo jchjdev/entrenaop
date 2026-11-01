@@ -669,7 +669,7 @@ class _TrainerBatchAssignmentDialogState
     try {
       final template = await widget.workouts.template(id);
       if (!mounted) return;
-      if (template == null) throw StateError('Receta no disponible');
+      if (template == null) throw StateError('Entrenamiento no disponible');
       await showDialog<void>(
         context: context,
         builder: (context) => EntrenaDialog(
@@ -700,7 +700,7 @@ class _TrainerBatchAssignmentDialogState
                 slots.isEmpty ||
                 slots.any((s) => !_dates.containsKey(s))))) {
       setState(
-        () => _error = 'Elige alumnos activos, una receta y todas las fechas antes de revisar.',
+        () => _error = 'Elige alumnos activos, un entrenamiento y todas las fechas antes de revisar.',
       );
       return;
     }
@@ -772,7 +772,7 @@ class _TrainerBatchAssignmentDialogState
         }
         setState(
           () => _error =
-              'No se ha podido confirmar la tanda. Reintenta con los mismos destinatarios, recetas y fechas. ${trainerError(e)}',
+              'No se ha podido confirmar la tanda. Reintenta con los mismos destinatarios, entrenamientos y fechas. ${trainerError(e)}',
         );
       }
     } finally {
@@ -812,7 +812,7 @@ class _TrainerBatchAssignmentDialogState
           if (receipt != null) ...[
             Text('${receipt.assignmentCount} citas entregadas.'),
             const Text(
-              'Cada alumno tiene sus propias pautas. Puedes adaptar su receta desde su planificación y revisar después sus resultados.',
+              'Cada alumno tiene sus propias pautas. Puedes adaptar su entrenamiento desde su planificación y revisar después sus resultados.',
             ),
             for (final result in receipt.recipients)
               Card(
@@ -860,7 +860,7 @@ class _TrainerBatchAssignmentDialogState
                 title: Text('${_workout!.name} · v${_workout!.version}'),
                 subtitle: Text(_dateLabel(_request!.date)),
                 trailing: IconButton(
-                  tooltip: 'Ver receta común',
+                  tooltip: 'Ver entrenamiento común',
                   onPressed: _busy
                       ? null
                       : () => _recipe(_request!.templateId!),
@@ -875,7 +875,7 @@ class _TrainerBatchAssignmentDialogState
                     '${_dateLabel(entry.date)} · ${_entryName(entry)}',
                   ),
                   trailing: IconButton(
-                    tooltip: 'Ver receta de ${_entryName(entry)}',
+                    tooltip: 'Ver entrenamiento de ${_entryName(entry)}',
                     onPressed: _busy
                         ? null
                         : () => _recipe(
@@ -1010,7 +1010,7 @@ class _TrainerBatchAssignmentDialogState
               if (_workout != null)
                 TextButton(
                   onPressed: _busy ? null : () => _recipe(_workout!.id),
-                  child: const Text('Ver receta de la sesión'),
+                  child: const Text('Ver entrenamiento'),
                 ),
               OutlinedButton.icon(
                 key: const ValueKey('trainer-batch-date'),
@@ -1124,7 +1124,7 @@ class _TrainerBatchAssignmentDialogState
                                         .sessions[slot.$2]
                                         .templateId,
                                   ),
-                            child: const Text('Ver receta fijada'),
+                            child: const Text('Ver entrenamiento'),
                           ),
                           OutlinedButton(
                             key: ValueKey(

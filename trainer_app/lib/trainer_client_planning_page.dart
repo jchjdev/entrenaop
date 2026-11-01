@@ -728,7 +728,7 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
           title: 'Detalle de la selección',
           children: [
             Text(
-              'Selecciona una pauta para consultar su receta. Tus resultados, técnica y conversación están en el mismo contexto.',
+              'Selecciona una pauta para consultar el entrenamiento. Tus resultados, técnica y conversación están en el mismo contexto.',
             ),
           ],
         );
@@ -820,7 +820,7 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
                 );
               }
               if (snapshot.data == null) {
-                return const Text('Receta no disponible.');
+                return const Text('Entrenamiento no disponible.');
               }
               return WorkoutTemplateContent(template: snapshot.data!);
             },

@@ -253,7 +253,7 @@ class _TrainerWorkoutLibraryPageState extends State<TrainerWorkoutLibraryPage> {
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const Text(
-            'Retoma tus sesiones aunque tengan campos pendientes. Un envío sin confirmar conserva su receta hasta resolverlo.',
+            'Retoma tus sesiones aunque tengan campos pendientes. Un envío sin confirmar conserva su entrenamiento hasta resolverlo.',
           ),
           if (_workError != null) Text('No se pudieron cargar: $_workError'),
           if (_discardError != null) Text(_discardError!),
@@ -503,10 +503,10 @@ class _TrainerWorkoutEditorPageState extends State<TrainerWorkoutEditorPage> {
       title: revision ? 'Revisar sesión privada' : 'Crear sesión privada',
       heading: 'Biblioteca del preparador',
       instructions: revision
-          ? 'Se guarda una nueva versión. Las pautas anteriores conservan la receta que recibieron.'
+          ? 'Se guarda una nueva versión. Las pautas anteriores conservan el entrenamiento que recibieron.'
           : 'Guárdala en tu biblioteca y después asígnala a tus alumnos.',
       saveLabel: revision ? 'Guardar nueva versión' : 'Guardar sesión privada',
-      saveErrorMessage: 'No se pudo confirmar el guardado. Conservamos tu receta: reintenta sin cambiarla si la conexión falló.',
+      saveErrorMessage: 'No se pudo confirmar el guardado. Conservamos tu entrenamiento: reintenta sin cambiarlo si la conexión falló.',
     );
   }
 }
@@ -536,7 +536,7 @@ class _TrainerWorkoutPreviewPageState extends State<TrainerWorkoutPreviewPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Revisar receta')),
+    appBar: AppBar(title: const Text('Entrenamiento')),
     body: FutureBuilder<WorkoutTemplate?>(
       future: _future,
       builder: (context, snapshot) {
@@ -1058,7 +1058,7 @@ class _TrainerAssignmentDialogState extends State<TrainerAssignmentDialog> {
       await showDialog<void>(
         context: context,
         builder: (dialogContext) => EntrenaDialog(
-          title: const Text('Receta que recibirá el alumno'),
+          title: const Text('Entrenamiento para el alumno'),
           content: WorkoutTemplateContent(template: template),
           actions: [
             TextButton(
@@ -1214,7 +1214,7 @@ class _TrainerAssignmentDialogState extends State<TrainerAssignmentDialog> {
             if (_selected != null)
               TextButton(
                 onPressed: _busy ? null : _preview,
-                child: const Text('Ver receta antes de asignar'),
+                child: const Text('Ver entrenamiento'),
               ),
             OutlinedButton(
               onPressed: _busy || _operationId != null

@@ -1,5 +1,15 @@
 # Arquitectura de EntrenaOP
 
+**Vista previa pautada · 01/11/2026:** `workout_schedule` incorpora entidad y
+puerto Dart, casos de uso, adaptador Supabase fijado al usuario y un Cubit propio.
+La ruta raíz `/plan/week/session/:scheduledId` reutiliza `WorkoutPreviewContent`
+y deja el inicio en una acción explícita. La consulta estable no escribe; el
+inicio revisado comprueba propietario, versión asignada y revisión antes de
+delegar en el proceso existente. Los cambios concurrentes obligan a revisar de
+nuevo. Calendario y vista previa descartan datos tardíos de otra cuenta.
+No se añaden dependencias ni se cambia la política de acceso al catálogo.
+[Contrato, RPC y verificación](SCHEDULED_WORKOUT_PREVIEW_2026_11_01.md).
+
 **Navegación personal · 01/11/2026:** se conserva `StatefulShellRoute` y sus
 índices históricos. Perfil y Evolución comparten la rama 3, con `/profile` como
 entrada; la barra presenta `[0, 1, 2, 4, 3]` y la rama profesional sigue en 5.

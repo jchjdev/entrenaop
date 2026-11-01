@@ -312,7 +312,7 @@ class _TrainerRecurrenceEditorDialogState
     try {
       final template = await widget.workouts.template(_workout!.id);
       if (!mounted) return;
-      if (template == null) throw StateError('Receta no disponible');
+      if (template == null) throw StateError('Entrenamiento no disponible');
       await showDialog<void>(
         context: context,
         builder: (context) => EntrenaDialog(
@@ -457,7 +457,7 @@ class _TrainerRecurrenceEditorDialogState
               '${preview.batch.assignmentCount} citas para ${preview.batch.recipients.length} alumnos.',
             ),
             const Text(
-              'Las coincidencias son por fecha. No se sustituyen planes ni se modifica la receta de biblioteca. La serie termina tras las semanas elegidas.',
+              'Las coincidencias son por fecha. No se sustituyen planes ni se modifica el entrenamiento de biblioteca. La serie termina tras las semanas elegidas.',
             ),
             for (final recipient in preview.batch.recipients)
               Card(
@@ -566,7 +566,7 @@ class _TrainerRecurrenceEditorDialogState
             if (_workout != null)
               TextButton(
                 onPressed: _busy ? null : _recipe,
-                child: const Text('Ver receta fijada'),
+                child: const Text('Ver entrenamiento'),
               ),
             OutlinedButton.icon(
               key: const ValueKey('recurrence-monday'),

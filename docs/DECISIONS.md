@@ -1,5 +1,14 @@
 # Registro de decisiones vigentes
 
+**Consulta completa del entrenamiento y nombres comprensibles · 01/11/2026:**
+Javier confirma que consultar el entrenamiento pautado antes de empezarlo es
+imprescindible y autoriza completar la vista previa con su versión exacta. Leer
+no crea ejecuciones ni cambia la pauta. Comenzar es una acción separada y valida
+el contenido revisado. Javier rechaza «receta» y después «detalle de la sesión»:
+la interfaz usa Ver entrenamiento, Entrenamiento y Pautado / Realizado. Se aplica
+a la app, Trainer y componentes compartidos, sin renombrar contratos técnicos.
+[Contrato, recorrido y comprobación](SCHEDULED_WORKOUT_PREVIEW_2026_11_01.md).
+
 **Reparto del deportista aprobado · 01/11/2026:** Javier autoriza llevar a la
 app la propuesta conservando su estética, procesos y arquitectura. Inicio
 mantiene semana y cards; Entrenar abre en Planes y permite deslizar entre Planes,

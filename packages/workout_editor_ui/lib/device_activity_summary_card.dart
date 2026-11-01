@@ -64,7 +64,7 @@ class DeviceActivitySummaryCard extends StatelessWidget {
                   : r.state == 'test'
                   ? 'Actividad identificada como prueba. Se conserva separada del resultado deportivo.'
                   : r.state == 'review'
-                  ? 'La receta o sus datos necesitan revisión antes de incorporarlos como entrenamiento completado.'
+                  ? 'El entrenamiento o sus datos necesitan revisión antes de incorporarlos como entrenamiento completado.'
                   : 'La actividad corresponde a esta pauta. El resumen del reloj no acredita el resultado individual de cada paso ni la valoración de esfuerzo.',
             ),
         ],

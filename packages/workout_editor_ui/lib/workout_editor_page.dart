@@ -676,7 +676,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
             .toList();
         if (retained.isNotEmpty) {
           throw FormatException(
-            'Hay ejercicios retirados en esta receta: ${retained.take(3).map((e) => e.name).join(', ')}. Sustitúyelos o recupéralos desde su biblioteca antes de guardar.',
+            'Hay ejercicios retirados en este entrenamiento: ${retained.take(3).map((e) => e.name).join(', ')}. Sustitúyelos o recupéralos desde su biblioteca antes de guardar.',
           );
         }
       }
@@ -1484,12 +1484,12 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     title: 'Tramos de carrera',
     items: RunningStepKind.values,
     nameOf: (kind) => kind.label,
-    subtitleOf: (_) => 'Completa distancia o duración en la receta',
+    subtitleOf: (_) => 'Completa la distancia o la duración del entrenamiento',
     dragOwner: _libraryOwner,
     enabled: !_busy && _runningCount < 40,
     onSelected: _insertRunningKind,
     footer: const Text(
-      'Añade un tramo y ordénalo con su asa. Los ritmos se definen en la receta.',
+      'Añade un tramo y ordénalo con su asa. Los ritmos se definen en el entrenamiento.',
     ),
   );
 
@@ -2688,7 +2688,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
             const Padding(
               padding: EdgeInsets.only(top: 8),
               child: Text(
-                'Retirado de la biblioteca · se conserva en esta receta.',
+                'Retirado de la biblioteca · se conserva en este entrenamiento.',
               ),
             ),
           const SizedBox(height: 8),

@@ -75,6 +75,9 @@ import 'package:entrenaop/features/workout_schedule/data/repositories/workout_sc
 import 'package:entrenaop/features/workout_schedule/domain/repositories/workout_schedule_repository.dart';
 import 'package:entrenaop/features/workout_schedule/domain/usecases/workout_schedule_usecases.dart';
 import 'package:entrenaop/features/workout_schedule/presentation/bloc/workout_schedule_cubit.dart';
+import 'package:entrenaop/features/workout_schedule/data/repositories/supabase_scheduled_workout_preview_repository.dart';
+import 'package:entrenaop/features/workout_schedule/domain/usecases/scheduled_workout_preview_usecases.dart';
+import 'package:entrenaop/features/workout_schedule/presentation/bloc/scheduled_workout_preview_cubit.dart';
 import 'package:entrenaop/features/workouts/data/datasources/workout_remote_datasource.dart';
 import 'package:entrenaop/features/workouts/data/datasources/workout_remote_datasource_impl.dart';
 import 'package:entrenaop/features/workouts/data/repositories/workout_repository_impl.dart';
@@ -437,6 +440,17 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => RescheduleWorkoutUseCase(sl()));
   sl.registerLazySingleton(() => CancelScheduledWorkoutUseCase(sl()));
   sl.registerLazySingleton(() => StartScheduledWorkoutUseCase(sl()));
+  sl.registerFactoryParam<ScheduledWorkoutPreviewCubit, String, String>((
+    scheduledId,
+    ownerId,
+  ) {
+    final repository = SupabaseScheduledWorkoutPreviewRepository(sl(), ownerId);
+    return ScheduledWorkoutPreviewCubit(
+      scheduledId: scheduledId,
+      getPreview: GetScheduledWorkoutPreviewUseCase(repository),
+      startReviewed: StartReviewedScheduledWorkoutUseCase(repository),
+    )..load();
+  });
   sl.registerLazySingleton(
     () => GetPreparationDetailUseCase(
       goalRepository: sl(),

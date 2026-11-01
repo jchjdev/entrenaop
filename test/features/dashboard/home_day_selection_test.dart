@@ -77,15 +77,12 @@ void main() {
       'program',
     );
   });
-  test(
-    'la sesión programada abre agenda, nunca ejecuta la plantilla suelta',
-    () {
-      expect(
-        homeWorkoutRoute(_item('assigned', ScheduledWorkoutStatus.planned)),
-        '/plan/week?date=2026-10-05&session=assigned',
-      );
-    },
-  );
+  test('la sesión programada abre su contenido exacto sin ejecutar la plantilla suelta', () {
+    expect(
+      homeWorkoutRoute(_item('assigned', ScheduledWorkoutStatus.planned)),
+      '/plan/week/session/assigned?date=2026-10-05',
+    );
+  });
   test('retoma la ejecución existente y abre resultados sin empezar otra', () {
     expect(
       homeWorkoutRoute(
