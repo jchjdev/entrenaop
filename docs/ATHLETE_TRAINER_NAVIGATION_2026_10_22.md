@@ -68,6 +68,40 @@ La propuesta se revisa con datos de ejemplo, fila horizontal, cambio de semanas,
 detalle de sesión y Evolución en Perfil; no modifica rutas ni pantallas de
 Flutter. La aceptación de estos recorridos precede a su implementación.
 
+### Impresiones del segundo prototipo · 01/11/2026
+
+Javier valora la dirección visual y concreta estos criterios para la siguiente
+revisión, todavía sin autorizar su implementación en Flutter:
+
+- Conservar la semana compacta de Inicio. Repetirla como primera cara de
+  Entrenar resulta redundante, aunque el calendario completo debe seguir
+  accesible.
+- Mantener Planes, Preparaciones y Disponibilidad como apartados internos y
+  explorar el desplazamiento del contenido sincronizado con sus accesos.
+- Reutilizar la presentación y el editor actuales de disponibilidad y material;
+  la simplificación del prototipo no sustituye días, minutos, material ni sus
+  reglas de guardado.
+- Conservar Biblioteca como está durante este bloque.
+- Preparador debe ofrecer búsqueda cuando no existe vínculo y mostrar en su
+  pestaña el indicador de novedades, en lugar de depender de la campana superior.
+- Perfil sigue la dirección deseada. El cambio al trabajo profesional necesita
+  conservar la rapidez del selector actual; enterrarlo en Perfil añade pasos.
+- El alcance es presentación, ubicación y continuidad de navegación. Se
+  conservan los procesos deportivos, datos, permisos y la arquitectura existente.
+
+La recomendación pendiente de Javier es abrir Entrenar en Planes, con
+Preparaciones y Disponibilidad como las otras caras del desplazamiento. Un
+acceso visible a Ver semana abriría el calendario existente, compartiendo destino
+y fecha con el acceso desde Inicio. Así se mantiene su función de agenda sin
+repetir el resumen semanal como portada de dos secciones.
+
+Se recomienda conservar el selector de espacio visible en las pantallas
+principales, con una presentación más ligera que respete el tamaño de texto y
+recupere el destino anterior. Los avisos recibidos del preparador pertenecen al
+espacio personal; los de alumnos propios, al profesional. Mover el indicador no
+debe alterar recepción, autorización ni confirmación de lectura. Las pruebas
+deben cubrir retorno, fecha, borradores y cuentas con y sin seguimiento.
+
 El trabajo con alumnos propios mantendría un espacio profesional con agenda,
 alumnos y mensajes. Su entrada y retorno deben ser explícitos y conservar el
 contexto. «Mi preparador» describe el servicio que recibe la persona;

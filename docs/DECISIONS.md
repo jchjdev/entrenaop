@@ -1,5 +1,17 @@
 # Registro de decisiones vigentes
 
+**Criterios tras probar la propuesta visual · 01/11/2026:** Javier mantiene la
+semana de Inicio y pide resolver su repetición al entrar en Entrenar, conservando
+acceso al calendario. Valora Planes, Preparaciones y Disponibilidad con
+desplazamiento interno; esta última debe reutilizar el editor completo actual.
+Biblioteca queda fuera del rediseño de este bloque. Preparador debe permitir
+buscar sin vínculo y alojar el indicador de novedades en su pestaña. El cambio
+de espacio profesional debe conservar la rapidez del selector actual. Se
+mantienen procesos deportivos, datos y permisos. Abrir Entrenar en Planes con
+acceso a la misma semana y aligerar el selector son recomendaciones pendientes
+de aceptación, sin cambios todavía en Flutter.
+[Impresiones y siguiente revisión](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#impresiones-del-segundo-prototipo--01112026).
+
 **Identidad de Inicio y referencia de navegación interna · 01/11/2026:** Javier
 descarta el Inicio simplificado del primer prototipo y pide conservar la estética
 y las cards existentes. Valora los pendientes, teniendo en cuenta la tarjeta
