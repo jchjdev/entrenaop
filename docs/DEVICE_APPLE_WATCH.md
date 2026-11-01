@@ -387,6 +387,16 @@ de 1 a 10 a su resultado de dispositivo, sin volver a cerrar la sesión. Repetir
 el mismo valor es seguro; otro valor no sobrescribe una valoración existente.
 Un esfuerzo posterior de Salud solo rellena el campo si continúa vacío.
 
+Las métricas opcionales que Salud entrega después (pulso, distancia total o de
+recuperación) también pueden rellenar campos vacíos de una ejecución acreditada,
+sin volver a cerrarla. Se conserva en el recibo privado la correspondencia de
+fases confirmada; no se reconstruye para recibos antiguos. Una distancia total
+nunca se distribuye entre series y una corrección manual o una medida existente
+prevalece. Los conflictos permanecen en revisión. La carrera sigue necesitando
+tiempo y distancia medidos antes del primer cierre; esta ampliación no relaja
+ese contrato. `apple_activity_late_metrics.sql` comprueba el enriquecimiento,
+el replay, el historial previo y la conservación de correcciones con ROLLBACK.
+
 Validación del 01/11: compilación iOS Release sin firma y CI de Salud correctas
 en `f7621d6e`; contratos SQL de retorno, cierre automático, permisos, replay y
 RPE diferido correctos con ROLLBACK antes y después del despliegue. La raíz pasa
