@@ -108,9 +108,13 @@ void main() {
           );
           expect(router.state.uri.toString(), entry.value);
           expect(
-            find.byKey(const ValueKey('app-workspace-switcher')).hitTestable(),
+            find.byTooltip('Volver a mi entrenamiento').hitTestable(),
             findsOneWidget,
-            reason: 'Selector de espacio accesible en ${entry.key}',
+            reason: 'Retorno personal accesible en ${entry.key}',
+          );
+          expect(
+            find.byKey(const ValueKey('app-workspace-switcher')),
+            findsNothing,
           );
           if (entry.key == 'resultado') {
             await tester.scrollUntilVisible(
@@ -148,27 +152,17 @@ void main() {
           }
         }
         Future<void> chooseSpace(bool professional) async {
-          if (find.byType(PopupMenuButton<bool>).evaluate().isNotEmpty) {
-            await tester.tap(
-              find.byKey(const ValueKey('app-workspace-switcher')),
-            );
-            await tester.pumpAndSettle();
-            final item = find.byWidgetPredicate(
-              (widget) =>
-                  widget is PopupMenuItem<bool> && widget.value == professional,
-            );
-            await tester.tap(item);
-          } else {
-            await tester.tap(
-              find.text(professional ? 'Entrenador' : 'Personal'),
-            );
-          }
+          await tester.tap(
+            professional
+                ? find.text('Entrar como preparador')
+                : find.byTooltip('Volver a mi entrenamiento'),
+          );
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull);
         }
 
         await chooseSpace(false);
-        expect(router.state.uri.path, '/home');
+        expect(router.state.uri.path, '/profile');
         await chooseSpace(true);
         expect(router.state.uri.toString(), screens.values.last);
         await tester.pumpWidget(const SizedBox());

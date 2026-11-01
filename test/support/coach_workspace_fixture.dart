@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:entrenaop/core/navigation/app_shell.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
+import 'package:entrenaop/core/navigation/workspace_navigation_scope.dart';
 import 'package:entrenaop/core/router/coach_workspace_routes.dart';
 import 'package:entrenaop/features/coach_workspace/domain/coach_workspace_repository.dart';
 import 'package:entrenaop/features/coach_workspace/presentation/coach_workspace_scope.dart';
@@ -244,20 +245,35 @@ GoRouter createRouter(
             '/home',
             '/plan',
             '/library',
-            '/evolution',
+            '/profile',
             '/my-trainer',
           ])
             StatefulShellBranch(
               routes: [
                 GoRoute(
                   path: path,
-                  builder: (_, _) => Scaffold(
+                  builder: (context, _) => Scaffold(
                     appBar: AppBar(title: Text('Página $path')),
-                    body: Text(
-                      path == '/my-trainer'
-                          ? 'Mi preparador es Ervi'
-                          : 'Contenido $path',
-                    ),
+                    body: path == '/profile'
+                        ? Column(
+                            children: [
+                              const Text('Perfil personal'),
+                              if (CoachWorkspaceScope.of(context)
+                                  .controller
+                                  .enabled)
+                                TextButton(
+                                  onPressed: WorkspaceNavigationScope.of(
+                                    context,
+                                  ).enterProfessional,
+                                  child: const Text('Entrar como preparador'),
+                                ),
+                            ],
+                          )
+                        : Text(
+                            path == '/my-trainer'
+                                ? 'Mi preparador es Ervi'
+                                : 'Contenido $path',
+                          ),
                   ),
                   routes: [
                     GoRoute(
@@ -267,14 +283,15 @@ GoRouter createRouter(
                     ),
                   ],
                 ),
+                if (path == '/profile')
+                  GoRoute(
+                    path: '/assessment/history',
+                    builder: (_, _) => const Scaffold(body: Text('Evolución')),
+                  ),
               ],
             ),
           coachWorkspaceBranch(exits),
         ],
-      ),
-      GoRoute(
-        path: '/profile',
-        builder: (_, _) => const Scaffold(body: Text('Perfil personal')),
       ),
     ],
   );

@@ -1,3 +1,5 @@
+import '../../../core/navigation/workspace_navigation_scope.dart';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trainer_access/trainer_access.dart';
@@ -469,7 +471,10 @@ class CoachFormResponsePage extends StatelessWidget {
   final String id;
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Respuesta del formulario')),
+    appBar: AppBar(
+      title: const Text('Respuesta del formulario'),
+      actions: const [WorkspaceReturnAction()],
+    ),
     body: CoachLoad(
       load: () => CoachWorkspaceScope.of(context).planning!.formSubmission(id),
       builder: (context, a, refresh) => ListView(

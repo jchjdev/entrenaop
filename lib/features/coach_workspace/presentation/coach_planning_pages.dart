@@ -1,3 +1,5 @@
+import '../../../core/navigation/workspace_navigation_scope.dart';
+
 import 'package:workout_core/workout_template.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -105,7 +107,10 @@ mixin CoachWriteState<T extends StatefulWidget> on State<T> {
         ? 'El envío no está confirmado. Puedes volver y reintentar sin duplicarlo. Si sales, revisa la agenda antes de crear otro.'
         : 'Los cambios de esta pantalla todavía no están guardados.',
     child: Scaffold(
-      appBar: AppBar(title: Text(title)),
+      appBar: AppBar(
+        title: Text(title),
+        actions: const [WorkspaceReturnAction()],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -184,7 +189,10 @@ class CoachSessionPreviewPage extends StatelessWidget {
   final bool pick;
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Vista previa')),
+    appBar: AppBar(
+      title: const Text('Vista previa'),
+      actions: const [WorkspaceReturnAction()],
+    ),
     body: CoachLoad(
       load: () => CoachWorkspaceScope.of(context).planning!.template(id),
       builder: (context, template, refresh) => ListView(

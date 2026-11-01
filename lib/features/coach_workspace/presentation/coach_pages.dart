@@ -1,3 +1,4 @@
+import '../../../core/navigation/workspace_navigation_scope.dart';
 import 'coach_planning_agenda.dart';
 import 'coach_planning_pages.dart';
 import 'coach_notification_settings.dart';
@@ -151,6 +152,7 @@ class _CoachPagedListState<T> extends State<CoachPagedList<T>> {
       appBar: AppBar(
         title: Text(widget.title, maxLines: 2, overflow: TextOverflow.ellipsis),
         actions: [
+          const WorkspaceReturnAction(),
           IconButton(
             onPressed: _loading ? null : () => _load(refresh: true),
             tooltip: 'Actualizar',
@@ -205,7 +207,10 @@ class CoachSummaryPage extends StatelessWidget {
     final repo = scope.controller.repository;
     final today = DateUtils.dateOnly(DateTime.now());
     return Scaffold(
-      appBar: AppBar(title: const Text('Tu seguimiento')),
+      appBar: AppBar(
+        title: const Text('Preparador'),
+        actions: const [WorkspaceReturnAction()],
+      ),
       body: CoachLoad(
         key: ValueKey(today),
         load: () => (
@@ -710,6 +715,7 @@ class _CoachSharedCalendarPageState extends State<CoachSharedCalendarPage> {
       appBar: AppBar(
         title: const Text('Calendario compartido'),
         actions: [
+          const WorkspaceReturnAction(),
           IconButton(
             tooltip: 'Actualizar calendario',
             icon: const Icon(Icons.refresh),

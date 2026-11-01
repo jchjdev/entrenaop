@@ -6,6 +6,78 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  testWidgets('la acción de cabecera conserva el borrador al reconstruir', (
+    t,
+  ) async {
+    var taps = 0;
+    Widget page() => MaterialApp(
+      home: ConversationView(
+        header: () async =>
+            const ConversationHeader(title: 'Alumno', canSend: true),
+        load: (_) async => [],
+        send: (_, _) async {},
+        newOperationId: () => 'operation',
+        errorLabel: (_) => 'Error',
+        appBarActions: [
+          IconButton(
+            tooltip: 'Acción del espacio',
+            onPressed: () => taps++,
+            icon: const Icon(Icons.directions_run),
+          ),
+        ],
+      ),
+    );
+    await t.pumpWidget(page());
+    await t.pumpAndSettle();
+    await t.enterText(find.byType(TextField), 'Borrador conservado');
+    final action = find.byTooltip('Acción del espacio');
+    expect(
+      find.ancestor(of: action, matching: find.byType(AppBar)),
+      findsOneWidget,
+    );
+    await t.tap(action);
+    await t.pumpWidget(page());
+    await t.pumpAndSettle();
+    expect(taps, 1);
+    expect(find.text('Borrador conservado'), findsOneWidget);
+    expect(find.byType(AppBar), findsOneWidget);
+  });
+
+  testWidgets('relevo de conversación conserva la guarda del nuevo borrador', (
+    t,
+  ) async {
+    final exit = WorkflowExitController();
+    Widget page(String relation) => MaterialApp(
+      home: WorkflowExitScope(
+        controller: exit,
+        child: ConversationView(
+          key: ValueKey(relation),
+          header: () async =>
+              ConversationHeader(title: relation, canSend: true),
+          load: (_) async => [],
+          send: (_, _) async {},
+          newOperationId: () => 'operation',
+          errorLabel: (_) => 'Error',
+        ),
+      ),
+    );
+    await t.pumpWidget(page('Relación anterior'));
+    await t.pumpAndSettle();
+    await t.pumpWidget(page('Relación nueva'));
+    await t.pumpAndSettle();
+    await t.enterText(find.byType(TextField), 'Nuevo borrador');
+    expect(exit.onExit, isNotNull);
+    final leaving = exit.onExit!();
+    await t.pumpAndSettle();
+    expect(find.text('¿Salir de la conversación?'), findsOneWidget);
+    await t.tap(find.text('Continuar'));
+    await t.pumpAndSettle();
+    expect(await leaving, isFalse);
+    expect(find.text('Nuevo borrador'), findsOneWidget);
+    await t.pumpWidget(const SizedBox());
+    expect(exit.onExit, isNull);
+  });
+
   testWidgets('móvil lee del antiguo al reciente con editor fijo abajo', (
     t,
   ) async {

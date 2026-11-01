@@ -1,3 +1,5 @@
+import '../../../core/navigation/workspace_navigation_scope.dart';
+
 import 'dart:async';
 
 import 'package:trainer_access/trainer_calendar.dart';
@@ -264,6 +266,7 @@ class _CoachPlanningAgendaPageState extends State<CoachPlanningAgendaPage> {
       appBar: AppBar(
         title: const Text('Agenda de alumnos'),
         actions: [
+          const WorkspaceReturnAction(),
           if (planning != null)
             IconButton(
               tooltip: 'Mis sesiones',

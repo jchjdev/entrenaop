@@ -191,12 +191,26 @@ void main() {
     'el borrador de asignación sobrevive al cambio de espacio sin enviar nada',
     (t) async {
       final p = FakeCoachPlanning();
-      await mount(t, p, '/coach/assign?client=isabel&session=template');
+      final router = await mount(
+        t,
+        p,
+        '/coach/assign?client=isabel&session=template',
+      );
       await t.enterText(find.byType(TextField), 'Indicaciones conservadas');
-      await t.tap(find.text('Personal'));
+      await t.tap(find.byTooltip('Volver a mi entrenamiento'));
       await t.pumpAndSettle();
+      expect(find.text('¿Salir sin guardar?'), findsOneWidget);
+      await t.tap(find.text('Continuar'));
+      await t.pumpAndSettle();
+      expect(router.state.uri.path, '/coach/assign');
+      expect(find.text('Indicaciones conservadas'), findsOneWidget);
+      await t.tap(find.byTooltip('Volver a mi entrenamiento'));
+      await t.pumpAndSettle();
+      await t.tap(find.text('Salir sin guardar'));
+      await t.pumpAndSettle();
+      expect(router.state.uri.path, '/profile');
       expect(p.assigned, isEmpty);
-      await t.tap(find.text('Entrenador'));
+      await t.tap(find.text('Entrar como preparador'));
       await t.pumpAndSettle();
       expect(find.text('Indicaciones conservadas'), findsOneWidget);
       expect(p.assigned, isEmpty);

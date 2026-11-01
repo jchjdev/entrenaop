@@ -14,7 +14,9 @@ class CoachWorkspaceController extends ChangeNotifier {
   int _generation = 0;
   String? error;
   TrainerMessageInbox? inbox;
-  int athleteIndex = 0;
+  // Perfil sirve de puerta al espacio profesional; visitarlo no sustituye la
+  // última sección de entrenamiento. Sin una visita previa se vuelve a Perfil.
+  int? athleteIndex;
   bool get canRead => enabled && assured && !loading && error == null;
   int get unread => inbox?.totalUnread ?? 0;
 

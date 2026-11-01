@@ -6,18 +6,48 @@ import 'entrena_dialog_actions.dart';
 /// no se guardan widgets ni borradores en una instancia global de dominio.
 class WorkflowExitRegistry {
   final _controllers = <LocalKey, WorkflowExitController>{};
-  WorkflowExitController controller(LocalKey key) =>
-      _controllers.putIfAbsent(key, WorkflowExitController.new);
+  WorkflowExitController controller(LocalKey key) => _controllers.putIfAbsent(
+    key,
+    () => WorkflowExitController._(
+      (controller) => _handlerChanged(key, controller),
+    ),
+  );
+
+  void _handlerChanged(LocalKey key, WorkflowExitController controller) {
+    if (controller.onExit != null) {
+      _controllers.putIfAbsent(key, () => controller);
+    } else if (identical(_controllers[key], controller)) {
+      // El dispose de una vista antigua no puede retirar la guarda de su relevo.
+      _controllers.remove(key);
+    }
+  }
+
   Future<bool> requestExit(LocalKey key) async {
     final controller = _controllers[key];
     final allowed = await (controller?.onExit?.call() ?? Future.value(true));
-    if (allowed) _controllers.remove(key);
+    // Salir de una rama puede conservar su pantalla y su borrador montados.
+    // La guarda permanece hasta que la vista retire realmente su handler.
+    if (allowed &&
+        controller?.onExit == null &&
+        identical(_controllers[key], controller)) {
+      _controllers.remove(key);
+    }
     return allowed;
   }
 }
 
 class WorkflowExitController {
-  Future<bool> Function()? onExit;
+  WorkflowExitController() : _onHandlerChanged = null;
+  WorkflowExitController._(this._onHandlerChanged);
+
+  final void Function(WorkflowExitController)? _onHandlerChanged;
+  Future<bool> Function()? _onExit;
+
+  Future<bool> Function()? get onExit => _onExit;
+  set onExit(Future<bool> Function()? handler) {
+    _onExit = handler;
+    _onHandlerChanged?.call(this);
+  }
 }
 
 class WorkflowExitScope extends InheritedWidget {

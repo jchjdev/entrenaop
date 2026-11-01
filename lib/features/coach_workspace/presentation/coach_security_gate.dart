@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:trainer_access/trainer_security.dart';
 
 import 'coach_workspace_scope.dart';
+import '../../../core/navigation/workspace_navigation_scope.dart';
 
 class CoachSecurityGate extends StatefulWidget {
   const CoachSecurityGate({super.key, required this.child});
@@ -21,7 +22,9 @@ class _CoachSecurityGateState extends State<CoachSecurityGate> {
       return Scaffold(
         body: Center(
           child: TextButton(
-            onPressed: () => context.go('/home'),
+            onPressed:
+                WorkspaceNavigationScope.maybeOf(context)?.returnToAthlete ??
+                () => context.go('/home'),
             child: const Text('Volver a mi entrenamiento'),
           ),
         ),
@@ -52,7 +55,23 @@ class _CoachSecurityGateState extends State<CoachSecurityGate> {
           ),
         if (!controller.canRead)
           controller.loading
-              ? const Center(child: CircularProgressIndicator())
+              ? Scaffold(
+                  body: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const CircularProgressIndicator(),
+                        TextButton(
+                          onPressed:
+                              WorkspaceNavigationScope.maybeOf(context)
+                                  ?.returnToAthlete ??
+                              () => context.go('/home'),
+                          child: const Text('Volver a mi entrenamiento'),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
               : _challenge(context, scope),
       ],
     );
@@ -69,7 +88,7 @@ class _CoachSecurityGateState extends State<CoachSecurityGate> {
             padding: const EdgeInsets.all(24),
             children: [
               Text(
-                'Tu espacio profesional',
+                'Preparador',
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 16),
@@ -89,7 +108,10 @@ class _CoachSecurityGateState extends State<CoachSecurityGate> {
                   onComplete: controller.refresh,
                 ),
               TextButton(
-                onPressed: () => context.go('/home'),
+                onPressed:
+                    WorkspaceNavigationScope.maybeOf(context)
+                        ?.returnToAthlete ??
+                    () => context.go('/home'),
                 child: const Text('Volver a mi entrenamiento'),
               ),
             ],

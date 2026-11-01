@@ -6,6 +6,8 @@ import 'package:entrenaop/core/presentation/widgets/entrena_wordmark.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'workspace_navigation_scope.dart';
+
 class AppShell extends StatelessWidget {
   const AppShell({required this.navigationShell, super.key});
 
@@ -26,47 +28,19 @@ class AppShell extends StatelessWidget {
     final workspace = CoachWorkspaceScope.maybeOf(context)?.controller;
     final studentUnread =
         StudentNavigationScope.maybeOf(context)?.unreadCount ?? 0;
-    if (!professional && workspace != null) {
+    if (!professional &&
+        navigationShell.currentIndex != 3 &&
+        workspace != null) {
       workspace.athleteIndex = navigationShell.currentIndex;
     }
-    Widget frame(Widget child) {
-      if (workspace == null || (!workspace.enabled && !professional)) {
-        return child;
-      }
-      return ColoredBox(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        child: SafeArea(
-          bottom: false,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                child: Row(
-                  children: [
-                    Flexible(
-                      child: _WorkspaceSwitcher(
-                        professional: professional,
-                        unread: workspace.unread,
-                        onSelected: (selected) {
-                          if (selected == professional) return;
-                          navigationShell.goBranch(
-                            selected ? 5 : workspace.athleteIndex,
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(child: child),
-            ],
-          ),
-        ),
-      );
-    }
+    Widget frame(Widget child) => WorkspaceNavigationScope(
+      enterProfessional: () {
+        if (workspace?.enabled == true) navigationShell.goBranch(5);
+      },
+      returnToAthlete: () =>
+          navigationShell.goBranch(workspace?.athleteIndex ?? 3),
+      child: child,
+    );
 
     if (professional) {
       return Theme(
@@ -85,6 +59,22 @@ class AppShell extends StatelessWidget {
       textColor: Theme.of(context).colorScheme.onPrimary,
       child: Icon(icon),
     );
+    final professionalUnread = workspace?.enabled == true
+        ? workspace!.unread
+        : 0;
+    final profileTooltip = professionalUnread > 0
+        ? 'Perfil · $professionalUnread novedades en tu espacio de preparador'
+        : 'Perfil';
+    Widget profileIcon(IconData icon) => Semantics(
+      label: professionalUnread > 0
+          ? '$professionalUnread novedades en tu espacio de preparador'
+          : null,
+      child: Badge(
+        isLabelVisible: professionalUnread > 0,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        child: Icon(icon),
+      ),
+    );
     final destinations = [
       ..._barDestinations.take(3),
       NavigationDestination(
@@ -95,7 +85,12 @@ class AppShell extends StatelessWidget {
             ? 'Preparador · $studentUnread novedades sin leer'
             : 'Preparador',
       ),
-      _barDestinations.last,
+      NavigationDestination(
+        icon: profileIcon(Icons.account_circle_outlined),
+        selectedIcon: profileIcon(Icons.account_circle),
+        label: 'Perfil',
+        tooltip: profileTooltip,
+      ),
     ];
     final selectedIndex = indices.indexOf(navigationShell.currentIndex);
     return LayoutBuilder(
@@ -127,12 +122,32 @@ class AppShell extends StatelessWidget {
                           selectedIcon: trainerIcon(Icons.people),
                           label: const Text('Preparador'),
                         ),
-                        _railDestinations.last,
+                        NavigationRailDestination(
+                          icon: Tooltip(
+                            message: profileTooltip,
+                            excludeFromSemantics: true,
+                            child: profileIcon(Icons.account_circle_outlined),
+                          ),
+                          selectedIcon: Tooltip(
+                            message: profileTooltip,
+                            excludeFromSemantics: true,
+                            child: profileIcon(Icons.account_circle),
+                          ),
+                          label: const Text('Perfil'),
+                        ),
                       ],
                     ),
                   ),
                   const VerticalDivider(width: 1, thickness: 1),
-                  Expanded(child: navigationShell),
+                  // El Navigator de cada rama no debe ocultar a lectores de
+                  // pantalla la navegación lateral situada a su lado.
+                  Expanded(
+                    child: Semantics(
+                      container: true,
+                      explicitChildNodes: true,
+                      child: navigationShell,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -160,109 +175,6 @@ class AppShell extends StatelessWidget {
       },
     );
   }
-}
-
-class _WorkspaceSwitcher extends StatelessWidget {
-  const _WorkspaceSwitcher({
-    required this.professional,
-    required this.unread,
-    required this.onSelected,
-  });
-  final bool professional;
-  final int unread;
-  final ValueChanged<bool> onSelected;
-  @override
-  Widget build(BuildContext context) => Material(
-    key: const ValueKey('app-workspace-switcher'),
-    color: Colors.transparent,
-    child: LayoutBuilder(
-      builder: (context, size) {
-        // Con texto grande se cambia el patrón, no la preferencia de accesibilidad.
-        // El menú conserva los nombres completos sin partirlos entre segmentos.
-        if (size.maxWidth < 280 ||
-            MediaQuery.textScalerOf(context).scale(1) > 1.15) {
-          return PopupMenuButton<bool>(
-            tooltip: unread > 0
-                ? 'Cambiar espacio · $unread novedades en Entrenador'
-                : 'Cambiar espacio',
-            initialValue: professional,
-            onSelected: onSelected,
-            itemBuilder: (_) => [
-              const PopupMenuItem(
-                value: false,
-                child: Text('Mi entrenamiento'),
-              ),
-              PopupMenuItem(
-                value: true,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Flexible(child: Text('Entrenador')),
-                    if (unread > 0) ...[
-                      const SizedBox(width: 12),
-                      Badge.count(count: unread),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHigh,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.outlineVariant,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Flexible(
-                    child: Text(
-                      professional ? 'Entrenador' : 'Personal',
-                      style: Theme.of(context).textTheme.labelLarge,
-                    ),
-                  ),
-                  if (professional && unread > 0) ...[
-                    const SizedBox(width: 8),
-                    Semantics(
-                      label: '$unread novedades en Entrenador',
-                      child: Badge.count(count: unread),
-                    ),
-                  ],
-                  const SizedBox(width: 8),
-                  Badge(
-                    // En Personal el punto indica novedades en el otro espacio;
-                    // su total pertenece a Entrenador y se muestra en el menú.
-                    isLabelVisible: !professional && unread > 0,
-                    child: const Icon(Icons.expand_more, size: 22),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-        return SegmentedButton<bool>(
-          style: const ButtonStyle(
-            visualDensity: VisualDensity.compact,
-            minimumSize: WidgetStatePropertyAll(Size(0, 44)),
-          ),
-          segments: [
-            const ButtonSegment(value: false, label: Text('Personal')),
-            ButtonSegment(
-              value: true,
-              icon: unread > 0 ? Badge.count(count: unread) : null,
-              label: const Text('Entrenador'),
-            ),
-          ],
-          selected: {professional},
-          showSelectedIcon: false,
-          onSelectionChanged: (selection) => onSelected(selection.single),
-        );
-      },
-    ),
-  );
 }
 
 WidgetStateProperty<TextStyle> _barLabelStyle(
@@ -315,11 +227,6 @@ const _barDestinations = [
     selectedIcon: Icon(Icons.library_books_rounded),
     label: 'Biblioteca',
   ),
-  NavigationDestination(
-    icon: Icon(Icons.account_circle_outlined),
-    selectedIcon: Icon(Icons.account_circle),
-    label: 'Perfil',
-  ),
 ];
 
 const _railDestinations = [
@@ -337,10 +244,5 @@ const _railDestinations = [
     icon: Icon(Icons.library_books_outlined),
     selectedIcon: Icon(Icons.library_books_rounded),
     label: Text('Biblioteca'),
-  ),
-  NavigationRailDestination(
-    icon: Icon(Icons.account_circle_outlined),
-    selectedIcon: Icon(Icons.account_circle),
-    label: Text('Perfil'),
   ),
 ];

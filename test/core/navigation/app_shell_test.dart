@@ -6,8 +6,96 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:entrenaop/features/coach_workspace/presentation/coach_workspace_scope.dart';
+
+import '../../support/coach_workspace_fixture.dart' as coach;
 
 void main() {
+  for (final width in [320.0, 1000.0]) {
+    testWidgets('separa avisos recibidos y actividad profesional: $width', (
+      tester,
+    ) async {
+      tester.view.physicalSize = Size(width, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final semantics = tester.ensureSemantics();
+      try {
+        final received =
+            StudentNavigationController(
+              loadSnapshot: () async => const StudentNoticeSnapshot(
+                items: [],
+                hasMore: false,
+                unreadCount: 7,
+                resources: StudentNoticeResources(),
+              ),
+              loadHasRelationship: () async => true,
+            )..acceptSnapshot(
+              const StudentNoticeSnapshot(
+                items: [],
+                hasMore: false,
+                unreadCount: 7,
+                resources: StudentNoticeResources(),
+              ),
+            );
+        addTearDown(received.dispose);
+        final professional = coach.FakeCoach();
+        final router = coach.createRouter(
+          professional,
+          coach.FakeSecurity(),
+          initial: '/profile',
+        );
+        addTearDown(router.dispose);
+        await tester.pumpWidget(
+          MaterialApp.router(
+            routerConfig: router,
+            builder: (context, child) => StudentNavigationScope(
+              controller: received,
+              child: MediaQuery(
+                data: MediaQuery.of(context)
+                    .copyWith(textScaler: TextScaler.linear(2)),
+                child: child!,
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(
+          find.byTooltip('Perfil · 2 novedades en tu espacio de preparador'),
+          findsWidgets,
+        );
+        expect(
+          find.bySemanticsLabel(
+            RegExp('2 novedades en tu espacio de preparador'),
+          ),
+          findsWidgets,
+        );
+        expect(find.text('7'), findsWidgets);
+        expect(
+          find.byKey(const ValueKey('app-workspace-switcher')),
+          findsNothing,
+        );
+        expect(tester.getTopLeft(find.byType(AppBar)).dy, 0);
+        final controller = CoachWorkspaceScope.of(
+          tester.element(find.text('Perfil personal')),
+        ).controller;
+        professional.enabled = false;
+        await controller.refresh();
+        await tester.pumpAndSettle();
+        expect(
+          find.byTooltip('Perfil · 2 novedades en tu espacio de preparador'),
+          findsNothing,
+        );
+        expect(find.text('Entrar como preparador'), findsNothing);
+        expect(find.text('7'), findsWidgets);
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+      } finally {
+        semantics.dispose();
+      }
+    });
+  }
+
   testWidgets(
     'avisos en Preparador y cuenta en Perfil, sin acciones superiores',
     (tester) async {

@@ -12,9 +12,11 @@ class ProfilePhotoControl extends StatefulWidget {
     required this.repository,
     required this.name,
     this.pick,
+    this.radius = 34,
   });
   final ProfilePhotoRepository repository;
   final String name;
+  final double radius;
   final Future<Uint8List?> Function(BuildContext context)? pick;
   @override
   State<ProfilePhotoControl> createState() => _ProfilePhotoControlState();
@@ -288,23 +290,22 @@ class _ProfilePhotoControlState extends State<ProfilePhotoControl>
       child: InkResponse(
         onTap: _busy ? null : _choose,
         child: SizedBox(
-          width: 74,
-          height: 74,
+          width: widget.radius * 2 + 6,
+          height: widget.radius * 2 + 6,
           child: Stack(
             alignment: Alignment.center,
             children: [
               ProfilePhotoAvatar(
                 key: ValueKey('${widget.repository.ownerId}-$_refresh'),
                 name: widget.name,
-                radius: 34,
+                radius: widget.radius,
                 path: _state?.path,
                 load: widget.repository.download,
               ),
               if (_busy)
-                const SizedBox(
-                  width: 68,
-                  height: 68,
-                  child: CircularProgressIndicator(),
+                SizedBox.square(
+                  dimension: widget.radius * 2,
+                  child: const CircularProgressIndicator(),
                 ),
               Positioned(
                 right: 0,

@@ -1,5 +1,24 @@
 # Arquitectura de EntrenaOP
 
+**Perfil y acceso profesional · 01/11/2026:** se retira el selector superior del
+shell. `WorkspaceNavigationScope` expone únicamente callbacks de presentación
+para entrar en la rama profesional y volver a la última rama personal distinta
+de Perfil, con Perfil como alternativa de entrada directa. El controlador por
+cuenta conserva el contexto; la visibilidad del acceso no concede permisos.
+`/profile/edit` y `/profile/settings` son tareas raíz fijadas a la identidad y
+conservan la renovación de sesión. Se reutilizan los repositorios y procesos de
+nombre, nacimiento y foto; no se consulta nacimiento desde la portada. Las
+conexiones conservan `/profile/connections` y acceso directo desde Perfil.
+Las opciones personales reutilizan `ProfileOptionTile` para dar ancho completo
+al texto ampliado. `ConversationView.appBarActions` permite componer el retorno
+en su cabecera existente, sin modificar el comportamiento de otros consumidores.
+`WorkflowExitRegistry` mantiene la guarda mientras su handler siga montado y la
+libera cuando la vista lo retira: aceptar una salida de rama no equivale a
+desmontar su pantalla. La liberación comprueba identidad para no retirar la
+guarda de una vista sustituta. Perfil y edición filtran estados transitorios de
+autenticación sin perder el nombre, la foto ni las consultas de la misma cuenta.
+[Reparto y contratos](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#revisión-de-perfil-y-acceso-profesional--01112026).
+
 **Vista previa pautada · 01/11/2026:** `workout_schedule` incorpora entidad y
 puerto Dart, casos de uso, adaptador Supabase fijado al usuario y un Cubit propio.
 La ruta raíz `/plan/week/session/:scheduledId` reutiliza `WorkoutPreviewContent`

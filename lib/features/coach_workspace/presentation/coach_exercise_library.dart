@@ -1,3 +1,5 @@
+import '../../../core/navigation/workspace_navigation_scope.dart';
+
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:workout_editor_ui/exercise_video_preview.dart';
@@ -49,7 +51,10 @@ class _CoachExerciseLibraryPageState extends State<CoachExerciseLibraryPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Ejercicios')),
+    appBar: AppBar(
+      title: const Text('Ejercicios'),
+      actions: const [WorkspaceReturnAction()],
+    ),
     body: FutureBuilder<List<CoachExerciseReference>>(
       future: _future,
       builder: (context, snapshot) {

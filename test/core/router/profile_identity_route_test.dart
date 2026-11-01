@@ -51,20 +51,120 @@ void main() {
     sl.registerFactory<WorkoutHistoryCubit>(_History.new);
   }
 
+  testWidgets('Ajustes vuelve a Perfil y los dispositivos siguen a mano', (
+    tester,
+  ) async {
+    final auth = _Auth();
+    final dates = _BirthDates(auth);
+    final router = await mount(tester, auth, dates);
+    await tester.pumpAndSettle();
+    expect(find.text('Dispositivos y conexiones'), findsOneWidget);
+    expect(find.text('Mi suscripción'), findsNothing);
+    expect(dates.reads, isEmpty);
+
+    await tester.tap(find.byTooltip('Ajustes'));
+    await tester.pumpAndSettle();
+    expect(router.config.state.uri.path, '/profile/settings');
+    expect(find.byType(NavigationBar), findsNothing);
+    expect(find.text('Mi suscripción'), findsOneWidget);
+    expect(find.text('Cerrar sesión'), findsOneWidget);
+    expect(find.text('Dispositivos y conexiones'), findsNothing);
+
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    expect(router.config.state.uri.path, '/profile');
+    expect(find.text('Dispositivos y conexiones'), findsOneWidget);
+    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(dates.reads, isEmpty);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Editar perfil conserva su origen y carga los datos allí', (
+    tester,
+  ) async {
+    final auth = _Auth();
+    final dates = _BirthDates(auth);
+    final router = await mount(tester, auth, dates);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Editar perfil'));
+    await tester.pump();
+    await tester.pump();
+    expect(router.config.state.uri.path, '/profile/edit');
+    expect(dates.reads, ['A']);
+    dates.pending['A']!.complete(DateTime(1992, 6, 15));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('15/06/1992'), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    expect(router.config.state.uri.path, '/profile');
+    expect(find.text('Mi evolución'), findsOneWidget);
+    expect(find.text('Dispositivos y conexiones'), findsOneWidget);
+    expect(dates.reads, ['A']);
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final path in ['/profile/settings', '/profile/edit']) {
+    testWidgets('enlace directo $path vuelve a Perfil', (tester) async {
+      final auth = _Auth();
+      final dates = _BirthDates(auth);
+      final router = await mount(tester, auth, dates, path: path);
+      if (path.endsWith('/edit')) {
+        dates.pending['A']!.complete(DateTime(1992, 6, 15));
+      }
+      await tester.pumpAndSettle();
+      expect(find.byType(NavigationBar), findsNothing);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+      expect(router.config.state.uri.path, '/profile');
+      expect(find.text('Dispositivos y conexiones'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('Ajustes conserva la renovación y descarta la cuenta anterior', (
+    tester,
+  ) async {
+    final auth = _Auth();
+    final dates = _BirthDates(auth);
+    final router = await mount(tester, auth, dates, path: '/profile/settings');
+    await tester.pumpAndSettle();
+    final before = tester.element(find.byKey(const ValueKey('settings-A')));
+    auth.loading();
+    await tester.pump();
+    auth.setUser('A', renewed: true);
+    await tester.pumpAndSettle();
+    expect(
+      tester.element(find.byKey(const ValueKey('settings-A'))),
+      same(before),
+    );
+    auth.setUser('B');
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('settings-A')), findsNothing);
+    expect(find.byKey(const ValueKey('settings-B')), findsOneWidget);
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    expect(router.config.state.uri.path, '/profile');
+    expect(find.text('Deportista B'), findsOneWidget);
+    expect(find.text('Deportista A'), findsNothing);
+    expect(dates.reads, isEmpty);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
-    'Perfil vuelve de Evolución conservando estado y refrescando datos',
+    'Perfil vuelve de Evolución conservando su pantalla sin cargar datos del editor',
     (tester) async {
       registerHistory();
       final auth = _Auth();
       final dates = _BirthDates(auth);
       final router = await mount(tester, auth, dates);
-      dates.pending['A']!.complete(DateTime(1992, 6, 15));
       await tester.pumpAndSettle();
       final profile = find.byKey(
         const ValueKey('profile-A'),
         skipOffstage: false,
       );
-      final originalState = tester.state(profile);
+      final originalElement = tester.element(profile);
       await tester.ensureVisible(find.text('Mi evolución'));
       await tester.tap(find.text('Mi evolución'));
       await tester.pumpAndSettle();
@@ -73,18 +173,14 @@ void main() {
         tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
         4,
       );
-      final refreshedDate = Completer<DateTime?>();
-      dates.pending['A'] = refreshedDate;
       await tester.tap(find.byType(BackButton));
       await tester.pump();
       await tester.pump();
       expect(router.config.state.uri.path, '/profile');
-      expect(tester.state(profile), same(originalState));
-      expect(dates.reads, ['A', 'A']);
-      refreshedDate.complete(DateTime(1992, 6, 16));
       await tester.pumpAndSettle();
-      expect(find.textContaining('16/06/1992'), findsOneWidget);
-      expect(find.textContaining('15/06/1992'), findsNothing);
+      expect(tester.element(profile), same(originalElement));
+      expect(dates.reads, isEmpty);
+      expect(find.text('Deportista A'), findsOneWidget);
       expect(
         tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
         4,
@@ -113,10 +209,10 @@ void main() {
     await tester.tap(find.byType(BackButton));
     await tester.pump();
     await tester.pump();
-    dates.pending['A']!.complete(DateTime(1992, 6, 15));
     await tester.pumpAndSettle();
     expect(router.config.state.uri.path, '/profile');
     expect(find.text('Deportista A'), findsOneWidget);
+    expect(dates.reads, isEmpty);
     expect(tester.takeException(), isNull);
   });
 
@@ -125,7 +221,7 @@ void main() {
     (tester) async {
       final auth = _Auth();
       final dates = _BirthDates(auth);
-      await mount(tester, auth, dates);
+      await mount(tester, auth, dates, path: '/profile/edit');
       expect(dates.reads, ['A']);
 
       auth.loading();
@@ -158,7 +254,7 @@ void main() {
   ) async {
     final auth = _Auth();
     final dates = _BirthDates(auth);
-    await mount(tester, auth, dates);
+    await mount(tester, auth, dates, path: '/profile/edit');
     dates.pending['A']!.completeError(
       StateError('Error de la cuenta anterior'),
     );

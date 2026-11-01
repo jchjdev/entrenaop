@@ -110,10 +110,65 @@ void main() {
     await t.pumpWidget(MaterialApp.router(routerConfig: router));
     await t.pumpAndSettle();
     expect(find.byType(SegmentedButton<bool>), findsNothing);
+    expect(find.byKey(const ValueKey('app-workspace-switcher')), findsNothing);
     expect(find.text('Biblioteca'), findsOneWidget);
     expect(repo.clientCalls, 0);
+    await t.tap(find.text('Perfil'));
+    await t.pumpAndSettle();
+    expect(find.text('Entrar como preparador'), findsNothing);
     await t.pumpWidget(const SizedBox());
   });
+  testWidgets('acceso desde Perfil sin sección previa vuelve a Perfil', (
+    t,
+  ) async {
+    final router = createRouter(
+      FakeCoach(),
+      FakeSecurity(),
+      initial: '/profile',
+    );
+    addTearDown(router.dispose);
+    await t.pumpWidget(MaterialApp.router(routerConfig: router));
+    await t.pumpAndSettle();
+    expect(t.getTopLeft(find.byType(AppBar)).dy, 0);
+    await t.tap(find.text('Entrar como preparador'));
+    await t.pumpAndSettle();
+    expect(find.text('Preparador'), findsOneWidget);
+    expect(find.byKey(const ValueKey('app-workspace-switcher')), findsNothing);
+    await t.tap(find.byTooltip('Volver a mi entrenamiento'));
+    await t.pumpAndSettle();
+    expect(router.state.uri.path, '/profile');
+    expect(
+      t.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+      4,
+    );
+    await t.pumpWidget(const SizedBox());
+  });
+  testWidgets(
+    'consulta de cuenta pendiente permite volver sin datos privados',
+    (t) async {
+      final pending = Completer<CoachAccount>();
+      final repo = FakeCoach()..readAccount = () => pending.future;
+      final security = FakeSecurity();
+      final router = createRouter(repo, security, initial: '/coach/clients');
+      addTearDown(router.dispose);
+      await t.pumpWidget(MaterialApp.router(routerConfig: router));
+      await t.pump();
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(repo.clientCalls, 0);
+      expect(repo.inboxCalls, 0);
+      expect(security.checks, 0);
+      await t.tap(find.text('Volver a mi entrenamiento'));
+      await t.pumpAndSettle();
+      expect(router.state.uri.path, '/profile');
+      expect(find.text('Perfil personal'), findsOneWidget);
+      pending.complete(const CoachAccount(enabled: false));
+      await t.pumpAndSettle();
+      expect(repo.clientCalls, 0);
+      expect(repo.inboxCalls, 0);
+      expect(security.checks, 0);
+      await t.pumpWidget(const SizedBox());
+    },
+  );
   testWidgets('enlace profesional directo exige MFA antes de leer alumnos', (
     t,
   ) async {
@@ -149,20 +204,24 @@ void main() {
       await t.pumpWidget(MaterialApp.router(routerConfig: router));
       await t.pumpAndSettle();
       expect(find.text('Mi detalle personal'), findsOneWidget);
-      await t.tap(find.text('Entrenador'));
+      await t.tap(find.text('Perfil'));
       await t.pumpAndSettle();
-      expect(find.text('Tu seguimiento'), findsOneWidget);
+      await t.tap(find.text('Entrar como preparador'));
+      await t.pumpAndSettle();
+      expect(find.text('Preparador'), findsOneWidget);
       await t.tap(find.text('Alumnos'));
       await t.pumpAndSettle();
       expect(find.text('Isabel'), findsOneWidget);
-      await t.tap(find.text('Personal'));
+      await t.tap(find.byTooltip('Volver a mi entrenamiento'));
       await t.pumpAndSettle();
       expect(router.state.uri.path, '/library/detail');
       expect(find.text('Mi detalle personal'), findsOneWidget);
       router.go('/my-trainer');
       await t.pumpAndSettle();
       expect(find.text('Mi preparador es Ervi'), findsOneWidget);
-      await t.tap(find.text('Entrenador'));
+      await t.tap(find.text('Perfil'));
+      await t.pumpAndSettle();
+      await t.tap(find.text('Entrar como preparador'));
       await t.pumpAndSettle();
       expect(find.text('Isabel'), findsOneWidget);
       await t.pumpWidget(const SizedBox());
@@ -188,25 +247,66 @@ void main() {
       expect(find.text('Hola, entrenador'), findsOneWidget);
       expect(messages.reads, 1);
       await t.enterText(find.byType(TextField), 'Mi borrador');
-      await t.tap(find.text('Personal'));
+      await t.tap(find.byTooltip('Volver a mi entrenamiento'));
       await t.pumpAndSettle();
       // La protección de salida solicita confirmar un borrador.
       if (find.text('Salir').evaluate().isNotEmpty) {
         await t.tap(find.text('Salir'));
         await t.pumpAndSettle();
       }
-      expect(router.state.uri.path, '/home');
+      expect(router.state.uri.path, '/profile');
       final calls = messages.loads;
       await t.pump(const Duration(seconds: 30));
       await t.pumpAndSettle();
       expect(messages.loads, calls);
-      await t.tap(find.text('Entrenador'));
+      await t.tap(find.text('Perfil'));
+      await t.pumpAndSettle();
+      await t.tap(find.text('Entrar como preparador'));
       await t.pumpAndSettle();
       expect(find.text('Mi borrador'), findsOneWidget);
       expect(messages.reads, 1);
+      await t.tap(find.byTooltip('Volver a mi entrenamiento'));
+      await t.pumpAndSettle();
+      expect(find.text('Salir'), findsOneWidget);
+      await t.tap(find.text('Continuar'));
+      await t.pumpAndSettle();
+      expect(router.state.uri.path, '/coach/messages/relation');
+      expect(find.text('Mi borrador'), findsOneWidget);
       await t.pumpWidget(const SizedBox());
     },
   );
+  testWidgets('envío pendiente bloquea el retorno profesional sin duplicarlo', (
+    t,
+  ) async {
+    final messages = _PendingMessages();
+    final router = createRouter(
+      FakeCoach(),
+      FakeSecurity(),
+      messages: messages,
+      initial: '/coach/messages/relation',
+    );
+    addTearDown(router.dispose);
+    await t.pumpWidget(MaterialApp.router(routerConfig: router));
+    await t.pumpAndSettle();
+    await t.enterText(find.byType(TextField), 'Esperando confirmación');
+    await t.pump();
+    await t.tap(find.text('Enviar mensaje'));
+    await t.pump();
+    expect(messages.submitted, ['Esperando confirmación']);
+    await t.tap(find.byTooltip('Volver a mi entrenamiento'));
+    await t.pump();
+    await t.pump(const Duration(milliseconds: 100));
+    expect(router.state.uri.path, '/coach/messages/relation');
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.text('Esperando confirmación'), findsOneWidget);
+    expect(messages.submitted, ['Esperando confirmación']);
+    messages.pending.complete();
+    await t.pumpAndSettle();
+    await t.tap(find.byTooltip('Volver a mi entrenamiento'));
+    await t.pumpAndSettle();
+    expect(router.state.uri.path, '/profile');
+    await t.pumpWidget(const SizedBox());
+  });
   testWidgets('cambiar de cuenta descarta fichas privadas pendientes', (
     t,
   ) async {
@@ -468,16 +568,34 @@ void main() {
       await t.pumpWidget(MaterialApp.router(routerConfig: router));
       await t.pumpAndSettle();
       expect(find.byType(ExerciseVideoPreview), findsOneWidget);
-      await t.tap(find.text('Personal'));
+      await t.tap(find.byTooltip('Volver a mi entrenamiento'));
       await t.pumpAndSettle();
       expect(
         find.byType(ExerciseVideoPreview, skipOffstage: false),
         findsNothing,
       );
-      await t.tap(find.text('Entrenador'));
+      await t.tap(find.text('Perfil'));
+      await t.pumpAndSettle();
+      await t.tap(find.text('Entrar como preparador'));
       await t.pumpAndSettle();
       expect(find.byType(ExerciseVideoPreview), findsOneWidget);
       await t.pumpWidget(const SizedBox());
     },
   );
+}
+
+class _PendingMessages extends FakeMessages {
+  final pending = Completer<void>();
+  final submitted = <String>[];
+
+  @override
+  Future<void> send({
+    required String operationId,
+    required String relationId,
+    required String body,
+    String? assignmentId,
+  }) {
+    submitted.add(body);
+    return pending.future;
+  }
 }

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 
 import '../../../../core/config/app_build_info.dart';
+import 'profile_option_tile.dart';
 
 class AppBuildInfoTile extends StatefulWidget {
   const AppBuildInfoTile({super.key, this.load = AppBuildInfo.load});
@@ -59,7 +60,7 @@ class _AppBuildInfoTileState extends State<AppBuildInfoTile> {
   Widget build(BuildContext context) => FutureBuilder<AppBuildInfo>(
     future: _info,
     builder: (context, snapshot) => Card(
-      child: ListTile(
+      child: ProfileOptionTile(
         leading: const Icon(Icons.info_outline),
         title: const Text('Versión de la app'),
         subtitle: Text(

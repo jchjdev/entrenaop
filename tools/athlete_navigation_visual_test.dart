@@ -18,7 +18,10 @@ import 'package:entrenaop/features/preparation_goal/domain/entities/adaptive_pro
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_program.dart';
 import 'package:entrenaop/features/profile/data/profile_birth_date_repository.dart';
+import 'package:entrenaop/features/profile/data/profile_name_repository.dart';
 import 'package:entrenaop/features/profile/presentation/pages/profile_page.dart';
+import 'package:entrenaop/features/profile/presentation/pages/edit_profile_page.dart';
+import 'package:entrenaop/features/profile/presentation/pages/profile_settings_page.dart';
 import 'package:entrenaop/features/training_plan/domain/entities/training_context.dart';
 import 'package:entrenaop/features/training_plan/presentation/pages/training_hub_page.dart';
 import 'package:entrenaop/features/trainers/presentation/pages/professional_hub_page.dart';
@@ -35,12 +38,14 @@ import 'package:workout_core/guided_program.dart';
 import '../test/support/coach_workspace_fixture.dart'
     show FakeCoach, FakeSecurity, FakeMessages, FakeVideo;
 import '../test/support/pro_access_fixture.dart';
+import '../test/helpers/visual_app_identity.dart';
 import '../test/features/trainers/professional_hub_test.dart'
     show NoticeFixture, snapshot;
 
 import 'package:entrenaop/features/trainers/domain/student_notice_repository.dart';
 
 void main() {
+  setUpVisualAppIdentity();
   var fontsLoaded = false;
   for (final (screen, width, scale, unread, hasTrainer, location) in [
     ('inicio', 390.0, 1.0, 2, true, '/home'),
@@ -55,8 +60,12 @@ void main() {
     ('historial', 390.0, 1.0, 0, true, '/my-trainer'),
     ('perfil', 390.0, 1.0, 2, true, '/profile'),
     ('perfil-accesible', 320.0, 2.0, 2, true, '/profile'),
-    ('selector-personal', 390.0, 1.0, 2, true, '/home'),
-    ('selector-accesible', 320.0, 2.0, 2, true, '/home'),
+    ('perfil-profesional', 390.0, 1.0, 2, true, '/profile'),
+    ('perfil-profesional-accesible', 320.0, 2.0, 2, true, '/profile'),
+    ('ajustes', 390.0, 1.0, 0, true, '/profile/settings'),
+    ('ajustes-accesible', 320.0, 2.0, 0, true, '/profile/settings'),
+    ('editar-perfil', 390.0, 1.0, 0, true, '/profile/edit'),
+    ('editar-perfil-accesible', 320.0, 2.0, 0, true, '/profile/edit'),
   ]) {
     testWidgets('captura $screen', (tester) async {
       tester.view.physicalSize = Size(width, 900);
@@ -104,7 +113,9 @@ void main() {
       addTearDown(auth.close);
       final guided = _Guided();
       final access = ProAccessFixture(isPro: true);
+      final rootNavigatorKey = GlobalKey<NavigatorState>();
       final router = GoRouter(
+        navigatorKey: rootNavigatorKey,
         initialLocation: location,
         routes: [
           StatefulShellRoute.indexedStack(
@@ -113,7 +124,7 @@ void main() {
                 controller: navigation,
                 child: AppShell(navigationShell: shell),
               );
-              return screen.startsWith('selector-')
+              return screen.startsWith('perfil-profesional')
                   ? CoachWorkspaceEntry(
                       repository: FakeCoach(),
                       security: FakeSecurity(),
@@ -168,8 +179,25 @@ void main() {
                 routes: [
                   GoRoute(
                     path: '/profile',
-                    builder: (_, _) =>
-                        ProfilePage(birthDateRepository: _BirthDate()),
+                    builder: (_, _) => ProfilePage(
+                      birthDateRepository: _BirthDate(),
+                      nameRepository: _VisualNames(),
+                    ),
+                    routes: [
+                      GoRoute(
+                        path: 'settings',
+                        parentNavigatorKey: rootNavigatorKey,
+                        builder: (_, _) => const ProfileSettingsPage(),
+                      ),
+                      GoRoute(
+                        path: 'edit',
+                        parentNavigatorKey: rootNavigatorKey,
+                        builder: (_, _) => EditProfilePage(
+                          birthDateRepository: _BirthDate(),
+                          nameRepository: _VisualNames(),
+                        ),
+                      ),
+                    ],
                   ),
                   GoRoute(
                     path: '/assessment/history',
@@ -232,16 +260,28 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pump(const Duration(milliseconds: 100));
       expect(tester.takeException(), isNull);
-      expect(
-        tester
-            .widget<NavigationBar>(find.byType(NavigationBar))
-            .destinations
-            .map((destination) => (destination as NavigationDestination).label),
-        ['Inicio', 'Entrenar', 'Biblioteca', 'Preparador', 'Perfil'],
-      );
+      if (location == '/profile/settings' || location == '/profile/edit') {
+        expect(find.byType(NavigationBar), findsNothing);
+      } else {
+        expect(
+          tester
+              .widget<NavigationBar>(find.byType(NavigationBar))
+              .destinations
+              .map(
+                (destination) => (destination as NavigationDestination).label,
+              ),
+          ['Inicio', 'Entrenar', 'Biblioteca', 'Preparador', 'Perfil'],
+        );
+      }
       expect(find.byTooltip('Mi perfil'), findsNothing);
       expect(find.byTooltip('$unread avisos sin leer'), findsNothing);
       await _capture(tester, boundary, screen);
+      if (screen == 'perfil-profesional-accesible') {
+        await tester.ensureVisible(find.text('Entrar como preparador'));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        await _capture(tester, boundary, '$screen-acceso');
+      }
       if (screen == 'entrenar-accesible') {
         await tester.ensureVisible(
           find.text('Editar disponibilidad y material'),
@@ -322,19 +362,22 @@ class _Favorites implements HomeFavoritesRepository {
   Future<void> save(String userId, List<HomeShortcut> favorites) async {}
 }
 
-Future<void> _capture(WidgetTester tester, GlobalKey boundary, String name) =>
-    tester.runAsync(() async {
-      final render =
-          boundary.currentContext!.findRenderObject()! as RenderRepaintBoundary;
-      final image = await render.toImage();
-      final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-      final file = File(
-        'docs/visual-audit/athlete-navigation-2026-11-01/$name.png',
-      );
-      await file.parent.create(recursive: true);
-      await file.writeAsBytes(bytes!.buffer.asUint8List());
-      image.dispose();
-    });
+Future<void> _capture(
+  WidgetTester tester,
+  GlobalKey boundary,
+  String name,
+) => tester.runAsync(() async {
+  final render =
+      boundary.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+  final image = await render.toImage();
+  final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+  final file = File(
+    '${const String.fromEnvironment('ATHLETE_CAPTURE_DIR', defaultValue: 'docs/visual-audit/athlete-navigation-2026-11-01')}/$name.png',
+  );
+  await file.parent.create(recursive: true);
+  await file.writeAsBytes(bytes!.buffer.asUint8List());
+  image.dispose();
+});
 
 class _Auth extends Cubit<AuthState> implements AuthCubit {
   _Auth()
@@ -349,6 +392,14 @@ class _Auth extends Cubit<AuthState> implements AuthCubit {
           ),
         ),
       );
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _VisualNames implements ProfileNameRepository {
+  @override
+  Future<String> save(String ownerId, String name) async => name;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

@@ -1,3 +1,4 @@
+import '../../../core/navigation/workspace_navigation_scope.dart';
 import 'coach_assignment_actions.dart';
 
 import 'package:workout_editor_ui/video_read_button.dart';
@@ -21,7 +22,10 @@ class CoachAssignmentPage extends StatelessWidget {
     final scope = CoachWorkspaceScope.of(context);
     final repo = scope.controller.repository;
     return Scaffold(
-      appBar: AppBar(title: const Text('Sesión del alumno')),
+      appBar: AppBar(
+        title: const Text('Sesión del alumno'),
+        actions: const [WorkspaceReturnAction()],
+      ),
       body: CoachLoad(
         load: () async => (
           await repo.assignment(assignmentId),
@@ -244,7 +248,10 @@ class CoachTechniquePage extends StatelessWidget {
     // Desmontar el reproductor oculto detiene también su audio nativo.
     final visible = TickerMode.valuesOf(context).enabled;
     return Scaffold(
-      appBar: AppBar(title: const Text('Técnica del alumno')),
+      appBar: AppBar(
+        title: const Text('Técnica del alumno'),
+        actions: const [WorkspaceReturnAction()],
+      ),
       body: CoachLoad(
         load: () => repo.technique(assignmentId),
         builder: (context, clips, refresh) => ListView(
@@ -367,6 +374,7 @@ class _CoachConversationPageState extends State<CoachConversationPage> {
     final messages = scope.messages;
     return ConversationView(
       key: ValueKey(widget.relationId),
+      appBarActions: const [WorkspaceReturnAction()],
       header: () async {
         final header = await messages.context(widget.relationId);
         return ConversationHeader(title: header.name, canSend: header.canSend);

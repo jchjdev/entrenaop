@@ -6,7 +6,8 @@ Tras probar el reparto implementado, Javier rechaza la presencia del selector
 Personal/Entrenador en la cabecera. Pide un acceso más discreto o trasladarlo a
 Perfil, recuerda que la denominación visible es preparador y reabre la relación
 entre Perfil y Ajustes. Esto revisa el criterio visual del selector aprobado
-antes; el cambio de ubicación todavía no está implementado.
+antes. Javier autoriza implementar la propuesta con una corrección expresa:
+Dispositivos y conexiones permanece a mano en Perfil.
 
 Se ha inspeccionado el vídeo aportado, de 26,92 segundos. Su Perfil conserva la
 identidad y el historial; un engranaje abre Ajustes, donde se agrupan cuenta,
@@ -18,11 +19,13 @@ evolución, conexiones, suscripción, versión y salida. El selector profesional
 compone por encima del shell y ocupa una franja adicional en las pantallas
 principales de las cuentas habilitadas. Este es el diagnóstico comprobado.
 
-La recomendación, pendiente de aceptación, es:
+El reparto autorizado es:
 
 - Conservar **Perfil** en la barra: identidad compacta, acceso a editar datos y
   protagonismo para Mi evolución. La información deportiva no se oculta en Ajustes.
-- Abrir **Ajustes** desde un engranaje en Perfil para conexiones, suscripción,
+- Mantener **Dispositivos y conexiones** como acceso directo en Perfil, sin
+  introducir un paso por Ajustes para Salud del móvil, Apple Watch o Garmin.
+- Abrir **Ajustes** desde un engranaje en Perfil para suscripción,
   opciones de cuenta, información de la app y cerrar sesión. Se reutilizan los
   recorridos existentes; no se añaden opciones sin funcionamiento.
 - Sustituir la franja global por una fila discreta **Entrar como preparador** en
@@ -36,9 +39,35 @@ La recomendación, pendiente de aceptación, es:
 El coste de esta recomendación es perder el cambio profesional en un único toque
 desde cualquier sección personal. La ganancia es recuperar espacio de contenido
 y separar la actividad personal del trabajo profesional. El cambio no concede
-permisos, modifica datos ni altera avisos, lecturas o procesos deportivos. Antes
-de implementarlo se concreta con Javier la ubicación y se revisan entrada,
-retorno, borradores y las cuentas con y sin acceso profesional.
+permisos, modifica datos ni altera avisos, lecturas o procesos deportivos.
+Se verifican entrada, retorno, borradores y cuentas con y sin acceso profesional.
+
+### Implementación y comprobación del ajuste
+
+`/profile/edit` y `/profile/settings` son tareas raíz con retorno al origen y
+alternativa a Perfil en entrada directa. Editar conserva nombre y nacimiento;
+la foto sigue editable en el avatar de portada, con el mismo control y sus
+reintentos. Perfil no consulta nacimiento. La renovación transitoria de la misma
+cuenta conserva identidad, foto y consultas; una cuenta distinta descarta sus
+estados anteriores. El texto ampliado utiliza tarjetas adaptables a ancho completo.
+
+El acceso profesional conserva la última sección personal distinta de Perfil y
+la pila profesional, incluidos chat, agenda y borradores. Si se accede directamente
+al espacio profesional, el retorno lleva a Perfil. El retorno también permanece
+disponible durante la comprobación inicial de acceso; nunca monta datos privados
+antes de verificar autorización y MFA. Los diálogos de salida y los envíos en
+curso conservan sus guardas en la primera y en las siguientes salidas de una rama.
+
+Análisis final limpio. Baterías completas: deportista **1.623 correctas y una
+omisión previa**, ADMIN **368 y dos omisiones previas**, Trainer **432** y
+`entrena_ui` **64**. Se reproducen las regresiones antes de corregir el registro
+de guardas y la sustitución de conversaciones. Las ocho comprobaciones visuales
+producen nueve capturas reales de Perfil, Ajustes y edición, a 320/390 px y texto
+1×/2×, en `visual-audit/profile-workspace-2026-11-01/`; incluyen acceso profesional
+y su contador. Las etiquetas se leen sin partir palabras; el correo largo se
+divide para conservarlo completo. El generador sigue siendo
+`tools/athlete_navigation_visual_test.dart`, con `ATHLETE_CAPTURE_DIR` para elegir
+la carpeta. Son datos ficticios y no acreditan instalación en iPhone.
 
 ## Reorganización aprobada · 01/11/2026
 
@@ -52,7 +81,7 @@ históricas descritas más abajo.
 | Entrenar | Planes como primera cara; desplazamiento sincronizado por toque o gesto entre Planes, Preparaciones y Disponibilidad. Ver semana abre el calendario común. |
 | Biblioteca | Catálogo, consulta y creación existentes. Cambia únicamente la cabecera compartida de navegación. |
 | Preparador | Búsqueda, conversaciones, recursos, avisos y gestión/historial del vínculo. Indicador de novedades en la pestaña. |
-| Perfil | Identidad, cuenta, conexiones, suscripción y acceso a Mi evolución. |
+| Perfil | Identidad compacta, Mi evolución, Dispositivos y conexiones, acceso profesional y engranaje de Ajustes. |
 
 ### Contratos conservados
 
@@ -61,9 +90,9 @@ históricas descritas más abajo.
   `/profile` es su entrada y `/assessment/history` conserva sus hijos. La barra
   presenta las ramas `[0, 1, 2, 4, 3]`; el trabajo profesional permanece en la 5.
 - Cambiar de sección conserva su pantalla y volver a tocar la entrada activa
-  recupera su raíz. El selector Personal/Entrenador sigue visible en las
-  pantallas principales y recupera el espacio anterior, adaptándose al tamaño
-  de texto. Los borradores siguen protegidos por las guardas existentes.
+  recupera su raíz. La revisión posterior sustituye el selector superior por el
+  acceso profesional en Perfil y mantiene la memoria de los espacios. Los
+  borradores siguen protegidos por las guardas existentes.
 - Entrenar recibe opcionalmente `tab` y `date`; Ver semana utiliza la fecha
   correspondiente. El editor `/profile/preferences` conserva días, minutos,
   material, validación y guardado. El alias `/plan/preferences` sigue funcionando.
@@ -74,7 +103,7 @@ históricas descritas más abajo.
 - El contador de Preparador utiliza el total del servidor, independiente de la
   página o filtro. Abrir la sección no confirma lecturas. La recepción, resolución
   y confirmación de avisos conservan sus contratos. Los avisos profesionales se
-  mantienen separados en Entrenador; se retira la campana superior personal.
+  mantienen separados en el espacio de preparador; se retira la campana superior personal.
 - La búsqueda de preparadores sigue accesible sin recursos. Un error no se
   interpreta como ausencia de vínculo ni borra historial. La presentación vacía
   ofrece búsqueda e historial tras una respuesta confirmada.
@@ -112,7 +141,7 @@ de esta versión en el iPhone: requiere recompilar e instalar desde Mac.
 
 El único siguiente bloque recomendado es aceptar en iPhone la semana de Inicio,
 el gesto entre las tres caras, editar Disponibilidad y volver, los avisos del
-preparador y el cambio Personal/Entrenador con una pauta de Ervi.
+preparador y el cambio profesional desde Perfil con una pauta de Ervi.
 
 ## Revisión global abierta · 01/11/2026
 

@@ -46,6 +46,7 @@ class ConversationView extends StatefulWidget {
     this.refreshInterval,
     this.onDisplayed,
     this.messageLabel = 'Mensaje para la preparación',
+    this.appBarActions = const [],
   });
   final Future<ConversationHeader> Function() header;
   final Future<List<ConversationEntry>> Function(ConversationEntry? before)
@@ -56,6 +57,7 @@ class ConversationView extends StatefulWidget {
   final Duration? refreshInterval;
   final Future<void> Function(List<ConversationEntry> entries)? onDisplayed;
   final String messageLabel;
+  final List<Widget> appBarActions;
   @override
   State<ConversationView> createState() => _ConversationViewState();
 }
@@ -98,7 +100,7 @@ class _ConversationViewState extends State<ConversationView>
     super.didChangeDependencies();
     final next = WorkflowExitScope.maybeOf(context);
     if (next != _exit) {
-      _exit?.onExit = null;
+      if (_exit?.onExit == _requestExit) _exit?.onExit = null;
       _exit = next;
       _exit?.onExit = _requestExit;
     }
@@ -108,7 +110,7 @@ class _ConversationViewState extends State<ConversationView>
   void dispose() {
     _timer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
-    _exit?.onExit = null;
+    if (_exit?.onExit == _requestExit) _exit?.onExit = null;
     _scroll.dispose();
     _body.dispose();
     super.dispose();
@@ -319,6 +321,7 @@ class _ConversationViewState extends State<ConversationView>
     appBar: AppBar(
       title: Text(_header?.title ?? 'Conversación'),
       actions: [
+        ...widget.appBarActions,
         IconButton(
           onPressed: _busy || _sending ? null : _load,
           tooltip: 'Actualizar',

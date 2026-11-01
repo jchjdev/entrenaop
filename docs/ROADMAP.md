@@ -1,5 +1,20 @@
 # Roadmap de EntrenaOP
 
+**01/11/2026 · Perfil y cambio profesional implementados y comprobados:** Javier autoriza Perfil
+compacto con Ajustes desde el engranaje y entrada como preparador dentro de
+Perfil. Corrige que Dispositivos y conexiones debe permanecer directamente a mano.
+Se conservan edición, evolución, suscripción, permisos, avisos y las ramas
+existentes. Se retira el selector global y se conserva el contexto al regresar.
+Análisis limpio; pruebas completas: deportista **1.623** y una omisión previa,
+ADMIN **368** y dos omisiones previas, Trainer **432**, `entrena_ui` **64**.
+Nueve capturas reales comprueban 320/390 px y texto normal/ampliado. Se corrigen
+las guardas al repetir salidas de ramas y al sustituir la conversación, el
+retorno durante la comprobación de acceso y el reflujo sin palabras partidas.
+**Siguiente recorrido recomendado:** compilar en Mac y probar Perfil → dispositivos,
+Perfil → Ajustes → volver, editar datos y el cambio profesional con borrador de
+conversación, incluidas cuentas sin acceso profesional y texto grande.
+[Contrato y comprobación](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#revisión-de-perfil-y-acceso-profesional--01112026).
+
 **01/11/2026 · vista previa pautada completa y comprobada:** Inicio y calendario
 abren **Ver entrenamiento**, con el contenido de la versión asignada y sin
 iniciar ni modificar la sesión. El inicio explícito comprueba que sigue siendo

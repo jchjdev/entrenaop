@@ -1,5 +1,12 @@
 # Producto EntrenaOP
 
+**Ajuste de Perfil aprobado · 01/11/2026:** Perfil conserva identidad, evolución
+y acceso directo a Dispositivos y conexiones. El engranaje abre Ajustes para
+suscripción, información de la app y salida; Editar perfil reúne nombre y fecha
+de nacimiento, manteniendo la foto editable desde el avatar. Entrar como
+preparador sustituye el selector global y conserva avisos y contexto personal y
+profesional separados. [Criterios vigentes](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#revisión-de-perfil-y-acceso-profesional--01112026).
+
 ## Navegación del deportista reorganizada · 01/11/2026
 
 Javier aprueba Inicio, Entrenar, Biblioteca, Preparador y Perfil como destinos
@@ -8,7 +15,7 @@ con Preparaciones y Disponibilidad como caras desplazables. Ver semana lleva al
 calendario común y Disponibilidad reutiliza el editor completo. Preparador reúne
 relación y seguimiento, búsqueda e indicador de novedades. Perfil conserva cuenta
 y conexiones y aloja el acceso a Evolución. El cambio al trabajo profesional
-permanece visible y recupera el contexto previo.
+se abre desde Perfil y recupera el contexto previo.
 
 Se conservan procesos deportivos y permisos. El inicio de una pauta se realiza
 desde su botón explícito. Javier pide después completar la consulta del
