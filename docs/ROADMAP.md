@@ -1,5 +1,13 @@
 # Roadmap de EntrenaOP
 
+**01/11/2026 · navegación global del deportista reabierta:** Javier aclara que
+la mezcla afecta a más recorridos y botones y rechaza Perfil en la cabecera como
+solución satisfactoria. El siguiente tramo amplía los puntos 1 y 2: ordenar
+entrenamiento personal, relación con preparadores, trabajo profesional y cuenta.
+[Criterio y reparto propuesto](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#revisión-global-abierta--01112026).
+La ubicación alternativa de Perfil, el lugar de Evolución y el cambio de espacio
+profesional siguen como propuesta; se concretan antes de modificar la navegación.
+
 **01/11/2026 · corrección autorizada del punto 3 de la revisión:** Mi semana
 carga las sesiones sin consultar los catálogos. Añadir entrenamiento carga su
 biblioteca al abrir el selector y ofrece error/reintento propios, conservando la

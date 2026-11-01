@@ -1,5 +1,57 @@
 # Navegación del alumno y preparador · TRN-025 · 22/10/2026
 
+## Revisión global abierta · 01/11/2026
+
+Javier indica que la incoherencia alcanza más recorridos y botones que los dos
+ejemplos de la revisión transversal. El acceso a Perfil en la cabecera no le
+gusta y se reabre su ubicación. La elección del 22/10 describe la implementación
+actual y el acuerdo anterior; ya no debe interpretarse como aceptación definitiva
+de la posición superior de Perfil.
+
+El código actual confirma solapamientos: Perfil incluye preparaciones,
+herramientas y Mi preparador; el hub Preparador y la gestión del vínculo ofrecen
+accesos a formularios y conversación; Inicio y Mi plan presentan semana y
+preparaciones. Mi plan utiliza como primera referencia el programa automático
+aunque las pautas profesionales también sean el entrenamiento del usuario.
+En las cuentas profesionales, el selector superior añade además el acceso al
+trabajo con alumnos propios. El código separa esos espacios, pero hay que revisar
+si esa diferencia se entiende en la interfaz.
+
+### Propuesta inicial pendiente de revisión con Javier
+
+Repartir las tareas entre cinco entradas inferiores, con un destino principal
+por tarea. Los accesos contextuales pueden llevar a ese mismo destino conservando
+fecha, pauta y origen; no deben crear otro resumen independiente.
+
+| Entrada propuesta | Contenido principal |
+| --- | --- |
+| Inicio | Sesión de hoy y asuntos pendientes. Acceso directo a la pauta concreta. |
+| Entrenar | Calendario personal común, historial y progreso; objetivos y configuración del programa en un área propia. El origen distingue pautas del preparador, automáticas y personales. |
+| Biblioteca | Descubrir, consultar y crear sesiones y ejercicios; programas guiados. |
+| Preparador | Personas con quienes se entrena, conversaciones, formularios, citas y gestión de vínculos. Las pautas abren el calendario personal común. |
+| Perfil | Identidad, foto, cuenta, preferencias, conexiones, suscripción y ajustes. |
+
+Esta propuesta devuelve Perfil abajo y retira su acceso repetido de la cabecera.
+El coste es que Evolución deja de ser una entrada inferior independiente y pasa
+al área de progreso de Entrenar. Esa pérdida de acceso directo debe valorarse
+con Javier antes de aceptar la distribución. Los nombres también son provisionales.
+
+El trabajo con alumnos propios mantendría un espacio profesional con agenda,
+alumnos y mensajes. Su entrada y retorno deben ser explícitos y conservar el
+contexto. «Mi preparador» describe el servicio que recibe la persona;
+«Espacio de entrenador» describe su actividad profesional. La posición final
+del cambio de espacio sigue abierta, especialmente por la frecuencia de uso.
+
+Revisar después los botones con la misma regla: tocar una sesión permite
+consultar su receta; empezar requiere una acción explícita. Este comportamiento
+se propone y todavía no está implementado. Cada pantalla debe distinguir su
+acción principal de editar, añadir, gestionar o configurar.
+
+El siguiente paso es validar el reparto con los recorridos de un usuario sin
+preparador, un alumno con pautas y una cuenta que también trabaja con alumnos.
+La implementación transversal comienza después de concretar esa estructura.
+Esta revisión documental no modifica Flutter, datos, permisos ni rutas.
+
 ## Elección de Javier
 
 Preparador abajo, Perfil arriba e Inicio despejado. La campana se oculta por

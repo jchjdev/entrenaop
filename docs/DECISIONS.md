@@ -1,5 +1,15 @@
 # Registro de decisiones vigentes
 
+**Revisión global de navegación del deportista · 01/11/2026:** Javier aclara
+que los puntos 1 y 2 de la revisión no abarcan su malestar: señala más recorridos,
+botones y mezclas entre entrenador, Mi plan y otros espacios. Rechaza como
+solución satisfactoria el acceso a Perfil en la cabecera. Se reabre esa parte de
+TRN-025; la ubicación alternativa de Perfil y la nueva distribución se concretarán
+antes de implementarlas. El siguiente trabajo es revisar el reparto completo de
+tareas del deportista y distinguir su preparador del trabajo con alumnos propios.
+La corrección técnica de carga de agenda ya entregada conserva su alcance.
+[Criterio y propuesta abierta](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#revisión-global-abierta--01112026).
+
 **Agenda independiente del catálogo · 01/11/2026:** Javier autoriza corregir
 el punto 3 de la revisión transversal mientras prueba los puntos 1 y 2. Mi semana
 consulta las sesiones sin esperar a las bibliotecas pública/personal. Estas se
