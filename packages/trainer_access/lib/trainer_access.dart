@@ -12,17 +12,20 @@ class TrainerAccess {
   TrainerAccess.fromJson(Json json)
     : trainerId = json['trainer_id'] as String,
       enabled = json['enabled'] == true,
+      suspended = json['suspended'] == true,
       effective = json['effective'] == true,
       limit = (json['client_limit'] as num).toInt(),
       activeClients = (json['active_clients'] as num).toInt(),
       revision = (json['revision'] as num).toInt(),
       validUntil = _date(json['valid_until']);
   final String trainerId;
-  final bool enabled, effective;
+  final bool enabled, effective, suspended;
   final int limit, activeClients, revision;
   final DateTime? validUntil;
   bool get full => activeClients >= limit;
-  String get status => effective
+  String get status => suspended
+      ? 'Acceso profesional suspendido'
+      : effective
       ? (full ? 'Cupo completo' : 'Acceso activo')
       : enabled
       ? 'Acceso caducado'
@@ -102,9 +105,17 @@ class TrainerInvitationPreview {
 class TrainerManagement {
   TrainerManagement.fromJson(Json json)
     : access = TrainerAccess.fromJson(Json.from(json['access'] as Map)),
-      enabled = json['manual_access_enabled'] == true;
+      enabled = json['manual_access_enabled'] == true,
+      manualEnabled = json['manual_enabled'] == true,
+      manualLimit = (json['manual_client_limit'] as num?)?.toInt() ?? 1,
+      manualValidUntil = _date(json['manual_valid_until']),
+      suspensionReason = json['suspension_reason'] as String?;
   final TrainerAccess access;
   final bool enabled;
+  final bool manualEnabled;
+  final int manualLimit;
+  final DateTime? manualValidUntil;
+  final String? suspensionReason;
 }
 
 // Identidad y secreto se conservan juntos en memoria al reintentar una creación
@@ -145,20 +156,35 @@ class TrainerAccessChange {
   final DateTime? validUntil;
 }
 
+class TrainerSuspensionChange {
+  const TrainerSuspensionChange({
+    required this.trainerId,
+    required this.suspended,
+    required this.revision,
+    required this.reason,
+  });
+  final String trainerId, reason;
+  final bool suspended;
+  final int revision;
+}
+
 class ManagedTrainer {
   ManagedTrainer.fromJson(Json json)
     : id = json['trainer_id'] as String,
       name = json['name'] as String? ?? 'Usuario de EntrenaOP',
       email = json['email'] as String? ?? '',
       enabled = json['enabled'] == true,
+      suspended = json['suspended'] == true,
       limit = (json['client_limit'] as num).toInt(),
       activeClients = (json['active_clients'] as num).toInt(),
       validUntil = _date(json['valid_until']);
   final String id, name, email;
-  final bool enabled;
+  final bool enabled, suspended;
   final int limit, activeClients;
   final DateTime? validUntil;
-  String get status => !enabled
+  String get status => suspended
+      ? 'Suspendido'
+      : !enabled
       ? 'Inactivo'
       : validUntil != null && !validUntil!.isAfter(DateTime.now())
       ? 'Caducado'
@@ -190,6 +216,7 @@ abstract class TrainerRepository {
   Future<void> endRelation(String id);
   Future<TrainerManagement> management(String trainerId);
   Future<TrainerAccess> changeAccess(TrainerAccessChange change);
+  Future<TrainerAccess> changeSuspension(TrainerSuspensionChange change);
 }
 
 class SupabaseTrainerRepository implements TrainerRepository {
@@ -346,6 +373,20 @@ class SupabaseTrainerRepository implements TrainerRepository {
           }),
         ),
       );
+
+  @override
+  Future<TrainerAccess> changeSuspension(
+    TrainerSuspensionChange change,
+  ) async => TrainerAccess.fromJson(
+    _json(
+      await _rpc('admin_set_trainer_suspension', {
+        'p_trainer_id': change.trainerId,
+        'p_suspended': change.suspended,
+        'p_expected_revision': change.revision,
+        'p_reason': change.reason,
+      }),
+    ),
+  );
 }
 
 String trainerError(Object error) {

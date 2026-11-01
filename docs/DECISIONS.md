@@ -1,5 +1,16 @@
 # Registro de decisiones vigentes
 
+**Suspensión profesional y retirada de regalos · 01/11/2026:** Javier confirma
+dos acciones independientes en ADMIN. Retirar la concesión manual conserva
+el acceso derivado de un pago vigente. Suspender al entrenador bloquea sus
+funciones y consultas profesionales aunque pague, con motivo, auditoría,
+revisión esperada y reactivación expresa. Una renovación o un regalo no levantan
+la suspensión. Reactivar recalcula las coberturas vigentes, sin regalar ni
+prorrogar servicio. Conserva historial, vínculos, sesiones de deportista y
+Pro personal. La suspensión no cancela ni reembolsa
+automáticamente una suscripción; su gestión propia sigue accesible. Se aplica
+solo en Dev. [Acceso y permisos](TRAINER_ACCESS_2026_10_20.md#suspensión-profesional-y-concesiones-manuales--01112026).
+
 **Planes y cupos en sandbox · 31/10/2026:** Javier autoriza preparar la tabla
 provisional para probar registro, pago y habilitación profesional, sin cobros
 reales. Se crean veinte precios mensuales de prueba: Básico, Profesional,

@@ -41,13 +41,15 @@ class TrainerAccountStatus {
   const TrainerAccountStatus({
     required this.professionalAccount,
     required this.enabled,
+    this.suspended = false,
   });
   factory TrainerAccountStatus.fromJson(Map<String, dynamic> json) =>
       TrainerAccountStatus(
         professionalAccount: json['professional_account'] == true,
         enabled: json['enabled'] == true,
+        suspended: json['suspended'] == true,
       );
-  final bool professionalAccount, enabled;
+  final bool professionalAccount, enabled, suspended;
 }
 
 bool isTrainerAuthCallback(Uri uri) {

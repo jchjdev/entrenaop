@@ -730,10 +730,17 @@ en Dev; la publicación y aceptación del pago simulado se acreditan en el apart
 siguiente y no se deducen de esas pruebas.
 
 El bloque comercial completo sigue abierto: precios finales, términos/fiscalidad,
-política de reembolsos/disputas, suspensión global, conciliación programada y
+política de reembolsos/disputas, conciliación programada y
 monitorización operativa deben cerrarse antes de modo activo. No están incluidos
 cobros alumno → preparador, cambios de plan ni compras Pro de las tiendas. No se
 modifica la web pública ni se despliega producción.
+
+La suspensión profesional por ADMIN se incorpora el 01/11/2026 como un estado
+independiente de ambas fuentes comerciales. Bloquea el acceso profesional aun
+con un periodo pagado, sin cancelar el contrato ni modificar sus recibos. La
+gestión de esa suscripción permanece disponible y el efecto económico requiere
+una gestión separada. Ni comprar ni regalar un nuevo acceso puede levantar la
+suspensión. [Contrato de permisos](TRAINER_ACCESS_2026_10_20.md#suspensión-profesional-y-concesiones-manuales--01112026).
 
 #### Publicación y aceptación del sandbox · 28/10/2026
 

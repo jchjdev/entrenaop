@@ -16,8 +16,10 @@ class AdminTrainerAccessCard extends StatefulWidget {
 
 class _AdminTrainerAccessCardState extends State<AdminTrainerAccessCard> {
   final _limit = TextEditingController(), _reason = TextEditingController();
+  final _suspensionReason = TextEditingController();
   TrainerManagement? _management;
   TrainerAccessChange? _pending;
+  TrainerSuspensionChange? _pendingSuspension;
   bool _busy = true, _enabled = false;
   String? _error;
   @override
@@ -30,6 +32,7 @@ class _AdminTrainerAccessCardState extends State<AdminTrainerAccessCard> {
   void dispose() {
     _limit.dispose();
     _reason.dispose();
+    _suspensionReason.dispose();
     super.dispose();
   }
 
@@ -45,10 +48,9 @@ class _AdminTrainerAccessCardState extends State<AdminTrainerAccessCard> {
       setState(() {
         _management = management;
         _pending = null;
-        _enabled = management.access.enabled;
-        _limit.text = management.access.limit == 0
-            ? ''
-            : '${management.access.limit}';
+        _pendingSuspension = null;
+        _enabled = management.manualEnabled;
+        _limit.text = '${management.manualLimit}';
       });
     } catch (e) {
       if (mounted) setState(() => _error = trainerError(e));
@@ -58,7 +60,9 @@ class _AdminTrainerAccessCardState extends State<AdminTrainerAccessCard> {
   }
 
   Future<void> _save() async {
-    if (_busy || _management?.enabled != true) return;
+    if (_busy || _management?.enabled != true || _pendingSuspension != null) {
+      return;
+    }
     final access = _management!.access;
     if (_pending == null) {
       final limit = int.tryParse(_limit.text.trim());
@@ -79,17 +83,17 @@ class _AdminTrainerAccessCardState extends State<AdminTrainerAccessCard> {
         enabled: _enabled,
         revision: access.revision,
         reason: reason,
-        validUntil: access.validUntil,
+        validUntil: _management!.manualValidUntil,
       );
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (context) => EntrenaDialog(
-          title: const Text('Cambiar acceso profesional'),
+          title: const Text('Cambiar acceso regalado'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                '${change.enabled ? 'Habilitar' : 'Retirar'} acceso con ${change.limit} plazas. Pro personal se mantiene por separado. Los vínculos existentes se conservan. No se realiza ningún cobro.',
+                '${change.enabled ? 'Conceder' : 'Retirar'} el acceso regalado de ${change.limit} plazas. Si tiene una suscripción pagada vigente, conservará ese acceso. Esto no levanta una suspensión ni cambia Pro, los vínculos o los cobros.',
               ),
               const SizedBox(height: 20),
               EntrenaDialogActions(
@@ -127,9 +131,90 @@ class _AdminTrainerAccessCardState extends State<AdminTrainerAccessCard> {
     }
   }
 
+  Future<void> _suspend() async {
+    if (_busy || _management == null || _pending != null) return;
+    if (_pendingSuspension == null) {
+      _suspensionReason.clear();
+      final suspend = !_management!.access.suspended;
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => StatefulBuilder(
+          builder: (context, update) => EntrenaDialog(
+            title: Text(
+              suspend ? 'Suspender entrenador' : 'Reactivar entrenador',
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  suspend
+                      ? 'Bloquea las funciones profesionales aunque tenga una suscripción pagada. Conserva el historial y su cuenta de deportista. No cancela ni reembolsa los pagos.'
+                      : 'Levanta la suspensión. Recuperará el acceso que le corresponda por suscripción o regalo vigente. No concede un nuevo regalo ni reactiva suscripciones vencidas.',
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _suspensionReason,
+                  maxLength: 500,
+                  minLines: 2,
+                  maxLines: 4,
+                  onChanged: (_) => update(() {}),
+                  decoration: const InputDecoration(
+                    labelText: 'Motivo administrativo',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                EntrenaDialogActions(
+                  primaryLabel: suspend
+                      ? 'Confirmar suspensión'
+                      : 'Confirmar reactivación',
+                  onPrimary: _suspensionReason.text.trim().length >= 3
+                      ? () => Navigator.pop(context, true)
+                      : null,
+                  secondary: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('Volver'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            actions: const [],
+          ),
+        ),
+      );
+      if (confirmed != true || !mounted || _busy) return;
+      _pendingSuspension = TrainerSuspensionChange(
+        trainerId: widget.userId,
+        suspended: suspend,
+        revision: _management!.access.revision,
+        reason: _suspensionReason.text.trim(),
+      );
+    }
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      await widget.repository.changeSuspension(_pendingSuspension!);
+      if (!mounted) return;
+      _pendingSuspension = null;
+      await _load();
+    } catch (e) {
+      if (mounted) setState(() => _error = trainerError(e));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final editable = !_busy && _management?.enabled == true && _pending == null;
+    final editable =
+        !_busy &&
+        _management?.enabled == true &&
+        _pending == null &&
+        _pendingSuspension == null;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -156,9 +241,48 @@ class _AdminTrainerAccessCardState extends State<AdminTrainerAccessCard> {
               Text(
                 '${management.access.activeClients} clientes activos · Cupo ${management.access.limit}',
               ),
-              if (management.access.validUntil != null)
+              const SizedBox(height: 12),
+              Text(
+                'Suspensión profesional',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              if (management.suspensionReason case final reason?)
+                Text('Motivo: $reason'),
+              const Text(
+                'El bloqueo prevalece sobre regalos y pagos. No borra el historial ni afecta a su cuenta de deportista. Los cobros se gestionan por separado.',
+              ),
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                onPressed:
+                    _busy || _pending != null || management.access.revision == 0
+                    ? null
+                    : _suspend,
+                icon: Icon(
+                  management.access.suspended ? Icons.lock_open : Icons.block,
+                ),
+                label: Text(
+                  _pendingSuspension != null
+                      ? 'Reintentar suspensión o reactivación'
+                      : management.access.suspended
+                      ? 'Reactivar entrenador'
+                      : 'Suspender entrenador',
+                ),
+              ),
+              if (_pendingSuspension != null)
+                const Text(
+                  'Hay una operación sin confirmar. Reintenta la misma petición o actualiza para consultar su estado.',
+                ),
+              const Divider(height: 32),
+              Text(
+                'Acceso regalado',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const Text(
+                'Esta concesión es independiente de su suscripción pagada. Retirarla no suspende al entrenador.',
+              ),
+              if (management.manualValidUntil != null)
                 Text(
-                  'Vigencia existente: ${trainerDate(management.access.validUntil!)}',
+                  'Vigencia del regalo: ${trainerDate(management.manualValidUntil!)}',
                 ),
               if (!management.enabled)
                 const Padding(
@@ -169,7 +293,7 @@ class _AdminTrainerAccessCardState extends State<AdminTrainerAccessCard> {
                 ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Habilitar acceso profesional'),
+                title: const Text('Conceder acceso regalado'),
                 value: _enabled,
                 onChanged: editable
                     ? (v) => setState(() => _enabled = v)
@@ -180,7 +304,7 @@ class _AdminTrainerAccessCardState extends State<AdminTrainerAccessCard> {
                 enabled: editable,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
-                  labelText: 'Cupo de alumnos activos',
+                  labelText: 'Plazas del acceso regalado',
                 ),
               ),
               const SizedBox(height: 12),
@@ -198,10 +322,13 @@ class _AdminTrainerAccessCardState extends State<AdminTrainerAccessCard> {
                 ),
               const SizedBox(height: 12),
               FilledButton(
-                onPressed: _busy || !management.enabled ? null : _save,
+                onPressed:
+                    _busy || !management.enabled || _pendingSuspension != null
+                    ? null
+                    : _save,
                 child: Text(
                   _pending == null
-                      ? 'Guardar acceso profesional'
+                      ? 'Guardar acceso regalado'
                       : 'Reintentar el mismo cambio',
                 ),
               ),

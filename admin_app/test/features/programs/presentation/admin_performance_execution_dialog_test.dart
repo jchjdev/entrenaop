@@ -57,6 +57,7 @@ void main() {
     WidgetTester tester,
     PerformanceProgressionDose prescription, {
     PerformanceProgressionExposure? initial,
+    DateTime? date,
   }) async {
     saved = null;
     await tester.pumpWidget(
@@ -71,9 +72,11 @@ void main() {
                     id: initial?.id ?? 'record',
                     label: 'Ejercicio',
                     dose: prescription,
-                    date: DateTime.now().toUtc().subtract(
-                      const Duration(days: 2),
-                    ),
+                    date:
+                        date ??
+                        DateTime.now().toUtc().subtract(
+                          const Duration(days: 2),
+                        ),
                     initial: initial,
                   ),
                 );
@@ -182,7 +185,8 @@ void main() {
     tester,
   ) async {
     final today = DateTime.now().toUtc();
-    await mount(tester, dose());
+    // El selector debe estar en el mes actual, también el día 1 o 2.
+    await mount(tester, dose(), date: today);
     await tap(
       tester,
       find.widgetWithIcon(OutlinedButton, Icons.calendar_today_outlined),

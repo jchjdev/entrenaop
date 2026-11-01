@@ -41,6 +41,17 @@ void main() {
         throwsStateError,
       );
       await expectLater(repository.management('someone'), throwsStateError);
+      await expectLater(
+        repository.changeSuspension(
+          const TrainerSuspensionChange(
+            trainerId: 'someone',
+            suspended: true,
+            revision: 1,
+            reason: 'Motivo válido',
+          ),
+        ),
+        throwsStateError,
+      );
     },
   );
   test('un error desconocido nunca expone mensajes o secretos de servidor', () {

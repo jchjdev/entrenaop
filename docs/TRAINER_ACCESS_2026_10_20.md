@@ -228,3 +228,57 @@ el mismo contrato compartido. La
 termina correctamente: ensayo Android y compilación de la app del deportista en
 iOS para simulador, sin firma ni publicación. No acredita apertura física del
 enlace ni genera una nueva APK de distribución para el deportista.
+
+## Suspensión profesional y concesiones manuales · 01/11/2026
+
+Javier confirma dos acciones independientes en la ficha ADMIN del entrenador:
+
+- **Acceso regalado:** concede o retira únicamente la fuente manual, con sus
+  propias plazas y vigencia. La interfaz no toma estos valores de la proyección
+  pagada. Retirarlo no anula una suscripción vigente ni levanta una suspensión.
+- **Suspender/Reactivar entrenador:** motivo obligatorio de 3–500 caracteres,
+  responsable, revisión esperada, auditoría y reintento idéntico sin duplicados.
+  Exige gestor de cuentas y MFA; no depende del interruptor de regalos del piloto.
+
+`trainer_access.suspended` tiene precedencia sobre todas las coberturas. El
+trigger comercial calcula cupo/vigencia y al final fuerza `enabled=false` si
+hay suspensión. No elimina ni altera regalos, pedidos, recibos o fechas pagadas.
+Al reactivar se recalculan las fuentes que sigan vigentes: levantar el bloqueo
+sin cobertura no concede acceso gratuito. Las operaciones manuales y de
+suspensión comparten el bloqueo y la revisión del acceso; `last_action` evita
+confundir reintentos de acciones diferentes.
+
+La autenticación MFA pura conserva `has_trainer_mfa`. La puerta nueva
+`has_professional_session` añade la ausencia de suspensión. Se conecta a las
+funciones y políticas profesionales ya existentes, conservando sus ramas de
+alumno/propietario. Esto bloquea nuevas consultas profesionales incluso con un
+JWT emitido antes del bloqueo; no basta con ocultar botones. La lectura del
+estado propio y la seguridad del autenticador siguen disponibles. No se revocan
+sesiones de la cuenta del deportista, Pro, entrenamiento personal ni los datos
+que reciba de su propio preparador. El alumno conserva sus etapas e historial.
+No se borran mensajes, asignaciones, vídeos ni resultados. Los datos que ya se
+hayan descargado o un enlace de medios ya firmado conservan sus límites de
+caché y caducidad; la suspensión no permite retirarlos de un dispositivo.
+
+Trainer dirige al suspendido a su suscripción con un aviso explícito y mantiene
+la gestión del contrato. No permite iniciar otra compra ni entrar al panel. Una
+conciliación de pago, renovación o regalo no puede reactivar el permiso. La
+suspensión **no cancela ni reembolsa cobros** automáticamente; esos efectos se
+gestionan aparte. Tampoco desactiva o elimina los vínculos de sus alumnos.
+
+Migración `20261101005925_trainer_professional_suspension` aplicada solo a Dev.
+La prueba `supabase/tests/trainer_professional_suspension.sql` usa cuentas
+sintéticas y termina en `ROLLBACK`: pago+regalo, retirada, MFA, autoescalada,
+revisión obsoleta, auditoría, renovación durante bloqueo, lecturas y autoría
+denegadas, RLS, acceso como alumno, reactivación con y sin cobertura. No se
+suspende ninguna cuenta real para comprobar este contrato.
+
+Verificación del cambio: análisis raíz/ADMIN/Trainer sin incidencias; 1.553
+pruebas de la app correctas (una omisión previa), 368 de ADMIN (dos omisiones
+previas), 423 de Trainer y 25 del paquete `trainer_access`. Nueve contratos SQL
+correctos con ROLLBACK: suspensión, comercial, acceso/vínculos, cartera,
+operativa, catálogo comercial/calentamientos, autoentrenamiento, calendario
+conjunto y piloto de directorio. Historial local/Dev coincidente y asesor de
+seguridad sin hallazgos nuevos frente a la base anterior. La batería completa
+de ADMIN detectó una prueba que elegía el día actual en el mes de hace dos días:
+se ajusta su fecha inicial al mes correcto, sin cambiar la funcionalidad probada.

@@ -248,7 +248,13 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
               _error!,
               style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
-          if (_notice != null) Text(_notice!),
+          if (_notice != null && _data?['suspended'] != true) Text(_notice!),
+          if (_data?['suspended'] == true)
+            const EntrenaCard(
+              child: Text(
+                'Acceso profesional suspendido por EntrenaOP. Tu historial se conserva y tu cuenta de deportista sigue disponible. La suspensión no cancela los cobros: puedes gestionar tu suscripción desde aquí. Contacta con EntrenaOP para revisar el acceso.',
+              ),
+            ),
           if (_data != null && _data!['enabled'] != true)
             const EntrenaCard(
               child: Text(
@@ -299,7 +305,7 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
                           onPressed: _busy ? null : () => _act('portal'),
                           child: const Text('Gestionar suscripción'),
                         ),
-                      if (state == 'active')
+                      if (state == 'active' && _data?['suspended'] != true)
                         FilledButton(
                           onPressed: () => context.go('/home'),
                           child: const Text('Entrar al panel'),
@@ -311,7 +317,8 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
             ),
             const SizedBox(height: 20),
           ],
-          if (pendingOffer == null &&
+          if (_data?['suspended'] != true &&
+              pendingOffer == null &&
               catalogue.isNotEmpty &&
               (sub == null ||
                   [

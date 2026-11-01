@@ -396,6 +396,7 @@ class _TrainerAppState extends State<TrainerApp> {
           final status = await _accounts.status();
           if (_identity != identity) return '/login';
           if (!status.professionalAccount) return '/account';
+          if (status.suspended) return '/subscription';
         } catch (_) {
           return '/account';
         }

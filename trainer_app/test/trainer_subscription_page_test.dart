@@ -9,12 +9,14 @@ class SubscriptionFixture implements TrainerSubscriptionRepository {
   bool confirmed = false;
   bool pending = false;
   bool mfa = true;
+  bool suspended = false;
   @override
   Future<bool> assured() async => mfa;
   @override
   Future<SubscriptionJson> status() async => {
     'sandbox': true,
     'enabled': enabled,
+    'suspended': suspended,
     'offers': [
       {
         'id': 'offer',
@@ -100,6 +102,27 @@ class ConcurrentPlanFixture extends PlanCatalogueFixture {
 }
 
 void main() {
+  testWidgets(
+    'la suspensión conserva gestión de cobros y oculta nuevas compras',
+    (tester) async {
+      final repo = SubscriptionFixture()
+        ..confirmed = true
+        ..suspended = true;
+      await tester.pumpWidget(
+        MaterialApp(home: TrainerSubscriptionPage(repository: repo)),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('Acceso profesional suspendido'),
+        findsOneWidget,
+      );
+      expect(find.text('Gestionar suscripción'), findsOneWidget);
+      expect(find.text('Entrar al panel'), findsNothing);
+      expect(find.byType(DropdownButtonFormField<int>), findsNothing);
+      expect(repo.actions, isEmpty);
+    },
+  );
+
   testWidgets(
     'conserva diez plazas y el complemento al volver del autenticador',
     (t) async {

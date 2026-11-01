@@ -13,6 +13,11 @@ class FakeTrainerRepository implements TrainerRepository {
   List<TrainerInvitation> invites = [];
   List<TrainerInvitationDraft> drafts = [];
   List<TrainerAccessChange> changes = [];
+  List<TrainerSuspensionChange> suspensionChanges = [];
+  bool manualEnabled = true;
+  int manualLimit = 3;
+  DateTime? manualValidUntil;
+  String? suspensionReason;
   bool managementEnabled = true;
   int accepts = 0, previews = 0, ends = 0;
   Object? createError, saveError, previewError;
@@ -126,9 +131,14 @@ class FakeTrainerRepository implements TrainerRepository {
   Future<TrainerManagement> management(String trainerId) async =>
       TrainerManagement.fromJson({
         'manual_access_enabled': managementEnabled,
+        'manual_enabled': manualEnabled,
+        'manual_client_limit': manualLimit,
+        'manual_valid_until': manualValidUntil?.toIso8601String(),
+        'suspension_reason': suspensionReason,
         'access': {
           'trainer_id': trainerId,
           'enabled': current.enabled,
+          'suspended': current.suspended,
           'effective': current.effective,
           'client_limit': current.limit,
           'active_clients': current.activeClients,
@@ -139,6 +149,23 @@ class FakeTrainerRepository implements TrainerRepository {
   Future<TrainerAccess> changeAccess(TrainerAccessChange change) async {
     changes.add(change);
     if (saveError != null) throw saveError!;
+    return current;
+  }
+
+  @override
+  Future<TrainerAccess> changeSuspension(TrainerSuspensionChange change) async {
+    suspensionChanges.add(change);
+    if (saveError != null) throw saveError!;
+    current = TrainerAccess.fromJson({
+      'trainer_id': change.trainerId,
+      'enabled': !change.suspended,
+      'effective': !change.suspended,
+      'suspended': change.suspended,
+      'client_limit': current.limit,
+      'active_clients': current.activeClients,
+      'revision': current.revision + 1,
+    });
+    suspensionReason = change.suspended ? change.reason : null;
     return current;
   }
 
