@@ -1,5 +1,17 @@
 # Arquitectura de EntrenaOP
 
+**Navegación personal · 01/11/2026:** se conserva `StatefulShellRoute` y sus
+índices históricos. Perfil y Evolución comparten la rama 3, con `/profile` como
+entrada; la barra presenta `[0, 1, 2, 4, 3]` y la rama profesional sigue en 5.
+Las tareas de edición conservan navegador raíz y `WorkflowDraftGuard`.
+`TrainingHubPage` compone tres caras con `TabController`, el resumen existente y
+el catálogo de programas seguidos mediante `GuidedCatalogCubit`; no añade capas
+de dominio ni consultas de datos desde widgets. El resumen de avisos personal
+existente alimenta Preparador y permanece separado del profesional. Perfil se
+identifica por cuenta para descartar consultas tardías de otra identidad. No
+cambian repositorios, migraciones, permisos ni dependencias.
+[Contrato de navegación](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#reorganización-aprobada--01112026).
+
 **Contacto desde el directorio · 31/10/2026:** `trainer_access/contact` separa
 dominio y puerto Dart puros, adaptador Supabase fijado a la cuenta y composición
 de `ConversationView`. La entidad `TrainerMessage` se extrae sin cambiar su

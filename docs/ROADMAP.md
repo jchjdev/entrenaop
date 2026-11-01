@@ -1,5 +1,19 @@
 # Roadmap de EntrenaOP
 
+**01/11/2026 · reparto del deportista implementado y comprobado:** Javier
+autoriza llevar la propuesta a Flutter. Inicio conserva cards y semana;
+Entrenar abre Planes y permite deslizar hacia Preparaciones y Disponibilidad,
+reutilizando el editor completo y el calendario. Preparador recibe el indicador
+de novedades; Perfil aloja Evolución. El selector profesional sigue visible y
+conserva contexto. Se preservan URLs, procesos, permisos y Biblioteca. Tocar una
+card pendiente no inicia la pauta; el botón explícito conserva su proceso.
+Análisis Flutter limpio. Batería completa de raíz: **1.577 correctas y una omisión previa**; 14 escenarios
+visuales generan 15 capturas reales, incluidos 320 px/texto 2×. La consulta de
+receta pautada completa por versión sigue fuera del alcance. No se acredita
+instalación en iPhone. **Único siguiente bloque recomendado:** recompilar en Mac
+y aceptar Inicio → Entrenar → Disponibilidad → semana → resultado y el cambio
+profesional con una pauta de Ervi. [Contratos y límites](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#reorganización-aprobada--01112026).
+
 **01/11/2026 · revisión visual antes de cambiar la app:** Javier pide conservar
 la identidad y las cards de Inicio y aporta una referencia de accesos horizontales
 dentro de una sección con barra inferior estable. La propuesta interactiva prueba

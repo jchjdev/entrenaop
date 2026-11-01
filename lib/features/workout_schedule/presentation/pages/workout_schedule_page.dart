@@ -508,7 +508,10 @@ class _ScheduledWorkoutCard extends StatelessWidget {
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: busy ? null : () => _open(context),
+        // Empezar una pauta pendiente requiere pulsar su acción explícita.
+        onTap: busy || item.status == ScheduledWorkoutStatus.planned
+            ? null
+            : () => _open(context),
         child: Padding(
           padding: const EdgeInsets.all(18),
           child: Column(
@@ -941,7 +944,7 @@ class _EmptyDay extends StatelessWidget {
             const SizedBox(height: 5),
             Text(
               hasSavedPreparations
-                  ? 'No tienes un programa en curso. Puedes activar o retomar una preparación desde Mi plan.'
+                  ? 'No tienes un programa en curso. Puedes activar o retomar una preparación desde Entrenar.'
                   : 'Empieza una preparación para recibir tus entrenamientos.',
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.white60),

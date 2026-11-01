@@ -1,8 +1,9 @@
 import '../widgets/training_equipment_labels.dart';
+import '../widgets/training_guided_programs.dart';
 
 import 'package:entrenaop/core/navigation/section_refresh_boundary.dart';
-import 'package:entrenaop/core/navigation/app_account_actions.dart';
 import 'package:entrenaop/core/presentation/widgets/entrena_card.dart';
+import 'package:entrenaop/core/presentation/images/editorial_cover_provider.dart';
 import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:entrenaop/features/dashboard/domain/entities/preparation_overview.dart';
 import 'package:entrenaop/features/dashboard/presentation/bloc/dashboard_cubit.dart';
@@ -10,13 +11,13 @@ import 'package:entrenaop/features/dashboard/presentation/bloc/dashboard_state.d
 import 'package:entrenaop/features/dashboard/presentation/home_day_selection.dart';
 import 'package:entrenaop/features/dashboard/presentation/widgets/home_section_heading.dart';
 import 'package:entrenaop/features/dashboard/presentation/widgets/preparation_status_label.dart';
+import 'package:entrenaop/features/guided_programs/domain/guided_program_repository.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/adaptive_program_progress.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
-import 'package:entrenaop/core/presentation/images/editorial_cover_provider.dart';
+import 'package:entrenaop/features/pro/presentation/widgets/pro_access_widgets.dart';
+import 'package:entrenaop/features/pro/presentation/widgets/pro_discovery_card.dart';
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
 import 'package:flutter/material.dart';
-import 'package:entrenaop/features/pro/presentation/widgets/pro_discovery_card.dart';
-import 'package:entrenaop/features/pro/presentation/widgets/pro_access_widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -27,10 +28,16 @@ class TrainingHubEntry extends StatefulWidget {
   const TrainingHubEntry({
     required this.createCubit,
     this.loadProAccess,
+    this.guidedPrograms,
+    this.initialSection,
+    this.selectedDate,
     super.key,
   });
   final DashboardCubit Function() createCubit;
   final LoadProAccess? loadProAccess;
+  final GuidedProgramRepository? guidedPrograms;
+  final String? initialSection;
+  final DateTime? selectedDate;
 
   @override
   State<TrainingHubEntry> createState() => _TrainingHubEntryState();
@@ -67,140 +74,313 @@ class _TrainingHubEntryState extends State<TrainingHubEntry> {
   Widget build(BuildContext context) => _visited
       ? BlocProvider(
           create: (_) => widget.createCubit(),
-          child: TrainingHubPage(loadProAccess: widget.loadProAccess),
+          child: TrainingHubPage(
+            loadProAccess: widget.loadProAccess,
+            guidedPrograms: widget.guidedPrograms,
+            initialSection: widget.initialSection,
+            selectedDate: widget.selectedDate,
+          ),
         )
       : const SizedBox.shrink();
 }
 
-/// Resumen del programa y de sesiones ya asignadas; no prescribe entrenamiento.
-class TrainingHubPage extends StatelessWidget {
-  const TrainingHubPage({this.loadProAccess, super.key});
+/// Organiza consultas existentes sin prescribir ni iniciar entrenamientos.
+class TrainingHubPage extends StatefulWidget {
+  const TrainingHubPage({
+    this.loadProAccess,
+    this.guidedPrograms,
+    this.initialSection,
+    this.selectedDate,
+    super.key,
+  });
   final LoadProAccess? loadProAccess;
+  final GuidedProgramRepository? guidedPrograms;
+  final String? initialSection;
+  final DateTime? selectedDate;
+
+  @override
+  State<TrainingHubPage> createState() => _TrainingHubPageState();
+}
+
+class _TrainingHubPageState extends State<TrainingHubPage>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabs;
+  int _guidedRefreshVersion = 0;
+
+  int _sectionIndex(String? section) => switch (section) {
+    'preparations' => 1,
+    'availability' => 2,
+    _ => 0,
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _tabs = TabController(
+      length: 3,
+      vsync: this,
+      initialIndex: _sectionIndex(widget.initialSection),
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant TrainingHubPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialSection != oldWidget.initialSection &&
+        widget.initialSection != null) {
+      _tabs.animateTo(_sectionIndex(widget.initialSection));
+    }
+  }
+
+  @override
+  void dispose() {
+    _tabs.dispose();
+    super.dispose();
+  }
+
+  Future<void> _refresh() async {
+    await context.read<DashboardCubit>().load();
+    if (mounted) setState(() => _guidedRefreshVersion++);
+  }
+
+  void _openWeek() {
+    final overview = context.read<DashboardCubit>().state.overview;
+    final now = DateTime.now();
+    final start = overview?.weekStart;
+    final day =
+        widget.selectedDate ??
+        (start == null ||
+                (!now.isBefore(start) &&
+                    now.isBefore(start.add(const Duration(days: 7))))
+            ? now
+            : start);
+    context.push('/plan/week?date=${homeDateParam(day)}');
+  }
 
   @override
   Widget build(BuildContext context) => SectionRefreshBoundary(
     location: '/plan',
-    onVisible: context.read<DashboardCubit>().load,
+    onVisible: _refresh,
     child: Scaffold(
       appBar: AppBar(
-        title: const Text('Mi plan'),
+        title: const Text('Entrenar'),
         actions: [
           if (MediaQuery.sizeOf(context).width >= 840)
             IconButton(
-              tooltip: 'Actualizar mi plan',
-              onPressed: context.read<DashboardCubit>().load,
+              tooltip: 'Actualizar Entrenar',
+              onPressed: _refresh,
               icon: const Icon(Icons.refresh_rounded),
             ),
-          const AppAccountActions(),
         ],
       ),
       body: SafeArea(
-        child: BlocBuilder<DashboardCubit, DashboardState>(
-          builder: (context, state) {
-            final overview = state.overview;
-            if (overview == null && state.status != DashboardStatus.failure) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (overview == null) {
-              return Center(
-                child: _LoadFailure(
-                  onRetry: context.read<DashboardCubit>().load,
+        top: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: _openWeek,
+                  icon: const Icon(Icons.calendar_view_week_rounded),
+                  label: const Text('Ver semana'),
                 ),
-              );
-            }
-            return _PlanContent(
-              overview: overview,
-              state: state,
-              loadProAccess: loadProAccess,
-            );
-          },
+              ),
+            ),
+            TabBar(
+              controller: _tabs,
+              isScrollable: true,
+              tabAlignment: TabAlignment.start,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              dividerHeight: 0,
+              indicatorSize: TabBarIndicatorSize.tab,
+              indicatorPadding: const EdgeInsets.symmetric(
+                horizontal: 4,
+                vertical: 6,
+              ),
+              indicator: BoxDecoration(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(24),
+              ),
+              tabs: const [
+                Tab(text: 'Planes'),
+                Tab(text: 'Preparaciones'),
+                Tab(text: 'Disponibilidad'),
+              ],
+            ),
+            Expanded(
+              child: BlocBuilder<DashboardCubit, DashboardState>(
+                builder: (context, state) {
+                  final overview = state.overview;
+                  if (overview == null &&
+                      state.status != DashboardStatus.failure) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (overview == null) {
+                    return SingleChildScrollView(
+                      child: _LoadFailure(onRetry: _refresh),
+                    );
+                  }
+                  return TabBarView(
+                    controller: _tabs,
+                    children: [
+                      _TrainingPane(
+                        storageKey: 'training-plans-scroll',
+                        state: state,
+                        onRefresh: _refresh,
+                        children: [
+                          if (overview.weeklyWorkouts.any(
+                            (workout) =>
+                                workout.source == ScheduledWorkoutSource.coach,
+                          )) ...[
+                            Text(
+                              'Las sesiones de tu preparador están disponibles en tu semana.',
+                              style: TextStyle(
+                                color: context.visuals.textMuted,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                          if (overview.programs.any((p) => p.isStarted))
+                            for (final current in overview.programs.where(
+                              (p) => p.isStarted,
+                            )) ...[
+                              _CurrentProgramCard(
+                                program: current,
+                                goal: overview.goals
+                                    .where((g) => g.id == current.goalId)
+                                    .firstOrNull,
+                              ),
+                              const SizedBox(height: 24),
+                            ],
+                          if (widget.guidedPrograms case final repository?)
+                            TrainingGuidedPrograms(
+                              repository: repository,
+                              refreshVersion: _guidedRefreshVersion,
+                            ),
+                          if (!overview.programs.any((p) => p.isStarted)) ...[
+                            if (widget.guidedPrograms != null)
+                              const SizedBox(height: 24),
+                            EntrenaCard(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  const Text(
+                                    'Plan automático',
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'No hay plan automático en curso. Puedes seguir entrenando las sesiones de tu semana y los programas guiados.',
+                                    style: TextStyle(
+                                      color: context.visuals.textMuted,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  OutlinedButton(
+                                    onPressed: () => _tabs.animateTo(1),
+                                    child: const Text('Ver preparaciones'),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                          ],
+                        ],
+                      ),
+                      _TrainingPane(
+                        storageKey: 'training-preparations-scroll',
+                        state: state,
+                        onRefresh: _refresh,
+                        children: [
+                          HomeSectionHeading(
+                            title: 'Tus preparaciones',
+                            action: TextButton.icon(
+                              onPressed: () => context.push('/plan/goal'),
+                              icon: const Icon(Icons.add_rounded, size: 18),
+                              label: const Text('Añadir'),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Cada preparación conserva su objetivo y sus marcas. Guardarla no inicia automáticamente un programa.',
+                            style: TextStyle(color: context.visuals.textMuted),
+                          ),
+                          const SizedBox(height: 16),
+                          if (overview.goals.isEmpty)
+                            const EntrenaCard(
+                              child: Text(
+                                'Todavía no has añadido ninguna preparación.',
+                              ),
+                            ),
+                          for (final goal in overview.goals) ...[
+                            _SavedPreparationCard(
+                              goal: goal,
+                              progress: overview.programs
+                                  .where((p) => p.goalId == goal.id)
+                                  .firstOrNull,
+                            ),
+                            const SizedBox(height: 12),
+                          ],
+                          if (!overview.programs.any((p) => p.isCurrent)) ...[
+                            const SizedBox(height: 12),
+                            ProDiscoveryCard(loadAccess: widget.loadProAccess),
+                          ],
+                        ],
+                      ),
+                      _TrainingPane(
+                        storageKey: 'training-availability-scroll',
+                        state: state,
+                        onRefresh: _refresh,
+                        children: [_AvailabilityCard(overview: overview)],
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     ),
   );
 }
 
-class _PlanContent extends StatelessWidget {
-  const _PlanContent({
-    required this.overview,
+class _TrainingPane extends StatefulWidget {
+  const _TrainingPane({
+    required this.storageKey,
     required this.state,
-    this.loadProAccess,
+    required this.onRefresh,
+    required this.children,
   });
-  final LoadProAccess? loadProAccess;
-  final PreparationOverview overview;
+  final String storageKey;
   final DashboardState state;
+  final Future<void> Function() onRefresh;
+  final List<Widget> children;
+
+  @override
+  State<_TrainingPane> createState() => _TrainingPaneState();
+}
+
+class _TrainingPaneState extends State<_TrainingPane>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   Widget build(BuildContext context) {
-    final current = overview.programs.where((p) => p.isCurrent).firstOrNull;
-    final otherGoals = overview.goals
-        .where((g) => g.id != current?.goalId)
-        .toList();
-    final pending =
-        overview.weeklyWorkouts
-            .where(
-              (w) =>
-                  w.status == ScheduledWorkoutStatus.planned ||
-                  w.status == ScheduledWorkoutStatus.inProgress,
-            )
-            .toList()
-          ..sort((a, b) {
-            // Retomar una ejecución tiene prioridad visual, sin cambiar su pauta.
-            if (a.status != b.status) {
-              return a.status == ScheduledWorkoutStatus.inProgress ? -1 : 1;
-            }
-            final date = a.scheduledDate.compareTo(b.scheduledDate);
-            if (date != 0) return date;
-            final time = (a.scheduledTime ?? '99:99').compareTo(
-              b.scheduledTime ?? '99:99',
-            );
-            return time != 0 ? time : a.id.compareTo(b.id);
-          });
-    final completed = overview.weeklyWorkouts
-        .where((w) => w.status == ScheduledWorkoutStatus.completed)
-        .length;
-    final dateFormat = DateFormat('dd/MM');
-
-    final preparations = <Widget>[
-      HomeSectionHeading(
-        title: current == null ? 'Elige una preparación' : 'Preparaciones',
-        action: TextButton.icon(
-          onPressed: () => context.push('/plan/goal'),
-          icon: const Icon(Icons.add_rounded, size: 18),
-          label: const Text('Añadir'),
-        ),
-      ),
-      const SizedBox(height: 8),
-      if (otherGoals.isNotEmpty) ...[
-        Text(
-          'Guardar una preparación conserva su objetivo y sus marcas. Su programa empieza al configurar y aceptar una propuesta.',
-          style: TextStyle(color: context.visuals.textMuted),
-        ),
-        const SizedBox(height: 12),
-      ],
-      if (otherGoals.isEmpty)
-        Text(
-          current == null ? 'Todavía no has añadido ninguna preparación.' : 'Puedes conservar otras preparaciones y sus historiales sin iniciar otro programa.',
-          style: TextStyle(color: context.visuals.textMuted),
-        )
-      else
-        for (final goal in otherGoals) ...[
-          _SavedPreparationCard(
-            goal: goal,
-            progress: overview.programs
-                .where((p) => p.goalId == goal.id)
-                .firstOrNull,
-          ),
-          const SizedBox(height: 10),
-        ],
-    ];
-
+    super.build(context);
     return RefreshIndicator(
-      onRefresh: context.read<DashboardCubit>().load,
+      onRefresh: widget.onRefresh,
       child: ListView(
-        key: const PageStorageKey('training-hub-scroll'),
+        key: PageStorageKey(widget.storageKey),
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
         children: [
           Center(
             child: ConstrainedBox(
@@ -208,153 +388,13 @@ class _PlanContent extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  if (state.status == DashboardStatus.loading)
+                  if (widget.state.status == DashboardStatus.loading)
                     const LinearProgressIndicator(minHeight: 2),
-                  if (state.status == DashboardStatus.failure) ...[
-                    _LoadFailure(onRetry: context.read<DashboardCubit>().load),
+                  if (widget.state.status == DashboardStatus.failure) ...[
+                    _LoadFailure(onRetry: widget.onRefresh),
                     const SizedBox(height: 16),
                   ],
-                  if (current != null)
-                    _CurrentProgramCard(
-                      program: current,
-                      goal: overview.goals
-                          .where((g) => g.id == current.goalId)
-                          .firstOrNull,
-                    )
-                  else ...[
-                    const Text(
-                      'No hay programa en curso',
-                      style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      overview.goals.isEmpty
-                          ? 'Añade la preparación que quieres entrenar. Podrás revisar el programa antes de iniciarlo.'
-                          : 'Elige abajo qué preparación quieres configurar o retomar. Ninguna está entrenando automáticamente ahora.',
-                      style: TextStyle(color: context.visuals.textMuted),
-                    ),
-                    const SizedBox(height: 16),
-                    ...preparations,
-                    const SizedBox(height: 16),
-                    ProDiscoveryCard(loadAccess: loadProAccess),
-                  ],
-                  const SizedBox(height: 24),
-                  const HomeSectionHeading(title: 'Esta semana'),
-                  const SizedBox(height: 10),
-                  EntrenaCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          '${dateFormat.format(overview.weekStart)} – ${dateFormat.format(overview.weekStart.add(const Duration(days: 6)))}',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '$completed completadas · ${pending.length} pendientes',
-                          style: TextStyle(color: context.visuals.textMuted),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          overview.weeklyWorkouts.isEmpty
-                              ? 'No hay sesiones programadas esta semana. Puedes consultar la agenda y añadir entrenamientos a los días que elijas.'
-                              : 'Incluye las sesiones programadas y los entrenamientos que has añadido a la agenda.',
-                          style: TextStyle(color: context.visuals.textMuted),
-                        ),
-                        const SizedBox(height: 14),
-                        FilledButton.icon(
-                          onPressed: () => context.push('/plan/week'),
-                          icon: const Icon(Icons.calendar_view_week_rounded),
-                          label: const Text('Abrir mi semana'),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (pending.isNotEmpty) ...[
-                    const SizedBox(height: 24),
-                    const HomeSectionHeading(
-                      title: 'Pendientes de esta semana',
-                    ),
-                    const SizedBox(height: 10),
-                    for (final item in pending.take(3)) ...[
-                      _PendingSessionCard(item: item),
-                      const SizedBox(height: 10),
-                    ],
-                    if (pending.length > 3)
-                      TextButton(
-                        onPressed: () => context.push('/plan/week'),
-                        child: Text(
-                          'Ver las ${pending.length} sesiones pendientes en Mi semana',
-                        ),
-                      ),
-                  ],
-                  if (current != null) ...[
-                    const SizedBox(height: 24),
-                    ...preparations,
-                  ],
-                  const SizedBox(height: 24),
-                  EntrenaCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        const Text(
-                          'Disponibilidad y material',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          current == null
-                              ? 'Datos compartidos de tu cuenta. Se usarán al configurar tu próximo programa; guardarlos no inicia ningún entrenamiento.'
-                              : 'Son los mismos datos que revisas en Mi programa. Se usan para repartir el tiempo y elegir ejercicios compatibles. Los cambios se aplican en la siguiente adaptación; no sustituyen las sesiones ya iniciadas.',
-                          style: TextStyle(color: context.visuals.textMuted),
-                        ),
-                        const SizedBox(height: 12),
-                        if (overview.trainingContext case final settings?) ...[
-                          Text(
-                            settings.availability.values.any((m) => m > 0)
-                                ? [
-                                    for (var day = 1; day <= 7; day++)
-                                      if ((settings.availability['$day'] ?? 0) >
-                                          0)
-                                        '${const ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'][day - 1]} ${settings.availability['$day']} min',
-                                  ].join(' · ')
-                                : 'Días y minutos pendientes de indicar.',
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            settings.equipment.isEmpty
-                                ? 'Sin material adicional indicado.'
-                                : 'Material: ${(settings.equipment.toList()..sort()).map(performanceEquipmentLabel).join(', ')}.',
-                          ),
-                          if (!settings.capacityConfirmed ||
-                              settings.reportsPain) ...[
-                            const SizedBox(height: 6),
-                            const Text(
-                              'Revisa también la confirmación de capacidad y molestias antes de pautar entrenamientos.',
-                            ),
-                          ],
-                        ] else
-                          const Text(
-                            'Aún no has guardado días, minutos y material para el programa.',
-                          ),
-                        const SizedBox(height: 12),
-                        OutlinedButton.icon(
-                          onPressed: () => context.push('/profile/preferences'),
-                          icon: const Icon(Icons.tune_rounded),
-                          label: const Text('Editar disponibilidad y material'),
-                        ),
-                      ],
-                    ),
-                  ),
+                  ...widget.children,
                 ],
               ),
             ),
@@ -363,6 +403,64 @@ class _PlanContent extends StatelessWidget {
       ),
     );
   }
+}
+
+class _AvailabilityCard extends StatelessWidget {
+  const _AvailabilityCard({required this.overview});
+  final PreparationOverview overview;
+
+  @override
+  Widget build(BuildContext context) => EntrenaCard(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Text(
+          'Disponibilidad y material',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          overview.programs.any((p) => p.isCurrent)
+              ? 'Son los mismos datos que revisas en Mi programa. Se usan para repartir el tiempo y elegir ejercicios compatibles. Los cambios se aplican en la siguiente adaptación; no sustituyen las sesiones ya iniciadas.'
+              : 'Datos compartidos de tu cuenta. Se usarán al configurar tu próximo programa; guardarlos no inicia ningún entrenamiento.',
+          style: TextStyle(color: context.visuals.textMuted),
+        ),
+        const SizedBox(height: 12),
+        if (overview.trainingContext case final settings?) ...[
+          Text(
+            settings.availability.values.any((m) => m > 0)
+                ? [
+                    for (var day = 1; day <= 7; day++)
+                      if ((settings.availability['$day'] ?? 0) > 0)
+                        '${const ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'][day - 1]} ${settings.availability['$day']} min',
+                  ].join(' · ')
+                : 'Días y minutos pendientes de indicar.',
+          ),
+          const SizedBox(height: 6),
+          Text(
+            settings.equipment.isEmpty
+                ? 'Sin material adicional indicado.'
+                : 'Material: ${(settings.equipment.toList()..sort()).map(performanceEquipmentLabel).join(', ')}.',
+          ),
+          if (!settings.capacityConfirmed || settings.reportsPain) ...[
+            const SizedBox(height: 6),
+            const Text(
+              'Revisa también la confirmación de capacidad y molestias antes de pautar entrenamientos.',
+            ),
+          ],
+        ] else
+          const Text(
+            'Aún no has guardado días, minutos y material para el programa.',
+          ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          onPressed: () => context.push('/profile/preferences'),
+          icon: const Icon(Icons.tune_rounded),
+          label: const Text('Editar disponibilidad y material'),
+        ),
+      ],
+    ),
+  );
 }
 
 class _CurrentProgramCard extends StatelessWidget {
@@ -380,7 +478,7 @@ class _CurrentProgramCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'PROGRAMA EN CURSO · ${preparationStatusLabel(program)}',
+          'PLAN AUTOMÁTICO · ${preparationStatusLabel(program)}',
           style: TextStyle(
             color: Theme.of(context).colorScheme.secondary,
             fontWeight: FontWeight.w800,
@@ -402,62 +500,25 @@ class _CurrentProgramCard extends StatelessWidget {
         ],
         const SizedBox(height: 16),
         FilledButton.icon(
-          onPressed: () =>
-              context.push('/plan/goal/${program.goalId}/training'),
+          onPressed: () => context.push(
+            program.isCurrent
+                ? '/plan/goal/${program.goalId}/training'
+                : '/plan/goal/${program.goalId}',
+          ),
           icon: Icon(
             program.needsReview ? Icons.info_outline : Icons.tune_rounded,
           ),
           label: Text(
-            program.needsReview ? 'Revisar lo pendiente' : 'Ver mi programa',
+            program.needsReview
+                ? 'Revisar lo pendiente'
+                : program.isCurrent
+                ? 'Ver mi programa'
+                : 'Consultar programa',
           ),
         ),
         TextButton(
           onPressed: () => context.push('/plan/goal/${program.goalId}'),
           child: const Text('Ver preparación'),
-        ),
-      ],
-    ),
-  );
-}
-
-class _PendingSessionCard extends StatelessWidget {
-  const _PendingSessionCard({required this.item});
-  final ScheduledWorkout item;
-
-  @override
-  Widget build(BuildContext context) => EntrenaCard(
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          '${DateFormat('dd/MM').format(item.scheduledDate)}${item.scheduledTime == null ? '' : ' · ${item.scheduledTime}'} · ${item.status == ScheduledWorkoutStatus.inProgress ? 'En curso' : 'Pendiente'}',
-          style: TextStyle(color: context.visuals.textMuted),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          item.templateName,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-        ),
-        if (item.estimatedDurationMinutes case final minutes?) ...[
-          const SizedBox(height: 6),
-          Text(
-            '$minutes min previstos',
-            style: TextStyle(color: context.visuals.textMuted),
-          ),
-        ],
-        const SizedBox(height: 12),
-        OutlinedButton.icon(
-          onPressed: () => context.push(homeWorkoutRoute(item)),
-          icon: Icon(
-            item.status == ScheduledWorkoutStatus.inProgress
-                ? Icons.play_arrow_rounded
-                : Icons.arrow_forward_rounded,
-          ),
-          label: Text(
-            item.status == ScheduledWorkoutStatus.inProgress
-                ? 'Retomar sesión'
-                : 'Ver sesión',
-          ),
         ),
       ],
     ),
@@ -492,7 +553,9 @@ class _SavedPreparationCard extends StatelessWidget {
           Text('Pruebas: ${DateFormat('dd/MM/yyyy').format(date)}'),
         const SizedBox(height: 8),
         Text(
-          progress?.isPaused == true
+          progress?.isCurrent == true
+              ? 'Tu programa está en curso. Consulta el objetivo y las marcas de esta preparación.'
+              : progress?.isPaused == true
               ? 'Tu progreso se conserva. Revisa la propuesta antes de retomarlo.'
               : progress?.status == 'complete'
               ? 'Programa finalizado. Puedes consultar tu preparación y sus resultados.'
@@ -522,13 +585,13 @@ class _LoadFailure extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const Text(
-          'No hemos podido actualizar Mi plan. Puede que los datos mostrados hayan cambiado.',
+          'No hemos podido actualizar Entrenar. Puede que los datos mostrados hayan cambiado.',
         ),
         const SizedBox(height: 12),
         OutlinedButton.icon(
           onPressed: onRetry,
           icon: const Icon(Icons.refresh_rounded),
-          label: const Text('Reintentar cargar Mi plan'),
+          label: const Text('Reintentar cargar Entrenar'),
         ),
       ],
     ),

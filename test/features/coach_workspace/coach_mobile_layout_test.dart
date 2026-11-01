@@ -160,7 +160,7 @@ void main() {
             await tester.tap(item);
           } else {
             await tester.tap(
-              find.text(professional ? 'Entrenador' : 'Mi entrenamiento'),
+              find.text(professional ? 'Entrenador' : 'Personal'),
             );
           }
           await tester.pumpAndSettle();

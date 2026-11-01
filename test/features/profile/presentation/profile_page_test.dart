@@ -8,14 +8,15 @@ import 'package:entrenaop/features/auth/domain/usecases/sign_out_usecase.dart';
 import 'package:entrenaop/features/auth/domain/usecases/sign_up_usecase.dart';
 import 'package:entrenaop/features/auth/domain/usecases/watch_current_user_usecase.dart';
 import 'package:entrenaop/features/auth/presentation/bloc/auth_cubit.dart';
-import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
-import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_program.dart';
-import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_goal_repository.dart';
 import 'package:entrenaop/features/profile/presentation/pages/profile_page.dart';
 import 'package:entrenaop/features/profile/data/profile_birth_date_repository.dart';
+import 'package:entrenaop/features/profile/data/profile_name_repository.dart';
+import 'package:entrenaop/features/profile/presentation/profile_photo_control.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:trainer_access/profile_photo/domain.dart';
 
 void main() {
   testWidgets(
@@ -40,10 +41,7 @@ void main() {
           theme: ThemeData.dark(useMaterial3: true),
           home: BlocProvider.value(
             value: authCubit,
-            child: ProfilePage(
-              preparations: _PreparationRepository(),
-              birthDateRepository: birthDateRepository,
-            ),
+            child: ProfilePage(birthDateRepository: birthDateRepository),
           ),
         ),
       );
@@ -63,7 +61,7 @@ void main() {
   );
 
   testWidgets(
-    'muestra identidad y preparaciones reales sin plan comercial ficticio',
+    'Perfil conserva identidad y cuenta y aloja Evolución sin duplicar Entrenar',
     (tester) async {
       await tester.binding.setSurfaceSize(const Size(390, 844));
       addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -83,10 +81,7 @@ void main() {
           theme: ThemeData.dark(useMaterial3: true),
           home: BlocProvider.value(
             value: authCubit,
-            child: ProfilePage(
-              preparations: _PreparationRepository(),
-              birthDateRepository: _BirthDateRepository(),
-            ),
+            child: ProfilePage(birthDateRepository: _BirthDateRepository()),
           ),
         ),
       );
@@ -94,11 +89,122 @@ void main() {
 
       expect(find.text('Javier'), findsOneWidget);
       expect(find.text('javier@example.com'), findsOneWidget);
-      expect(find.text('Ingreso · Tropa y marinería'), findsOneWidget);
+      expect(find.text('Mi evolución'), findsOneWidget);
+      expect(find.text('Mis preparaciones'), findsNothing);
+      expect(find.text('Disponibilidad y material'), findsNothing);
+      expect(find.text('Mi preparador'), findsNothing);
+      expect(find.text('Herramientas para tus pruebas'), findsNothing);
+      expect(find.byType(BackButton), findsNothing);
       expect(find.text('Free'), findsNothing);
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('Evolución abre su destino y volver recupera Perfil', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(320, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final repository = _AuthRepository();
+    final auth = AuthCubit(
+      signInUseCase: SignInUseCase(repository),
+      signUpUseCase: SignUpUseCase(repository),
+      signOutUseCase: SignOutUseCase(repository),
+      getCurrentUserUseCase: GetCurrentUserUseCase(repository),
+      watchCurrentUserUseCase: WatchCurrentUserUseCase(repository),
+    );
+    await auth.checkCurrentUser();
+    addTearDown(auth.close);
+    final router = GoRouter(
+      initialLocation: '/profile',
+      routes: [
+        GoRoute(
+          path: '/profile',
+          builder: (_, _) => ProfilePage(
+            birthDateRepository: _BirthDateRepository(DateTime(2000, 9, 11)),
+            nameRepository: _Names(),
+            photoRepository: _Photos(),
+          ),
+        ),
+        GoRoute(
+          path: '/assessment/history',
+          builder: (_, _) => Scaffold(
+            appBar: AppBar(title: const Text('Tu evolución')),
+            body: const Text('Resultados y marcas'),
+          ),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(
+      BlocProvider.value(
+        value: auth,
+        child: MaterialApp.router(
+          routerConfig: router,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: TextScaler.linear(2)),
+            child: child!,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester.getRect(find.text('Javier')).top,
+      greaterThan(tester.getRect(find.byType(ProfilePhotoControl)).bottom),
+    );
+    expect(tester.takeException(), isNull, reason: 'Perfil con texto ampliado');
+    await tester.tap(find.text('Cambiar nombre'));
+    await tester.pumpAndSettle();
+    expect(
+      tester.takeException(),
+      isNull,
+      reason: 'Editor del nombre ampliado',
+    );
+    expect(find.text('Guardar nombre'), findsOneWidget);
+    await tester.tap(find.text('Cancelar'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Cambiar foto de perfil'));
+    await tester.pumpAndSettle();
+    expect(
+      tester.takeException(),
+      isNull,
+      reason: 'Opciones de foto ampliadas',
+    );
+    expect(find.text('Elegir foto'), findsOneWidget);
+    Navigator.of(tester.element(find.text('Elegir foto'))).pop();
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Mi evolución'));
+    expect(
+      tester.getRect(find.text('Historial, resultados y marcas')).width,
+      greaterThan(200),
+    );
+    await tester.tap(find.text('Mi evolución'));
+    await tester.pumpAndSettle();
+    expect(router.state.uri.path, '/assessment/history');
+    expect(find.text('Resultados y marcas'), findsOneWidget);
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    expect(router.state.uri.path, '/profile');
+    expect(find.text('Javier'), findsOneWidget);
+    expect(find.byType(BackButton), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+}
+
+class _Names extends Fake implements ProfileNameRepository {
+  @override
+  Future<String> save(String ownerId, String name) async => name.trim();
+}
+
+class _Photos extends Fake implements ProfilePhotoRepository {
+  @override
+  String get ownerId => 'user-1';
+
+  @override
+  Future<ProfilePhotoState> own() async =>
+      const ProfilePhotoState(path: null, revision: 0);
 }
 
 class _BirthDateRepository implements ProfileBirthDateRepository {
@@ -153,29 +259,4 @@ class _AuthRepository implements AuthRepository {
   Future<void> updateRecoveredPassword(String password) async {}
   @override
   Future<void> finishPasswordRecovery() async {}
-}
-
-class _PreparationRepository implements PreparationGoalRepository {
-  @override
-  Future<List<PreparationGoal>> getActiveGoals() async => [
-    const PreparationGoal(
-      id: 'goal-1',
-      program: PreparationProgram(
-        id: PreparationProgramIds.armedForcesTroopEntry,
-        name: 'Ingreso · Tropa y marinería',
-        kind: PreparationProgramKind.access,
-      ),
-    ),
-  ];
-
-  @override
-  Future<List<PreparationProgram>> getAvailablePrograms() =>
-      throw UnimplementedError();
-
-  @override
-  Future<PreparationGoal> save(PreparationGoal goal) =>
-      throw UnimplementedError();
-
-  @override
-  Future<void> archive(String goalId) => throw UnimplementedError();
 }

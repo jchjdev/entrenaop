@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:entrenaop/core/navigation/app_account_actions.dart';
 import 'package:entrenaop/features/trainers/domain/student_notice_repository.dart';
 import 'package:entrenaop/features/trainers/presentation/student_navigation.dart';
 import 'package:flutter/material.dart';
@@ -129,30 +128,44 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('campana solo con avisos sin leer y Perfil siempre arriba', (
-    tester,
-  ) async {
+  test('el contador conserva el total del servidor al paginar o filtrar', () async {
+    final message = StudentNotice(
+      id: 'message',
+      kind: StudentNoticeKind.message,
+      title: 'Mensaje de tu preparador',
+      createdAt: DateTime(2026, 11, 1),
+    );
     final controller = StudentNavigationController(
-      loadSnapshot: () async => data(0),
-      loadHasRelationship: () async => true,
+      loadSnapshot: () async => StudentNoticeSnapshot(
+        items: [message],
+        hasMore: true,
+        unreadCount: 18,
+        resources: const StudentNoticeResources(),
+      ),
+      loadHasRelationship: () async => false,
     );
     addTearDown(controller.dispose);
-    await tester.pumpWidget(
-      MaterialApp(
-        home: StudentNavigationScope(
-          controller: controller,
-          child: Scaffold(appBar: AppBar(actions: const [AppAccountActions()])),
-        ),
+    await controller.refresh();
+    expect(controller.unreadCount, 18);
+    expect(controller.hasTrainer, isTrue);
+
+    // Un filtro puede devolver cero filas aunque queden mensajes sin leer.
+    controller.acceptSnapshot(
+      const StudentNoticeSnapshot(
+        items: [],
+        hasMore: false,
+        unreadCount: 18,
+        resources: StudentNoticeResources(),
       ),
     );
-    expect(find.byTooltip('Mi perfil'), findsOneWidget);
-    expect(find.byIcon(Icons.notifications_outlined), findsNothing);
-    controller.acceptSnapshot(data(2));
-    await tester.pumpAndSettle();
-    expect(find.byTooltip('2 avisos sin leer'), findsOneWidget);
+    expect(controller.unreadCount, 18);
+    expect(controller.hasTrainer, isTrue);
+
+    // Solo una nueva instantánea autoritativa cambia el total de la navegación.
+    controller.acceptSnapshot(data(17));
+    expect(controller.unreadCount, 17);
     controller.acceptSnapshot(data(0));
-    await tester.pumpAndSettle();
-    expect(find.byIcon(Icons.notifications_outlined), findsNothing);
-    expect(find.byTooltip('Mi perfil'), findsOneWidget);
+    expect(controller.unreadCount, 0);
+    expect(controller.hasTrainer, isFalse);
   });
 }

@@ -1,5 +1,16 @@
 # Registro de decisiones vigentes
 
+**Reparto del deportista aprobado · 01/11/2026:** Javier autoriza llevar a la
+app la propuesta conservando su estética, procesos y arquitectura. Inicio
+mantiene semana y cards; Entrenar abre en Planes y permite deslizar entre Planes,
+Preparaciones y Disponibilidad, con acceso al calendario común y el editor real.
+Biblioteca conserva sus funciones. Preparador aloja búsqueda, seguimiento y el
+indicador de novedades; Perfil reúne cuenta y acceso a Evolución. El cambio
+Personal/Entrenador sigue visible y conserva el contexto. Se mantienen URLs,
+datos, permisos y procesos deportivos; comenzar una pauta requiere su botón
+explícito. Esta decisión sustituye el carácter pendiente de las propuestas
+visuales siguientes. [Implementación y límites](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#reorganización-aprobada--01112026).
+
 **Criterios tras probar la propuesta visual · 01/11/2026:** Javier mantiene la
 semana de Inicio y pide resolver su repetición al entrar en Entrenar, conservando
 acceso al calendario. Valora Planes, Preparaciones y Disponibilidad con

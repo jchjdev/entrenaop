@@ -1,5 +1,4 @@
 import 'package:entrenaop/core/navigation/app_shell.dart';
-import 'package:entrenaop/core/navigation/app_account_actions.dart';
 import 'package:entrenaop/features/trainers/presentation/student_navigation.dart';
 import 'package:entrenaop/features/trainers/domain/student_notice_repository.dart';
 import 'package:entrenaop/core/theme/entrena_theme.dart';
@@ -9,20 +8,43 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 void main() {
-  testWidgets('campana abre Avisos y selecciona Preparador', (tester) async {
-    final router = _createRouter(unread: 2);
-    addTearDown(router.dispose);
-    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('2 avisos sin leer'));
-    await tester.pumpAndSettle();
-    expect(router.state.uri.path, '/my-trainer');
-    expect(router.state.uri.queryParameters['view'], 'notices');
-    expect(
-      tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
-      4,
-    );
-  });
+  testWidgets(
+    'avisos en Preparador y cuenta en Perfil, sin acciones superiores',
+    (tester) async {
+      final router = _createRouter(unread: 2);
+      addTearDown(router.dispose);
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+      expect(find.text('2'), findsWidgets);
+      expect(find.byIcon(Icons.notifications_outlined), findsNothing);
+      expect(find.byTooltip('Mi perfil'), findsNothing);
+      await tester.tap(find.byTooltip('Preparador · 2 novedades sin leer'));
+      await tester.pumpAndSettle();
+      expect(router.state.uri.path, '/my-trainer');
+      expect(
+        tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+        3,
+      );
+      // Entrar en la sección no confirma lecturas. El indicador sigue el total
+      // autoritativo cuando el servidor informa después de la lectura real.
+      expect(find.text('2'), findsWidgets);
+      final controller = tester
+          .widget<StudentNavigationScope>(find.byType(StudentNavigationScope))
+          .notifier!;
+      controller.acceptSnapshot(
+        const StudentNoticeSnapshot(
+          items: [],
+          hasMore: false,
+          unreadCount: 0,
+          resources: StudentNoticeResources(),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('2'), findsNothing);
+      expect(find.byTooltip('Preparador · 2 novedades sin leer'), findsNothing);
+      expect(router.state.uri.path, '/my-trainer');
+    },
+  );
   testWidgets(
     'sin vínculo Preparador permite descubrir profesionales y Perfil sigue accesible',
     (tester) async {
@@ -40,12 +62,13 @@ void main() {
       expect(router.state.uri.path, '/my-trainer');
       await tester.tap(find.text('Inicio'));
       await tester.pumpAndSettle();
-      expect(find.text('Perfil'), findsNothing);
-      await tester.tap(find.byTooltip('Mi perfil'));
+      expect(find.text('Perfil'), findsOneWidget);
+      await tester.tap(find.text('Perfil'));
       await tester.pumpAndSettle();
       expect(router.state.uri.path, '/profile');
-      expect(find.byType(NavigationBar), findsNothing);
-      await tester.tap(find.byType(BackButton));
+      expect(find.byType(NavigationBar), findsOneWidget);
+      expect(find.byType(BackButton), findsNothing);
+      await tester.tap(find.text('Inicio'));
       await tester.pumpAndSettle();
       expect(router.state.uri.path, '/home');
     },
@@ -74,16 +97,16 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        for (final selected in ['Biblioteca', 'Evolución']) {
+        for (final selected in ['Biblioteca', 'Perfil']) {
           await tester.tap(find.text(selected));
           await tester.pumpAndSettle();
           Rect? previous;
           for (final label in [
             'Inicio',
-            'Mi plan',
+            'Entrenar',
             'Biblioteca',
-            'Evolución',
             'Preparador',
+            'Perfil',
           ]) {
             final finder = find.text(label);
             final paragraph = tester.renderObject<RenderParagraph>(finder);
@@ -122,10 +145,10 @@ void main() {
     expect(find.byType(NavigationBar), findsOneWidget);
     expect(find.byType(NavigationRail), findsNothing);
 
-    await tester.tap(find.text('Mi plan'));
+    await tester.tap(find.text('Entrenar'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Contenido de Mi plan'), findsOneWidget);
+    expect(find.text('Contenido de Entrenar'), findsOneWidget);
     expect(router.state.matchedLocation, '/plan');
     await tester.tap(find.text('Biblioteca'));
     await tester.pumpAndSettle();
@@ -133,11 +156,11 @@ void main() {
     final bar = tester.widget<NavigationBar>(find.byType(NavigationBar));
     expect(bar.destinations, hasLength(5));
     expect(bar.selectedIndex, 2);
-    await tester.tap(find.byTooltip('Mi perfil'));
+    await tester.tap(find.text('Perfil'));
     await tester.pumpAndSettle();
     expect(router.state.matchedLocation, '/profile');
-    expect(find.byType(NavigationBar), findsNothing);
-    await tester.tap(find.byType(BackButton));
+    expect(find.byType(NavigationBar), findsOneWidget);
+    await tester.tap(find.text('Biblioteca'));
     await tester.pumpAndSettle();
     expect(router.state.matchedLocation, '/library');
     expect(
@@ -218,18 +241,17 @@ GoRouter _createRouter({bool hasTrainer = true, int unread = 0}) {
         ),
         branches: [
           _branch('/home', 'Inicio'),
-          _branch('/plan', 'Mi plan'),
+          _branch('/plan', 'Entrenar'),
           _branch('/library', 'Biblioteca'),
-          _branch('/assessment/history', 'Evolución'),
+          StatefulShellBranch(
+            initialLocation: '/profile',
+            routes: [
+              ..._branch('/profile', 'Perfil').routes,
+              ..._branch('/assessment/history', 'Evolución').routes,
+            ],
+          ),
           _branch('/my-trainer', 'Preparador'),
         ],
-      ),
-      GoRoute(
-        path: '/profile',
-        builder: (context, state) => Scaffold(
-          appBar: AppBar(leading: BackButton(onPressed: context.pop)),
-          body: const Text('Contenido de Perfil'),
-        ),
       ),
     ],
   );
@@ -241,12 +263,7 @@ StatefulShellBranch _branch(String path, String name) {
       GoRoute(
         path: path,
         builder: (context, state) => Scaffold(
-          appBar: AppBar(
-            leading: name == 'Perfil'
-                ? BackButton(onPressed: context.pop)
-                : null,
-            actions: const [AppAccountActions()],
-          ),
+          appBar: AppBar(),
           body: Center(child: Text('Contenido de $name')),
         ),
         routes: [

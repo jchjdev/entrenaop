@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:entrenaop/core/navigation/section_refresh_boundary.dart';
 import 'package:entrenaop/features/notifications/push_notifications_scope.dart';
-import 'package:entrenaop/core/navigation/app_account_actions.dart';
+import 'package:entrenaop/core/presentation/widgets/entrena_card.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -61,6 +61,36 @@ class _ProfessionalHubPageState extends State<ProfessionalHubPage>
   int _request = 0;
   StreamSubscription<void>? _push;
   late bool _showNotices = widget.focusNotices;
+
+  bool get _showDiscovery =>
+      !_showNotices &&
+      !_busy &&
+      _error == null &&
+      _data?.resources.hasContent == false;
+
+  Widget _findTrainer() => OutlinedButton.icon(
+    onPressed: () => _openRoute('/directory'),
+    icon: const Icon(Icons.person_search_outlined),
+    label: const Text('Buscar preparador'),
+  );
+
+  Widget _discoveryCard(BuildContext context) => EntrenaCard(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          'Tu espacio con el preparador',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Busca un profesional o consulta tus invitaciones y vínculos. Aquí tendrás tus conversaciones, pautas y seguimiento cuando estén disponibles.',
+        ),
+        const SizedBox(height: 16),
+        Align(alignment: Alignment.centerLeft, child: _findTrainer()),
+      ],
+    ),
+  );
 
   @override
   void initState() {
@@ -149,7 +179,7 @@ class _ProfessionalHubPageState extends State<ProfessionalHubPage>
 
   void _selectView(bool notices) {
     setState(() => _showNotices = notices);
-    // La campana puede volver a abrir Avisos después de visitar Resumen.
+    // Un acceso contextual puede volver a abrir Avisos tras visitar Resumen.
     if (GoRouter.maybeOf(context)?.state.uri.path == '/my-trainer') {
       context.go(notices ? '/my-trainer?view=notices' : '/my-trainer');
     }
@@ -226,10 +256,7 @@ class _ProfessionalHubPageState extends State<ProfessionalHubPage>
     location: '/my-trainer',
     onVisible: _load,
     child: Scaffold(
-      appBar: AppBar(
-        title: const Text('Mi preparador'),
-        actions: const [AppAccountActions()],
-      ),
+      appBar: AppBar(title: const Text('Preparador')),
       body: RefreshIndicator(
         onRefresh: _load,
         child: Center(
@@ -239,14 +266,10 @@ class _ProfessionalHubPageState extends State<ProfessionalHubPage>
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
               children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: OutlinedButton.icon(
-                    onPressed: () => _openRoute('/directory'),
-                    icon: const Icon(Icons.person_search_outlined),
-                    label: const Text('Buscar preparador'),
-                  ),
-                ),
+                if (_showDiscovery)
+                  _discoveryCard(context)
+                else
+                  Align(alignment: Alignment.centerLeft, child: _findTrainer()),
                 const StudentPushSettings(),
                 if (_busy) const LinearProgressIndicator(),
                 if (_error != null) ...[
@@ -293,13 +316,6 @@ class _ProfessionalHubPageState extends State<ProfessionalHubPage>
                       ),
                     ),
                   ),
-                  if (!_busy && _data?.resources.hasContent == false)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      child: Text(
-                        'Aquí aparecerá el contenido que recibas. Puedes consultar tus vínculos actuales y anteriores sin perder el historial.',
-                      ),
-                    ),
                 ],
                 if (_showNotices)
                   if (_data case final data?) ...[

@@ -193,7 +193,7 @@ void main() {
       final p = FakeCoachPlanning();
       await mount(t, p, '/coach/assign?client=isabel&session=template');
       await t.enterText(find.byType(TextField), 'Indicaciones conservadas');
-      await t.tap(find.text('Mi entrenamiento'));
+      await t.tap(find.text('Personal'));
       await t.pumpAndSettle();
       expect(p.assigned, isEmpty);
       await t.tap(find.text('Entrenador'));

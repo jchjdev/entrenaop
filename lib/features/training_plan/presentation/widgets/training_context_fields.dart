@@ -44,7 +44,7 @@ class TrainingContextFields extends StatelessWidget {
       ),
       const SizedBox(height: 8),
       const Text(
-        'Marca solo el material al que realmente tienes acceso. Puedes añadirlo y retirarlo aquí o desde Perfil.',
+        'Marca solo el material al que realmente tienes acceso. Puedes añadirlo y retirarlo aquí.',
       ),
       const SizedBox(height: 8),
       if (equipment.isEmpty)

@@ -461,6 +461,14 @@ class AppRouter {
                             key: ValueKey('plan-${auth.user.id}'),
                             createCubit: () => sl<DashboardCubit>(),
                             loadProAccess: sl<ProAccessRepository>().load,
+                            guidedPrograms:
+                                sl.isRegistered<GuidedProgramRepository>()
+                                ? sl<GuidedProgramRepository>()
+                                : null,
+                            initialSection: state.uri.queryParameters['tab'],
+                            selectedDate: DateTime.tryParse(
+                              state.uri.queryParameters['date'] ?? '',
+                            ),
                           );
                         },
                       ),
@@ -982,7 +990,193 @@ class AppRouter {
               ],
             ),
             StatefulShellBranch(
+              initialLocation: '/profile',
               routes: [
+                materialAppRoute(
+                  path: '/profile',
+                  builder: (context, state) =>
+                      BlocBuilder<AuthCubit, AuthState>(
+                        bloc: authCubit,
+                        buildWhen: (_, next) =>
+                            next is AuthAuthenticated ||
+                            next is AuthUnauthenticated,
+                        builder: (context, auth) => auth is! AuthAuthenticated
+                            ? const SizedBox.shrink()
+                            : ProfilePage(
+                                key: ValueKey('profile-${auth.user.id}'),
+                                birthDateRepository: sl(),
+                                nameRepository: sl(),
+                                photoRepository: sl(),
+                              ),
+                      ),
+                  routes: [
+                    materialAppRoute(
+                      path: 'trainer',
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
+                        bloc: authCubit,
+                        builder: (context, auth) => auth is! AuthAuthenticated
+                            ? const SizedBox.shrink()
+                            : MyTrainerPage(
+                                calendarSharing:
+                                    SupabaseTrainerCalendarSharingRepository(
+                                      sl<SupabaseClient>(),
+                                      auth.user.id,
+                                    ),
+                                key: ValueKey(auth.user.id),
+                                repository: SupabaseTrainerRepository(
+                                  sl<SupabaseClient>(),
+                                  userId: auth.user.id,
+                                ),
+                                forms: SupabaseTrainerStudentFormRepository(
+                                  sl<SupabaseClient>(),
+                                  auth.user.id,
+                                ),
+                                assessments:
+                                    SupabaseProfessionalAssessmentStudentRepository(
+                                      sl<SupabaseClient>(),
+                                      auth.user.id,
+                                    ),
+                                onOpenConversation: (id) => context.push(
+                                  '/my-trainer/conversations/$id',
+                                ),
+                              ),
+                      ),
+                    ),
+                    materialAppRoute(
+                      path: 'connections',
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
+                        bloc: authCubit,
+                        builder: (_, auth) => auth is! AuthAuthenticated
+                            ? const SizedBox.shrink()
+                            : DeviceConnectionsRoute(
+                                key: ValueKey('connections-${auth.user.id}'),
+                                ownerId: auth.user.id,
+                                client: sl<SupabaseClient>(),
+                              ),
+                      ),
+                    ),
+                    materialAppRoute(
+                      path: 'apple-watch',
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
+                        bloc: authCubit,
+                        builder: (_, auth) => auth is! AuthAuthenticated
+                            ? const SizedBox.shrink()
+                            : AppleWatchRoute(
+                                results: appleResults,
+                                key: ValueKey('apple-${auth.user.id}'),
+                                ownerId: auth.user.id,
+                                client: sl<SupabaseClient>(),
+                              ),
+                      ),
+                    ),
+                    materialAppRoute(
+                      path: 'apple-watch/results',
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (_, state) => BlocBuilder<AuthCubit, AuthState>(
+                        bloc: authCubit,
+                        builder: (_, auth) => auth is! AuthAuthenticated
+                            ? const SizedBox.shrink()
+                            : ActivityResultPage(
+                                key: ValueKey('apple-results-${auth.user.id}'),
+                                provider: 'Apple Watch',
+                                initialActivityId:
+                                    state.uri.queryParameters['activity'],
+                                initialScheduledId:
+                                    state.uri.queryParameters['scheduled'],
+                                repository: AppleActivityResultRepository(
+                                  SupabaseAppleTrainingRepository(
+                                    sl<SupabaseClient>(),
+                                    auth.user.id,
+                                  ),
+                                ),
+                              ),
+                      ),
+                    ),
+                    materialAppRoute(
+                      path: 'garmin',
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
+                        bloc: authCubit,
+                        builder: (_, auth) => auth is! AuthAuthenticated
+                            ? const SizedBox.shrink()
+                            : GarminConnectionRoute(
+                                key: ValueKey('garmin-${auth.user.id}'),
+                                ownerId: auth.user.id,
+                                client: sl<SupabaseClient>(),
+                              ),
+                      ),
+                    ),
+                    materialAppRoute(
+                      path: 'garmin-training',
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
+                        bloc: authCubit,
+                        builder: (_, auth) => auth is! AuthAuthenticated
+                            ? const SizedBox.shrink()
+                            : GarminTrainingRoute(
+                                key: ValueKey(
+                                  'garmin-training-${auth.user.id}',
+                                ),
+                                ownerId: auth.user.id,
+                                client: sl<SupabaseClient>(),
+                              ),
+                      ),
+                    ),
+                    materialAppRoute(
+                      path: 'garmin-ciq',
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
+                        bloc: authCubit,
+                        builder: (_, auth) => auth is! AuthAuthenticated
+                            ? const SizedBox.shrink()
+                            : GarminCiqRoute(
+                                key: ValueKey('garmin-ciq-${auth.user.id}'),
+                                ownerId: auth.user.id,
+                                client: sl<SupabaseClient>(),
+                              ),
+                      ),
+                    ),
+                    materialAppRoute(
+                      path: 'garmin-activities',
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
+                        bloc: authCubit,
+                        builder: (_, auth) => auth is! AuthAuthenticated
+                            ? const SizedBox.shrink()
+                            : GarminActivitiesRoute(
+                                key: ValueKey(
+                                  'garmin-activities-${auth.user.id}',
+                                ),
+                                ownerId: auth.user.id,
+                                client: sl<SupabaseClient>(),
+                              ),
+                      ),
+                    ),
+                    materialAppRoute(
+                      path: 'activities',
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
+                        bloc: authCubit,
+                        builder: (_, auth) => auth is! AuthAuthenticated
+                            ? const SizedBox.shrink()
+                            : DeviceActivitiesRoute(
+                                key: ValueKey('activities-${auth.user.id}'),
+                                ownerId: auth.user.id,
+                                client: sl<SupabaseClient>(),
+                              ),
+                      ),
+                    ),
+                    _workflowRoute(
+                      path: 'preferences',
+                      builder: (context, state) => TrainingContextPage(
+                        repository: sl<TrainingContextRepository>(),
+                      ),
+                    ),
+                  ],
+                ),
                 materialAppRoute(
                   path: '/assessment/history',
                   builder: (context, state) =>
@@ -1142,177 +1336,6 @@ class AppRouter {
               ],
             ),
             coachWorkspaceBranch(_workflowExits),
-          ],
-        ),
-        materialAppRoute(
-          path: '/profile',
-          builder: (context, state) => ProfilePage(
-            preparations: sl(),
-            birthDateRepository: sl(),
-            nameRepository: sl(),
-            photoRepository: sl(),
-          ),
-          routes: [
-            materialAppRoute(
-              path: 'trainer',
-              parentNavigatorKey: _rootNavigatorKey,
-              builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
-                bloc: authCubit,
-                builder: (context, auth) => auth is! AuthAuthenticated
-                    ? const SizedBox.shrink()
-                    : MyTrainerPage(
-                        calendarSharing:
-                            SupabaseTrainerCalendarSharingRepository(
-                              sl<SupabaseClient>(),
-                              auth.user.id,
-                            ),
-                        key: ValueKey(auth.user.id),
-                        repository: SupabaseTrainerRepository(
-                          sl<SupabaseClient>(),
-                          userId: auth.user.id,
-                        ),
-                        forms: SupabaseTrainerStudentFormRepository(
-                          sl<SupabaseClient>(),
-                          auth.user.id,
-                        ),
-                        assessments:
-                            SupabaseProfessionalAssessmentStudentRepository(
-                              sl<SupabaseClient>(),
-                              auth.user.id,
-                            ),
-                        onOpenConversation: (id) =>
-                            context.push('/my-trainer/conversations/$id'),
-                      ),
-              ),
-            ),
-            materialAppRoute(
-              path: 'connections',
-              parentNavigatorKey: _rootNavigatorKey,
-              builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
-                bloc: authCubit,
-                builder: (_, auth) => auth is! AuthAuthenticated
-                    ? const SizedBox.shrink()
-                    : DeviceConnectionsRoute(
-                        key: ValueKey('connections-${auth.user.id}'),
-                        ownerId: auth.user.id,
-                        client: sl<SupabaseClient>(),
-                      ),
-              ),
-            ),
-            materialAppRoute(
-              path: 'apple-watch',
-              parentNavigatorKey: _rootNavigatorKey,
-              builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
-                bloc: authCubit,
-                builder: (_, auth) => auth is! AuthAuthenticated
-                    ? const SizedBox.shrink()
-                    : AppleWatchRoute(
-                        results: appleResults,
-                        key: ValueKey('apple-${auth.user.id}'),
-                        ownerId: auth.user.id,
-                        client: sl<SupabaseClient>(),
-                      ),
-              ),
-            ),
-            materialAppRoute(
-              path: 'apple-watch/results',
-              parentNavigatorKey: _rootNavigatorKey,
-              builder: (_, state) => BlocBuilder<AuthCubit, AuthState>(
-                bloc: authCubit,
-                builder: (_, auth) => auth is! AuthAuthenticated
-                    ? const SizedBox.shrink()
-                    : ActivityResultPage(
-                        key: ValueKey('apple-results-${auth.user.id}'),
-                        provider: 'Apple Watch',
-                        initialActivityId:
-                            state.uri.queryParameters['activity'],
-                        initialScheduledId:
-                            state.uri.queryParameters['scheduled'],
-                        repository: AppleActivityResultRepository(
-                          SupabaseAppleTrainingRepository(
-                            sl<SupabaseClient>(),
-                            auth.user.id,
-                          ),
-                        ),
-                      ),
-              ),
-            ),
-            materialAppRoute(
-              path: 'garmin',
-              parentNavigatorKey: _rootNavigatorKey,
-              builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
-                bloc: authCubit,
-                builder: (_, auth) => auth is! AuthAuthenticated
-                    ? const SizedBox.shrink()
-                    : GarminConnectionRoute(
-                        key: ValueKey('garmin-${auth.user.id}'),
-                        ownerId: auth.user.id,
-                        client: sl<SupabaseClient>(),
-                      ),
-              ),
-            ),
-            materialAppRoute(
-              path: 'garmin-training',
-              parentNavigatorKey: _rootNavigatorKey,
-              builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
-                bloc: authCubit,
-                builder: (_, auth) => auth is! AuthAuthenticated
-                    ? const SizedBox.shrink()
-                    : GarminTrainingRoute(
-                        key: ValueKey('garmin-training-${auth.user.id}'),
-                        ownerId: auth.user.id,
-                        client: sl<SupabaseClient>(),
-                      ),
-              ),
-            ),
-            materialAppRoute(
-              path: 'garmin-ciq',
-              parentNavigatorKey: _rootNavigatorKey,
-              builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
-                bloc: authCubit,
-                builder: (_, auth) => auth is! AuthAuthenticated
-                    ? const SizedBox.shrink()
-                    : GarminCiqRoute(
-                        key: ValueKey('garmin-ciq-${auth.user.id}'),
-                        ownerId: auth.user.id,
-                        client: sl<SupabaseClient>(),
-                      ),
-              ),
-            ),
-            materialAppRoute(
-              path: 'garmin-activities',
-              parentNavigatorKey: _rootNavigatorKey,
-              builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
-                bloc: authCubit,
-                builder: (_, auth) => auth is! AuthAuthenticated
-                    ? const SizedBox.shrink()
-                    : GarminActivitiesRoute(
-                        key: ValueKey('garmin-activities-${auth.user.id}'),
-                        ownerId: auth.user.id,
-                        client: sl<SupabaseClient>(),
-                      ),
-              ),
-            ),
-            materialAppRoute(
-              path: 'activities',
-              parentNavigatorKey: _rootNavigatorKey,
-              builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
-                bloc: authCubit,
-                builder: (_, auth) => auth is! AuthAuthenticated
-                    ? const SizedBox.shrink()
-                    : DeviceActivitiesRoute(
-                        key: ValueKey('activities-${auth.user.id}'),
-                        ownerId: auth.user.id,
-                        client: sl<SupabaseClient>(),
-                      ),
-              ),
-            ),
-            _workflowRoute(
-              path: 'preferences',
-              builder: (context, state) => TrainingContextPage(
-                repository: sl<TrainingContextRepository>(),
-              ),
-            ),
           ],
         ),
         materialAppRoute(

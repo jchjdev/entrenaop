@@ -1,6 +1,5 @@
 import 'package:entrena_ui/entrena_ui.dart' show EntrenaProgramCard;
 import 'package:entrenaop/core/navigation/section_refresh_boundary.dart';
-import 'package:entrenaop/core/navigation/app_account_actions.dart';
 import 'package:entrenaop/core/presentation/widgets/entrena_card.dart';
 import 'package:entrenaop/core/presentation/widgets/entrena_wordmark.dart';
 import 'package:entrenaop/core/theme/entrena_theme.dart';
@@ -72,7 +71,6 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(width: 8),
           ],
-          const AppAccountActions(),
         ],
       ),
       body: BlocConsumer<DashboardCubit, DashboardState>(

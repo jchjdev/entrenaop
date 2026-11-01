@@ -176,6 +176,94 @@ void main() {
     },
   );
 
+  testWidgets(
+    'sin recursos ofrece búsqueda y conserva invitaciones e historial',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(320, 900));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final repository = NoticeFixture()
+        ..data = snapshot(resources: const StudentNoticeResources(), unread: 0);
+      final opened = <String>[];
+      await tester.pumpWidget(
+        MaterialApp(
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: TextScaler.linear(2)),
+            child: child!,
+          ),
+          home: ProfessionalHubPage(
+            repository: repository,
+            userId: 'owner',
+            onOpen: (route) async => opened.add(route),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Tu espacio con el preparador'), findsOneWidget);
+      await press(tester, 'Buscar preparador');
+      expect(opened, ['/directory']);
+      await press(tester, 'Vínculo e historial con mi preparador');
+      expect(opened.last, '/profile/trainer');
+      expect(repository.acknowledgements, isEmpty);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('conserva conversaciones disponibles sin exigir otros recursos', (
+    tester,
+  ) async {
+    final repository = NoticeFixture()
+      ..data = snapshot(
+        resources: const StudentNoticeResources(
+          hasConversations: true,
+          conversations: [StudentConversationLink('relation', 'Isabel')],
+        ),
+        unread: 1,
+      );
+    final opened = <String>[];
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ProfessionalHubPage(
+          repository: repository,
+          userId: 'owner',
+          onOpen: (route) async => opened.add(route),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Tu espacio con el preparador'), findsNothing);
+    await press(tester, 'Conversación con Isabel');
+    expect(opened, ['/my-trainer/conversations/relation']);
+    expect(find.text('Avisos · 1'), findsOneWidget);
+    expect(repository.acknowledgements, isEmpty);
+  });
+
+  testWidgets(
+    'un fallo de carga permite buscar y reintentar sin fingir vacío',
+    (tester) async {
+      final repository = NoticeFixture()..fail = true;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ProfessionalHubPage(
+            repository: repository,
+            userId: 'owner',
+            onOpen: (_) async {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Tu espacio con el preparador'), findsNothing);
+      expect(find.text('Buscar preparador'), findsOneWidget);
+      expect(find.textContaining('No se pudo actualizar'), findsOneWidget);
+      repository
+        ..fail = false
+        ..data = snapshot(resources: const StudentNoticeResources(), unread: 0);
+      await press(tester, 'Reintentar seguimiento');
+      expect(find.text('Tu espacio con el preparador'), findsOneWidget);
+      expect(repository.acknowledgements, isEmpty);
+    },
+  );
+
   Future<void> home(
     WidgetTester tester,
     NoticeFixture repository, {

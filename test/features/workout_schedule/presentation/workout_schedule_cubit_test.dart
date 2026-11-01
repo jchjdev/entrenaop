@@ -603,6 +603,74 @@ void main() {
     expect(find.text('Preparación null'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+  for (final status in [
+    ScheduledWorkoutStatus.planned,
+    ScheduledWorkoutStatus.inProgress,
+  ]) {
+    testWidgets(
+      'la pauta $status solo comienza con su botón y una ejecución activa se retoma',
+      (tester) async {
+        final day = DateTime(2026, 9, 23);
+        final item = ScheduledWorkout(
+          id: 'coach-session',
+          templateId: 'private-template',
+          templateName: 'Pauta de Ervi',
+          templateVersion: 3,
+          scheduledDate: day,
+          source: ScheduledWorkoutSource.coach,
+          status: status,
+          executionId: status == ScheduledWorkoutStatus.inProgress
+              ? 'execution-1'
+              : null,
+        );
+        final repository = _FakeScheduleRepository(items: [item]);
+        final cubit = _cubit(repository, _FakeWorkoutRepository());
+        addTearDown(cubit.close);
+        await cubit.load();
+        final router = GoRouter(
+          initialLocation: '/plan/week',
+          routes: [
+            GoRoute(
+              path: '/plan/week',
+              builder: (_, _) => BlocProvider.value(
+                value: cubit,
+                child: const WorkoutSchedulePage(),
+              ),
+            ),
+            GoRoute(
+              path: '/plan/week/active/:id',
+              builder: (_, state) => Scaffold(
+                body: Text('Ejecución ${state.pathParameters['id']}'),
+              ),
+            ),
+          ],
+        );
+        addTearDown(router.dispose);
+        await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.text('Pauta de Ervi'));
+        await tester.tap(find.text('Pauta de Ervi'));
+        await tester.pumpAndSettle();
+        if (status == ScheduledWorkoutStatus.planned) {
+          expect(repository.startedIds, isEmpty);
+          expect(router.state.uri.path, '/plan/week');
+          await tester.ensureVisible(find.text('Comenzar sesión'));
+          await tester.tap(find.text('Comenzar sesión'));
+          await tester.pumpAndSettle();
+        }
+        expect(repository.startedIds, ['coach-session']);
+        expect(router.state.uri.path, '/plan/week/active/execution-1');
+        expect(find.text('Ejecución execution-1'), findsOneWidget);
+        router.pop();
+        await tester.pumpAndSettle();
+        expect(router.state.uri.path, '/plan/week');
+        expect(cubit.state.selectedDay, day);
+        expect(repository.startedIds, ['coach-session']);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   testWidgets(
     'una sesión completada abre su resultado en una pantalla estrecha',
     (tester) async {
@@ -928,6 +996,7 @@ class _FakeScheduleRepository implements WorkoutScheduleRepository {
   _FakeScheduleRepository({this.items = const []});
 
   final List<ScheduledWorkout> items;
+  final startedIds = <String>[];
   DateTime? lastStart;
   DateTime? lastEnd;
   String? scheduledTemplateId;
@@ -965,7 +1034,10 @@ class _FakeScheduleRepository implements WorkoutScheduleRepository {
   }) async {}
 
   @override
-  Future<String> start(String scheduledId) async => 'execution-1';
+  Future<String> start(String scheduledId) async {
+    startedIds.add(scheduledId);
+    return 'execution-1';
+  }
 }
 
 class _FakeWorkoutRepository implements WorkoutRepository {

@@ -11,6 +11,11 @@ import 'package:entrenaop/features/profile/data/profile_birth_date_repository.da
 import 'package:entrenaop/features/profile/data/profile_name_repository.dart';
 import 'package:entrenaop/features/training_plan/domain/entities/training_context.dart';
 import 'package:entrenaop/features/training_plan/domain/repositories/training_context_repository.dart';
+import 'package:entrenaop/features/training_plan/presentation/pages/training_hub_page.dart';
+import 'package:entrenaop/features/dashboard/domain/entities/preparation_overview.dart';
+import 'package:entrenaop/features/dashboard/domain/usecases/get_preparation_overview_usecase.dart';
+import 'package:entrenaop/features/dashboard/presentation/bloc/dashboard_cubit.dart';
+import 'package:entrenaop/features/pro/domain/pro_access.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -23,8 +28,82 @@ import 'package:entrenaop/features/trainers/presentation/pages/trainer_assessmen
 import 'package:entrenaop/features/device_connections/presentation/device_connections_page.dart';
 import 'package:entrenaop/features/device_connections/presentation/garmin_connection_page.dart';
 
+import '../../support/pro_access_fixture.dart';
+
 void main() {
   setUp(() => sl.registerSingleton<ProfilePhotoRepository>(_PhotoFixture()));
+  testWidgets(
+    'Disponibilidad conserva borrador, guarda y vuelve a Entrenar con fecha y cara',
+    (tester) async {
+      final preferences = _Preferences();
+      sl.registerSingleton<TrainingContextRepository>(preferences);
+      sl.registerSingleton<ProfileBirthDateRepository>(_BirthDate());
+      sl.registerSingleton<ProfileNameRepository>(
+        ProfileNameRepository(_ClientWithoutSession()),
+      );
+      sl.registerSingleton<ProAccessRepository>(ProAccessFixture(isPro: true));
+      sl.registerFactory<DashboardCubit>(
+        () => DashboardCubit(getOverview: _Overview(preferences))..load(),
+      );
+      addTearDown(sl.reset);
+      final auth = _Auth();
+      final router = AppRouter(auth);
+      addTearDown(router.dispose);
+      router.config.go('/plan?tab=availability&date=2026-11-05');
+      await tester.pumpWidget(
+        BlocProvider<AuthCubit>.value(
+          value: auth,
+          child: MaterialApp.router(
+            theme: EntrenaTheme.dark,
+            routerConfig: router.config,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final original = tester.state(find.byType(TrainingHubPage));
+      await tester.ensureVisible(find.text('Editar disponibilidad y material'));
+      await tester.tap(find.text('Editar disponibilidad y material'));
+      await tester.pumpAndSettle();
+      expect(router.config.state.uri.path, '/profile/preferences');
+      expect(find.byType(NavigationBar), findsNothing);
+      await tester.ensureVisible(find.widgetWithText(FilterChip, 'Martes'));
+      await tester.tap(find.widgetWithText(FilterChip, 'Martes'));
+      await tester.pumpAndSettle();
+      router.config.pop();
+      await tester.pumpAndSettle();
+      expect(find.text('Continuar'), findsOneWidget);
+      expect(preferences.saves, 0);
+      await tester.tap(find.text('Continuar'));
+      await tester.pumpAndSettle();
+      expect(router.config.state.uri.path, '/profile/preferences');
+      expect(
+        tester
+            .widget<FilterChip>(find.widgetWithText(FilterChip, 'Martes'))
+            .selected,
+        isTrue,
+      );
+      await tester.ensureVisible(
+        find.text('Guardar disponibilidad y material'),
+      );
+      await tester.tap(find.text('Guardar disponibilidad y material'));
+      await tester.pumpAndSettle();
+      expect(preferences.saves, 1);
+      expect(preferences.saved.availability['2'], 45);
+      router.config.pop();
+      await tester.pumpAndSettle();
+      expect(
+        router.config.state.uri.toString(),
+        '/plan?tab=availability&date=2026-11-05',
+      );
+      expect(tester.state(find.byType(TrainingHubPage)), same(original));
+      expect(
+        tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+        1,
+      );
+      expect(find.text('Editar disponibilidad y material'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
   testWidgets(
     'Perfil agrupa conexiones y volver de Garmin conserva la pantalla común',
     (tester) async {
@@ -124,7 +203,7 @@ void main() {
     );
   }
   for (final route in ['/profile/preferences', '/plan/preferences']) {
-    testWidgets('$route conserva datos y regresa a Perfil sin barra', (
+    testWidgets('$route conserva datos y regresa a la pestaña Perfil', (
       tester,
     ) async {
       final preferences = _Preferences();
@@ -160,17 +239,17 @@ void main() {
       expect(find.text('El mismo contexto para tu programa'), findsOneWidget);
       expect(preferences.saves, 0);
       expect(preferences.reads, 1);
-      // Perfil y su tarea permanecen en el navegador raíz, sin pestaña propia.
+      // El editor sigue siendo una tarea raíz; volver recupera la pestaña Perfil.
       await tester.dragFrom(const Offset(2, 300), const Offset(600, 0));
       await tester.pumpAndSettle();
       expect(router.config.state.uri.path, '/profile');
-      expect(find.byType(NavigationBar), findsNothing);
+      expect(find.byType(NavigationBar), findsOneWidget);
       expect(preferences.saves, 0);
       expect(tester.takeException(), isNull);
     });
   }
   testWidgets(
-    'Mi preparador abre desde Perfil como tarea y vuelve sin datos de otra identidad',
+    'el enlace heredado al vínculo conserva la tarea y vuelve a Perfil',
     (tester) async {
       final client = _ClientWithoutSession();
       sl.registerSingleton<SupabaseClient>(client);
@@ -183,7 +262,7 @@ void main() {
       final auth = _Auth();
       final router = AppRouter(auth);
       addTearDown(router.dispose);
-      router.config.go('/profile');
+      router.config.go('/profile/trainer');
       await tester.pumpWidget(
         BlocProvider<AuthCubit>.value(
           value: auth,
@@ -193,12 +272,6 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(find.text('Mi preparador'), 250);
-      await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('Mi preparador'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Mi preparador'));
       await tester.pumpAndSettle();
       expect(router.config.state.uri.path, '/profile/trainer');
       expect(find.byType(MyTrainerPage), findsOneWidget);
@@ -265,16 +338,17 @@ class _BirthDate implements ProfileBirthDateRepository {
 class _Preferences implements TrainingContextRepository {
   int saves = 0;
   int reads = 0;
+  TrainingContext saved = TrainingContext(
+    availability: {'1': 45, '3': 60},
+    equipment: {'cones'},
+    reportsPain: false,
+    capacityConfirmed: true,
+  );
   @override
   Future<TrainingContextSettings> load() async {
     reads++;
     return TrainingContextSettings(
-      context: TrainingContext(
-        availability: {'1': 45, '3': 60},
-        equipment: {'cones'},
-        reportsPain: false,
-        capacityConfirmed: true,
-      ),
+      context: saved,
       equipmentOptions: {'cones', 'pull_up_bar'},
     );
   }
@@ -282,5 +356,20 @@ class _Preferences implements TrainingContextRepository {
   @override
   Future<void> save(TrainingContext value) async {
     saves++;
+    saved = value;
   }
+}
+
+class _Overview implements GetPreparationOverviewUseCase {
+  _Overview(this.preferences);
+  final _Preferences preferences;
+  @override
+  Future<PreparationOverview> call() async => PreparationOverview(
+    assessments: const [],
+    preferences: null,
+    goals: const [],
+    weekStart: DateTime(2026, 11, 2),
+    weeklyWorkouts: const [],
+    trainingContext: preferences.saved,
+  );
 }

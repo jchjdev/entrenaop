@@ -2,8 +2,7 @@ import 'package:entrenaop/core/navigation/section_refresh_boundary.dart';
 import 'package:entrenaop/core/presentation/widgets/entrena_card.dart';
 import 'package:entrenaop/features/auth/presentation/bloc/auth_cubit.dart';
 import 'package:entrenaop/features/auth/presentation/bloc/auth_state.dart';
-import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
-import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_goal_repository.dart';
+import 'package:entrenaop/features/auth/domain/entities/user_entity.dart';
 import 'package:entrenaop/features/profile/data/profile_birth_date_repository.dart';
 import 'package:entrenaop/features/profile/data/profile_name_repository.dart';
 import 'package:entrenaop/features/profile/presentation/edit_profile_name.dart';
@@ -22,24 +21,22 @@ import 'package:intl/intl.dart';
 class ProfilePage extends StatefulWidget {
   const ProfilePage({
     super.key,
-    required this.preparations,
     required this.birthDateRepository,
     this.nameRepository,
     this.photoRepository,
+    this.isRootDestination = true,
   });
 
-  final PreparationGoalRepository preparations;
   final ProfileBirthDateRepository birthDateRepository;
   final ProfileNameRepository? nameRepository;
   final ProfilePhotoRepository? photoRepository;
+  final bool isRootDestination;
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  late Future<List<PreparationGoal>> _activeGoals = widget.preparations
-      .getActiveGoals();
   late Future<DateTime?> _birthDate = widget.birthDateRepository.get();
   bool _savingBirthDate = false;
 
@@ -80,25 +77,126 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  void _reloadGoals() => setState(() {
-    _activeGoals = widget.preparations.getActiveGoals();
-  });
-
   Future<void> _refresh() async {
-    final goals = widget.preparations.getActiveGoals();
     final birth = widget.birthDateRepository.get();
     setState(() {
-      _activeGoals = goals;
       _birthDate = birth;
     });
     try {
-      await Future.wait([goals, birth]);
+      await birth;
     } catch (_) {
-      // Cada FutureBuilder mantiene su error y el acceso de reintento.
+      // El FutureBuilder mantiene su error y el acceso de reintento.
     }
   }
 
   void _open(String route) => context.push(route);
+
+  Widget _identityCard(UserEntity? user, String displayName) => EntrenaCard(
+    tone: EntrenaCardTone.progress,
+    padding: const EdgeInsets.all(24),
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        final stacked =
+            constraints.maxWidth < MediaQuery.textScalerOf(context).scale(260);
+        final avatar = user != null && widget.photoRepository != null
+            ? ProfilePhotoControl(
+                key: ValueKey('profile-photo-${user.id}'),
+                repository: widget.photoRepository!,
+                name: displayName,
+              )
+            : CircleAvatar(
+                radius: 34,
+                backgroundColor: const Color(0xFFFF8A50),
+                foregroundColor: const Color(0xFF20120D),
+                child: Text(
+                  displayName.characters.first.toUpperCase(),
+                  style: const TextStyle(
+                    fontSize: 29,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              );
+        final details = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              displayName,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
+            ),
+            if (user != null && widget.nameRepository != null)
+              TextButton.icon(
+                onPressed: _editName,
+                icon: const Icon(Icons.edit_outlined, size: 16),
+                label: const Text('Cambiar nombre'),
+              ),
+            if (user != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                user.email,
+                overflow: stacked ? null : TextOverflow.ellipsis,
+                style: const TextStyle(color: Colors.white70),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'En EntrenaOP desde ${DateFormat('MM/yyyy').format(user.createdAt)}',
+                style: const TextStyle(color: Color(0xFFFFB08A), fontSize: 12),
+              ),
+            ],
+          ],
+        );
+        return Flex(
+          direction: stacked ? Axis.vertical : Axis.horizontal,
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: stacked
+              ? CrossAxisAlignment.start
+              : CrossAxisAlignment.center,
+          children: [
+            avatar,
+            SizedBox(width: stacked ? null : 18, height: stacked ? 16 : null),
+            if (stacked) details else Expanded(child: details),
+          ],
+        );
+      },
+    ),
+  );
+
+  Widget _evolutionCard() => EntrenaCard(
+    tone: EntrenaCardTone.progress,
+    onTap: () => _open('/assessment/history'),
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth <
+            MediaQuery.textScalerOf(context).scale(220)) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Row(
+                children: [
+                  Icon(Icons.insights_outlined),
+                  Spacer(),
+                  Icon(Icons.chevron_right),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Mi evolución',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 4),
+              const Text('Historial, resultados y marcas'),
+            ],
+          );
+        }
+        return const ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: Icon(Icons.insights_outlined),
+          title: Text('Mi evolución'),
+          subtitle: Text('Historial, resultados y marcas'),
+          trailing: Icon(Icons.chevron_right),
+        );
+      },
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -114,10 +212,13 @@ class _ProfilePageState extends State<ProfilePage> {
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           title: const Text('Perfil'),
-          leading: BackButton(
-            onPressed: () =>
-                context.canPop() ? context.pop() : context.go('/home'),
-          ),
+          automaticallyImplyLeading: !widget.isRootDestination,
+          leading: widget.isRootDestination
+              ? null
+              : BackButton(
+                  onPressed: () =>
+                      context.canPop() ? context.pop() : context.go('/home'),
+                ),
         ),
         body: SafeArea(
           child: RefreshIndicator(
@@ -132,78 +233,10 @@ class _ProfilePageState extends State<ProfilePage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        EntrenaCard(
-                          tone: EntrenaCardTone.progress,
-                          padding: const EdgeInsets.all(24),
-                          child: Row(
-                            children: [
-                              if (user != null &&
-                                  widget.photoRepository != null)
-                                ProfilePhotoControl(
-                                  key: ValueKey('profile-photo-${user.id}'),
-                                  repository: widget.photoRepository!,
-                                  name: displayName,
-                                )
-                              else
-                                CircleAvatar(
-                                  radius: 34,
-                                  backgroundColor: const Color(0xFFFF8A50),
-                                  foregroundColor: const Color(0xFF20120D),
-                                  child: Text(
-                                    displayName.characters.first.toUpperCase(),
-                                    style: const TextStyle(
-                                      fontSize: 29,
-                                      fontWeight: FontWeight.w900,
-                                    ),
-                                  ),
-                                ),
-                              const SizedBox(width: 18),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      displayName,
-                                      style: const TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.w900,
-                                      ),
-                                    ),
-                                    if (user != null &&
-                                        widget.nameRepository != null)
-                                      TextButton.icon(
-                                        onPressed: _editName,
-                                        icon: const Icon(
-                                          Icons.edit_outlined,
-                                          size: 16,
-                                        ),
-                                        label: const Text('Cambiar nombre'),
-                                      ),
-                                    if (user != null) ...[
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        user.email,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          color: Colors.white70,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        'En EntrenaOP desde ${DateFormat('MM/yyyy').format(user.createdAt)}',
-                                        style: const TextStyle(
-                                          color: Color(0xFFFFB08A),
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        _identityCard(user, displayName),
                         const SizedBox(height: 26),
+                        _evolutionCard(),
+                        const SizedBox(height: 22),
                         FutureBuilder<DateTime?>(
                           future: _birthDate,
                           builder: (context, snapshot) {
@@ -249,143 +282,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             );
                           },
                         ),
-                        const SizedBox(height: 26),
-                        const Text(
-                          'Mis preparaciones',
-                          style: TextStyle(
-                            fontSize: 21,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        const Text(
-                          'Cada programa mantiene sus objetivos y controles por separado.',
-                          style: TextStyle(color: Colors.white60),
-                        ),
-                        const SizedBox(height: 12),
-                        FutureBuilder<List<PreparationGoal>>(
-                          future: _activeGoals,
-                          builder: (context, snapshot) {
-                            if (!snapshot.hasData && !snapshot.hasError) {
-                              return const Card(
-                                child: Padding(
-                                  padding: EdgeInsets.all(24),
-                                  child: Center(
-                                    child: CircularProgressIndicator(),
-                                  ),
-                                ),
-                              );
-                            }
-                            if (snapshot.hasError) {
-                              return Card(
-                                child: ListTile(
-                                  title: const Text(
-                                    'No pudimos cargar tus preparaciones',
-                                  ),
-                                  trailing: const Icon(Icons.refresh),
-                                  onTap: _reloadGoals,
-                                ),
-                              );
-                            }
-                            final goals = snapshot.data!;
-                            return Column(
-                              children: [
-                                if (goals.isEmpty)
-                                  const Card(
-                                    child: ListTile(
-                                      leading: Icon(Icons.flag_outlined),
-                                      title: Text(
-                                        'Aún no sigues una preparación',
-                                      ),
-                                      subtitle: Text(
-                                        'Elige un programa para organizar tus objetivos.',
-                                      ),
-                                    ),
-                                  )
-                                else
-                                  for (final goal in goals)
-                                    Card(
-                                      child: ListTile(
-                                        leading: const Icon(
-                                          Icons.flag_outlined,
-                                          color: Color(0xFFFF8A50),
-                                        ),
-                                        title: Text(goal.program.name),
-                                        subtitle: Text(
-                                          goal.targetDate == null
-                                              ? 'Sin fecha objetivo'
-                                              : 'Objetivo · ${DateFormat('dd/MM/yyyy').format(goal.targetDate!)}',
-                                        ),
-                                        trailing: const Icon(
-                                          Icons.chevron_right,
-                                        ),
-                                        onTap: goal.id == null
-                                            ? null
-                                            : () => _open(
-                                                '/plan/goal/${goal.id}',
-                                              ),
-                                      ),
-                                    ),
-                              ],
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 6),
-                        OutlinedButton.icon(
-                          onPressed: () => _open('/plan/goal'),
-                          icon: const Icon(Icons.add_rounded),
-                          label: const Text('Gestionar preparaciones'),
-                        ),
-                        const SizedBox(height: 26),
-                        const Text(
-                          'Tu entrenamiento',
-                          style: TextStyle(
-                            fontSize: 21,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Card(
-                          child: ListTile(
-                            leading: const Icon(
-                              Icons.tune_rounded,
-                              color: Color(0xFFFF8A50),
-                            ),
-                            title: const Text('Disponibilidad y material'),
-                            subtitle: const Text(
-                              'Los días, el tiempo y el material que usa tu programa.',
-                            ),
-                            trailing: const Icon(Icons.chevron_right),
-                            onTap: () => _open('/profile/preferences'),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Card(
-                          child: ListTile(
-                            leading: const Icon(
-                              Icons.supervisor_account_outlined,
-                            ),
-                            title: const Text('Mi preparador'),
-                            subtitle: const Text(
-                              'Invitaciones y vínculo con tu preparador.',
-                            ),
-                            trailing: const Icon(Icons.chevron_right),
-                            onTap: () => _open('/profile/trainer'),
-                          ),
-                        ),
                         const SizedBox(height: 22),
-                        Card(
-                          child: ListTile(
-                            leading: const Icon(Icons.calculate_outlined),
-                            title: const Text('Herramientas para tus pruebas'),
-                            subtitle: const Text(
-                              'Ritmos de carrera y puntos PAEF/PAFAS.',
-                            ),
-                            trailing: const Icon(Icons.chevron_right),
-                            onTap: () => _open('/tools'),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
                         Card(
                           child: ListTile(
                             leading: const Icon(Icons.devices_other_outlined),

@@ -1,5 +1,19 @@
 # Producto EntrenaOP
 
+## Navegación del deportista reorganizada · 01/11/2026
+
+Javier aprueba Inicio, Entrenar, Biblioteca, Preparador y Perfil como destinos
+inferiores. Inicio conserva sus cards y semana compacta; Entrenar abre Planes,
+con Preparaciones y Disponibilidad como caras desplazables. Ver semana lleva al
+calendario común y Disponibilidad reutiliza el editor completo. Preparador reúne
+relación y seguimiento, búsqueda e indicador de novedades. Perfil conserva cuenta
+y conexiones y aloja el acceso a Evolución. El cambio al trabajo profesional
+permanece visible y recupera el contexto previo.
+
+Se conservan procesos deportivos y permisos, sin cambios de datos. El inicio de
+una pauta se realiza desde su botón explícito. La card no incorpora una consulta
+nueva de receta completa versionada. [Recorridos, contratos y límites](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#reorganización-aprobada--01112026).
+
 ## Primer contacto desde el directorio · 31/10/2026
 
 Javier aprueba «Contactar en EntrenaOP» para ensayarlo con Isabel. El profesional

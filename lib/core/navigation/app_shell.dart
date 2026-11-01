@@ -1,10 +1,10 @@
 import '../../features/coach_workspace/presentation/coach_workspace_scope.dart';
 import '../../features/coach_workspace/presentation/coach_mobile_style.dart';
+import '../../features/trainers/presentation/student_navigation.dart';
 
 import 'package:entrenaop/core/presentation/widgets/entrena_wordmark.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
 
 class AppShell extends StatelessWidget {
   const AppShell({required this.navigationShell, super.key});
@@ -24,6 +24,8 @@ class AppShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final professional = navigationShell.currentIndex == 5;
     final workspace = CoachWorkspaceScope.maybeOf(context)?.controller;
+    final studentUnread =
+        StudentNavigationScope.maybeOf(context)?.unreadCount ?? 0;
     if (!professional && workspace != null) {
       workspace.athleteIndex = navigationShell.currentIndex;
     }
@@ -44,7 +46,7 @@ class AppShell extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Expanded(
+                    Flexible(
                       child: _WorkspaceSwitcher(
                         professional: professional,
                         unread: workspace.unread,
@@ -56,12 +58,6 @@ class AppShell extends StatelessWidget {
                         },
                       ),
                     ),
-                    if (professional)
-                      IconButton(
-                        tooltip: 'Mi perfil',
-                        onPressed: () => context.push('/profile'),
-                        icon: const Icon(Icons.account_circle_outlined),
-                      ),
                   ],
                 ),
               ),
@@ -78,8 +74,29 @@ class AppShell extends StatelessWidget {
         child: frame(navigationShell),
       );
     }
-    final indices = [0, 1, 2, 3, 4];
-    final destinations = [..._barDestinations.take(4), _barDestinations.last];
+    // Se conservan las ramas históricas y la profesional; solo cambia el orden
+    // visible. Evolución y Perfil comparten la rama 3.
+    const indices = [0, 1, 2, 4, 3];
+    Widget trainerIcon(IconData icon) => Badge.count(
+      count: studentUnread,
+      maxCount: 99,
+      isLabelVisible: studentUnread > 0,
+      backgroundColor: Theme.of(context).colorScheme.primary,
+      textColor: Theme.of(context).colorScheme.onPrimary,
+      child: Icon(icon),
+    );
+    final destinations = [
+      ..._barDestinations.take(3),
+      NavigationDestination(
+        icon: trainerIcon(Icons.people_outline),
+        selectedIcon: trainerIcon(Icons.people),
+        label: 'Preparador',
+        tooltip: studentUnread > 0
+            ? 'Preparador · $studentUnread novedades sin leer'
+            : 'Preparador',
+      ),
+      _barDestinations.last,
+    ];
     final selectedIndex = indices.indexOf(navigationShell.currentIndex);
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -104,7 +121,12 @@ class AppShell extends StatelessWidget {
                         ),
                       ),
                       destinations: [
-                        ..._railDestinations.take(4),
+                        ..._railDestinations.take(3),
+                        NavigationRailDestination(
+                          icon: trainerIcon(Icons.people_outline),
+                          selectedIcon: trainerIcon(Icons.people),
+                          label: const Text('Preparador'),
+                        ),
                         _railDestinations.last,
                       ],
                     ),
@@ -160,54 +182,78 @@ class _WorkspaceSwitcher extends StatelessWidget {
         if (size.maxWidth < 280 ||
             MediaQuery.textScalerOf(context).scale(1) > 1.15) {
           return PopupMenuButton<bool>(
-            tooltip: 'Cambiar espacio',
+            tooltip: unread > 0
+                ? 'Cambiar espacio · $unread novedades en Entrenador'
+                : 'Cambiar espacio',
             initialValue: professional,
             onSelected: onSelected,
-            itemBuilder: (_) => const [
-              PopupMenuItem(value: false, child: Text('Mi entrenamiento')),
-              PopupMenuItem(value: true, child: Text('Entrenador')),
+            itemBuilder: (_) => [
+              const PopupMenuItem(
+                value: false,
+                child: Text('Mi entrenamiento'),
+              ),
+              PopupMenuItem(
+                value: true,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Flexible(child: Text('Entrenador')),
+                    if (unread > 0) ...[
+                      const SizedBox(width: 12),
+                      Badge.count(count: unread),
+                    ],
+                  ],
+                ),
+              ),
             ],
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
+                color: Theme.of(context).colorScheme.surfaceContainerHigh,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
                   color: Theme.of(context).colorScheme.outlineVariant,
                 ),
               ),
               child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Expanded(
+                  Flexible(
                     child: Text(
                       professional ? 'Entrenador' : 'Personal',
                       style: Theme.of(context).textTheme.labelLarge,
                     ),
                   ),
-                  if (unread > 0) ...[
+                  if (professional && unread > 0) ...[
                     const SizedBox(width: 8),
-                    Badge.count(count: unread),
+                    Semantics(
+                      label: '$unread novedades en Entrenador',
+                      child: Badge.count(count: unread),
+                    ),
                   ],
                   const SizedBox(width: 8),
-                  const Icon(Icons.expand_more, size: 22),
+                  Badge(
+                    // En Personal el punto indica novedades en el otro espacio;
+                    // su total pertenece a Entrenador y se muestra en el menú.
+                    isLabelVisible: !professional && unread > 0,
+                    child: const Icon(Icons.expand_more, size: 22),
+                  ),
                 ],
               ),
             ),
           );
         }
         return SegmentedButton<bool>(
+          style: const ButtonStyle(
+            visualDensity: VisualDensity.compact,
+            minimumSize: WidgetStatePropertyAll(Size(0, 44)),
+          ),
           segments: [
-            const ButtonSegment(value: false, label: Text('Mi entrenamiento')),
+            const ButtonSegment(value: false, label: Text('Personal')),
             ButtonSegment(
               value: true,
-              label: Badge.count(
-                count: unread,
-                isLabelVisible: unread > 0,
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8),
-                  child: Text('Entrenador'),
-                ),
-              ),
+              icon: unread > 0 ? Badge.count(count: unread) : null,
+              label: const Text('Entrenador'),
             ),
           ],
           selected: {professional},
@@ -262,7 +308,7 @@ const _barDestinations = [
   NavigationDestination(
     icon: Icon(Icons.event_note_outlined),
     selectedIcon: Icon(Icons.event_note_rounded),
-    label: 'Mi plan',
+    label: 'Entrenar',
   ),
   NavigationDestination(
     icon: Icon(Icons.library_books_outlined),
@@ -270,14 +316,9 @@ const _barDestinations = [
     label: 'Biblioteca',
   ),
   NavigationDestination(
-    icon: Icon(Icons.insights_outlined),
-    selectedIcon: Icon(Icons.insights_rounded),
-    label: 'Evolución',
-  ),
-  NavigationDestination(
-    icon: Icon(Icons.people_outline),
-    selectedIcon: Icon(Icons.people),
-    label: 'Preparador',
+    icon: Icon(Icons.account_circle_outlined),
+    selectedIcon: Icon(Icons.account_circle),
+    label: 'Perfil',
   ),
 ];
 
@@ -290,7 +331,7 @@ const _railDestinations = [
   NavigationRailDestination(
     icon: Icon(Icons.event_note_outlined),
     selectedIcon: Icon(Icons.event_note_rounded),
-    label: Text('Mi plan'),
+    label: Text('Entrenar'),
   ),
   NavigationRailDestination(
     icon: Icon(Icons.library_books_outlined),
@@ -298,13 +339,8 @@ const _railDestinations = [
     label: Text('Biblioteca'),
   ),
   NavigationRailDestination(
-    icon: Icon(Icons.insights_outlined),
-    selectedIcon: Icon(Icons.insights_rounded),
-    label: Text('Evolución'),
-  ),
-  NavigationRailDestination(
-    icon: Icon(Icons.people_outline),
-    selectedIcon: Icon(Icons.people),
-    label: Text('Preparador'),
+    icon: Icon(Icons.account_circle_outlined),
+    selectedIcon: Icon(Icons.account_circle),
+    label: Text('Perfil'),
   ),
 ];

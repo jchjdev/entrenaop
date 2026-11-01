@@ -155,7 +155,7 @@ void main() {
       await t.tap(find.text('Alumnos'));
       await t.pumpAndSettle();
       expect(find.text('Isabel'), findsOneWidget);
-      await t.tap(find.text('Mi entrenamiento'));
+      await t.tap(find.text('Personal'));
       await t.pumpAndSettle();
       expect(router.state.uri.path, '/library/detail');
       expect(find.text('Mi detalle personal'), findsOneWidget);
@@ -188,7 +188,7 @@ void main() {
       expect(find.text('Hola, entrenador'), findsOneWidget);
       expect(messages.reads, 1);
       await t.enterText(find.byType(TextField), 'Mi borrador');
-      await t.tap(find.text('Mi entrenamiento'));
+      await t.tap(find.text('Personal'));
       await t.pumpAndSettle();
       // La protección de salida solicita confirmar un borrador.
       if (find.text('Salir').evaluate().isNotEmpty) {
@@ -468,7 +468,7 @@ void main() {
       await t.pumpWidget(MaterialApp.router(routerConfig: router));
       await t.pumpAndSettle();
       expect(find.byType(ExerciseVideoPreview), findsOneWidget);
-      await t.tap(find.text('Mi entrenamiento'));
+      await t.tap(find.text('Personal'));
       await t.pumpAndSettle();
       expect(
         find.byType(ExerciseVideoPreview, skipOffstage: false),

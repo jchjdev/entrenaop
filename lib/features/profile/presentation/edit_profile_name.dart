@@ -59,6 +59,7 @@ class _NameDialogState extends State<_NameDialog> {
   Widget build(BuildContext context) => PopScope(
     canPop: !_saving,
     child: AlertDialog(
+      scrollable: true,
       title: const Text('Cambiar nombre'),
       content: SizedBox(
         width: 380,

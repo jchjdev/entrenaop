@@ -1,5 +1,4 @@
 import 'package:entrenaop/core/navigation/section_refresh_boundary.dart';
-import 'package:entrenaop/core/navigation/app_account_actions.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:entrenaop/core/presentation/widgets/entrena_card.dart';
 import 'package:entrenaop/core/theme/entrena_theme.dart';
@@ -47,8 +46,11 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          leading: BackButton(
+            onPressed: () =>
+                context.canPop() ? context.pop() : context.go('/profile'),
+          ),
           title: const Text('Evolución'),
-          actions: const [AppAccountActions()],
         ),
         body: BlocBuilder<WorkoutHistoryCubit, WorkoutHistoryState>(
           builder: (context, state) => _HistoryContent(

@@ -1,5 +1,82 @@
 # Navegación del alumno y preparador · TRN-025 · 22/10/2026
 
+## Reorganización aprobada · 01/11/2026
+
+Javier aprueba implementar el reparto revisado, conservando la estética y los
+procesos que funcionan. Esta sección sustituye las propuestas y posiciones
+históricas descritas más abajo.
+
+| Destino inferior | Recorrido implementado |
+| --- | --- |
+| Inicio | Calendario compacto, sesión del día, preparaciones, guiados, herramientas y favoritos existentes; tarjeta compacta de novedades. |
+| Entrenar | Planes como primera cara; desplazamiento sincronizado por toque o gesto entre Planes, Preparaciones y Disponibilidad. Ver semana abre el calendario común. |
+| Biblioteca | Catálogo, consulta y creación existentes. Cambia únicamente la cabecera compartida de navegación. |
+| Preparador | Búsqueda, conversaciones, recursos, avisos y gestión/historial del vínculo. Indicador de novedades en la pestaña. |
+| Perfil | Identidad, cuenta, conexiones, suscripción y acceso a Mi evolución. |
+
+### Contratos conservados
+
+- Se mantienen las URLs de agenda, resultados, preparaciones, dispositivos y
+  tareas profesionales. Perfil ocupa la rama histórica 3 junto a Evolución;
+  `/profile` es su entrada y `/assessment/history` conserva sus hijos. La barra
+  presenta las ramas `[0, 1, 2, 4, 3]`; el trabajo profesional permanece en la 5.
+- Cambiar de sección conserva su pantalla y volver a tocar la entrada activa
+  recupera su raíz. El selector Personal/Entrenador sigue visible en las
+  pantallas principales y recupera el espacio anterior, adaptándose al tamaño
+  de texto. Los borradores siguen protegidos por las guardas existentes.
+- Entrenar recibe opcionalmente `tab` y `date`; Ver semana utiliza la fecha
+  correspondiente. El editor `/profile/preferences` conserva días, minutos,
+  material, validación y guardado. El alias `/plan/preferences` sigue funcionando.
+- Planes muestra los automáticos iniciados, pausados y finalizados con estado
+  explícito. Los programas guiados seguidos utilizan el catálogo completo
+  existente, sin heredar el límite de tres del resumen de Inicio. Preparaciones
+  conserva objetivos, pruebas y configuraciones pendientes.
+- El contador de Preparador utiliza el total del servidor, independiente de la
+  página o filtro. Abrir la sección no confirma lecturas. La recepción, resolución
+  y confirmación de avisos conservan sus contratos. Los avisos profesionales se
+  mantienen separados en Entrenador; se retira la campana superior personal.
+- La búsqueda de preparadores sigue accesible sin recursos. Un error no se
+  interpreta como ausencia de vínculo ni borra historial. La presentación vacía
+  ofrece búsqueda e historial tras una respuesta confirmada.
+- Perfil se fija a la identidad: renovar la misma sesión conserva su estado y
+  cambiar de cuenta sustituye sus consultas pendientes. Volver de una tarea
+  refresca los datos personales como antes.
+
+### Alcance y límite de consulta de pautas
+
+Tocar una card pendiente del calendario ya no inicia una ejecución. Su botón
+Comenzar sesión utiliza el mismo inicio por identificador de pauta; reanudar y
+consultar resultados conservan sus destinos. No cambian reglas deportivas,
+algoritmo, prescripción, acceso comercial, permisos, migraciones ni dependencias.
+
+La card consulta los metadatos y notas disponibles. No se añade una vista de
+receta completa por versión: el contrato actual de agenda no ofrece esa lectura
+independiente, y consultar la plantilla actual podría presentar una versión
+distinta de la asignada. Esa ampliación requiere un bloque propio; no se simula
+ni se concede acceso al programa privado completo del preparador.
+
+### Comprobación y distribución
+
+`flutter analyze` queda limpio. La batería completa de raíz termina con
+**1.577 pruebas correctas y una omisión previa**. Incluye identidad, respuestas tardías, Perfil/Evolución, enlaces
+históricos, retorno del editor con borrador y fecha, catálogo seguido completo,
+lectura explícita de avisos, inicio por botón y cambio profesional conservando
+pantalla y borradores. El editor de nombre permite desplazarse en el diálogo
+para conservar sus controles a 320 px con texto 2×.
+
+Las **14 comprobaciones visuales** generan 15 capturas de widgets reales con
+datos ficticios y sin red; se reproducen con
+`tools/athlete_navigation_visual_test.dart` y se guardan en
+`visual-audit/athlete-navigation-2026-11-01/`. Cubren Inicio, las tres caras de
+Entrenar, Perfil, Preparador y selector profesional, incluidos 320 px y texto 2×.
+La revisión visual incluye correcciones del espacio disponible para identidad y
+Evolución y del contador profesional junto a su etiqueta. No acredita instalación
+de esta versión en el iPhone: requiere recompilar e instalar desde Mac.
+
+El único siguiente bloque recomendado es aceptar en iPhone la semana de Inicio,
+el gesto entre las tres caras, editar Disponibilidad y volver, los avisos del
+preparador y el cambio Personal/Entrenador con una pauta de Ervi.
+
 ## Revisión global abierta · 01/11/2026
 
 Javier indica que la incoherencia alcanza más recorridos y botones que los dos
