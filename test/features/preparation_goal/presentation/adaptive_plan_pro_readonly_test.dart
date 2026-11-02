@@ -149,18 +149,18 @@ void main() {
     'Free consulta pautas conservadas sin prometer generación ni escribir',
     (tester) async {
       final result = await mount(tester);
-      expect(find.text('Pro inactivo · Solo consulta'), findsOneWidget);
+      expect(find.text('Tu plan guardado'), findsOneWidget);
       expect(find.text(_generationMessage), findsNothing);
       expect(find.text('TU PLAN ADAPTATIVO'), findsNothing);
       await show(tester, find.text('Ver entrenamiento'));
-      expect(find.text('02/11/2026 · Pauta conservada'), findsOneWidget);
+      expect(find.text('02/11/2026 · Entrenamiento del plan'), findsOneWidget);
       await tester.tap(find.text('Ver entrenamiento'));
       await tester.pumpAndSettle();
       expect(result.router.state.uri.path, '/plan/week/session/pendiente');
       expect(result.repository.forbiddenCalls, isEmpty);
       result.router.pop();
       await tester.pumpAndSettle();
-      expect(find.text('Pro inactivo · Solo consulta'), findsOneWidget);
+      expect(find.text('Tu plan guardado'), findsOneWidget);
     },
   );
 
@@ -219,7 +219,7 @@ void main() {
       loadAccess: ProAccessFixture(isPro: true).load,
     );
     expect(find.text('PLAN ADAPTATIVO · PAUSADO'), findsOneWidget);
-    expect(find.text('Pro inactivo · Solo consulta'), findsNothing);
+    expect(find.text('Tu plan guardado'), findsNothing);
     expect(
       find.textContaining('retomarlo requiere revisar la propuesta'),
       findsOneWidget,
@@ -238,7 +238,7 @@ void main() {
         find.text('No se ha podido comprobar tu acceso. Vuelve a intentarlo.'),
       );
       expect(find.text('Sesión pendiente'), findsOneWidget);
-      expect(find.text('Pro inactivo · Solo consulta'), findsOneWidget);
+      expect(find.text('Tu plan guardado'), findsOneWidget);
       expect(result.repository.forbiddenCalls, isEmpty);
     },
   );
@@ -303,7 +303,7 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text('Consultar mi plan'), findsOneWidget);
         expect(find.text(_generationMessage), findsNothing);
-        expect(find.byIcon(Icons.lock_outline_rounded), findsOneWidget);
+        expect(find.byIcon(Icons.bookmark_outline_rounded), findsOneWidget);
         if (hasOpenSession) {
           await show(tester, find.text('ENTRENAMIENTO EN CURSO'));
           expect(

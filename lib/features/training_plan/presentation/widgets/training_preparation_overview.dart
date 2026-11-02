@@ -98,7 +98,7 @@ class TrainingPreparationOverview extends StatelessWidget {
                         children: [
                           Icon(
                             program?.proRequired == true
-                                ? Icons.lock_outline_rounded
+                                ? Icons.bookmark_outline_rounded
                                 : program?.isPaused == true
                                 ? Icons.pause_rounded
                                 : program?.needsReview == true
@@ -140,7 +140,7 @@ class TrainingPreparationOverview extends StatelessWidget {
               Text(
                 hasPlan
                     ? program!.proRequired
-                          ? 'Pro inactivo · Solo consulta. Conservas tu preparación y tus resultados; empezar otro entrenamiento adaptativo requiere Pro vigente.'
+                          ? 'Puedes consultar tus entrenamientos y resultados. Activa Pro para empezar nuevas sesiones del plan.'
                           : program.isPaused
                           ? 'Tu objetivo, tu plan y tus resultados siguen aquí. Puedes consultarlos antes de retomarlo.'
                           : program.message

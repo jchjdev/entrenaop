@@ -100,7 +100,7 @@ void main() {
         find.byKey(const ValueKey('scheduled-preview-start')),
         findsNothing,
       );
-      expect(find.text('Pro inactivo · Solo consulta'), findsOneWidget);
+      expect(find.text('Activa Pro para entrenar con este plan.'), findsOneWidget);
       await tester.tap(find.text('Ver Pro'));
       await tester.pumpAndSettle();
       expect(router.state.uri.path, '/pro');

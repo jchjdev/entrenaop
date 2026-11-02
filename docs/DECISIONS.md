@@ -22,7 +22,10 @@ guardado; ambos estados se presentaban de forma incoherente. Javier elige manten
 consulta e historial, exigir Pro vigente para nuevos inicios adaptativos y permitir
 continuar y cerrar una ejecución ya abierta. Se aplica en el núcleo de servidor,
 incluidos accesos por agenda, vista previa, plantilla y dispositivos, y la app
-presenta «Pro inactivo · Solo consulta» sin modificar el estado deportivo.
+presenta el acceso sin modificar el estado deportivo. Tras probar el recorrido,
+Javier pide suavizar el aviso: «Tu plan guardado» y «Guardado», con marcador,
+sustituyen «Pro inactivo · Solo consulta». Se explica la necesidad de Pro junto
+al inicio de entrenamientos, conservando los mismos derechos y recorridos.
 Dev actualizado y verificado con ROLLBACK; interfaces y recorrido físico pendientes
 de compilar e instalar desde Mac. La sesión del preparador y los recursos Free
 mantienen sus derechos independientes.

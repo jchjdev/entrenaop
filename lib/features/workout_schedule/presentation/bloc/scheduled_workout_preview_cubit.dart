@@ -90,7 +90,7 @@ class ScheduledWorkoutPreviewCubit extends Cubit<ScheduledWorkoutPreviewState> {
               : preview.hasResult
               ? 'Este entrenamiento ya tiene un resultado. Puedes consultarlo.'
               : preview.proRequired
-              ? 'Pro inactivo · Solo consulta. Necesitas Pro para comenzar otro entrenamiento adaptativo.'
+              ? 'Puedes consultar este entrenamiento. Activa Pro para comenzarlo.'
               : preview.canStart
               ? 'El entrenamiento ha cambiado. Revisa lo pautado antes de comenzar.'
               : 'Este entrenamiento ya no está pendiente y no se puede comenzar.',

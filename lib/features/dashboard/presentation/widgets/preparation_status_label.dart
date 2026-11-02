@@ -3,7 +3,7 @@ import 'package:entrenaop/features/preparation_goal/domain/entities/adaptive_pro
 /// Una preparación guardada no acredita que su programa se haya iniciado.
 String preparationStatusLabel(AdaptiveProgramProgress? progress) =>
     progress?.proRequired == true
-    ? 'Solo consulta'
+    ? 'Guardado'
     : switch (progress?.status) {
         null || 'draft' => 'Por configurar',
         'paused' => 'Pausada',

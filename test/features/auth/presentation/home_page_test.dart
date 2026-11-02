@@ -575,7 +575,7 @@ void main() {
           ],
         ),
       );
-      expect(find.text('Pro inactivo · Solo consulta'), findsOneWidget);
+      expect(find.text('Tu plan guardado'), findsOneWidget);
       expect(find.text('Mensaje deportivo anterior.'), findsNothing);
       await tester.ensureVisible(find.text('Consultar mi plan'));
       await tester.tap(find.text('Consultar mi plan'));

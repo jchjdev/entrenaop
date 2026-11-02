@@ -71,7 +71,7 @@ class AdaptivePlanPage extends StatelessWidget {
                             children: [
                               Text(
                                 setup.proRequired
-                                    ? 'Pro inactivo · Solo consulta'
+                                    ? 'Tu plan guardado'
                                     : state.paused
                                     ? 'PLAN ADAPTATIVO · PAUSADO'
                                     : state.needsReview
@@ -99,7 +99,7 @@ class AdaptivePlanPage extends StatelessWidget {
                               const SizedBox(height: 12),
                               Text(
                                 setup.proRequired
-                                    ? 'Conservas tu preparación, lo pautado y tus resultados. Necesitas Pro vigente para comenzar otro entrenamiento adaptativo.'
+                                    ? 'Puedes consultar tus entrenamientos y resultados. Activa Pro para empezar nuevas sesiones del plan.'
                                     : state.paused
                                     ? 'Conservamos tu preparación y tus resultados. Puedes consultar lo pautado; retomarlo requiere revisar la propuesta.'
                                     : setup.programState['message']
@@ -120,7 +120,7 @@ class AdaptivePlanPage extends StatelessWidget {
                                   .toDouble(),
                           decoration: InputDecoration(
                             labelText: setup.proRequired
-                                ? 'Pautas conservadas'
+                                ? 'Semanas del plan'
                                 : state.paused
                                 ? 'Pauta anterior'
                                 : 'Semana del plan',
@@ -272,7 +272,7 @@ class _SessionCard extends StatelessWidget {
       ScheduledWorkoutStatus.inProgress => 'En curso',
       ScheduledWorkoutStatus.planned =>
         proRequired
-            ? 'Pauta conservada'
+            ? 'Entrenamiento del plan'
             : paused
             ? 'Pauta anterior'
             : 'Pautado',
@@ -401,7 +401,7 @@ class _PublishedSessionCard extends StatelessWidget {
             if (date != null) DateFormat('dd/MM/yyyy').format(date),
             if (session['minutes'] != null) '${session['minutes']} min',
             proRequired
-                ? 'Pauta conservada'
+                ? 'Entrenamiento del plan'
                 : paused
                 ? 'Pauta anterior'
                 : 'Pauta publicada',

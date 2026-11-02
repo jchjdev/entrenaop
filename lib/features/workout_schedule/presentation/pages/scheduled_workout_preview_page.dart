@@ -184,7 +184,7 @@ class _PreviewAction extends StatelessWidget {
                   )
                 else if (preview.proRequired) ...[
                   const Text(
-                    'Pro inactivo · Solo consulta',
+                    'Activa Pro para entrenar con este plan.',
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),

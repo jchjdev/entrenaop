@@ -307,7 +307,7 @@ class _ProgramProgressCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               program.proRequired
-                  ? 'Pro inactivo · Solo consulta. Tu preparación y tus resultados se conservan.'
+                  ? 'Consulta tu plan y tus resultados. Para empezar nuevas sesiones del plan, activa Pro.'
                   : program.message,
             ),
             if (future &&

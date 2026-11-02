@@ -5,7 +5,7 @@ elige conservar consulta e historial y exigir Pro vigente para nuevos inicios;
 una ejecución abierta puede terminarse. La migración `20261102103402` protege el
 núcleo compartido por agenda, preview, plantilla y dispositivos. Metadatos de
 acceso separados del estado deportivo corrigen la pausa aparente y la promesa
-de continuidad en Free. El cliente muestra Solo consulta y maneja una retirada
+de continuidad en Free. El cliente muestra Tu plan guardado y maneja una retirada
 de Pro entre lectura e inicio sin reintentar ni crear ejecuciones.
 Verificación: historial local/Dev coincidente, cinco contratos SQL con ROLLBACK,
 seis intentos reales rechazados para las dos pautas de jcharjim sin crear datos,
