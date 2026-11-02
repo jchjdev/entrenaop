@@ -6,6 +6,16 @@ Entrenar: la pestaña y sus textos deben decir **Programas**, sin «Guiados» ni
 La distinción de dominio respecto al plan adaptativo se conserva.
 [Criterio de producto](PRODUCT.md#prioridad-del-recorrido-adaptativo--02112026).
 
+**Revisión de precios y ampliaciones mixtas · 02/11/2026:** Javier reabre la
+tabla de ensayo, cuestiona los 206,90 EUR de Completo/100 y pide estudiar cupos
+elegibles de alumno en alumno, como los incrementos que recuerda del panel de
+Harbiz. No aprueba una tarifa nueva ni una rentabilidad. También señala que el
+cambio Completo/5 → Profesional/10 no permite incorporar más hasta renovar con
+la regla actual. Se registra como limitación; separar ampliación inmediata de
+bajada de nivel al renovar es una propuesta, pendiente de acordar su coste y
+confirmación. No se alteran contratos ni pagos existentes por esta revisión.
+[Borrador y propuesta de revisión](TRAINER_PRICING_DRAFT.md#revisión-abierta--02112026).
+
 **Cambios de plan profesional y contraste de navegación · 02/11/2026:** Javier
 autoriza cambiar nivel y plazas desde Trainer, solo en pruebas. Se adopta ampliar
 o subir al confirmar el pago de la diferencia del periodo restante; cualquier

@@ -1,5 +1,44 @@
 # Precios y cupos profesionales · borrador del 31/10/2026
 
+## Revisión abierta · 02/11/2026
+
+Javier pide revisar importes y cupos, especialmente Completo/100 a 206,90 EUR,
+y permitir estudiar cantidades como 5, 6, 7, 8 o 9 alumnos. La tabla siguiente
+conserva el catálogo histórico del sandbox; no se adopta como tarifa comercial.
+El suplemento fijo de 1 EUR por plaza de Completo es una hipótesis no validada
+contra costes, consumo o disposición a pagar.
+
+Propuesta para concretar, todavía sin aprobación de importes ni implementación:
+
+- Elegir un cupo contratado con incrementos unitarios, manteniendo «Para mí» y
+  alumnos inactivos fuera del cómputo. No generar cargos sorpresa por cada alta.
+- Cuota de entrada con un cupo incluido y precio marginal decreciente por
+  volumen. Distinguir descuento gradual de cobrar todas las plazas al precio
+  de un tramo nuevo; añadir una plaza no debe abaratar el total contratado.
+- Separar herramientas profesionales, extras de Pro/algoritmo/directorio y
+  presupuesto técnico de medios. El servicio asignado ya se consume sin Pro;
+  Pro incluido sigue siendo una prestación adicional por definir y activar.
+- Recalcular el suplemento de Completo con costes medidos y escenarios de uso.
+  No prometer vídeo ilimitado ni concluir que una cifra asegura rentabilidad o
+  que nadie la pagaría.
+
+La regla publicada aún difiere cualquier cambio mixto con pérdida de nivel.
+Así, Completo/5 → Profesional/10 conserva cinco plazas hasta renovar. Propuesta
+principal: ampliar ahora en el nivel vigente y programar la bajada al renovar;
+por ejemplo, Completo/10 ahora y Profesional/10 al final del periodo. Se debe
+mostrar y aceptar la diferencia proporcional de **Completo**, no presentar los
+2 EUR entre las cuotas de origen/destino como si fueran ese cargo. Esta revisión
+no autoriza implementar ni cobrar esa transición compuesta.
+
+Referencia contrastada el 02/11/2026: la [web pública de Harbiz](https://www.harbiz.io/tarifas)
+muestra Basic con 5/15/30/40 clientes y Pro con 50/75/100/200, entre otros cupos.
+Esto no acredita la curva por alumno del panel que Javier vio durante la prueba.
+No confundir precios mensuales, equivalentes con pago anual e impuestos.
+
+Antes de reemplazar el catálogo de ensayo: acordar curva y suplementos,
+contrastar costes/uso y definir la transición mixta. Los precios Stripe vigentes
+y las suscripciones ya pagadas permanecen sin cambios.
+
 Estado: **catálogo provisional autorizado solo para pruebas**, sin precios
 comerciales definitivos ni cobros reales. Javier autoriza el 31/10 convertir la
 tabla en ofertas sandbox para probar registro, pago y habilitación del cupo.
