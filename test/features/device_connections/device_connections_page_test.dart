@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 
 import 'package:device_health/device_health.dart';
 import 'package:entrenaop/core/theme/entrena_theme.dart';
@@ -75,6 +76,8 @@ Widget _page(
   _Health health,
   _Garmin garmin, {
   String owner = 'owner-a',
+  bool planned = false,
+  Future<void> Function()? onApple,
   double scale = 1,
   Future<void> Function()? onHealth,
   Future<void> Function()? onGarmin,
@@ -86,6 +89,8 @@ Widget _page(
   ),
   home: DeviceConnectionsPage(
     ownerId: owner,
+    showPlannedProviders: planned,
+    onOpenAppleWatch: onApple,
     health: health,
     garmin: garmin,
     onOpenHealth: onHealth ?? () async {},
@@ -103,6 +108,26 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Lectura disponible'), findsOneWidget);
     expect(find.text('Sin conectar'), findsOneWidget);
+    final semantics = tester.ensureSemantics();
+    await tester.pump();
+    try {
+      expect(
+        tester
+            .getSemantics(
+              find.byWidgetPredicate(
+                (widget) =>
+                    widget is Semantics &&
+                    widget.properties.label ==
+                        'Garmin. Sin conectar. Gestionar Garmin',
+              ),
+            )
+            .getSemanticsData()
+            .hasAction(ui.SemanticsAction.tap),
+        isTrue,
+      );
+    } finally {
+      semantics.dispose();
+    }
     expect(health.permissions, 0);
     expect(health.reads, 0);
     expect(garmin.writes, 0);
@@ -205,4 +230,69 @@ void main() {
       expect(find.text('Lectura desde el móvil'), findsOneWidget);
     },
   );
+  testWidgets(
+    'las marcas en estudio solo aparecen al habilitar el avance Dev',
+    (tester) async {
+      final health = _Health();
+      final garmin = _Garmin();
+      await tester.pumpWidget(_page(health, garmin));
+      await tester.pumpAndSettle();
+      expect(find.text('Más marcas'), findsNothing);
+      await tester.pumpWidget(
+        _page(health, garmin, planned: true, onApple: () async {}),
+      );
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Más marcas'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Más marcas'));
+      await tester.pumpAndSettle();
+      for (final name in ['Huawei', 'Suunto', 'Amazfit', 'Polar', 'COROS']) {
+        expect(find.text(name), findsOneWidget);
+      }
+      await tester.ensureVisible(find.text('Huawei'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Huawei'));
+      await tester.pumpAndSettle();
+      expect(find.text('Conexión en estudio'), findsOneWidget);
+      expect(find.text('Entendido'), findsOneWidget);
+      expect(garmin.writes, 0);
+      expect(health.permissions, 0);
+      expect(health.reads, 0);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('Apple conserva su acceso y el texto al 200% no desborda', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(320, 780));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final health = _Health();
+    final garmin = _Garmin();
+    var opened = 0;
+    await tester.pumpWidget(
+      _page(
+        health,
+        garmin,
+        planned: true,
+        scale: 2,
+        onApple: () async {
+          opened++;
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Gestionar Apple Watch'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Gestionar Apple Watch'));
+    await tester.pumpAndSettle();
+    expect(opened, 1);
+    await tester.ensureVisible(find.text('Más marcas'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Más marcas'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('COROS'));
+    expect(tester.takeException(), isNull);
+    expect(garmin.writes, 0);
+  });
 }

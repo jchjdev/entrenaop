@@ -2,6 +2,7 @@ import 'package:device_health/device_health.dart';
 import 'package:flutter/material.dart';
 
 import '../domain/garmin_connection.dart';
+import 'device_watch_artwork.dart';
 
 class DeviceConnectionsPage extends StatefulWidget {
   const DeviceConnectionsPage({
@@ -12,9 +13,11 @@ class DeviceConnectionsPage extends StatefulWidget {
     required this.onOpenHealth,
     required this.onOpenGarmin,
     this.onOpenAppleWatch,
+    this.showPlannedProviders = false,
   });
 
   final String ownerId;
+  final bool showPlannedProviders;
   final LocalRunningHealth health;
   final GarminConnectionRepository garmin;
   final Future<void> Function() onOpenHealth, onOpenGarmin;
@@ -91,49 +94,108 @@ class _DeviceConnectionsPageState extends State<DeviceConnectionsPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    Text(
+                      'Conecta tu reloj',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 6),
                     const Text(
-                      'Gestiona tus conexiones y los datos que compartes con EntrenaOP.',
+                      'Tus sesiones y tus resultados, en un mismo lugar.',
                     ),
                     const SizedBox(height: 20),
+                    _DeviceGrid(
+                      children: [
+                        FutureBuilder<GarminConnectionSnapshot>(
+                          key: ValueKey('garmin-${widget.ownerId}'),
+                          future: _garmin,
+                          builder: (context, snapshot) => _DeviceTile(
+                            title: 'Garmin',
+                            accent: const Color(0xff69c6ff),
+                            status: _garminStatus(snapshot),
+                            connected:
+                                snapshot.connectionState ==
+                                    ConnectionState.done &&
+                                !snapshot.hasError &&
+                                snapshot.data?.status ==
+                                    GarminConnectionStatus.connected,
+                            description: snapshot.hasError
+                                ? 'No se pudo comprobar la conexión. Entra para revisar su estado o reinténtalo.'
+                                : snapshot.data?.allowed == false
+                                ? 'Puedes revisar o desconectar tu cuenta. La sincronización requiere Pro o un servicio de entrenador vigente.'
+                                : 'Tu cuenta Garmin, las actividades y el envío de sesiones.',
+                            action: 'Gestionar Garmin',
+                            onTap: () => _open(widget.onOpenGarmin),
+                          ),
+                        ),
+                        if (widget.onOpenAppleWatch != null)
+                          _DeviceTile(
+                            title: 'Apple Watch',
+                            accent: const Color(0xffff8a58),
+                            square: true,
+                            status: 'Carreras desde el iPhone',
+                            description: 'Programa las carreras pautadas desde el iPhone emparejado. Requiere Pro o un servicio de entrenador vigente.',
+                            action: 'Gestionar Apple Watch',
+                            onTap: () => _open(widget.onOpenAppleWatch!),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
                     FutureBuilder<HealthStoreAvailability>(
                       key: ValueKey('health-${widget.ownerId}'),
                       future: _health,
-                      builder: (context, snapshot) => _ConnectionCard(
-                        title: 'Salud del móvil',
-                        icon: Icons.health_and_safety_outlined,
-                        status: _healthStatus(snapshot),
-                        description: _healthDescription(snapshot),
-                        action: 'Historial y permisos',
-                        onTap: () => _open(widget.onOpenHealth),
+                      builder: (context, snapshot) => Tooltip(
+                        message: _healthDescription(snapshot),
+                        child: Card(
+                          clipBehavior: Clip.antiAlias,
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.all(16),
+                            leading: const Icon(
+                              Icons.favorite_rounded,
+                              color: Color(0xffff6b88),
+                              size: 32,
+                            ),
+                            title: const Text('Salud del móvil'),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(_healthStatus(snapshot)),
+                                const Text('Historial y permisos'),
+                              ],
+                            ),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () => _open(widget.onOpenHealth),
+                          ),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    FutureBuilder<GarminConnectionSnapshot>(
-                      key: ValueKey('garmin-${widget.ownerId}'),
-                      future: _garmin,
-                      builder: (context, snapshot) => _ConnectionCard(
-                        title: 'Garmin',
-                        icon: Icons.watch_outlined,
-                        status: _garminStatus(snapshot),
-                        description: snapshot.hasError
-                            ? 'No se pudo comprobar la conexión. Entra para revisar su estado o reinténtalo.'
-                            : snapshot.data?.allowed == false
-                            ? 'Puedes revisar o desconectar tu cuenta. La sincronización requiere Pro o un servicio de entrenador vigente.'
-                            : 'Tu cuenta Garmin, las actividades, el envío de sesiones y la app del reloj.',
-                        action: 'Gestionar Garmin',
-                        onTap: () => _open(widget.onOpenGarmin),
-                      ),
-                    ),
-                    if (widget.onOpenAppleWatch != null) ...[
-                      _ConnectionCard(
-                        title: 'Apple Watch',
-                        icon: Icons.watch_outlined,
-                        status: 'Carreras en Entreno',
-                        description: 'Programa las carreras pautadas desde el iPhone emparejado. Requiere Pro o un servicio de entrenador vigente.',
-                        action: 'Gestionar Apple Watch',
-                        onTap: () => _open(widget.onOpenAppleWatch!),
-                      ),
+                    if (widget.showPlannedProviders) ...[
                       const SizedBox(height: 16),
+                      ExpansionTile(
+                        tilePadding: const EdgeInsets.symmetric(horizontal: 4),
+                        title: const Text('Más marcas'),
+                        subtitle: const Text('Conexiones en estudio'),
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.only(bottom: 16),
+                            child: Text(
+                              'Huawei, Suunto, Amazfit, Polar y COROS todavía no se pueden conectar a EntrenaOP.',
+                            ),
+                          ),
+                          _DeviceGrid(
+                            children: [
+                              for (final brand in _plannedBrands)
+                                _DeviceTile(
+                                  title: brand.name,
+                                  accent: brand.color,
+                                  status: 'En estudio',
+                                  description: 'Esta conexión todavía no está disponible en EntrenaOP.',
+                                  action: 'Ver información',
+                                  onTap: () => _showPlannedBrand(brand.name),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ],
                   ],
                 ),
@@ -144,6 +206,36 @@ class _DeviceConnectionsPageState extends State<DeviceConnectionsPage> {
       ),
     ),
   );
+
+  void _showPlannedBrand(String name) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(name, style: Theme.of(context).textTheme.headlineSmall),
+              const SizedBox(height: 12),
+              const Text('Conexión en estudio'),
+              const SizedBox(height: 8),
+              const Text(
+                'Esta marca todavía no puede conectarse a EntrenaOP. Cuando esté disponible, podrás vincular tu cuenta desde aquí.',
+              ),
+              const SizedBox(height: 20),
+              FilledButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Entendido'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   String _healthStatus(AsyncSnapshot<HealthStoreAvailability> snapshot) {
     if (snapshot.hasError) return 'Disponibilidad sin confirmar';
@@ -190,57 +282,132 @@ class _DeviceConnectionsPageState extends State<DeviceConnectionsPage> {
   }
 }
 
-class _ConnectionCard extends StatelessWidget {
-  const _ConnectionCard({
+const _plannedBrands = [
+  (name: 'Huawei', color: Color(0xffef796b)),
+  (name: 'Suunto', color: Color(0xffefaa61)),
+  (name: 'Amazfit', color: Color(0xff79cfb3)),
+  (name: 'Polar', color: Color(0xfff27294)),
+  (name: 'COROS', color: Color(0xffc1b2ff)),
+];
+
+class _DeviceGrid extends StatelessWidget {
+  const _DeviceGrid({required this.children});
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, box) {
+      final columns =
+          box.maxWidth >= 300 &&
+              MediaQuery.textScalerOf(context).scale(18) <= 25
+          ? 2
+          : 1;
+      return Column(
+        children: [
+          for (var i = 0; i < children.length; i += columns) ...[
+            if (i > 0) const SizedBox(height: 14),
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(child: children[i]),
+                  if (columns == 2) ...[
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: i + 1 < children.length
+                          ? children[i + 1]
+                          : const SizedBox.shrink(),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ],
+      );
+    },
+  );
+}
+
+class _DeviceTile extends StatelessWidget {
+  const _DeviceTile({
     required this.title,
-    required this.icon,
+    required this.accent,
     required this.status,
     required this.description,
     required this.action,
     required this.onTap,
+    this.square = false,
+    this.connected = false,
   });
 
   final String title, status, description, action;
-  final IconData icon;
+  final Color accent;
+  final bool square, connected;
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => Card(
-    clipBehavior: Clip.antiAlias,
-    child: InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    onTap: onTap,
+    label: '$title. $status. $action',
+    hint: description,
+    excludeSemantics: true,
+    child: Tooltip(
+      message: description,
+      child: Card(
+        margin: EdgeInsets.zero,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(
+            color: connected
+                ? accent.withValues(alpha: .55)
+                : Theme.of(context).colorScheme.outlineVariant,
+          ),
+        ),
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 10, 14, 18),
+            child: Column(
               children: [
-                Icon(
-                  icon,
-                  color: Theme.of(context).colorScheme.primary,
-                  size: 28,
+                DeviceWatchArtwork(accent: accent, square: square),
+                const SizedBox(height: 2),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w800),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (connected) ...[
+                      Icon(Icons.check_circle_rounded, size: 13, color: accent),
+                      const SizedBox(width: 4),
+                    ],
+                    Flexible(
+                      child: Text(
+                        status,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
+                  ],
                 ),
-                const Icon(Icons.chevron_right),
+                const SizedBox(height: 16),
+                const Spacer(),
+                Text(
+                  action,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.labelLarge
+                      ?.copyWith(color: accent),
+                ),
               ],
             ),
-            const SizedBox(height: 12),
-            Text(status, style: const TextStyle(fontWeight: FontWeight.w700)),
-            const SizedBox(height: 8),
-            Text(description),
-            const SizedBox(height: 16),
-            Text(
-              action,
-              style: TextStyle(color: Theme.of(context).colorScheme.primary),
-            ),
-          ],
+          ),
         ),
       ),
     ),

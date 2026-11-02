@@ -415,7 +415,7 @@ y revocable para consultar resultados completados desde otro preparador activo.
 SQL contrasta consentimiento, relación, servicio, MFA y sesión; la proyección
 excluye notas, medios e historial general de Salud. Sin activaciones en cuentas
 reales. Análisis y baterías de deportista, Trainer y ADMIN correctos.
-**Siguiente recorrido único de integraciones:** actualizar una vez el iPhone y
+**Aceptación física pendiente del bloque Apple:** actualizar una vez el iPhone y
 contrastar el retorno Apple en segundo plano con una pauta vigente, RPE ausente
 y lectura por ambos preparadores tras el consentimiento explícito del alumno.
 Las pruebas Apple
@@ -423,6 +423,14 @@ de cierre, fases/avisos, cambios y retirada conservan sus verificaciones pendien
 Javier confirma hasta siete días posteriores para realizar una pauta otro día;
 el margen está aplicado al cierre automático y a la asociación manual en Dev.
 [Contrato, validación y límites](DEVICE_APPLE_WATCH.md).
+
+**Ampliación solicitada · 02/11/2026:** Javier reabre otras marcas y pide tarjetas
+visuales como referencia de Kotcha. Se conserva la aceptación física Apple como
+comprobación pendiente del bloque implementado. El nuevo bloque de ampliación
+empieza por acceso y contrato Huawei; Suunto, Amazfit, Polar y COROS quedan en el
+expediente de proveedores. Las entradas en estudio de Dev no son conectores ni
+acreditan envíos, resultados o aprobación. El editor deportivo permanece común.
+[Alcance y vías oficiales](DEVICE_PROVIDER_EXPANSION_2026_11_02.md).
 
 **COM-022 · 28/10/2026 · contratación profesional web en curso:** Javier retoma
 los dos circuitos de pago profesional y propone Pro personal en las tiendas.

@@ -17,6 +17,7 @@ void main() {
     ('iphone', 390.0, 1.0, true, true),
     ('web', 390.0, 1.0, false, false),
     ('texto-grande', 360.0, 1.5, true, true),
+    ('marcas', 390.0, 1.0, true, true),
   ]) {
     testWidgets('captura conexiones $name', (tester) async {
       tester.view.physicalSize = Size(width, 900);
@@ -56,6 +57,8 @@ void main() {
               '/': (context) => const Scaffold(),
               '/connections': (context) => DeviceConnectionsPage(
                 ownerId: 'visual-fixture',
+                showPlannedProviders: true,
+                onOpenAppleWatch: () async {},
                 health: _Health(available),
                 garmin: _Garmin(connected),
                 onOpenHealth: () async {},
@@ -66,6 +69,14 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      if (name == 'marcas') {
+        await tester.ensureVisible(find.text('Más marcas'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Más marcas'));
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.text('COROS'));
+        await tester.pumpAndSettle();
+      }
       expect(tester.takeException(), isNull);
       await tester.runAsync(() async {
         final render =
@@ -74,7 +85,7 @@ void main() {
         final image = await render.toImage();
         final data = await image.toByteData(format: ui.ImageByteFormat.png);
         final file = File(
-          'docs/visual-audit/device-connections-2026-10-28/$name.png',
+          'docs/visual-audit/device-connections-2026-11-02/$name.png',
         );
         await file.parent.create(recursive: true);
         await file.writeAsBytes(data!.buffer.asUint8List());

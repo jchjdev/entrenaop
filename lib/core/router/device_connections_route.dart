@@ -50,6 +50,7 @@ class _DeviceConnectionsRouteState extends State<DeviceConnectionsRoute> {
   Widget build(BuildContext context) => DeviceConnectionsPage(
     key: ValueKey(widget.ownerId),
     ownerId: widget.ownerId,
+    showPlannedProviders: AppConfig.environment == AppEnvironment.development,
     health: _health,
     garmin: _garmin,
     onOpenHealth: () async {

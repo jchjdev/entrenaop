@@ -1,5 +1,16 @@
 # Dispositivos y actividades · bloque común · INT-001
 
+## Presentación visual y otras marcas · 02/11/2026
+
+Javier reabre Huawei, Suunto, Amazfit, Polar y COROS y aporta una referencia de
+tarjetas con relojes. El resumen presenta Garmin y Apple Watch con ilustraciones
+propias y conserva Salud por separado. Las cinco conexiones futuras solo se
+muestran en un desplegable de Dev como **En estudio**; no están habilitadas.
+Esta ampliación visual sustituye la restricción anterior de no mostrar ninguna
+entrada futura, únicamente para ese avance de desarrollo. No cambia permisos,
+contratos, derechos comerciales ni el editor. Consultar
+[vías oficiales y siguiente bloque Huawei](DEVICE_PROVIDER_EXPANSION_2026_11_02.md).
+
 ## Dispositivos y conexiones · INT-022
 
 Desde el 28/10/2026, Perfil ofrece un único acceso **Dispositivos y conexiones**

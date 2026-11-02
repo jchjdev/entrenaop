@@ -1,5 +1,17 @@
 # Registro de decisiones vigentes
 
+**Dispositivos visuales y ampliación de marcas · 02/11/2026:** Javier aporta un
+vídeo de Kotcha y pide tarjetas visuales de relojes; reabre Huawei, Suunto,
+Amazfit, Polar y COROS después de priorizar Garmin. Se conserva el editor común
+y se distinguen lectura de resultados y envío/cambios/retirada por proveedor.
+Garmin, Apple Watch y Salud mantienen sus recorridos; solo Dev ofrece un
+desplegable de marcas en estudio, sin autorización ni soporte fingidos. La
+aceptación física Apple pendiente se conserva. Siguiente bloque de ampliación:
+confirmar acceso Huawei para España/UE y sus capacidades reales antes de activar
+un conector. Javier confirma que no tiene cuenta HUAWEI Developer verificada;
+el alta y la concesión son dependencias externas, no capacidades implementadas.
+[Revisión, límites y secuencia](DEVICE_PROVIDER_EXPANSION_2026_11_02.md).
+
 **El núcleo del deportista es la preparación adaptativa autónoma · 02/11/2026:**
 Javier reafirma que el valor principal es el plan que planifica y adapta el
 entrenamiento a su evolución sin depender de un preparador. Preparación y plan
