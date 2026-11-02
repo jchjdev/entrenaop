@@ -39,6 +39,7 @@ class TrainerShell extends StatefulWidget {
     ('/reports', 'Informes', Icons.insights),
     ('/settings', 'Mi cuenta', Icons.settings_outlined),
     ('/directory-profile', 'Mi ficha pública', Icons.badge_outlined),
+    ('/subscription', 'Plan y facturación', Icons.credit_card_outlined),
   ];
   @override
   State<TrainerShell> createState() => _TrainerShellState();

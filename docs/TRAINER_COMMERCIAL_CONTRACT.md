@@ -59,6 +59,40 @@ siete plazas muestra 14,90/22,30/27,70 EUR; el acceso rápido de 35 muestra
 34,90/46,40/57,40 EUR. Se conserva la suscripción activa de cinco; no se inicia
 otra compra ni se confirma un cambio durante esta comprobación.
 
+### Visibilidad y ampliación guiada · 02/11/2026
+
+Javier señala que Completo/5 → Profesional/50 aparece como un cambio mayor,
+pero no permite pagar ni incorporar esas plazas inmediatamente. Se conserva
+la regla acordada: perder nivel/prestaciones difiere el cambio completo hasta
+renovar. La pantalla debe decir expresamente que ahora no se paga y que se
+conservan las plazas del contrato actual; no confundir el futuro cupo con el vigente.
+
+Cuando existe oferta de ampliación del **mismo nivel y prestaciones**, con cuota
+superior, el cambio programado ofrece «Ampliar plazas ahora». Un diálogo muestra
+la oferta, cuota mensual y consecuencia de anular la bajada ya programada. Solo
+al aceptar se anula el cambio pendiente y se solicita la revisión de ampliación;
+ese paso no confirma ni cobra. El importe proporcional viene del servidor/Stripe
+y requiere otra confirmación explícita. Tras pagar se puede volver a programar
+la bajada para renovar, conservando ya las nuevas plazas durante el periodo actual.
+No implementa una transición mixta automática ni modifica las reglas de cobro.
+
+Se verifica MFA antes de anular y se vuelve a comprobar la identidad de la oferta
+actual antes de solicitar otra revisión. Si la renovación ha ocurrido o cambia
+la suscripción, se pide revisar el estado. Si falla Stripe tras anular, se informa
+de que se anuló el cambio anterior, sin confirmar cargos ni retirar acceso. Una
+respuesta incierta se concilia con el estado del servidor; no se confirma sola.
+Las facturas pendientes disponen de «Pagar diferencia en Stripe» con destino validado.
+
+«Plan y facturación» tiene entrada directa en el lateral y tarjeta con botón
+principal al principio de Mi cuenta. Sigue accesible si falla la consulta del
+acceso profesional. La información de acceso/cupo y la seguridad permanecen separadas.
+
+Verificación del ajuste: análisis Trainer sin incidencias y 443 pruebas completas.
+Las regresiones comprueban cerrar el diálogo sin cambios, anular/revisar sin
+confirmar cobro, conservar cupo elegido si falla la revisión, detenerse si cambia
+la suscripción al anular y mantener facturación accesible ante un error de acceso.
+No se añaden migraciones ni cambios de servidor o ADMIN.
+
 ## 1. Base vigente y propuesta principal
 
 ### Posibles niveles comerciales · propuesta del 28/10/2026

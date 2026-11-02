@@ -55,6 +55,28 @@ class _TrainerAccountPageState extends State<TrainerAccountPage> {
         children: [
           ProfessionalSectionHeader(title: 'Mi cuenta', subtitle: widget.email),
           const SizedBox(height: 24),
+          EntrenaCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Plan y facturación',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Consulta tu plan, amplía plazas y gestiona pagos, facturas o cancelación.',
+                ),
+                const SizedBox(height: 16),
+                FilledButton.icon(
+                  onPressed: () => context.push('/subscription'),
+                  icon: const Icon(Icons.credit_card),
+                  label: const Text('Gestionar plan y facturación'),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
           if (snapshot.connectionState != ConnectionState.done)
             const LinearProgressIndicator(),
           if (snapshot.hasError)
@@ -85,10 +107,6 @@ class _TrainerAccountPageState extends State<TrainerAccountPage> {
                       const SizedBox(height: 12),
                       const Text(
                         'El acceso profesional y la suscripción personal Pro se gestionan por separado.',
-                      ),
-                      TextButton(
-                        onPressed: () => context.push('/subscription'),
-                        child: const Text('Gestionar suscripción profesional'),
                       ),
                     ],
                   ),

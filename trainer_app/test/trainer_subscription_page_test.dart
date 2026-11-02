@@ -185,7 +185,153 @@ class PlanChangeFixture extends PlanCatalogueFixture {
   }
 }
 
+class MixedPlanChangeFixture extends PlanChangeFixture {
+  MixedPlanChangeFixture() {
+    change = {
+      'id': 'change-one',
+      'state': 'scheduled',
+      'kind': 'renewal',
+      'amount': 0,
+      'effective_at': '2099-11-30T12:00:00Z',
+      'from_offer': {
+        'id': 'complete-5',
+        'plan_key': 'complete',
+        'directory_option': true,
+        'amount': 1500,
+      },
+      'offer': {
+        'id': 'professional-10',
+        'title': 'Profesional diez',
+        'capacity': 10,
+        'amount': 2000,
+      },
+    };
+  }
+  bool failQuote = false, changedDuringCancel = false;
+  String current = 'complete-5';
+  @override
+  Future<SubscriptionJson> status() async {
+    final data = await super.status();
+    data['subscription'] = {
+      ...data['subscription'] as Map,
+      'offer_id': current,
+      'capacity': 5,
+      'title': 'Completo cinco',
+    };
+    return data;
+  }
+
+  @override
+  Future<SubscriptionJson> act(
+    String action, {
+    String? offerId,
+    String? changeId,
+  }) async {
+    if (action == 'quote_change' && failQuote) {
+      operations.add(action);
+      throw StateError('No se pudo consultar Stripe');
+    }
+    final result = await super.act(
+      action,
+      offerId: offerId,
+      changeId: changeId,
+    );
+    if (action == 'cancel_change' && changedDuringCancel) {
+      current = 'professional-10';
+    }
+    return result;
+  }
+}
+
 void main() {
+  Future<void> openExpansion(
+    WidgetTester t,
+    MixedPlanChangeFixture repo,
+  ) async {
+    await t.pumpWidget(
+      MaterialApp(home: TrainerSubscriptionPage(repository: repo)),
+    );
+    await t.pumpAndSettle();
+    final expand = find.byKey(const ValueKey('expand-current-plan'));
+    await t.scrollUntilVisible(
+      expand,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await t.pumpAndSettle();
+    await t.tap(expand);
+    await t.pumpAndSettle();
+  }
+
+  testWidgets(
+    'más plazas con bajada de nivel se explica y revisar ampliación no cobra',
+    (t) async {
+      final repo = MixedPlanChangeFixture();
+      await openExpansion(t, repo);
+      expect(
+        find.textContaining('No hay nada que pagar ahora'),
+        findsOneWidget,
+      );
+      expect(repo.operations, isEmpty);
+      await t.tap(find.text('Conservar cambio programado'));
+      await t.pumpAndSettle();
+      expect(repo.operations, isEmpty);
+      expect(repo.change!['state'], 'scheduled');
+      await t.tap(find.byKey(const ValueKey('expand-current-plan')));
+      await t.pumpAndSettle();
+      await t.tap(find.text('Revisar ampliación'));
+      await t.pumpAndSettle();
+      expect(repo.operations, ['cancel_change', 'quote_change']);
+      expect(repo.selected, 'complete-10');
+      expect(repo.change!['state'], 'quoted');
+      expect(
+        find.text('Confirmar y pagar diferencia (pruebas)'),
+        findsOneWidget,
+      );
+    },
+  );
+  testWidgets(
+    'si Stripe falla después de anular se conserva el acceso y no se confirma cargo',
+    (t) async {
+      final repo = MixedPlanChangeFixture()..failQuote = true;
+      await openExpansion(t, repo);
+      await t.tap(find.text('Revisar ampliación'));
+      await t.pumpAndSettle();
+      expect(repo.operations, ['cancel_change', 'quote_change']);
+      expect(repo.current, 'complete-5');
+      expect(repo.change!['state'], 'canceled');
+      await t.scrollUntilVisible(
+        find.textContaining('Se anuló el cambio anterior'),
+        -200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await t.pumpAndSettle();
+      expect(
+        find.textContaining('No se ha confirmado ningún cobro'),
+        findsOneWidget,
+      );
+      expect(
+        t
+            .widget<TextFormField>(
+              find.byKey(const ValueKey('trainer-capacity')),
+            )
+            .controller!
+            .text,
+        '10',
+      );
+    },
+  );
+  testWidgets(
+    'si la renovación ocurre al anular obliga a revisar y no prepara otra ampliación',
+    (t) async {
+      final repo = MixedPlanChangeFixture()..changedDuringCancel = true;
+      await openExpansion(t, repo);
+      await t.tap(find.text('Revisar ampliación'));
+      await t.pumpAndSettle();
+      expect(repo.operations, ['cancel_change']);
+      expect(repo.current, 'professional-10');
+    },
+  );
   testWidgets(
     'la suspensión permite anular un cambio pero no confirmar nuevos cargos',
     (tester) async {
@@ -202,10 +348,7 @@ void main() {
         MaterialApp(home: TrainerSubscriptionPage(repository: repo)),
       );
       await tester.pumpAndSettle();
-      final confirm = find.widgetWithText(
-        FilledButton,
-        'Confirmar cambio en pruebas',
-      );
+      final confirm = find.byKey(const ValueKey('confirm-subscription-change'));
       await tester.scrollUntilVisible(confirm, 250);
       expect(tester.widget<FilledButton>(confirm).onPressed, isNull);
       final cancel = find.text('Anular cambio');
@@ -249,7 +392,7 @@ void main() {
       expect(repo.operations, ['quote_change']);
       expect(find.text('Importe ahora: 6.20 € (pruebas)'), findsOneWidget);
       expect(find.textContaining('cuando Stripe confirme'), findsOneWidget);
-      final confirm = find.text('Confirmar cambio en pruebas');
+      final confirm = find.byKey(const ValueKey('confirm-subscription-change'));
       await tester.ensureVisible(confirm);
       await tester.pumpAndSettle();
       await tester.tap(confirm);
@@ -265,7 +408,7 @@ void main() {
       await chooseChange(tester, repo);
       expect(find.text('Importe ahora: 0.00 € (pruebas)'), findsOneWidget);
       expect(find.textContaining('Se aplicará al renovar:'), findsOneWidget);
-      final confirm = find.text('Confirmar cambio en pruebas');
+      final confirm = find.byKey(const ValueKey('confirm-subscription-change'));
       await tester.ensureVisible(confirm);
       await tester.pumpAndSettle();
       await tester.tap(confirm);

@@ -160,13 +160,20 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
     }
   }
 
-  Future<void> _act(String action, {String? offerId, String? changeId}) async {
+  Future<void> _act(
+    String action, {
+    String? offerId,
+    String? changeId,
+    String? cancelChangeFirst,
+    String? expectedCurrentOffer,
+  }) async {
     if (_busy) return;
     setState(() {
       _busy = true;
       _error = null;
       _notice = null;
     });
+    var canceledPrevious = false;
     try {
       final assured = await widget.repository.assured();
       if (!mounted) return;
@@ -175,6 +182,28 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
         // La vuelta solo permite revisar la oferta; no inicia el pago sola.
         await context.push<void>('/security?next=subscription');
         return;
+      }
+      if (cancelChangeFirst != null) {
+        final cancellation = await widget.repository.act(
+          'cancel_change',
+          changeId: cancelChangeFirst,
+        );
+        if (cancellation['state'] != 'canceled_change') {
+          throw StateError(
+            'El cambio ya se ha resuelto. Revisa la suscripción.',
+          );
+        }
+        canceledPrevious = true;
+        final current = await widget.repository.status();
+        if (!mounted) return;
+        setState(() => _data = current);
+        if ((current['subscription'] as Map?)?['offer_id'] !=
+                expectedCurrentOffer ||
+            current['suspended'] == true) {
+          throw StateError(
+            'La suscripción ha cambiado. Revisa su estado actual.',
+          );
+        }
       }
       final result = await widget.repository.act(
         action,
@@ -229,7 +258,9 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
     } catch (_) {
       if (mounted) {
         setState(
-          () => _error = 'No se pudo completar la comprobación. Puedes reintentar sin crear otro pedido.',
+          () => _error = canceledPrevious
+              ? 'Se anuló el cambio anterior, pero no se pudo revisar la ampliación. No se ha confirmado ningún cobro. Revisa el estado y vuelve a elegir la ampliación.'
+              : 'No se pudo completar la comprobación. Puedes reintentar sin crear otro pedido.',
         );
       }
       // Otra pestaña puede haber preparado una oferta diferente. Recuperamos
@@ -243,6 +274,59 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  Future<void> _reviewExpansion(
+    Map change,
+    Map offer,
+    String currentOffer,
+  ) async {
+    final accepted = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Ampliar plazas ahora'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('${offer['title']} · ${_money(offer['amount'])} / mes'),
+              const SizedBox(height: 12),
+              Text(
+                'Se anulará el cambio programado a ${(change['offer'] as Map)['title']}. Esta ampliación mantiene tu nivel actual.',
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Stripe calculará la diferencia del periodo. La verás antes de confirmar el pago. Después podrás volver a programar la bajada de nivel para la renovación.',
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Conservar cambio programado'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Revisar ampliación'),
+          ),
+        ],
+      ),
+    );
+    if (accepted != true || !mounted) return;
+    setState(() {
+      _capacity = offer['capacity'] as int;
+      _capacityValid = true;
+      _directoryAddon =
+          offer['plan_key'] == 'basic' && offer['directory_option'] == true;
+    });
+    await _act(
+      'quote_change',
+      offerId: offer['id'] as String,
+      cancelChangeFirst: change['id'] as String,
+      expectedCurrentOffer: currentOffer,
+    );
   }
 
   @override
@@ -279,6 +363,27 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
           (o) => ['basic', 'professional', 'complete'].contains(o['plan_key']),
         )
         .toList();
+    final sourceOffer = change?['from_offer'] as Map?;
+    final futureOffer = change?['offer'] as Map?;
+    final moreSeatsAtRenewal =
+        change?['kind'] == 'renewal' &&
+        futureOffer?['capacity'] is num &&
+        sub?['capacity'] is num &&
+        (futureOffer!['capacity'] as num) > (sub!['capacity'] as num);
+    // Solo proponemos el mismo nivel y prestaciones: el servidor sigue decidiendo
+    // el importe y la activación. No convertimos una bajada en un cobro inmediato.
+    final expansionOffer =
+        sourceOffer?['id'] == sub?['offer_id'] && moreSeatsAtRenewal
+        ? catalogue
+              .where(
+                (o) =>
+                    o['plan_key'] == sourceOffer?['plan_key'] &&
+                    o['directory_option'] == sourceOffer?['directory_option'] &&
+                    o['capacity'] == futureOffer['capacity'] &&
+                    (o['amount'] as num) > (sourceOffer!['amount'] as num),
+              )
+              .firstOrNull
+        : null;
     final capacities =
         catalogue.map((o) => o['capacity'] as int).toSet().toList()..sort();
     final selected = capacities.contains(_capacity)
@@ -343,7 +448,7 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
             ),
           if (_notice != null && _data?['suspended'] != true) Text(_notice!),
           if (_changePayment != null)
-            OutlinedButton.icon(
+            FilledButton.icon(
               onPressed: _busy
                   ? null
                   : () async {
@@ -354,7 +459,7 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
                           ));
                     },
               icon: const Icon(Icons.open_in_new),
-              label: const Text('Resolver pago en Stripe'),
+              label: const Text('Pagar diferencia en Stripe'),
             ),
           if (_data?['suspended'] == true)
             const EntrenaCard(
@@ -456,6 +561,37 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
                         ? 'Se aplicará al renovar: ${_date(change['effective_at'] ?? '')}.'
                         : 'Se aplicará cuando Stripe confirme el pago de la diferencia. Mantienes la fecha de renovación.',
                   ),
+                  if (change['kind'] == 'renewal') ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      'No hay nada que pagar ahora por este cambio. Hasta renovar conservas ${sub?['capacity'] ?? 'las'} plazas de tu plan actual.',
+                    ),
+                    if (moreSeatsAtRenewal)
+                      const Text(
+                        'Aumentan las plazas, pero el cambio reduce el nivel, alguna prestación o la cuota. Por eso se aplaza el cambio completo; las plazas nuevas aún no están disponibles.',
+                      ),
+                    if (changeState == 'scheduled' &&
+                        expansionOffer != null &&
+                        _data?['suspended'] != true) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        'Para ampliar hoy manteniendo tu nivel: ${expansionOffer['title']} · ${_money(expansionOffer['amount'])} / mes.',
+                      ),
+                      const SizedBox(height: 8),
+                      FilledButton.icon(
+                        onPressed: _busy
+                            ? null
+                            : () => _reviewExpansion(
+                                change,
+                                expansionOffer,
+                                sub!['offer_id'] as String,
+                              ),
+                        key: const ValueKey('expand-current-plan'),
+                        icon: const Icon(Icons.group_add_outlined),
+                        label: const Text('Ampliar plazas ahora'),
+                      ),
+                    ],
+                  ],
                   const Text(
                     'Ningún alumno se elimina automáticamente. Si superas el nuevo cupo, podrás seguir trabajando con ellos; no podrás incorporar más hasta liberar plazas o ampliar.',
                   ),
@@ -469,6 +605,7 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
                     children: [
                       if (['quoted', 'processing'].contains(changeState))
                         FilledButton(
+                          key: const ValueKey('confirm-subscription-change'),
                           onPressed: _busy || _data?['suspended'] == true
                               ? null
                               : () => _act(
@@ -478,7 +615,9 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
                           child: Text(
                             changeState == 'processing'
                                 ? 'Reintentar el mismo cambio'
-                                : 'Confirmar cambio en pruebas',
+                                : change['kind'] == 'renewal'
+                                ? 'Programar para la renovación'
+                                : 'Confirmar y pagar diferencia (pruebas)',
                           ),
                         ),
                       if (changeState == 'payment_pending')
