@@ -519,6 +519,16 @@ de ADMIN. Su publicación y validación se acreditan en
 
 ## Directorio profesional futuro · TRN-040 · 28/10/2026
 
+**Provincia, isla y localidad · 02/11/2026:** la ficha profesional separa
+provincia del catálogo español, isla opcional en Canarias/Baleares y localidad
+libre opcional. La ficha muestra la provincia aunque no haya localidad. La
+búsqueda libre del directorio compara todos estos datos, con palabras parciales
+sin distinguir tildes o mayúsculas; «Gran Canaria» encuentra una ficha de Telde
+cuando el profesional ha indicado esa isla. Las fichas existentes conservan su
+localidad y deben completar voluntariamente la ubicación. Se mantienen la RPC,
+la paginación, los favoritos y las puertas de visibilidad y acceso actuales.
+[Contrato, verificación y ensayo con Ervi](TRAINER_DIRECTORY_LOCATIONS_2026_11_02.md).
+
 **Actualización del 02/11/2026:** el ensayo conecta la elegibilidad del
 directorio a la oferta vigente pagada: Profesional y Completo incluidos y
 Básico con opción adicional. Una mejora pendiente no habilita la ficha; una

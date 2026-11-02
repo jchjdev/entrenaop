@@ -1,3 +1,5 @@
+import 'locations.dart';
+
 /// Reglas del directorio, independientes de Flutter y del proveedor de datos.
 enum DirectoryVisibility { app, web }
 
@@ -22,8 +24,17 @@ class DirectoryProfile {
     this.favorite = false,
     this.appContactEnabled = false,
     this.isOwner = false,
+    this.provinceCode = '',
+    this.island = '',
   });
   final String id, name, description, city, email, website, whatsapp, price;
+  final String provinceCode, island;
+  DirectoryProvince? get province => directoryProvince(provinceCode);
+  String get locationLabel => [
+    city.trim(),
+    island,
+    province?.name ?? '',
+  ].where((part) => part.isNotEmpty).toSet().join(' · ');
   final List<String> specialties, services;
   final String? photoPath;
   final DirectoryMode mode;
@@ -53,9 +64,19 @@ class DirectoryProfile {
         return 'Indica entre una y ocho especialidades y servicios, de hasta 60 caracteres cada uno.';
       }
     }
-    if (city.length > 80 ||
-        (mode != DirectoryMode.online && city.trim().isEmpty)) {
-      return 'Indica la zona del servicio presencial (hasta 80 caracteres).';
+    if (provinceCode.isNotEmpty && province == null) {
+      return 'Elige una provincia del listado.';
+    }
+    if (island.isNotEmpty && !(province?.islands.contains(island) ?? false)) {
+      return 'Elige una isla de la provincia seleccionada.';
+    }
+    if (city.length > 80) {
+      return 'La localidad admite hasta 80 caracteres.';
+    }
+    if (mode != DirectoryMode.online &&
+        city.trim().isEmpty &&
+        province == null) {
+      return 'Indica la provincia del servicio presencial. La localidad es opcional.';
     }
     if (price.length > 120) {
       return 'El precio orientativo admite hasta 120 caracteres.';

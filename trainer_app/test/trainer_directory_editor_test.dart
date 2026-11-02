@@ -42,6 +42,17 @@ class DraftRepository implements DirectoryRepository {
     this.published = published;
     submitted = profile;
     if (failSave) throw const DirectoryFailure('Fallo de guardado de prueba.');
+    value = DirectoryOwnerProfile(
+      profile: profile,
+      revision: revision + 1,
+      eligible: value.eligible,
+      published: published,
+      blocked: value.blocked,
+      consent: consent,
+      enabled: value.enabled,
+      pilotUntil: value.pilotUntil,
+      webAllowed: value.webAllowed,
+    );
     return value;
   }
 
@@ -70,6 +81,48 @@ void main() {
     await tester.tap(find.text('Guardar ficha'));
     await tester.pumpAndSettle();
   }
+
+  testWidgets(
+    'guarda provincia sin localidad y limpia isla al cambiar provincia',
+    (tester) async {
+      final repository = DraftRepository();
+      await tester.pumpWidget(editor(repository));
+      await tester.pumpAndSettle();
+      Future<void> select(String key, String label) async {
+        final field = find.byKey(ValueKey(key));
+        await tester.scrollUntilVisible(
+          field,
+          250,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.tap(field);
+        await tester.pumpAndSettle();
+        await tester.scrollUntilVisible(
+          find.text(label).hitTestable(),
+          250,
+          scrollable: find.byType(Scrollable).last,
+        );
+        await tester.tap(find.text(label).hitTestable());
+        await tester.pumpAndSettle();
+      }
+
+      await select('province-', 'Las Palmas');
+      await select('island-35-', 'Gran Canaria');
+      await pressSave(tester);
+      expect(repository.submitted!.provinceCode, '35');
+      expect(repository.submitted!.island, 'Gran Canaria');
+      expect(repository.submitted!.city, isEmpty);
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('province-35')),
+        -300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await select('province-35', 'Madrid');
+      await pressSave(tester);
+      expect(repository.submitted!.provinceCode, '28');
+      expect(repository.submitted!.island, isEmpty);
+    },
+  );
 
   testWidgets('piloto ofrece publicación solo app sin aceptar por el titular', (
     tester,

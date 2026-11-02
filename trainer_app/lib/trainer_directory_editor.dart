@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:trainer_access/directory/domain.dart';
+import 'package:trainer_access/directory/locations.dart';
 import 'package:trainer_access/directory/presentation.dart';
 import 'package:trainer_access/directory/policy.dart';
 import 'package:trainer_access/directory/policy_presentation.dart';
@@ -33,6 +34,7 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
   DirectoryMode _mode = DirectoryMode.online;
   DirectoryVisibility _visibility = DirectoryVisibility.app;
   String? _photo, _savedPhoto, _error;
+  String _provinceCode = '', _island = '';
   bool _accepting = true,
       _appContact = false,
       _published = false,
@@ -72,6 +74,8 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
       _fields[i].text = values[i];
     }
     _mode = p?.mode ?? DirectoryMode.online;
+    _provinceCode = p?.provinceCode ?? '';
+    _island = p?.island ?? '';
     _visibility = p?.visibility ?? DirectoryVisibility.app;
     if (state.pilotUntil != null && !state.webAllowed) {
       _visibility = DirectoryVisibility.app;
@@ -191,6 +195,8 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
         .where((s) => s.isNotEmpty)
         .toList(),
     city: _fields[4].text.trim(),
+    provinceCode: _provinceCode,
+    island: _island,
     email: _fields[5].text.trim(),
     website: _fields[6].text.trim(),
     whatsapp: _fields[7].text.trim(),
@@ -274,7 +280,7 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
                   ),
                 if (!state.eligible)
                   const Text(
-                    'Anunciarse requiere un plan profesional pagado con directorio incluido. El acceso manual o el plan básico no lo habilitan.',
+                    'Para publicar tu ficha necesitas un plan con directorio incluido, el extra de Básico o un regalo de ADMIN que incluya la ficha en la app.',
                   ),
                 if (state.blocked)
                   const Text(
@@ -306,7 +312,6 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
                     2,
                   ),
                   (3, 'Servicios (separados por comas)', 480, 2),
-                  (4, 'Zona o localidad', 80, 1),
                   (5, 'Correo profesional de contacto', 254, 1),
                   (6, 'Web HTTPS', 500, 1),
                   (7, 'WhatsApp con prefijo, solo números', 15, 1),
@@ -323,6 +328,71 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
                       onChanged: (_) => setState(() => _dirty = true),
                     ),
                   ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  key: ValueKey('province-$_provinceCode'),
+                  isExpanded: true,
+                  itemHeight: null,
+                  initialValue: _provinceCode,
+                  decoration: const InputDecoration(labelText: 'Provincia'),
+                  items: [
+                    const DropdownMenuItem(
+                      value: '',
+                      child: Text('Sin indicar'),
+                    ),
+                    for (final province in directoryProvinces)
+                      DropdownMenuItem(
+                        value: province.code,
+                        child: Text(province.name),
+                      ),
+                  ],
+                  onChanged: _busy
+                      ? null
+                      : (value) => setState(() {
+                          _provinceCode = value!;
+                          _island = '';
+                          _dirty = true;
+                        }),
+                ),
+                if (directoryProvince(_provinceCode) case final province?
+                    when province.islands.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    key: ValueKey('island-$_provinceCode-$_island'),
+                    isExpanded: true,
+                    itemHeight: null,
+                    initialValue: _island,
+                    decoration: const InputDecoration(
+                      labelText: 'Isla (opcional)',
+                    ),
+                    items: [
+                      const DropdownMenuItem(
+                        value: '',
+                        child: Text('Sin indicar'),
+                      ),
+                      for (final island in province.islands)
+                        DropdownMenuItem(value: island, child: Text(island)),
+                    ],
+                    onChanged: _busy
+                        ? null
+                        : (value) => setState(() {
+                            _island = value!;
+                            _dirty = true;
+                          }),
+                  ),
+                ],
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _fields[4],
+                  maxLength: 80,
+                  enabled: !_busy,
+                  decoration: const InputDecoration(
+                    labelText: 'Localidad (opcional)',
+                    helperText: 'Si la dejas vacía, aparecerá tu provincia y la isla que indiques.',
+                    helperMaxLines: 3,
+                  ),
+                  onChanged: (_) => setState(() => _dirty = true),
+                ),
                 DropdownButtonFormField<DirectoryMode>(
                   isExpanded: true,
                   itemHeight: null,

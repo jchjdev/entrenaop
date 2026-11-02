@@ -1,5 +1,15 @@
 # Roadmap de EntrenaOP
 
+**Directorio · ubicación de entrenadores · 02/11/2026:** preparados provincia,
+isla opcional y localidad opcional en la ficha, y búsqueda libre por esos datos.
+Se conserva la ubicación antigua sin inferencias y los permisos actuales.
+La migración `20261102201433` se aplica exclusivamente en Dev; validación y
+publicación se acreditan en el [registro del bloque](TRAINER_DIRECTORY_LOCATIONS_2026_11_02.md).
+**Único siguiente recorrido de este bloque:** Ervi guarda Las Palmas → Gran
+Canaria → Telde; desde una cuenta de alumno se busca por las tres ubicaciones,
+se comprueba la ficha y se repite dejando localidad vacía. No se da por hecha
+esa aceptación manual ni se amplía todavía a centros o geolocalización.
+
 **Deportista · Ajustes y ayuda, primera entrega · 02/11/2026:** Cuenta y Pro,
 Ayuda e Información conservan el diseño y los procesos existentes; FAQ, soporte
 por borrador revisable, preferencias reales y documentos informativos ya tienen

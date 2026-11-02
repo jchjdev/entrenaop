@@ -1,5 +1,12 @@
 # Producto EntrenaOP
 
+**Ubicación en el directorio · 02/11/2026:** provincia seleccionable y localidad
+opcional corresponden al entrenador. Canarias y Baleares añaden isla opcional.
+El deportista puede buscar por cualquiera de esos datos, sin tener que conocer
+la localidad exacta; una ficha sin localidad muestra la provincia indicada.
+No se modifica la ubicación del perfil personal del deportista.
+[Contrato y ensayo Dev](TRAINER_DIRECTORY_LOCATIONS_2026_11_02.md).
+
 **Pérdida de Pro · criterio confirmado el 02/11/2026:** se conservan preparación,
 consulta de pautas e historial. Iniciar otra sesión adaptativa requiere Pro
 efectivo vigente, igual que generar o adaptar el plan; una ejecución ya abierta

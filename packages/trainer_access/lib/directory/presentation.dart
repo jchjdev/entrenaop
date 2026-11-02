@@ -237,7 +237,7 @@ class _TrainerDirectoryPageState extends State<TrainerDirectoryPage>
                   children: [
                     Text(p.name, style: Theme.of(context).textTheme.titleLarge),
                     Text(
-                      '${p.mode.name}${p.city.isEmpty ? '' : ' · ${p.city}'}',
+                      '${p.mode.name}${p.locationLabel.isEmpty ? '' : ' · ${p.locationLabel}'}',
                     ),
                     Text(
                       p.accepting
@@ -386,7 +386,9 @@ class _TrainerDirectoryPageState extends State<TrainerDirectoryPage>
                   controller: _city,
                   maxLength: 80,
                   decoration: const InputDecoration(
-                    labelText: 'Zona o localidad',
+                    labelText: 'Provincia, isla o localidad',
+                    helperText: 'Puedes buscar solo por provincia o por parte del nombre.',
+                    helperMaxLines: 3,
                   ),
                   onSubmitted: (_) => _load(),
                 ),

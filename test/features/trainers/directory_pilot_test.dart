@@ -83,12 +83,12 @@ void main() {
     );
     expect(find.text('Preparador de Huesca'), findsOneWidget);
     await tester.scrollUntilVisible(
-      find.widgetWithText(TextField, 'Zona o localidad'),
+      find.widgetWithText(TextField, 'Provincia, isla o localidad'),
       -250,
       scrollable: find.byType(Scrollable).first,
     );
     await tester.enterText(
-      find.widgetWithText(TextField, 'Zona o localidad'),
+      find.widgetWithText(TextField, 'Provincia, isla o localidad'),
       'Zaragoza',
     );
     await tester.ensureVisible(find.widgetWithText(FilledButton, 'Buscar'));
@@ -141,7 +141,7 @@ void main() {
       addTearDown(client.dispose);
       final repository = SupabaseDirectoryRepository(client, owner: null);
       final result = await repository.save(
-        sampleDirectoryProfile(),
+        sampleDirectoryProfile(provinceCode: '35', island: 'Gran Canaria'),
         revision: 1,
         published: true,
         consent: true,
@@ -151,6 +151,9 @@ void main() {
         directoryConsentVersion,
       );
       expect(result.webAllowed, false);
+      expect((transport.body!['p_data'] as Map)['province_code'], '35');
+      expect((transport.body!['p_data'] as Map)['island'], 'Gran Canaria');
+      expect((transport.body!['p_data'] as Map)['city'], isEmpty);
       expect(result.pilotUntil, DateTime.utc(2026, 11, 28, 21, 7, 47));
     },
   );

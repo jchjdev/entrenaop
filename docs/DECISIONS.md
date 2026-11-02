@@ -1,5 +1,15 @@
 # Registro de decisiones vigentes
 
+**Ubicación del preparador y búsqueda flexible · 02/11/2026:** Javier aclara
+que provincia y localidad pertenecen a la ficha del entrenador. Provincia se
+elige del catálogo español (50 provincias y Ceuta/Melilla), con isla opcional en
+los archipiélagos y localidad libre opcional. Buscar admite provincia, isla o
+localidad, palabras parciales en cualquier orden y texto sin tildes/mayúsculas;
+no exige localidad para buscar por provincia. Se conservan fichas anteriores sin
+inferir ubicaciones. En presencial basta provincia o la localidad ya admitida;
+en online no se impone una ubicación. No cambian permisos ni publicación.
+[Contrato y comprobación](TRAINER_DIRECTORY_LOCATIONS_2026_11_02.md).
+
 **Favoritos y herramientas de la app · 02/11/2026:** Javier pide ampliar los
 accesos y concreta que Ritmos y PAEF/PAFAS no deben repetirse como favoritos,
 porque ya están en sus cards. Se ofrecen los tres destinos personales actuales,
