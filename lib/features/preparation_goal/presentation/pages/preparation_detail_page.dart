@@ -150,7 +150,7 @@ class _Content extends StatelessWidget {
                     label: Text(
                       goal.targetDate == null
                           ? 'Añadir fecha objetivo'
-                          : 'Objetivo: ${DateFormat('dd/MM/yyyy').format(goal.targetDate!)} · Cambiar',
+                          : 'Objetivo: ${DateFormat('dd-MM-yyyy').format(goal.targetDate!)} · Cambiar',
                     ),
                   ),
                   if (goal.targetDate != null &&
@@ -221,7 +221,7 @@ class _Content extends StatelessWidget {
                         ),
                         title: const Text('Marca de carrera · 2 km'),
                         subtitle: Text(
-                          'De tu evaluación de este programa: ${_formatRunningSeconds(detail.runningReferenceCandidates.first.durationSeconds)} · ${DateFormat('dd/MM/yyyy').format(detail.runningReferenceCandidates.first.completedAt)}. Aún no genera entrenamientos.',
+                          'De tu evaluación de este programa: ${_formatRunningSeconds(detail.runningReferenceCandidates.first.durationSeconds)} · ${DateFormat('dd-MM-yyyy').format(detail.runningReferenceCandidates.first.completedAt)}. Aún no genera entrenamientos.',
                         ),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () async {
@@ -271,7 +271,7 @@ class _Content extends StatelessWidget {
                         subtitle: Text(
                           detail.latestRunningTest == null
                               ? 'Todavía no hay una marca de 2 km guardada en esta preparación.'
-                              : 'Última marca: ${detail.latestRunningTest!.durationSeconds ~/ 60}:${(detail.latestRunningTest!.durationSeconds % 60).toString().padLeft(2, '0')} · ${DateFormat('dd/MM/yyyy').format(detail.latestRunningTest!.completedAt)}',
+                              : 'Última marca: ${detail.latestRunningTest!.durationSeconds ~/ 60}:${(detail.latestRunningTest!.durationSeconds % 60).toString().padLeft(2, '0')} · ${DateFormat('dd-MM-yyyy').format(detail.latestRunningTest!.completedAt)}',
                         ),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () async {

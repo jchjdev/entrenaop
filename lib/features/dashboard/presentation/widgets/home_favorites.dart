@@ -9,18 +9,51 @@ extension HomeShortcutPresentation on HomeShortcut {
     HomeShortcut.personalSessions => 'Mis sesiones',
     HomeShortcut.personalExercises => 'Mis ejercicios',
     HomeShortcut.availability => 'Disponibilidad',
+    HomeShortcut.trainerNotices => 'Avisos del preparador',
+    HomeShortcut.trainerAppointments => 'Citas',
+    HomeShortcut.trainerForms => 'Formularios',
+    HomeShortcut.trainerAssessments => 'Pruebas del preparador',
+    HomeShortcut.trainerTechnique => 'Técnica de mis sesiones',
+    HomeShortcut.notifications => 'Notificaciones',
+    HomeShortcut.connections => 'Dispositivos y conexiones',
   };
 
   String get route => switch (this) {
     HomeShortcut.personalSessions => '/plan/library?tab=personal',
     HomeShortcut.personalExercises => '/library/exercises?tab=personal',
     HomeShortcut.availability => '/profile/preferences',
+    HomeShortcut.trainerNotices => '/my-trainer?view=notices',
+    HomeShortcut.trainerAppointments => '/my-trainer/appointments',
+    HomeShortcut.trainerForms => '/my-trainer/forms',
+    HomeShortcut.trainerAssessments => '/my-trainer/assessments',
+    HomeShortcut.trainerTechnique => '/my-trainer/technique',
+    HomeShortcut.notifications => '/profile/settings/notifications',
+    HomeShortcut.connections => '/profile/connections',
   };
 
   IconData get icon => switch (this) {
     HomeShortcut.personalSessions => Icons.fitness_center_rounded,
     HomeShortcut.personalExercises => Icons.sports_gymnastics_outlined,
     HomeShortcut.availability => Icons.schedule_outlined,
+    HomeShortcut.trainerNotices => Icons.notifications_active_outlined,
+    HomeShortcut.trainerAppointments => Icons.event_available_outlined,
+    HomeShortcut.trainerForms => Icons.assignment_outlined,
+    HomeShortcut.trainerAssessments => Icons.timer_outlined,
+    HomeShortcut.trainerTechnique => Icons.video_library_outlined,
+    HomeShortcut.notifications => Icons.notifications_none_rounded,
+    HomeShortcut.connections => Icons.watch_outlined,
+  };
+
+  String get section => switch (this) {
+    HomeShortcut.personalSessions ||
+    HomeShortcut.personalExercises ||
+    HomeShortcut.availability => 'Entrenamiento',
+    HomeShortcut.trainerNotices ||
+    HomeShortcut.trainerAppointments ||
+    HomeShortcut.trainerForms ||
+    HomeShortcut.trainerAssessments ||
+    HomeShortcut.trainerTechnique => 'Preparador',
+    HomeShortcut.notifications || HomeShortcut.connections => 'Ajustes rápidos',
   };
 }
 
@@ -184,7 +217,7 @@ class _FavoritesEditorState extends State<_FavoritesEditor> {
       _selected.add(item);
     } else {
       _message =
-          'Quita un favorito antes de añadir otro. Puedes tener hasta tres.';
+          'Quita un favorito antes de añadir otro. Puedes tener hasta cuatro.';
     }
   });
 
@@ -210,10 +243,19 @@ class _FavoritesEditorState extends State<_FavoritesEditor> {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Elige tus accesos y ordénalos como prefieras. Las funciones siguen en su sitio aunque las quites.',
+              'Elige hasta cuatro accesos y ordénalos como prefieras.',
             ),
             const SizedBox(height: 12),
-            for (final item in HomeShortcut.values)
+            for (final (index, item) in HomeShortcut.values.indexed) ...[
+              if (index == 0 ||
+                  HomeShortcut.values[index - 1].section != item.section)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12, bottom: 4),
+                  child: Text(
+                    item.section,
+                    style: const TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                ),
               CheckboxListTile(
                 contentPadding: EdgeInsets.zero,
                 controlAffinity: ListTileControlAffinity.leading,
@@ -221,6 +263,7 @@ class _FavoritesEditorState extends State<_FavoritesEditor> {
                 value: _selected.contains(item),
                 onChanged: (selected) => _toggle(item, selected ?? false),
               ),
+            ],
             if (_message != null)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),

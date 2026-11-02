@@ -82,4 +82,21 @@ void main() {
   test('no guarda preferencias sin una cuenta', () async {
     await expectLater(repository.save('', []), throwsArgumentError);
   });
+
+  test('guarda cuatro destinos nuevos sin reactivar identificadores retirados ni mezclarlos con otra cuenta', () async {
+    const selection = [
+      HomeShortcut.trainerForms,
+      HomeShortcut.notifications,
+      HomeShortcut.connections,
+      HomeShortcut.trainerTechnique,
+    ];
+    await repository.save('user-a', selection);
+    expect(await repository.load('user-a'), selection);
+    expect(await repository.load('user-b'), defaultHomeFavorites);
+    await expectLater(
+      repository.save('user-a', [...selection, HomeShortcut.availability]),
+      throwsArgumentError,
+    );
+    expect(await repository.load('user-a'), selection);
+  });
 }

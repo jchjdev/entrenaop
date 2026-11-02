@@ -194,7 +194,7 @@ class _TrainingHubPageState extends State<TrainingHubPage>
                   alignment: Alignment.centerRight,
                   child: TextButton.icon(
                     onPressed: _openWeek,
-                  icon: const Icon(Icons.calendar_month_rounded),
+                    icon: const Icon(Icons.calendar_month_rounded),
                     label: const Text('Ver semana'),
                   ),
                 ),
@@ -491,7 +491,7 @@ class _SavedPreparationCard extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         if (goal.targetDate case final date?)
-          Text('Pruebas: ${DateFormat('dd/MM/yyyy').format(date)}'),
+          Text('Pruebas: ${DateFormat('dd-MM-yyyy').format(date)}'),
         const SizedBox(height: 8),
         Text(
           progress?.isCurrent == true

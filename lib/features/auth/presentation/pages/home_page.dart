@@ -235,7 +235,13 @@ class _DashboardContentState extends State<_DashboardContent> {
                     key: ValueKey(widget.userId),
                     repository: widget.favoritesRepository,
                     userId: widget.userId,
-                    onOpen: _open,
+                    onOpen: (route) async {
+                      if (Uri.parse(route).path == '/my-trainer') {
+                        context.go(route);
+                      } else {
+                        await _open(route);
+                      }
+                    },
                   ),
                 ],
               ),

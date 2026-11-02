@@ -26,7 +26,7 @@ class PreparationGoalReviewPanel extends StatelessWidget {
     final observed = value is String ? DateTime.tryParse(value) : null;
     return observed == null
         ? ''
-        : ' · ${DateFormat('dd/MM/yyyy').format(observed)}';
+        : ' · ${DateFormat('dd-MM-yyyy').format(observed)}';
   }
 
   @override
@@ -95,7 +95,7 @@ class PreparationControlSchedule extends StatelessWidget {
               Text(control['name'] as String? ?? 'Control del protocolo'),
               if (DateTime.tryParse(control['date'] as String? ?? '')
                   case final DateTime date)
-                Text(DateFormat('dd/MM/yyyy').format(date)),
+                Text(DateFormat('dd-MM-yyyy').format(date)),
               Text(control['question'] as String? ?? ''),
             ],
             const SizedBox(height: 8),

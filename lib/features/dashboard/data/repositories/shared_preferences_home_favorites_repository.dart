@@ -39,7 +39,7 @@ class SharedPreferencesHomeFavoritesRepository
   Future<void> save(String userId, List<HomeShortcut> favorites) async {
     if (favorites.length > maxHomeFavorites ||
         favorites.toSet().length != favorites.length) {
-      throw ArgumentError('Selecciona hasta tres destinos distintos.');
+      throw ArgumentError('Selecciona hasta cuatro destinos distintos.');
     }
     final saved = await _preferences.setStringList(
       _key(userId),

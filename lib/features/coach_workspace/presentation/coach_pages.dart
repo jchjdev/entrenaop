@@ -1,4 +1,5 @@
 import '../../../core/navigation/workspace_navigation_scope.dart';
+import '../../../core/presentation/app_dates.dart';
 import 'coach_planning_agenda.dart';
 import 'coach_planning_pages.dart';
 import 'coach_notification_settings.dart';
@@ -14,8 +15,7 @@ import 'package:trainer_access/trainer_access.dart';
 import '../domain/coach_workspace_repository.dart';
 import 'coach_workspace_scope.dart';
 
-String coachDate(DateTime d) =>
-    '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+String coachDate(DateTime d) => formatAppDate(d);
 String coachClientRoute(String id) =>
     '/coach/clients/${Uri.encodeComponent(id)}';
 String coachAssignmentRoute(String id) =>

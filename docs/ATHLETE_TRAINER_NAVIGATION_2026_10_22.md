@@ -1,5 +1,56 @@
 # Navegación del alumno y preparador · TRN-025 · 22/10/2026
 
+## Favoritos, herramientas y presentación · 02/11/2026
+
+El editor de Inicio amplía las opciones existentes y agrupa los destinos en
+Entrenamiento, Preparador y Ajustes rápidos. Mantiene Mis sesiones, Mis ejercicios
+y Disponibilidad como selección inicial, y permite hasta cuatro accesos ordenados.
+Añade Avisos del preparador, Citas, Formularios, Pruebas del preparador, Técnica de
+mis sesiones, Notificaciones y Dispositivos y conexiones. No exige escoger un
+mínimo ni rellena huecos. Conserva el almacenamiento local por cuenta, los
+identificadores anteriores, la cancelación y la recuperación de errores.
+
+Los destinos nuevos reutilizan rutas reales. Avisos cambia a la rama Preparador
+con `view=notices`; los detalles se apilan con retorno al origen. Elegir un acceso
+no crea un vínculo, no concede permisos ni pauta contenido. Sin contenido se
+conserva la pantalla vacía del recurso, y los historiales accesibles siguen sus
+contratos existentes.
+
+Ritmos y PAEF/PAFAS permanecen fuera del selector, como confirma Javier. Sus cards
+de Herramientas conservan posición y estética. La consulta de un entrenamiento
+con bloques de carrera ofrece «Calcular ritmos y parciales», deshabilitado durante
+el inicio de la sesión. Marcas y resultados ofrece la calculadora PAEF/PAFAS para
+la preparación FAS y Ritmos cuando hay controles de carrera. Son consultas
+independientes: volver conserva lo pautado y las marcas, sin iniciar, guardar
+resultados ni recalcular el plan por abrir la herramienta.
+
+La versión pasa de `1.0.0+3` a `1.1.0+4`. La versión visible distingue entregas
+funcionales y la compilación distingue sus binarios; la regla queda en AGENTS.
+Las siguientes correcciones incrementan parche y compilación, las funcionalidades
+incrementan menor y compilación. La versión del dispositivo cambia al compilar e
+instalar; no se alteran archivos iOS generados ni se inventa una instalación.
+
+El pie de contacto de Privacidad/Condiciones muestra «Equipo de ayuda de
+EntrenaOP» con `ayuda@entrenaop.es`. Se retira el apartado Promociones de
+Condiciones de uso y la explicación sobre descuentos militares, conservando el
+canje de códigos condicionado a un destino configurado en Ajustes.
+
+Las fechas completas visibles se unifican en `dd-MM-yyyy`, incluidos avisos,
+agenda profesional, citas, vistas previas, marcas, preparación e historial.
+`formatAppDate` permite presentar fechas interpoladas con el mismo criterio.
+Se conserva `es_ES` para los calendarios, los resúmenes cortos día/mes, las horas,
+las zonas civiles de las citas y el formato ISO de rutas, repositorios y datos.
+No se sustituyen las fechas técnicas por su etiqueta visible.
+
+Verificación focal: 266 pruebas de favoritos, perfil, avisos, citas, marcas,
+preparación y consulta de sesiones. Incluye persistencia y límite de cuatro,
+compatibilidad con preferencias antiguas, pantalla estrecha con texto doble,
+entrada/vuelta de calculadoras y conservación de las rutas ISO.
+
+Verificación final: análisis global sin incidencias, 15 pruebas de rutas e
+identidad del perfil y batería completa de raíz con 1.710 correctas y una
+omisión previa. Capturas de favoritos y selector revisadas con el tema real.
+
 ## Ajustes, ayuda y contacto · 02/11/2026
 
 Javier autoriza llevar la propuesta a la app con su diseño y arquitectura.

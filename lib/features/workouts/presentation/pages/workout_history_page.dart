@@ -524,7 +524,7 @@ class _ErrorView extends StatelessWidget {
   }
 }
 
-final _dateFormat = DateFormat('dd/MM/yyyy · HH:mm');
+final _dateFormat = DateFormat('dd-MM-yyyy · HH:mm');
 
 String _formatDuration(Duration duration) {
   final minutes = duration.inMinutes;

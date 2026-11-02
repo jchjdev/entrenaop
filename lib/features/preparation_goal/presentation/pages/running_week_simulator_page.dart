@@ -1,4 +1,5 @@
 import 'package:entrenaop/features/preparation_goal/data/initial_week_draft_catalog.dart';
+import 'package:entrenaop/core/presentation/app_dates.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/running_test_result.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/two_kilometre_performance.dart';
@@ -76,7 +77,7 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
       _testTime.text = '$minutes:$seconds';
       final date = test.completedAt;
       _testSource =
-          'Del test de 2 km del ${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}. Comprueba si sigue siendo representativo.';
+          'Del test de 2 km del ${formatAppDate(date)}. Comprueba si sigue siendo representativo.';
     }
     setState(() => _inputsReady = true);
   }

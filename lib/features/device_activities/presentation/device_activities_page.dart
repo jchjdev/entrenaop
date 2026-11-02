@@ -326,7 +326,7 @@ class _ActivitySummary extends StatelessWidget {
         ),
         if (start != null)
           Text(
-            '${DateFormat('dd/MM/yyyy · HH:mm', 'es').format(start.toLocal())} · hora del dispositivo',
+            '${DateFormat('dd-MM-yyyy · HH:mm', 'es').format(start.toLocal())} · hora del dispositivo',
           ),
         Text('Duración: ${duration(activity.metrics.elapsed)}'),
         Text('Temporizador: ${duration(activity.metrics.timer)}'),

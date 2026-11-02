@@ -207,7 +207,7 @@ void main() {
     expect(dates.reads, ['A']);
     dates.pending['A']!.complete(DateTime(1992, 6, 15));
     await tester.pumpAndSettle();
-    expect(find.textContaining('15/06/1992'), findsOneWidget);
+    expect(find.textContaining('15-06-1992'), findsOneWidget);
     expect(find.byType(NavigationBar), findsNothing);
 
     await tester.tap(find.byType(BackButton));
@@ -353,11 +353,11 @@ void main() {
 
       dates.pending['B']!.complete(DateTime(2001, 8, 12));
       await tester.pumpAndSettle();
-      expect(find.textContaining('12/08/2001'), findsOneWidget);
+      expect(find.textContaining('12-08-2001'), findsOneWidget);
       dates.pending['A']!.complete(DateTime(1992, 6, 15));
       await tester.pumpAndSettle();
-      expect(find.textContaining('15/06/1992'), findsNothing);
-      expect(find.textContaining('12/08/2001'), findsOneWidget);
+      expect(find.textContaining('15-06-1992'), findsNothing);
+      expect(find.textContaining('12-08-2001'), findsOneWidget);
       expect(dates.reads, ['A', 'B']);
       expect(tester.takeException(), isNull);
     },
@@ -385,7 +385,7 @@ void main() {
     expect(find.text('No pudimos cargar tu fecha de nacimiento'), findsNothing);
     dates.pending['B']!.complete(DateTime(1996, 3, 7));
     await tester.pumpAndSettle();
-    expect(find.textContaining('07/03/1996'), findsOneWidget);
+    expect(find.textContaining('07-03-1996'), findsOneWidget);
     expect(find.text('No pudimos cargar tu fecha de nacimiento'), findsNothing);
     expect(tester.takeException(), isNull);
   });

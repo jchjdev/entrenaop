@@ -93,7 +93,7 @@ class AdaptivePlanPage extends StatelessWidget {
                               if (setup.targetDate case final date?) ...[
                                 const SizedBox(height: 8),
                                 Text(
-                                  'Objetivo · ${DateFormat('dd/MM/yyyy').format(date)}',
+                                  'Objetivo · ${DateFormat('dd-MM-yyyy').format(date)}',
                                 ),
                               ],
                               const SizedBox(height: 12),
@@ -130,7 +130,7 @@ class AdaptivePlanPage extends StatelessWidget {
                               DropdownMenuItem(
                                 value: week,
                                 child: Text(
-                                  'Semana del ${DateFormat('dd/MM/yyyy').format(week)}',
+                                  'Semana del ${DateFormat('dd-MM-yyyy').format(week)}',
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -282,7 +282,7 @@ class _SessionCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            '${DateFormat('dd/MM/yyyy').format(workout.scheduledDate)} · $status',
+            '${DateFormat('dd-MM-yyyy').format(workout.scheduledDate)} · $status',
           ),
           const SizedBox(height: 8),
           Text(
@@ -398,7 +398,7 @@ class _PublishedSessionCard extends StatelessWidget {
         title: Text(name, style: Theme.of(context).textTheme.titleLarge),
         subtitle: Text(
           [
-            if (date != null) DateFormat('dd/MM/yyyy').format(date),
+            if (date != null) DateFormat('dd-MM-yyyy').format(date),
             if (session['minutes'] != null) '${session['minutes']} min',
             proRequired
                 ? 'Entrenamiento del plan'

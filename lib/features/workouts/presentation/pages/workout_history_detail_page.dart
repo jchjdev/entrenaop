@@ -1286,4 +1286,4 @@ String _nullableNumber(double? value) => value == null ? '' : _number(value);
 double? _parseDecimal(String value) =>
     double.tryParse(value.trim().replaceAll(',', '.'));
 
-final _dateFormat = DateFormat('dd/MM/yyyy · HH:mm');
+final _dateFormat = DateFormat('dd-MM-yyyy · HH:mm');

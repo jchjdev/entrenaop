@@ -100,7 +100,10 @@ void main() {
         find.byKey(const ValueKey('scheduled-preview-start')),
         findsNothing,
       );
-      expect(find.text('Activa Pro para entrenar con este plan.'), findsOneWidget);
+      expect(
+        find.text('Activa Pro para entrenar con este plan.'),
+        findsOneWidget,
+      );
       await tester.tap(find.text('Ver Pro'));
       await tester.pumpAndSettle();
       expect(router.state.uri.path, '/pro');
@@ -392,7 +395,7 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text('Entrenamiento'), findsOneWidget);
         expect(find.text('Versión 3'), findsOneWidget);
-        expect(find.textContaining('Pautado · 23/09/2026'), findsOneWidget);
+        expect(find.textContaining('Pautado · 23-09-2026'), findsOneWidget);
         expect(
           find.text('Cuida la técnica y conserva los descansos.'),
           findsOneWidget,
@@ -408,6 +411,16 @@ void main() {
         expect(find.textContaining('5:00–5:30/km'), findsOneWidget);
         expect(find.textContaining('recuperación andando'), findsOneWidget);
         expect(repository.startedRevisions, isEmpty);
+        final calculator = find.text('Calcular ritmos y parciales');
+        await tester.ensureVisible(calculator);
+        await tester.pumpAndSettle();
+        await tester.tap(calculator);
+        await tester.pumpAndSettle();
+        expect(find.text('Herramienta de ritmos'), findsOneWidget);
+        expect(repository.startedRevisions, isEmpty);
+        router.pop();
+        await tester.pumpAndSettle();
+        expect(find.text('Entrenamiento'), findsOneWidget);
         final start = find.byKey(const ValueKey('scheduled-preview-start'));
         final startRect = tester.getRect(start);
         await tester.ensureVisible(find.text('Carrera final'));
@@ -512,6 +525,10 @@ GoRouter _router(ScheduledWorkoutPreviewCubit cubit, {bool direct = false}) {
         path: '$path/active/:id',
         builder: (_, state) =>
             Scaffold(body: Text('Ejecutor ${state.pathParameters['id']}')),
+      ),
+      GoRoute(
+        path: '/tools/running-pace-calculator',
+        builder: (_, _) => const Scaffold(body: Text('Herramienta de ritmos')),
       ),
       GoRoute(
         path: '/assessment/history/workouts/:id',

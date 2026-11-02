@@ -169,7 +169,7 @@ class _ProgramCard extends StatelessWidget {
                           ? _kindLabel(program.kind)
                           : goal.targetDate == null
                           ? 'Añadida · Fecha todavía no indicada'
-                          : 'Añadida · ${DateFormat('dd/MM/yyyy').format(goal.targetDate!)}',
+                          : 'Añadida · ${DateFormat('dd-MM-yyyy').format(goal.targetDate!)}',
                       style: const TextStyle(color: Colors.white60),
                     ),
                   ],

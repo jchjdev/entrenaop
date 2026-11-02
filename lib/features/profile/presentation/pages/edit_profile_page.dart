@@ -192,7 +192,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                       subtitle: Text(
                                         birthDate == null
                                             ? 'Añádela para aplicar los baremos por edad.'
-                                            : '${DateFormat('dd/MM/yyyy').format(birthDate)} · ${ageOnDate(birthDate, DateTime.now())} años',
+                                            : '${DateFormat('dd-MM-yyyy').format(birthDate)} · ${ageOnDate(birthDate, DateTime.now())} años',
                                       ),
                                       trailing: _savingBirthDate
                                           ? const SizedBox.square(

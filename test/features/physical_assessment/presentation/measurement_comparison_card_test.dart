@@ -51,17 +51,17 @@ void main() {
     (t) async {
       await mount(t);
       expect(find.text('Mejora de 2 rep'), findsOneWidget);
-      await chooseComparisonValue(t, 'Comparar con', '01/10/2026 · 09:00');
+      await chooseComparisonValue(t, 'Comparar con', '01-10-2026 · 09:00');
       expect(find.text('Mejora de 6 rep'), findsOneWidget);
-      await chooseComparisonValue(t, 'Fecha reciente', '03/10/2026 · 09:00');
+      await chooseComparisonValue(t, 'Fecha reciente', '03-10-2026 · 09:00');
       expect(find.text('Mejora de 4 rep'), findsOneWidget);
-      await chooseComparisonValue(t, 'Fecha reciente', '01/10/2026 · 09:00');
+      await chooseComparisonValue(t, 'Fecha reciente', '01-10-2026 · 09:00');
       expect(find.text('Comparar con'), findsNothing);
       expect(
         find.textContaining('Elige una fecha reciente que tenga'),
         findsOneWidget,
       );
-      await chooseComparisonValue(t, 'Fecha reciente', '06/10/2026 · 09:00');
+      await chooseComparisonValue(t, 'Fecha reciente', '06-10-2026 · 09:00');
       expect(find.text('Mejora de 2 rep'), findsOneWidget);
       expect(t.takeException(), isNull);
     },
@@ -77,7 +77,7 @@ void main() {
         'Carrera de 2 km · Evaluación · Ingreso · H',
       );
       expect(find.text('Mejora de 20 s'), findsOneWidget);
-      await chooseComparisonValue(t, 'Fecha reciente', '03/10/2026 · 09:00');
+      await chooseComparisonValue(t, 'Fecha reciente', '03-10-2026 · 09:00');
       expect(find.text('Retroceso de 10 s'), findsOneWidget);
       await chooseComparisonValue(
         t,
@@ -116,7 +116,7 @@ void main() {
       await t.pumpAndSettle();
       await t.tap(find.text('Comparar marcas'));
       await t.pumpAndSettle();
-      await chooseComparisonValue(t, 'Comparar con', '01/10/2026 · 09:00');
+      await chooseComparisonValue(t, 'Comparar con', '01-10-2026 · 09:00');
       final historical = find.byKey(const ValueKey('troop-assessment-6'));
       await t.ensureVisible(historical);
       await t.pumpAndSettle();

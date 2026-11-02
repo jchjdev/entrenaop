@@ -54,10 +54,6 @@ class ProfileLegalPage extends StatelessWidget {
               'Versión de pruebas',
               'Esta versión permite probar las funciones disponibles. Las compras de prueba se identifican como tales y no generan cobros reales. Las condiciones de contratación y las ofertas definitivas se publicarán antes de habilitar ventas.',
             ),
-            (
-              'Promociones',
-              'Los descuentos sólo serán aplicables cuando exista una oferta disponible con sus condiciones. No hay un descuento militar activo ni un sistema de acreditación habilitado en esta versión.',
-            ),
           ];
     return Scaffold(
       appBar: AppBar(
@@ -105,9 +101,7 @@ class ProfileLegalPage extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          const Text(
-                            'Contacto · Javier Charlez, responsable de EntrenaOP',
-                          ),
+                          const Text('Equipo de ayuda de EntrenaOP'),
                           const SizedBox(height: 8),
                           SelectableText(contactEmail),
                         ],

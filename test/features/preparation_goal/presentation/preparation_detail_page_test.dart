@@ -334,7 +334,7 @@ void main() {
     );
 
     expect(find.text('Marca de carrera · 2 km'), findsOneWidget);
-    expect(find.textContaining('8:50.5 · 28/09/2026'), findsOneWidget);
+    expect(find.textContaining('8:50.5 · 28-09-2026'), findsOneWidget);
   });
 
   test('un programa sin control de 2 km no consulta esas marcas', () async {

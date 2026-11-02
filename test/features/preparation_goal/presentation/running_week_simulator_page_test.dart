@@ -137,7 +137,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('10:15'), findsOneWidget);
-    expect(find.textContaining('20/09/2026'), findsOneWidget);
+    expect(find.textContaining('20-09-2026'), findsOneWidget);
     expect(
       find.textContaining('De tus preferencias guardadas'),
       findsOneWidget,

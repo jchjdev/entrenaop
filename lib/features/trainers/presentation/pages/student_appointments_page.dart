@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:entrenaop/core/presentation/app_dates.dart';
 import 'package:trainer_access/trainer_appointments.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -204,7 +205,7 @@ class _StudentAppointmentsPageState extends State<StudentAppointmentsPage>
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    '${row.dateLabel} · ${row.timeLabel} · ${row.durationMinutes} min',
+                    '${formatAppDate(row.localStart)} · ${row.timeLabel} · ${row.durationMinutes} min',
                   ),
                   Text(row.timezone),
                   Text('Con ${row.trainerName}'),

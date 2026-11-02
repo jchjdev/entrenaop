@@ -442,6 +442,8 @@ void main() {
     final opened = <String>[];
     await hub(tester, repository, opened: opened);
     await tester.pumpAndSettle();
+    expect(find.textContaining('21-10-2026'), findsOneWidget);
+    expect(find.textContaining('2026-10-21'), findsNothing);
     await press(tester, 'Abrir contenido');
     expect(opened, ['/my-trainer/forms/form']);
     expect(repository.acknowledgements, isEmpty);

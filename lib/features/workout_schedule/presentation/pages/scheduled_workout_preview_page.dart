@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:workout_core/workout_template.dart';
 
 import '../../../../core/navigation/workflow_exit_guard.dart';
+import '../../../../core/presentation/app_dates.dart';
 import '../../../../core/presentation/widgets/entrena_card.dart';
 import '../../../workouts/presentation/pages/workout_preview_page.dart';
 import '../../../pro/domain/pro_offer.dart';
@@ -112,7 +114,7 @@ class _AssignmentSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final item = preview.scheduled;
-    final date = DateFormat('dd/MM/yyyy').format(item.scheduledDate);
+    final date = formatAppDate(item.scheduledDate);
     final time = item.scheduledTime;
     return EntrenaCard(
       tone: EntrenaCardTone.quiet,
@@ -139,6 +141,20 @@ class _AssignmentSummary extends StatelessWidget {
           if (item.coachNote?.trim().isNotEmpty == true) ...[
             const SizedBox(height: 8),
             Text(item.coachNote!),
+          ],
+          if (preview.workout.blocks.any(
+            (block) => block.format == WorkoutBlockFormat.running,
+          )) ...[
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed:
+                  context.read<ScheduledWorkoutPreviewCubit>().state.status ==
+                      ScheduledWorkoutPreviewStatus.starting
+                  ? null
+                  : () => context.push('/tools/running-pace-calculator'),
+              icon: const Icon(Icons.timer_outlined),
+              label: const Text('Calcular ritmos y parciales'),
+            ),
           ],
         ],
       ),

@@ -6,7 +6,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 void main() {
-  Future<void> mount(WidgetTester tester, _Repository repository) async {
+  Future<void> mount(
+    WidgetTester tester,
+    _Repository repository, {
+    Future<void> Function(String)? onOpen,
+    double scale = 1,
+  }) async {
     final router = GoRouter(
       routes: [
         GoRoute(
@@ -15,7 +20,7 @@ void main() {
             body: HomeFavorites(
               repository: repository,
               userId: 'user-a',
-              onOpen: (_) async {},
+              onOpen: onOpen ?? (_) async {},
             ),
           ),
         ),
@@ -23,7 +28,15 @@ void main() {
     );
     addTearDown(router.dispose);
     await tester.pumpWidget(
-      MaterialApp.router(theme: EntrenaTheme.dark, routerConfig: router),
+      MaterialApp.router(
+        theme: EntrenaTheme.dark,
+        routerConfig: router,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: TextScaler.linear(scale)),
+          child: child!,
+        ),
+      ),
     );
     await tester.pumpAndSettle();
   }
@@ -63,7 +76,7 @@ void main() {
       await mount(tester, repository);
       await tester.tap(find.text('Editar'));
       await tester.pumpAndSettle();
-      expect(find.byType(CheckboxListTile), findsNWidgets(3));
+      expect(find.byType(CheckboxListTile), findsNWidgets(10));
       for (final label in [
         'Mi semana',
         'Marcas y pruebas',
@@ -102,6 +115,77 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Mis sesiones'), findsOneWidget);
     expect(find.textContaining('Se conservan los anteriores'), findsOneWidget);
+  });
+
+  testWidgets(
+    'añade un cuarto favorito de Preparador y rechaza un quinto sin perder el orden',
+    (tester) async {
+      final repository = _Repository();
+      final opened = <String>[];
+      await mount(
+        tester,
+        repository,
+        onOpen: (route) async => opened.add(route),
+      );
+      await tester.tap(find.text('Editar'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(checkbox(HomeShortcut.trainerNotices));
+      await tester.tap(checkbox(HomeShortcut.trainerNotices));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(checkbox(HomeShortcut.notifications));
+      await tester.tap(checkbox(HomeShortcut.notifications));
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<CheckboxListTile>(checkbox(HomeShortcut.notifications))
+            .value,
+        isFalse,
+      );
+      expect(find.textContaining('Puedes tener hasta cuatro'), findsOneWidget);
+      await tester.ensureVisible(find.text('Guardar favoritos'));
+      await tester.tap(find.text('Guardar favoritos'));
+      await tester.pumpAndSettle();
+      expect(repository.items, [
+        ...defaultHomeFavorites,
+        HomeShortcut.trainerNotices,
+      ]);
+      await tester.ensureVisible(find.text('Avisos del preparador'));
+      await tester.tap(find.text('Avisos del preparador'));
+      await tester.pumpAndSettle();
+      expect(opened, ['/my-trainer?view=notices']);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('los cuatro accesos y el editor caben a 320 px con letra doble', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final repository = _Repository()
+      ..items = [
+        HomeShortcut.trainerNotices,
+        HomeShortcut.trainerAppointments,
+        HomeShortcut.connections,
+        HomeShortcut.notifications,
+      ];
+    await mount(tester, repository, scale: 2);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('Editar'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(checkbox(HomeShortcut.connections));
+    await tester.tap(checkbox(HomeShortcut.connections));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Guardar favoritos'));
+    await tester.tap(find.text('Guardar favoritos'));
+    await tester.pumpAndSettle();
+    expect(repository.items, [
+      HomeShortcut.trainerNotices,
+      HomeShortcut.trainerAppointments,
+      HomeShortcut.notifications,
+    ]);
+    expect(tester.takeException(), isNull);
   });
 }
 

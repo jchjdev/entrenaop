@@ -152,7 +152,7 @@ class WorkoutHistoryFilters extends StatelessWidget {
             label: Text(
               query.from == null || query.through == null
                   ? 'Elegir fechas'
-                  : '${DateFormat('dd/MM/yyyy').format(query.from!)} – ${DateFormat('dd/MM/yyyy').format(query.through!)}',
+                  : '${DateFormat('dd-MM-yyyy').format(query.from!)} – ${DateFormat('dd-MM-yyyy').format(query.through!)}',
             ),
             onPressed: () async {
               final range = await showDateRangePicker(

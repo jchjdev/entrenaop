@@ -661,7 +661,7 @@ class _AssessmentContext extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'Nacimiento ${DateFormat('dd/MM/yyyy').format(birthDate)}',
+                      'Nacimiento ${DateFormat('dd-MM-yyyy').format(birthDate)}',
                       style: const TextStyle(
                         color: Colors.white60,
                         fontSize: 12,
@@ -676,7 +676,7 @@ class _AssessmentContext extends StatelessWidget {
             child: TextButton(
               onPressed: onEditAssessmentDate,
               child: Text(
-                'Test ${DateFormat('dd/MM/yyyy').format(assessmentDate)}',
+                'Test ${DateFormat('dd-MM-yyyy').format(assessmentDate)}',
               ),
             ),
           ),

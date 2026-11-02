@@ -23,6 +23,11 @@ histórica.
 - Explicar antes de aplicar una decisión que cambie materialmente la
   arquitectura, el modelo de datos, la seguridad o un criterio acordado.
 - Escribir los mensajes de commit en castellano.
+- En cada actualización funcional de la app, actualizar la versión visible y la
+  compilación en `pubspec.yaml` dentro del mismo bloque. Usar un incremento menor
+  para funcionalidades y uno de parche para correcciones; los commits de
+  documentación, pruebas o infraestructura sin cambios en la app no requieren
+  otra versión. No confundir el número de compilación con la versión visible.
 - Añadir comentarios en castellano cuando aclaren reglas de negocio,
   conversiones, seguridad o decisiones no evidentes. Evitar comentarios que
   solo repitan literalmente lo que ya expresa el código.

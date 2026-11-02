@@ -444,14 +444,14 @@ class _ProgramAssessmentPageState extends State<ProgramAssessmentPage> {
                       onPressed: _busy ? null : _chooseAssessmentDate,
                       icon: const Icon(Icons.event_outlined),
                       label: Text(
-                        'Fecha de las pruebas: ${DateFormat('dd/MM/yyyy').format(_assessedOn)}',
+                        'Fecha de las pruebas: ${DateFormat('dd-MM-yyyy').format(_assessedOn)}',
                       ),
                     ),
                     if (_rule?.referenceOn != null)
                       Padding(
                         padding: const EdgeInsets.only(top: 8),
                         child: Text(
-                          'Edad según fecha oficial: ${DateFormat('dd/MM/yyyy').format(_rule!.referenceOn!)}',
+                          'Edad según fecha oficial: ${DateFormat('dd-MM-yyyy').format(_rule!.referenceOn!)}',
                         ),
                       ),
                     const SizedBox(height: 8),
@@ -577,7 +577,7 @@ class _ProgramAssessmentPageState extends State<ProgramAssessmentPage> {
                       Card(
                         child: ExpansionTile(
                           title: Text(
-                            '${DateFormat('dd/MM/yyyy').format(attempt.assessedOn)} · ${attempt.result.passed ? 'Apto' : 'No apto'}',
+                            '${DateFormat('dd-MM-yyyy').format(attempt.assessedOn)} · ${attempt.result.passed ? 'Apto' : 'No apto'}',
                           ),
                           subtitle: Text(
                             'Baremo ${attempt.result.version} · ${attempt.category == 'men' ? 'H' : 'M'}',

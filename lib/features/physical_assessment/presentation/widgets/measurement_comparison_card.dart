@@ -144,7 +144,7 @@ class _MeasurementComparisonCardState extends State<MeasurementComparisonCard> {
     selectedItemBuilder: (_) => [
       for (final sample in samples)
         Text(
-          DateFormat('dd/MM/yyyy · HH:mm').format(sample.completedAt),
+          DateFormat('dd-MM-yyyy · HH:mm').format(sample.completedAt),
           key: ValueKey('selected-date-$label-${sample.id}'),
         ),
     ],
@@ -153,7 +153,7 @@ class _MeasurementComparisonCardState extends State<MeasurementComparisonCard> {
         DropdownMenuItem(
           value: sample.id,
           child: Text(
-            DateFormat('dd/MM/yyyy · HH:mm').format(sample.completedAt),
+            DateFormat('dd-MM-yyyy · HH:mm').format(sample.completedAt),
           ),
         ),
     ],
@@ -257,7 +257,7 @@ class _MeasurementComparisonCardState extends State<MeasurementComparisonCard> {
         style: Theme.of(context).textTheme.headlineMedium
             ?.copyWith(fontWeight: FontWeight.w800),
       ),
-      Text(DateFormat('dd/MM/yyyy · HH:mm').format(sample.completedAt)),
+      Text(DateFormat('dd-MM-yyyy · HH:mm').format(sample.completedAt)),
       if (sample.context != null) Text(sample.context!),
     ],
   );

@@ -437,7 +437,7 @@ void main() {
     expect(auth.state, isA<AuthLoading>());
     expect(find.text('Javier'), findsOneWidget);
     expect(find.text('javier@example.com'), findsOneWidget);
-    expect(find.textContaining('11/09/2000'), findsOneWidget);
+    expect(find.textContaining('11-09-2000'), findsOneWidget);
     expect(birth.loads, 1);
     pending.complete(repository.user);
     await refreshing;

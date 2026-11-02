@@ -226,7 +226,7 @@ class _RunningReferenceSelectionSectionState
           }),
           Text(
             '2 km · ${_formatSeconds(candidate.durationSeconds)} · '
-            '${DateFormat('dd/MM/yyyy').format(candidate.completedAt)}',
+            '${DateFormat('dd-MM-yyyy').format(candidate.completedAt)}',
           ),
           Text(
             assessment.window == RunningReferenceReuseWindow.recent

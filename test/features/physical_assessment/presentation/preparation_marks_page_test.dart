@@ -14,6 +14,47 @@ import 'package:go_router/go_router.dart';
 import '../../../helpers/evolution_fixtures.dart';
 
 void main() {
+  testWidgets(
+    'la calculadora PAEF/PAFAS abre y vuelve a las marcas guardadas sin recalcularlas',
+    (t) async {
+      var reads = 0;
+      final data = await t.runAsync(() => evolutionFasData());
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (_, _) => PreparationMarksPage(
+              goalId: 'fas',
+              load: (_) async {
+                reads++;
+                return data!;
+              },
+            ),
+          ),
+          GoRoute(
+            path: '/assessment/fas-calculator',
+            builder: (_, _) =>
+                const Scaffold(body: Text('Calculadora independiente')),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+      await t.pumpWidget(
+        MaterialApp.router(theme: EntrenaTheme.dark, routerConfig: router),
+      );
+      await t.pumpAndSettle();
+      await t.ensureVisible(find.text('Calculadora PAEF / PAFAS'));
+      await t.tap(find.text('Calculadora PAEF / PAFAS'));
+      await t.pumpAndSettle();
+      expect(find.text('Calculadora independiente'), findsOneWidget);
+      router.pop();
+      await t.pumpAndSettle();
+      expect(find.text('Marcas y resultados'), findsOneWidget);
+      expect(reads, 1);
+      expect(t.takeException(), isNull);
+    },
+  );
+
   Future<void> mount(
     WidgetTester t,
     Future<PreparationMarksData> Function(String) load, {
@@ -136,7 +177,7 @@ void main() {
   ) async {
     await mount(t, (_) async => evolutionGenericData());
     expect(find.text('Baremo snapshot-v3 · M'), findsOneWidget);
-    await t.tap(find.text('22/09/2026 · Apto'));
+    await t.tap(find.text('22-09-2026 · Apto'));
     await t.pumpAndSettle();
     expect(find.text('47,5 puntos totales'), findsOneWidget);
     expect(find.text('Marca 2,15'), findsOneWidget);
@@ -171,7 +212,7 @@ void main() {
     expect(find.text('Baremo guardado · Otra versión'), findsOneWidget);
     expect(find.textContaining('Este test usa otra versión'), findsOneWidget);
     expect(find.textContaining('puntos totales'), findsNothing);
-    await t.tap(find.text('05/10/2026'));
+    await t.tap(find.text('05-10-2026'));
     await t.pumpAndSettle();
     expect(find.text('30 repeticiones'), findsOneWidget);
   });
@@ -293,9 +334,9 @@ void main() {
         ),
       );
       await t.pumpAndSettle();
-      await t.ensureVisible(find.text('22/09/2026 · Apto'));
+      await t.ensureVisible(find.text('22-09-2026 · Apto'));
       await t.pumpAndSettle();
-      await t.tap(find.text('22/09/2026 · Apto'));
+      await t.tap(find.text('22-09-2026 · Apto'));
       await t.pumpAndSettle();
       expect(find.text('47,5 puntos totales'), findsOneWidget);
       expect(t.takeException(), isNull);

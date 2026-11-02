@@ -24,7 +24,7 @@ void main() {
         ),
       );
       expect(find.text('Control previsto'), findsOneWidget);
-      expect(find.text('06/11/2026'), findsOneWidget);
+      expect(find.text('06-11-2026'), findsOneWidget);
       expect(find.text('Comprobar transferencia.'), findsOneWidget);
       expect(find.textContaining('Sustituye trabajo'), findsOneWidget);
       expect(t.takeException(), isNull);
@@ -63,7 +63,7 @@ void main() {
       await t.pumpAndSettle();
       expect(find.text('Tu objetivo: 4:00 min'), findsOneWidget);
       expect(
-        find.text('Última marca del protocolo: 1:20 min · 19/10/2026'),
+        find.text('Última marca del protocolo: 1:20 min · 19-10-2026'),
         findsOneWidget,
       );
       expect(find.text('Tu objetivo: 12,5 s'), findsOneWidget);

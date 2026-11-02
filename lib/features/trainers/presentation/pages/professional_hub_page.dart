@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:entrenaop/core/navigation/section_refresh_boundary.dart';
 import 'package:entrenaop/features/notifications/push_notifications_scope.dart';
 import 'package:entrenaop/core/presentation/widgets/entrena_card.dart';
+import 'package:entrenaop/core/presentation/app_dates.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -368,7 +369,7 @@ class _ProfessionalHubPageState extends State<ProfessionalHubPage>
                                 ),
                               const SizedBox(height: 4),
                               Text(
-                                '${_kindLabel(item.kind)} · ${_day(item.createdAt.toLocal())} · ${item.readAt == null ? 'Sin leer' : 'Leído'}',
+                                '${_kindLabel(item.kind)} · ${formatAppDate(item.createdAt.toLocal())} · ${item.readAt == null ? 'Sin leer' : 'Leído'}',
                               ),
                               const SizedBox(height: 8),
                               Wrap(

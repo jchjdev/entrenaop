@@ -130,7 +130,7 @@ class FasAssessmentHistoryCard extends StatelessWidget {
         child: ExpansionTile(
           key: PageStorageKey('fas-assessment-${entry.id}'),
           leading: const Icon(Icons.update_outlined),
-          title: Text(DateFormat('dd/MM/yyyy').format(entry.completedAt)),
+          title: Text(DateFormat('dd-MM-yyyy').format(entry.completedAt)),
           subtitle: const Text(
             'Este test usa otra versión del baremo. Actualiza la app para consultar sus puntos.',
           ),
@@ -166,7 +166,7 @@ class FasAssessmentHistoryCard extends StatelessWidget {
           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
         ),
         subtitle: Text(
-          '${DateFormat('dd/MM/yyyy').format(entry.completedAt)} · ${entry.age} años · ${entry.category == 'men' ? 'H' : 'M'}',
+          '${DateFormat('dd-MM-yyyy').format(entry.completedAt)} · ${entry.age} años · ${entry.category == 'men' ? 'H' : 'M'}',
         ),
         childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
         children: [

@@ -153,7 +153,7 @@ void main() {
       expect(find.text(_generationMessage), findsNothing);
       expect(find.text('TU PLAN ADAPTATIVO'), findsNothing);
       await show(tester, find.text('Ver entrenamiento'));
-      expect(find.text('02/11/2026 · Entrenamiento del plan'), findsOneWidget);
+      expect(find.text('02-11-2026 · Entrenamiento del plan'), findsOneWidget);
       await tester.tap(find.text('Ver entrenamiento'));
       await tester.pumpAndSettle();
       expect(result.router.state.uri.path, '/plan/week/session/pendiente');

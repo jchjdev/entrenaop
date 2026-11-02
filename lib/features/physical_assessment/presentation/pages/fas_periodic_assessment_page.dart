@@ -287,7 +287,7 @@ class _FasPeriodicAssessmentPageState extends State<FasPeriodicAssessmentPage> {
                                   '$age años · baremo según tu edad actual',
                                 ),
                                 subtitle: Text(
-                                  'Nacimiento: ${DateFormat('dd/MM/yyyy').format(birthDate)}',
+                                  'Nacimiento: ${DateFormat('dd-MM-yyyy').format(birthDate)}',
                                 ),
                                 trailing: const Icon(Icons.edit_outlined),
                                 onTap: _saving
@@ -430,7 +430,7 @@ class _FasPeriodicAssessmentPageState extends State<FasPeriodicAssessmentPage> {
                               Card(
                                 child: ExpansionTile(
                                   title: Text(
-                                    DateFormat('dd/MM/yyyy · HH:mm')
+                                    DateFormat('dd-MM-yyyy · HH:mm')
                                         .format(entry.completedAt),
                                   ),
                                   subtitle: Text(

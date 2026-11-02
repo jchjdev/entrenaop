@@ -1,5 +1,24 @@
 # Registro de decisiones vigentes
 
+**Favoritos y herramientas de la app · 02/11/2026:** Javier pide ampliar los
+accesos y concreta que Ritmos y PAEF/PAFAS no deben repetirse como favoritos,
+porque ya están en sus cards. Se ofrecen los tres destinos personales actuales,
+Avisos, Citas, Formularios, Pruebas y Técnica del preparador, Notificaciones y
+Conexiones. El usuario puede ordenar hasta cuatro, conservando su selección
+anterior por cuenta. Las herramientas mantienen sus cards y ganan entradas
+contextuales en la consulta de carrera y en las marcas correspondientes.
+Actualiza el límite de favoritos de UI-026 sin cambiar pautas ni permisos.
+[Recorridos y límites](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#favoritos-herramientas-y-presentación--02112026).
+
+**Versión visible, fechas y equipo de ayuda · 02/11/2026:** Javier pide que cada
+actualización funcional cambie también la versión visible. Esta entrega usa
+`1.1.0+4` y se registra el criterio de incremento en AGENTS. Las fechas completas
+visibles siguen día-mes-año; las rutas y datos conservan ISO y su zona civil.
+El contacto se presenta como «Equipo de ayuda de EntrenaOP» y se retira de las
+condiciones el apartado de promociones que explicaba descuentos militares.
+El canje condicionado de códigos ya previsto en Ajustes no cambia.
+[Aplicación](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#favoritos-herramientas-y-presentación--02112026).
+
 **Ficha del directorio incluida en el plan pagado · 02/11/2026:** Javier detecta
 que su cuenta de prueba con Completo no puede publicar y pide resolverlo. Se
 conecta en Dev la prestación ya acordada: Profesional y Completo incluyen ficha;

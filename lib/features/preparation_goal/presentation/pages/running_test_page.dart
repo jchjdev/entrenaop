@@ -104,7 +104,7 @@ class _RunningTestPageState extends State<RunningTestPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${DateFormat('dd/MM/yyyy').format(result.completedAt)} · ${_formatTime(result.durationSeconds)}',
+                          '${DateFormat('dd-MM-yyyy').format(result.completedAt)} · ${_formatTime(result.durationSeconds)}',
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
@@ -273,7 +273,7 @@ class _RunningTestFormState extends State<RunningTestFormPage> {
           },
           icon: const Icon(Icons.calendar_today),
           label: Text(
-            'Fecha: ${DateFormat('dd/MM/yyyy').format(_completedAt)}',
+            'Fecha: ${DateFormat('dd-MM-yyyy').format(_completedAt)}',
           ),
         ),
         const SizedBox(height: 12),

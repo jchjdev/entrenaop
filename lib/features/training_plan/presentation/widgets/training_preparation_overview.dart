@@ -127,7 +127,7 @@ class TrainingPreparationOverview extends StatelessWidget {
               ),
               if (goal?.targetDate case final date?) ...[
                 const SizedBox(height: 12),
-                Text('Objetivo · ${DateFormat('dd/MM/yyyy').format(date)}'),
+                Text('Objetivo · ${DateFormat('dd-MM-yyyy').format(date)}'),
               ],
               const SizedBox(height: 20),
               const Divider(),

@@ -135,6 +135,37 @@ class _PreparationMarksPageState extends State<PreparationMarksPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       if (loading) const LinearProgressIndicator(),
+                      if (goal.programId ==
+                              PreparationProgramIds.fasPeriodicAssessment ||
+                          data.running.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              if (goal.programId ==
+                                  PreparationProgramIds.fasPeriodicAssessment)
+                                OutlinedButton.icon(
+                                  onPressed: () => context.push(
+                                    '/assessment/fas-calculator',
+                                  ),
+                                  icon: const Icon(Icons.calculate_outlined),
+                                  label: const Text('Calculadora PAEF / PAFAS'),
+                                ),
+                              if (data.running.isNotEmpty)
+                                OutlinedButton.icon(
+                                  onPressed: () => context.push(
+                                    '/tools/running-pace-calculator',
+                                  ),
+                                  icon: const Icon(Icons.timer_outlined),
+                                  label: const Text(
+                                    'Calcular ritmos y parciales',
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
                       if (snapshot.hasError) ...[
                         const Text(
                           'No se pudieron actualizar las marcas. Sigues viendo la última consulta.',
@@ -275,7 +306,7 @@ class _PreparationMarksPageState extends State<PreparationMarksPage> {
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 Text(
-                                  DateFormat('dd/MM/yyyy')
+                                  DateFormat('dd-MM-yyyy')
                                       .format(result.completedAt),
                                 ),
                                 const SizedBox(height: 6),
@@ -330,7 +361,7 @@ class _ProgramResultCard extends StatelessWidget {
     child: ExpansionTile(
       key: PageStorageKey('program-assessment-${attempt.id}'),
       title: Text(
-        '${DateFormat('dd/MM/yyyy').format(attempt.assessedOn)} · ${attempt.result.passed ? 'Apto' : 'No apto'}',
+        '${DateFormat('dd-MM-yyyy').format(attempt.assessedOn)} · ${attempt.result.passed ? 'Apto' : 'No apto'}',
       ),
       subtitle: Text(
         'Baremo ${attempt.result.version} · ${attempt.category == 'men' ? 'H' : 'M'}',

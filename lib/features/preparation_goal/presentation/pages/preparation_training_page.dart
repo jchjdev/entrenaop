@@ -674,7 +674,7 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
         label: Text(
           _targetDate == null
               ? 'Elegir fecha de la prueba'
-              : 'Prueba: ${DateFormat('dd/MM/yyyy').format(_targetDate!)}',
+              : 'Prueba: ${DateFormat('dd-MM-yyyy').format(_targetDate!)}',
         ),
         onPressed: _busy
             ? null
@@ -752,7 +752,7 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
       ),
       const SizedBox(height: 16),
       if (_targetDate != null)
-        Text('Prueba: ${DateFormat('dd/MM/yyyy').format(_targetDate!)}'),
+        Text('Prueba: ${DateFormat('dd-MM-yyyy').format(_targetDate!)}'),
       Text(
         '${_availability.values.where((m) => m > 0).length} días disponibles · ${_scopeLabel(_scope)}',
       ),
@@ -1126,7 +1126,7 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
                       child: Text(
-                        'Prueba · ${DateFormat('dd/MM/yyyy').format(_targetDate!)}',
+                        'Prueba · ${DateFormat('dd-MM-yyyy').format(_targetDate!)}',
                       ),
                     ),
                   Padding(
