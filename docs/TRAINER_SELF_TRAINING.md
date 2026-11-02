@@ -179,3 +179,29 @@ recursos activa, cabeceras sin caché y MIME WebAssembly correctos. JavaScript:
 La comprobación publicada acredita identidad e integridad de los recursos;
 queda para Javier la aceptación visual con su cuenta tras recargar Agenda.
 No se ha generado ni instalado una APK para esta corrección.
+
+## Consulta de pautas recibidas en móvil · 02/11/2026
+
+Se corrige una tarjeta sin acción en la agenda profesional móvil: una sesión
+recibida podía verse como «Pendiente · Solo consulta», pero tocarla no abría
+el entrenamiento. El estado pendiente y la autoría de otro preparador no eran
+la causa. Ahora la tarjeta abre `/coach/agenda/received/:id` y vuelve a la
+misma agenda al cerrar, sin recargar ni cambiar la semana elegida.
+
+El puerto `receivedWorkout` solo acepta el identificador de la pauta. Su
+adaptador fija tanto el propietario esperado como el alumno al usuario
+autenticado y reutiliza `get_trainer_shared_workout`; no recibe un alumno desde
+la URL ni consulta la pauta como si la hubiera creado el preparador actual.
+Se convierte la versión recibida con el codec existente y se muestra mediante
+`WorkoutTemplateContent`, como en Trainer web. Se reutilizan la carga, el error
+y el reintento existentes. No aparecen acciones de asignar, adaptar, retirar
+o comenzar desde el contexto profesional; la ejecución conserva su recorrido
+personal. SQL, RLS y derechos comerciales no cambian.
+
+Regresiones: abrir una pauta recibida pendiente, leer distancia y recuperación,
+volver conservando la agenda, recuperar un fallo de carga, conservar la versión
+publicada y rechazar un cambio de cuenta antes de la petición. Se mantienen las
+pruebas de paginación, duplicados, canceladas y respuestas de semanas antiguas.
+Análisis de raíz y Trainer sin incidencias; 21 pruebas focales y baterías
+completas de raíz (1.706 correctas, una omisión previa) y Trainer (443 correctas).
+La validación de la app instalada en iOS requiere compilar esta revisión.

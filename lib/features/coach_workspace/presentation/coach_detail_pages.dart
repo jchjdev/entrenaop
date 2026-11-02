@@ -10,9 +10,34 @@ import 'package:trainer_access/trainer_access.dart';
 import 'package:trainer_access/trainer_messages.dart';
 import 'package:workout_editor_ui/professional_workout_result.dart';
 import 'package:workout_editor_ui/exercise_video_preview.dart';
+import 'package:workout_editor_ui/workout_template_content.dart';
 
 import 'coach_workspace_scope.dart';
 import 'coach_pages.dart';
+
+/// Las pautas recibidas se leen con la identidad personal, nunca como su autor.
+class CoachReceivedWorkoutPage extends StatelessWidget {
+  const CoachReceivedWorkoutPage({super.key, required this.scheduledId});
+  final String scheduledId;
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(
+      title: const Text('Entrenamiento pautado'),
+      actions: const [WorkspaceReturnAction()],
+    ),
+    body: CoachLoad(
+      key: ValueKey(scheduledId),
+      load: () =>
+          CoachWorkspaceScope.of(context).controller.repository
+              .receivedWorkout(scheduledId),
+      builder: (context, template, refresh) => ListView(
+        padding: const EdgeInsets.all(16),
+        children: [WorkoutTemplateContent(template: template)],
+      ),
+    ),
+  );
+}
 
 class CoachAssignmentPage extends StatelessWidget {
   const CoachAssignmentPage({super.key, required this.assignmentId});

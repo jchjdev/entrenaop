@@ -2,6 +2,7 @@ import 'package:trainer_access/trainer_calendar.dart';
 import 'package:trainer_access/trainer_access.dart';
 import 'package:trainer_access/trainer_messages.dart';
 import 'package:workout_core/professional_opposition_goal.dart';
+import 'package:workout_core/workout_template.dart';
 
 class CoachAccount {
   const CoachAccount({required this.enabled});
@@ -62,6 +63,9 @@ class CoachTechniquePending {
 abstract class CoachWorkspaceRepository {
   /// Identidad personal fijada al crear el repositorio autenticado.
   String get personalClientId;
+
+  /// Consulta una pauta recibida por el propietario, sin acciones profesionales.
+  Future<WorkoutTemplate> receivedWorkout(String scheduledId);
 
   Future<List<CoachTechniquePending>> pendingTechnique({
     CoachTechniquePending? before,

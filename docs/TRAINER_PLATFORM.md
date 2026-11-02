@@ -740,6 +740,22 @@ inicial, con el piloto comercial y la aceptación física pendientes.
 Lectura final en Dev:
 publicación deshabilitada, cero ofertas elegibles y cero fichas publicadas.
 
+### Formulario de denuncia en móvil · 02/11/2026
+
+Se corrige el solapamiento entre la explicación, el motivo y el comentario en
+la ficha del preparador. El selector admite motivos largos y texto ampliado;
+las etiquetas conservan separación y el controlador de texto pertenece al
+diálogo hasta su desmontaje, incluida la animación de cierre con teclado.
+Los contactos de la ficha también se ajustan al ancho disponible.
+
+Se mantienen los motivos, los datos enviados, la revisión posterior y los
+permisos existentes. Cancelar no envía información. Nueve pruebas del directorio
+cubren el recorrido, con geometría a 390 px/1× y 320 px/2×, escritura, teclado,
+cancelación y envío a un repositorio simulado. La captura de 390 px con el tema
+real se revisa visualmente. No se envían denuncias reales para comprobarlo.
+Análisis limpios en raíz y Trainer; baterías completas de 1.706 pruebas en raíz
+(una omisión previa) y 443 en Trainer. ADMIN no consume esta presentación.
+
 ### Primer contacto en el chat existente · 31/10/2026
 
 Javier aprueba primer mensaje, aceptación/rechazo/bloqueo y continuación dentro

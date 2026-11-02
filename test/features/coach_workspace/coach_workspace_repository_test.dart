@@ -69,6 +69,37 @@ class CoachServer {
 }
 
 void main() {
+  test('la pauta recibida consulta la versión publicada como propietario y rechaza otra cuenta', () async {
+    final api = CoachServer();
+    addTearDown(api.client.dispose);
+    api.responses['get_trainer_shared_workout'] = {
+      'id': 'version-pautada',
+      'name': 'Series de Ervi',
+      'description': null,
+      'estimated_duration_minutes': 40,
+      'version': 3,
+      'workout_blocks': [],
+    };
+    await api.login();
+    final repo = SupabaseCoachWorkspaceRepository(api.client, owner);
+    final workout = await repo.receivedWorkout('scheduled');
+    expect(workout.id, 'version-pautada');
+    expect(workout.version, 3);
+    expect(api.payload, {
+      'p_expected_owner': owner,
+      'p_client_id': owner,
+      'p_scheduled_id': 'scheduled',
+    });
+    api.account = other;
+    await api.login();
+    final count = api.requests.length;
+    await expectLater(
+      repo.receivedWorkout('scheduled'),
+      throwsA(isA<StateError>()),
+    );
+    expect(api.requests, hasLength(count));
+  });
+
   test('el calendario personal usa la identidad fijada y conserva cursor y fechas civiles', () async {
     final api = CoachServer();
     addTearDown(api.client.dispose);

@@ -21,6 +21,9 @@ String coachClientRoute(String id) =>
 String coachAssignmentRoute(String id) =>
     '/coach/assignment/${Uri.encodeComponent(id)}';
 
+String coachReceivedWorkoutRoute(String id) =>
+    '/coach/agenda/received/${Uri.encodeComponent(id)}';
+
 class CoachLoad<T> extends StatefulWidget {
   const CoachLoad({super.key, required this.load, required this.builder});
   final Future<T> Function() load;

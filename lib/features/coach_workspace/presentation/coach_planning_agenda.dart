@@ -631,6 +631,7 @@ class _CoachPlanningAgendaPageState extends State<CoachPlanningAgendaPage> {
             _ => s.status,
           }} · Solo consulta',
           s.running ? Icons.directions_run : Icons.fitness_center,
+          onTap: () => context.push(coachReceivedWorkoutRoute(s.id)),
         ),
       for (final a in appointments)
         _event(

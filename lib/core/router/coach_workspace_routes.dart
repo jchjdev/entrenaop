@@ -192,6 +192,14 @@ StatefulShellBranch coachWorkspaceBranch(WorkflowExitRegistry exits) {
               materialAppRoute(
                 path: '/coach/agenda',
                 builder: (_, _) => const CoachAgendaPage(),
+                routes: [
+                  materialAppRoute(
+                    path: 'received/:id',
+                    builder: (_, state) => CoachReceivedWorkoutPage(
+                      scheduledId: state.pathParameters['id']!,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

@@ -4,6 +4,8 @@ import 'package:trainer_access/authenticated_rpc.dart';
 import 'package:trainer_access/trainer_access.dart';
 import 'package:trainer_access/trainer_messages.dart';
 import 'package:workout_core/professional_opposition_goal.dart';
+import 'package:workout_core/workout_template.dart';
+import 'package:workout_core/workout_template_model.dart';
 
 import '../domain/coach_workspace_repository.dart';
 
@@ -14,6 +16,14 @@ class SupabaseCoachWorkspaceRepository implements CoachWorkspaceRepository {
   final String owner;
   @override
   String get personalClientId => owner;
+  @override
+  Future<WorkoutTemplate> receivedWorkout(String scheduledId) async =>
+      WorkoutTemplateModel.fromJson(
+        await SupabaseTrainerSharedCalendarRepository(
+          _client,
+          owner,
+        ).workout(owner, scheduledId),
+      );
   Future<dynamic> _rpc(String name, Map<String, dynamic> args) =>
       authenticatedTrainerRpc(_client, owner, name, params: args);
   String _day(DateTime d) =>

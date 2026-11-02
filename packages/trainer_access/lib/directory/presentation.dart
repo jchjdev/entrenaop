@@ -188,70 +188,15 @@ class _TrainerDirectoryPageState extends State<TrainerDirectoryPage>
   }
 
   Future<void> _report(DirectoryProfile profile) async {
-    final details = TextEditingController();
-    DirectoryReportReason? reason;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialog) => AlertDialog(
-          title: const Text('Denunciar perfil'),
-          content: SizedBox(
-            width: 420,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'La denuncia se revisará. No oculta automáticamente el perfil.',
-                  ),
-                  DropdownButtonFormField<DirectoryReportReason>(
-                    itemHeight: null,
-                    initialValue: reason,
-                    decoration: const InputDecoration(
-                      labelText: 'Elige el motivo',
-                    ),
-                    isExpanded: true,
-                    items: DirectoryReportReason.values
-                        .map(
-                          (v) => DropdownMenuItem(
-                            value: v,
-                            child: Text(directoryReportLabel(v)),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (v) => setDialog(() => reason = v!),
-                  ),
-                  TextField(
-                    controller: details,
-                    maxLength: 1000,
-                    maxLines: 3,
-                    decoration: const InputDecoration(
-                      labelText: 'Explica qué debemos revisar',
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar'),
-            ),
-            FilledButton(
-              onPressed: reason == null
-                  ? null
-                  : () => Navigator.pop(context, true),
-              child: const Text('Enviar denuncia'),
-            ),
-          ],
-        ),
-      ),
+    final report =
+        await showDialog<({DirectoryReportReason reason, String details})>(
+          context: context,
+          builder: (_) => const _DirectoryReportDialog(),
+        );
+    if (report == null || !mounted) return;
+    await _run(
+      () => widget.repository.report(profile.id, report.reason, report.details),
     );
-    final text = details.text;
-    details.dispose();
-    if (confirmed != true || !mounted) return;
-    await _run(() => widget.repository.report(profile.id, reason!, text));
     if (mounted && _error == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Denuncia recibida para revisión.')),
@@ -346,9 +291,11 @@ class _TrainerDirectoryPageState extends State<TrainerDirectoryPage>
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      OutlinedButton(
-                        onPressed: () => _contact(contact.uri),
-                        child: Text(contact.label),
+                      Flexible(
+                        child: OutlinedButton(
+                          onPressed: () => _contact(contact.uri),
+                          child: Text(contact.label),
+                        ),
                       ),
                       IconButton(
                         tooltip: 'Copiar ${contact.label}',
@@ -510,6 +457,85 @@ class _TrainerDirectoryPageState extends State<TrainerDirectoryPage>
         ),
       ),
     ),
+  );
+}
+
+class _DirectoryReportDialog extends StatefulWidget {
+  const _DirectoryReportDialog();
+
+  @override
+  State<_DirectoryReportDialog> createState() => _DirectoryReportDialogState();
+}
+
+class _DirectoryReportDialogState extends State<_DirectoryReportDialog> {
+  final _details = TextEditingController();
+  DirectoryReportReason? _reason;
+
+  @override
+  void dispose() {
+    // El campo sigue montado durante la animación de cierre del diálogo.
+    _details.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+    title: const Text('Denunciar perfil'),
+    content: SizedBox(
+      width: 420,
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'La denuncia se revisará. No oculta automáticamente el perfil.',
+            ),
+            const SizedBox(height: 20),
+            DropdownButtonFormField<DirectoryReportReason>(
+              isDense: false,
+              itemHeight: null,
+              initialValue: _reason,
+              decoration: const InputDecoration(labelText: 'Elige el motivo'),
+              isExpanded: true,
+              items: DirectoryReportReason.values
+                  .map(
+                    (v) => DropdownMenuItem(
+                      value: v,
+                      child: Text(directoryReportLabel(v)),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (value) => setState(() => _reason = value),
+            ),
+            const SizedBox(height: 24),
+            TextField(
+              controller: _details,
+              maxLength: 1000,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                labelText: 'Explica qué debemos revisar',
+                alignLabelWithHint: true,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: const Text('Cancelar'),
+      ),
+      FilledButton(
+        onPressed: _reason == null
+            ? null
+            : () => Navigator.pop(context, (
+                reason: _reason!,
+                details: _details.text,
+              )),
+        child: const Text('Enviar denuncia'),
+      ),
+    ],
   );
 }
 

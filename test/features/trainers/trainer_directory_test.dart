@@ -1,3 +1,4 @@
+import 'package:entrena_ui/entrena_ui.dart' show EntrenaTheme;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -33,6 +34,7 @@ class FakeDirectory implements DirectoryRepository {
   DirectoryVisibility visibility = DirectoryVisibility.app;
   bool saved = false, fail = false;
   int calls = 0, reportsSent = 0;
+  (String, DirectoryReportReason, String)? lastReport;
   @override
   Future<DirectoryPage> search({
     String query = '',
@@ -64,6 +66,7 @@ class FakeDirectory implements DirectoryRepository {
     String details,
   ) async {
     reportsSent++;
+    lastReport = (id, reason, details);
   }
 
   @override
@@ -223,12 +226,92 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Spam o enlaces engañosos').last);
       await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).last, 'Enlace incorrecto.');
       await tester.tap(find.text('Enviar denuncia'));
       await tester.pumpAndSettle();
       expect(repository.reportsSent, 1);
+      expect(repository.lastReport, (
+        'one',
+        DirectoryReportReason.spam,
+        'Enlace incorrecto.',
+      ));
       expect(find.text('Ervi · Carrera'), findsOneWidget);
+      expect(tester.takeException(), isNull);
     },
   );
+  for (final (width, scale) in [(390.0, 1.0), (320.0, 2.0)]) {
+    testWidgets(
+      'denuncia separa los campos y sus etiquetas a $width px y texto $scale',
+      (tester) async {
+        tester.view.physicalSize = Size(width, 900);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        final repository = FakeDirectory();
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: EntrenaTheme.dark,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: TextScaler.linear(scale)),
+              child: child!,
+            ),
+            home: TrainerDirectoryPage(
+              repository: repository,
+              profileId: 'one',
+              loadPhoto: (_) async => Uint8List(0),
+              onOpen: (_) {},
+              onContact: (_) async => true,
+              publicBase: trainerDirectoryPublicBase,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.text('Denunciar perfil'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Denunciar perfil'));
+        await tester.pumpAndSettle();
+        final selector = find.byType(
+          DropdownButtonFormField<DirectoryReportReason>,
+        );
+        await tester.ensureVisible(selector);
+        await tester.pumpAndSettle();
+        await tester.tap(selector);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Información profesional falsa').last);
+        await tester.pumpAndSettle();
+        final input = find.byType(TextField).last;
+        await tester.ensureVisible(input);
+        await tester.pumpAndSettle();
+        await tester.enterText(input, 'Necesita revisión esta ficha.');
+        await tester.pumpAndSettle();
+        final summary = find.text(
+          'La denuncia se revisará. No oculta automáticamente el perfil.',
+        );
+        final reasonLabel = find.text('Elige el motivo');
+        final detailsLabel = find.text('Explica qué debemos revisar');
+        expect(
+          tester.getRect(reasonLabel).top,
+          greaterThanOrEqualTo(tester.getRect(summary).bottom + 8),
+        );
+        expect(
+          tester.getRect(detailsLabel).top,
+          greaterThanOrEqualTo(tester.getRect(selector).bottom + 8),
+        );
+        expect(find.text('Necesita revisión esta ficha.'), findsOneWidget);
+        expect(repository.reportsSent, 0);
+        expect(tester.takeException(), isNull);
+        tester.view.viewInsets = const FakeViewPadding(bottom: 240);
+        await tester.pumpAndSettle();
+        final cancel = find.widgetWithText(TextButton, 'Cancelar');
+        expect(cancel.hitTestable(), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await tester.tap(cancel);
+        await tester.pumpAndSettle();
+        expect(repository.reportsSent, 0);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
   testWidgets('visitante puede consultar pero no tiene acciones personales', (
     tester,
   ) async {

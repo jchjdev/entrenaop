@@ -390,6 +390,14 @@ no adquieren acciones de arrastre, adaptación o retirada. Las autoasignaciones
 no se duplican y los otros alumnos no reciben acceso a esta planificación.
 [Alcance](TRAINER_SELF_TRAINING.md#agenda-general-y-pautas-recibidas--30102026).
 
+**TRN-033 · consulta móvil de pautas recibidas · 02/11/2026:** Javier detecta
+que la tarjeta recibida de Ervigio no abre desde Agenda. Estar pendiente o
+pertenecer a otro preparador no impide consultar el entrenamiento propio:
+faltaba conectar la pulsación en móvil. Se abre el entrenamiento pautado con
+el lector compartido existente y la identidad personal fijada; volver conserva
+la agenda. No se conceden acciones profesionales sobre una pauta ajena.
+[Corrección y regresiones](TRAINER_SELF_TRAINING.md#consulta-de-pautas-recibidas-en-móvil--02112026).
+
 **Tema claro profesional · 30/10/2026:** Javier pide modo claro en Trainer y
 ADMIN para trabajar con mucha luz, con selector junto a la calculadora y la
 misma identidad visual. Oscuro sigue siendo el valor inicial; la elección se
@@ -580,6 +588,13 @@ contratos hacia dentro y separación de datos/presentación según los patrones
 vigentes. Permisos y derechos comerciales se hacen cumplir en servidor.
 No se crean capas preventivas ni se implementa el directorio en esta tarea.
 [Criterio y límites](ARCHITECTURE.md#clean-architecture-aplicada-a-entrenaop).
+
+**TRN-040 · formulario de denuncia adaptable · 02/11/2026:** Javier señala
+el solapamiento de los campos en la ficha del preparador. Se separan los campos
+y sus etiquetas, se adapta el selector a motivos largos y se mantiene el
+controlador hasta desmontar el diálogo. Cancelar con teclado no envía una
+denuncia ni provoca errores de ciclo de vida. No cambian motivos ni permisos.
+[Corrección visual](TRAINER_PLATFORM.md#formulario-de-denuncia-en-móvil--02112026).
 
 **TRN-040 · concreción futura · 30/10/2026:** Javier plantea publicidad para
 planes profesionales pagados intermedio/superior, excluyendo el básico; pérdida
