@@ -916,3 +916,25 @@ preparador siguen pendientes. La fiscalidad debe concretarse antes del modo acti
 Siguiente recorrido comercial único: aceptar en sandbox un cambio de plazas,
 su reducción/anulación y un pago pendiente; después concretar tarifas finales
 y fiscalidad antes de comercializar.
+
+### Publicación verificada del cambio de plan · 02/11/2026
+
+ADMIN sirve `c647fa60378aa8239469b5795ff20c19c8ef1a1b`
+([publicación correcta](https://github.com/jchjdev/entrenaop/actions/runs/41412767852));
+Trainer sirve `689117c06f5acb99983f61f2a78efc5480edbd31`
+([publicación final correcta](https://github.com/jchjdev/entrenaop/actions/runs/41414675847)).
+El segundo commit conserva la anulación durante suspensión sin permitir nuevos
+cargos. Verificados por HTTPS entorno `development`, proyecto
+`sxbxfjqgoddzhtcyhalw`, identidad, hash, entrada activa y cabeceras de ambos
+portales. `trainer-commerce` v7 está activo en el mismo Dev; las tres acciones
+nuevas rechazan sesión ausente por HTTP. Los eventos de fases están habilitados
+solo en el sandbox de Stripe.
+
+277 migraciones coincidentes y seis contratos SQL transaccionales correctos.
+Análisis de las tres aplicaciones limpio; 1.625 pruebas raíz (una omisión previa),
+368 ADMIN (dos previas), 436 Trainer y 64 de UI común. Tipos estrictos y
+[53 pruebas de servidor correctas en GitHub](https://github.com/jchjdev/entrenaop/actions/runs/41412767831).
+Se comprueba en navegador el lateral gris de Trainer en claro/oscuro y ADMIN
+en claro, preservando el área de trabajo. Capturas locales ignoradas en
+`build/trainer-changes/`. El recorrido manual de cambios en Stripe sandbox
+sigue pendiente: la publicación y las pruebas simuladas no lo sustituyen.

@@ -11,6 +11,9 @@ y registro web con ROLLBACK. La vista previa real de Stripe no sustituye la
 aceptación manual completa de los cambios en sandbox. Único siguiente recorrido
 comercial: ampliación, reducción/anulación y pago pendiente en sandbox, antes
 de cerrar tarifas/fiscalidad. [Contrato y límites](TRAINER_COMMERCIAL_CONTRACT.md#cambios-de-plan-y-plazas--02112026).
+ADMIN `c647fa60` y Trainer `689117c0` publicados automáticamente y verificados
+por HTTPS contra Dev; comprobación visual del lateral realizada. La aceptación
+manual de los cambios comerciales continúa pendiente, sin activar dinero real.
 
 ## Criterio rector del deportista · confirmado el 02/11/2026
 
