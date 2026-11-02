@@ -1,5 +1,34 @@
 # Navegación del alumno y preparador · TRN-025 · 22/10/2026
 
+## Día sin sesiones · 02/11/2026
+
+El vídeo de Javier muestra que seleccionar una fecha vacía en Inicio coloca la
+tarjeta del plan guardado donde antes estaba la sesión. Mi semana añade al hueco
+un diagnóstico de programa y accesos a activar preparaciones. Se separa el
+resumen del día de la gestión del plan con una misma card visual neutral:
+
+- Hoy: **Hoy no tienes sesiones pautadas**. Otras fechas: **No hay sesiones
+  pautadas para este día**. No se infiere un descanso ni una nueva pauta.
+- Inicio ofrece **Ver mi semana**, conservando la fecha seleccionada, y sólo
+  indica una próxima sesión si ya existe en los datos recibidos. Las cards de
+  Preparaciones y Entrenar conservan la consulta y gestión del plan guardado.
+- Mi semana mantiene **Añadir entrenamiento al día** como acción secundaria
+  dentro de la card. Una fecha con sesiones conserva sus tarjetas y el acceso
+  flotante existente; no se duplican los accesos a añadir.
+- Se conserva la ayuda inicial cuando aún no hay sesiones ni un plan iniciado,
+  y la revisión deportiva pendiente cuando el acceso permite atenderla. La
+  pérdida de Pro no transforma un día vacío en un aviso comercial.
+
+Es un cambio de presentación: no genera, cancela, reprograma ni inicia sesiones,
+y no altera el algoritmo, los derechos Pro ni las pautas del preparador.
+
+Verificación: `flutter analyze` limpio, 45 pruebas focales de Inicio/agenda y
+batería raíz completa con **1.676 correctas y una omisión previa**. Incluye Free
+con planes en curso/pausados/finalizados/en revisión, navegación con fecha,
+sesiones del preparador, continuidad, primer uso y texto 2× a 320 px. Dos casos
+de añadir se renderizan con fuentes reales para revisar la card vacía y el
+retorno al flotante tras añadir. La instalación de esta revisión se hace desde Mac.
+
 ## Entrenar: Preparación, Programas y Disponibilidad · 02/11/2026
 
 Javier aprueba llevar a Flutter el prototipo revisado, corrigiendo el nombre

@@ -17,6 +17,7 @@ import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_
 import 'package:entrenaop/features/preparation_goal/domain/entities/adaptive_program_progress.dart';
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
 import 'package:entrenaop/features/workout_schedule/presentation/widgets/coach_plan_coincidence_notice.dart';
+import 'package:entrenaop/features/workout_schedule/presentation/widgets/empty_workout_day_card.dart';
 import 'package:flutter/material.dart';
 import 'package:entrenaop/core/presentation/images/editorial_cover_provider.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -396,16 +397,18 @@ class _DayHero extends StatelessWidget {
     final items = homeWorkoutsForDay(overview, selectedDay);
     final item = items.firstOrNull;
     final program = overview.activeProgram;
-    // Un dato pendiente del programa se muestra sin alterar su estado ni agenda.
+    // Conservamos la ayuda inicial y una revisión real. Un plan guardado no
+    // sustituye al resumen del día cuando no hay sesiones en esa fecha.
     if (item?.status != ScheduledWorkoutStatus.inProgress &&
         !items.any(
           (workout) =>
               workout.source == ScheduledWorkoutSource.coach &&
               workout.status != ScheduledWorkoutStatus.skipped,
         ) &&
-        (program?.needsReview == true ||
+        ((program?.needsReview == true && program?.proRequired != true) ||
             (item == null &&
-                (overview.goals.isEmpty || program?.isCurrent != true)))) {
+                overview.weeklyWorkouts.isEmpty &&
+                !overview.programs.any((program) => program.isStarted)))) {
       return PreparationNextStepCard(
         savedGoalCount: overview.goals.length,
         program: program,
@@ -424,18 +427,26 @@ class _DayHero extends StatelessWidget {
             )
             .toList()
           ..sort((a, b) => a.scheduledDate.compareTo(b.scheduledDate));
-    final completed = item?.status == ScheduledWorkoutStatus.completed;
-    final inProgress = item?.status == ScheduledWorkoutStatus.inProgress;
-    final abandoned = item?.status == ScheduledWorkoutStatus.abandoned;
-    final skipped = item?.status == ScheduledWorkoutStatus.skipped;
-    final title = item == null
-        ? 'No tienes sesión programada'
-        : item.templateName;
-    final description = item == null
-        ? next.isEmpty
-              ? 'Consulta tu semana para ver las próximas sesiones.'
-              : 'Próxima sesión: ${_homeLongDay(next.first.scheduledDate)}.'
-        : completed
+    if (item == null) {
+      return EmptyWorkoutDayCard(
+        day: selectedDay,
+        description: next.isEmpty
+            ? 'Puedes consultar el resto de tu semana en el calendario.'
+            : 'Próxima sesión pautada: ${_homeLongDay(next.first.scheduledDate)}.',
+        action: OutlinedButton.icon(
+          onPressed: () =>
+              onOpen('/plan/week?date=${homeDateParam(selectedDay)}'),
+          icon: const Icon(Icons.calendar_view_week_rounded),
+          label: const Text('Ver mi semana'),
+        ),
+      );
+    }
+    final completed = item.status == ScheduledWorkoutStatus.completed;
+    final inProgress = item.status == ScheduledWorkoutStatus.inProgress;
+    final abandoned = item.status == ScheduledWorkoutStatus.abandoned;
+    final skipped = item.status == ScheduledWorkoutStatus.skipped;
+    final title = item.templateName;
+    final description = completed
         ? 'Sesión completada. Consulta lo que has registrado.'
         : inProgress
         ? 'Tienes una sesión en curso.'
@@ -450,16 +461,14 @@ class _DayHero extends StatelessWidget {
         : item.preparationGoalId != null
         ? 'Sesión de ${overview.programs.where((p) => p.goalId == item.preparationGoalId).firstOrNull?.name ?? 'tu preparación'}'
         : 'Sesión que has añadido a tu semana';
-    final action = item == null || skipped
+    final action = skipped
         ? 'Ver mi semana'
         : inProgress
         ? 'Retomar sesión'
         : completed || abandoned
         ? 'Ver resultado'
         : 'Ver entrenamiento';
-    final route = item == null
-        ? '/plan/week?date=${homeDateParam(selectedDay)}'
-        : homeWorkoutRoute(item);
+    final route = homeWorkoutRoute(item);
     return EntrenaCard(
       tone: EntrenaCardTone.accent,
       padding: const EdgeInsets.all(22),
@@ -467,11 +476,7 @@ class _DayHero extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            item == null
-                ? today
-                      ? 'HOY'
-                      : label.toUpperCase()
-                : completed
+            completed
                 ? 'SESIÓN COMPLETADA'
                 : inProgress
                 ? 'SESIÓN EN CURSO'
@@ -493,7 +498,7 @@ class _DayHero extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(description, style: TextStyle(color: context.visuals.textMuted)),
-          if (item?.estimatedDurationMinutes case final minutes?)
+          if (item.estimatedDurationMinutes case final minutes?)
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Text(

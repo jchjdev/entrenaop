@@ -1,5 +1,15 @@
 # Registro de decisiones vigentes
 
+**Día sin sesiones: agenda antes que estado del plan · 02/11/2026:** Javier
+detecta que Inicio sustituye un día vacío por «Tu plan guardado» y Mi semana
+mezcla ese vacío con activar preparaciones. El resumen de una fecha sin sesiones
+debe decir «Hoy no tienes sesiones pautadas» o referirse al día seleccionado,
+sin deducir descanso, falta de programa ni cambios de acceso. Se conserva la
+ayuda del primer uso y una revisión deportiva real; un bloqueo comercial no
+sustituye el resumen del día. Preparaciones y Entrenar conservan la gestión del
+plan. Se mantienen sesiones, fechas, acciones y permisos.
+[Presentación y límites](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#día-sin-sesiones--02112026).
+
 **Catálogo profesional por unidades y descuento marginal · 02/11/2026:** Javier
 aprueba configurar en Stripe sandbox y Dev cualquier cupo entero de 5 a 100.
 Se conservan los importes de referencia en 5/10/20/50/100 y se añaden fronteras

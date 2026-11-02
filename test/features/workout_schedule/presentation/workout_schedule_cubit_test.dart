@@ -206,7 +206,7 @@ void main() {
         );
         await tester.pumpAndSettle();
         final inCard = find.widgetWithText(
-          FilledButton,
+          OutlinedButton,
           'Añadir entrenamiento al día',
         );
         expect(inCard, findsOneWidget);
@@ -450,7 +450,7 @@ void main() {
     },
   );
   testWidgets(
-    'preparaciones guardadas sin programa en curso no prometen continuidad',
+    'un día vacío no deduce el estado de las preparaciones guardadas',
     (tester) async {
       final programs = _Programs()
         ..results = [
@@ -493,12 +493,14 @@ void main() {
       );
       expect(
         find.textContaining('No tienes un programa en curso'),
+        findsNothing,
+      );
+      expect(
+        find.text('No hay sesiones pautadas para este día'),
         findsOneWidget,
       );
-      await tester.ensureVisible(find.text('Ver preparaciones'));
-      await tester.tap(find.text('Ver preparaciones'));
-      await tester.pumpAndSettle();
-      expect(find.text('Mis preparaciones'), findsOneWidget);
+      expect(find.text('Ver preparaciones'), findsNothing);
+      expect(find.text('Añadir entrenamiento al día'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );
@@ -567,7 +569,7 @@ void main() {
       expect(programs.refreshes, 3);
     },
   );
-  testWidgets('sin programa se ofrece el alta y no fabricar una semana', (
+  testWidgets('sin programa el día vacío mantiene añadir sin ofrecer un alta', (
     tester,
   ) async {
     final cubit = _cubit(
@@ -597,10 +599,11 @@ void main() {
     addTearDown(cubit.close);
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Elegir una preparación'));
-    await tester.tap(find.text('Elegir una preparación'));
-    await tester.pumpAndSettle();
-    expect(find.text('Preparación null'), findsOneWidget);
+    expect(find.text('No hay sesiones pautadas para este día'), findsOneWidget);
+    expect(find.text('Elegir una preparación'), findsNothing);
+    expect(find.text('Preparar esta semana'), findsNothing);
+    expect(find.text('Añadir entrenamiento al día'), findsOneWidget);
+    expect(router.state.uri.path, '/plan/week');
     expect(tester.takeException(), isNull);
   });
   for (final status in [
@@ -883,7 +886,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       final add = find.widgetWithText(
-        FilledButton,
+        OutlinedButton,
         'Añadir entrenamiento al día',
       );
       await tester.ensureVisible(add);

@@ -15,6 +15,7 @@ import 'package:entrenaop/features/preparation_goal/domain/entities/adaptive_pro
 
 import '../widgets/week_swipe_region.dart';
 import '../widgets/coach_plan_coincidence_notice.dart';
+import '../widgets/empty_workout_day_card.dart';
 
 class WorkoutSchedulePage extends StatefulWidget {
   const WorkoutSchedulePage({
@@ -256,11 +257,14 @@ class _ScheduleContentState extends State<_ScheduleContent> {
                     day: state.selectedDay,
                   ),
                   if (state.selectedItems.isEmpty)
-                    _EmptyDay(
-                      hasProgram: state.currentProgram != null,
-                      hasSavedPreparations: state.programs.isNotEmpty,
-                      onAdd: () => _showTemplatePicker(context, state),
-                      onPrepare: () => context.push('/plan/goal'),
+                    EmptyWorkoutDayCard(
+                      day: state.selectedDay,
+                      description: 'Aquí aparecerán las sesiones que tengas para esta fecha.',
+                      action: OutlinedButton.icon(
+                        onPressed: () => _showTemplatePicker(context, state),
+                        icon: const Icon(Icons.add_rounded),
+                        label: const Text('Añadir entrenamiento al día'),
+                      ),
                     )
                   else
                     ...state.selectedItems.map(
@@ -913,81 +917,6 @@ class _Meta extends StatelessWidget {
         const SizedBox(width: 4),
         Text(text, style: const TextStyle(color: Colors.white60)),
       ],
-    );
-  }
-}
-
-class _EmptyDay extends StatelessWidget {
-  const _EmptyDay({
-    required this.onAdd,
-    required this.onPrepare,
-    required this.hasProgram,
-    required this.hasSavedPreparations,
-  });
-
-  final VoidCallback onAdd;
-  final VoidCallback onPrepare;
-  final bool hasProgram;
-  final bool hasSavedPreparations;
-
-  @override
-  Widget build(BuildContext context) {
-    final addButton = FilledButton.icon(
-      onPressed: onAdd,
-      icon: const Icon(Icons.add_rounded),
-      label: const Text('Añadir entrenamiento al día'),
-    );
-    if (hasProgram) {
-      return Card(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              const Text(
-                'No hay entrenamiento pautado para este día. Sigue las sesiones de tu programa y respeta los días de descanso.',
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 14),
-              addButton,
-            ],
-          ),
-        ),
-      );
-    }
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            const Icon(Icons.event_available_rounded, size: 42),
-            const SizedBox(height: 10),
-            const Text(
-              'No hay sesiones programadas',
-              style: TextStyle(fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 5),
-            Text(
-              hasSavedPreparations
-                  ? 'No tienes un programa en curso. Puedes activar o retomar una preparación desde Entrenar.'
-                  : 'Empieza una preparación para recibir tus entrenamientos.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white60),
-            ),
-            const SizedBox(height: 14),
-            OutlinedButton.icon(
-              onPressed: onPrepare,
-              icon: const Icon(Icons.auto_awesome_outlined),
-              label: Text(
-                hasSavedPreparations
-                    ? 'Ver preparaciones'
-                    : 'Elegir una preparación',
-              ),
-            ),
-            const SizedBox(height: 8),
-            addButton,
-          ],
-        ),
-      ),
     );
   }
 }

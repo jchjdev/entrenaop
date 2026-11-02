@@ -65,14 +65,17 @@ El cliente bloquea Comenzar, ofrece Ver Pro y actualiza el acceso al volver;
 una retirada entre lectura e inicio transforma la vista en consulta sin reintento.
 Inicio, Entrenar, plan y calendario distinguen el bloqueo comercial de la pausa.
 
-Tras la prueba de Javier se suaviza la presentación: «Tu plan guardado» en Inicio
-y en el plan, «Guardado» con marcador en Entrenar y «Activa Pro para entrenar con
+Tras la prueba de Javier se suaviza la presentación: «Tu plan guardado» en la
+consulta del plan, «Guardado» con marcador en Entrenar y «Activa Pro para entrenar con
 este plan» junto a Ver Pro en la vista previa. Se retira «Pro inactivo · Solo
 consulta»; los derechos y las acciones son los mismos. Las semanas y sesiones
 guardadas mantienen nombres deportivos, sin tratar toda la preparación como
 un aviso de acceso.
 Esta revisión de textos e iconos pasa `flutter analyze` y las 43 pruebas focales
 de Inicio, consulta del plan y vista previa, incluidas pantallas pequeñas y texto 2×.
+En la siguiente revisión, un día vacío en Inicio muestra su resumen de agenda;
+el plan guardado se consulta desde Preparaciones y Entrenar. Ese vacío no cambia
+los derechos ni el estado del plan.
 
 Una actividad de reloj recibida después de perder Pro no abre otra ejecución
 adaptativa si aún no existía: se conserva la actividad original del dispositivo.

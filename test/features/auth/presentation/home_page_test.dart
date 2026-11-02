@@ -467,10 +467,50 @@ void main() {
       find.byKey(ValueKey('home-day-${homeDateParam(otherDay)}')),
     );
     await tester.pumpAndSettle();
-    expect(find.text('No tienes sesión programada'), findsOneWidget);
+    expect(find.text('No hay sesiones pautadas para este día'), findsOneWidget);
     expect(find.textContaining('descanso'), findsNothing);
     expect(find.text('Carrera de hoy'), findsNothing);
   });
+  testWidgets(
+    'un día vacío conserva las sesiones del preparador en otra fecha',
+    (tester) async {
+      final otherDay = week.add(Duration(days: today.weekday == 1 ? 1 : 0));
+      final router = await mount(
+        tester,
+        overview(
+          newUser: true,
+          workouts: [
+            ScheduledWorkout(
+              id: 'coach-other-day',
+              templateId: 'coach-template',
+              templateName: 'Sesión de mi preparador',
+              templateVersion: 1,
+              scheduledDate: otherDay,
+              source: ScheduledWorkoutSource.coach,
+              status: ScheduledWorkoutStatus.planned,
+            ),
+          ],
+        ),
+        width: 320,
+        textScale: 2,
+      );
+      expect(find.text('Hoy no tienes sesiones pautadas'), findsOneWidget);
+      expect(find.text('Define qué pruebas estás preparando'), findsNothing);
+      expect(find.text('Sesión de mi preparador'), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.tap(
+        find.byKey(ValueKey('home-day-${homeDateParam(otherDay)}')),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Sesión de mi preparador'), findsOneWidget);
+      await tester.ensureVisible(find.text('Ver entrenamiento'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Ver entrenamiento'));
+      await tester.pumpAndSettle();
+      expect(router.state.uri.path, '/plan/week/session/coach-other-day');
+      expect(router.state.uri.queryParameters['date'], homeDateParam(otherDay));
+    },
+  );
   testWidgets('retoma y consulta resultados existentes', (tester) async {
     await mount(
       tester,
@@ -553,36 +593,50 @@ void main() {
       expect(router.state.uri.path, '/plan/preparations');
     },
   );
-  testWidgets(
-    'Inicio Free consulta el plan conservado sin llevar a activar ni prometer continuidad',
-    (tester) async {
-      final router = await mount(
-        tester,
-        PreparationOverview(
-          assessments: const [],
-          preferences: null,
-          goals: const [goal],
-          weekStart: week,
-          weeklyWorkouts: const [],
-          programs: const [
-            AdaptiveProgramProgress(
-              goalId: 'goal-1',
-              name: 'Mejora FAS',
-              status: 'paused',
-              message: 'Mensaje deportivo anterior.',
-              proRequired: true,
-            ),
-          ],
-        ),
-      );
-      expect(find.text('Tu plan guardado'), findsOneWidget);
-      expect(find.text('Mensaje deportivo anterior.'), findsNothing);
-      await tester.ensureVisible(find.text('Consultar mi plan'));
-      await tester.tap(find.text('Consultar mi plan'));
-      await tester.pumpAndSettle();
-      expect(router.state.uri.path, '/plan/goal/goal-1/plan');
-    },
-  );
+  for (final status in ['training', 'paused', 'complete', 'needs_review']) {
+    testWidgets(
+      'Inicio Free muestra el día vacío sin confundirlo con el plan $status',
+      (tester) async {
+        final router = await mount(
+          tester,
+          PreparationOverview(
+            assessments: const [],
+            preferences: null,
+            goals: const [goal],
+            weekStart: week,
+            weeklyWorkouts: const [],
+            programs: [
+              AdaptiveProgramProgress(
+                goalId: 'goal-1',
+                name: 'Mejora FAS',
+                status: status,
+                message: 'Mensaje deportivo anterior.',
+                proRequired: true,
+              ),
+            ],
+          ),
+        );
+        expect(find.text('Hoy no tienes sesiones pautadas'), findsOneWidget);
+        expect(find.text('Tu plan guardado'), findsNothing);
+        expect(find.text('Mensaje deportivo anterior.'), findsNothing);
+        await tester.ensureVisible(find.text('Ver mi semana'));
+        await tester.tap(find.text('Ver mi semana'));
+        await tester.pumpAndSettle();
+        expect(router.state.uri.path, '/plan/week');
+        expect(router.state.uri.queryParameters['date'], homeDateParam(today));
+        router.pop();
+        await tester.pumpAndSettle();
+        await tester.scrollUntilVisible(
+          find.text('Ver preparación →'),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.tap(find.text('Ver preparación →'));
+        await tester.pumpAndSettle();
+        expect(router.state.uri.path, '/plan/goal/goal-1');
+      },
+    );
+  }
 }
 
 class _Overview implements GetPreparationOverviewUseCase {
