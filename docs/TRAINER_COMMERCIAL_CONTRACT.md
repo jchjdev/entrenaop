@@ -127,7 +127,7 @@ confirmación, reutilizando la ficha de acceso profesional. Versión de la app
 administrativa `0.2.0+2`. Desarrollo y despliegue limitados a Dev; sin nuevos
 cargos, cambios en Stripe o publicaciones automáticas de perfiles.
 
-Validación del 02/11/2026: análisis sin incidencias de deportista, ADMIN y
+Validación aislada del 02/11/2026: análisis sin incidencias de deportista, ADMIN y
 Trainer; baterías completas con 1.710, 370 y 444 pruebas superadas,
 respectivamente, y 26 del paquete profesional. Renderización de la nueva casilla
 en los dos temas. Migración `20261102201520` aplicada exclusivamente en Dev;
@@ -135,7 +135,24 @@ contratos transaccionales de regalo, acceso, suspensión, contratación,
 directorio, piloto, cobertura pagada y contactos superados. El contrato nuevo
 también pasa con el esquema de provincia/isla del otro bloque, sin incorporar
 sus cambios a esta entrega. No hay avisos nuevos de seguridad frente a la
-comprobación previa. La publicación web de ADMIN se acreditará al terminar.
+comprobación previa.
+
+Publicación completada y verificada el 03/11/2026: ADMIN y Trainer Dev sirven
+la revisión `ce1f27407477fdf8ac532d633d3873d3334bd2bc`, ambos con versión
+`0.2.0+2` bajo su ruta de recursos activa. La comprobación HTTPS contrasta
+entorno, proyecto Dev, manifiesto, arranque, hash del compilado y cabeceras;
+el compilado de ADMIN incluye la nueva RPC y el campo del permiso manual.
+La API pública rechaza una petición anónima a esa RPC con `401/42501`.
+Los cambios de ubicación se conservan en su commit separado `864aa4e1`.
+
+Las tres comprobaciones de GitHub terminan correctamente:
+[ADMIN Dev](https://github.com/jchjdev/entrenaop/actions/runs/41541658068),
+[Trainer Dev](https://github.com/jchjdev/entrenaop/actions/runs/41541658189) e
+[integración de Salud](https://github.com/jchjdev/entrenaop/actions/runs/41541658272).
+La conservación de compilados de ADMIN necesitó un reintento por un fallo
+temporal de transporte al leer el manifiesto; terminó correctamente sin
+cambiar código ni volver a publicar la aplicación. No se concedieron regalos
+ni se modificaron fichas reales durante estas comprobaciones.
 
 ### Ficha incluida en la suscripción pagada · 02/11/2026
 
