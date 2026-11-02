@@ -11,7 +11,11 @@ typedef SubscriptionJson = Map<String, dynamic>;
 abstract class TrainerSubscriptionRepository {
   Future<SubscriptionJson> status();
   Future<bool> assured();
-  Future<SubscriptionJson> act(String action, {String? offerId});
+  Future<SubscriptionJson> act(
+    String action, {
+    String? offerId,
+    String? changeId,
+  });
 }
 
 class SupabaseTrainerSubscriptionRepository
@@ -41,11 +45,15 @@ class SupabaseTrainerSubscriptionRepository
   @override
   Future<bool> assured() => SupabaseTrainerSecurity(client, owner).assured();
   @override
-  Future<SubscriptionJson> act(String action, {String? offerId}) async {
+  Future<SubscriptionJson> act(
+    String action, {
+    String? offerId,
+    String? changeId,
+  }) async {
     _identity();
     final result = await client.functions.invoke(
       'trainer-commerce',
-      body: {'action': action, 'offer_id': ?offerId},
+      body: {'action': action, 'offer_id': ?offerId, 'change_id': ?changeId},
     );
     _identity();
     if (result.status != 200) {
@@ -63,6 +71,18 @@ Uri trainerPaymentDestination(Object? value, {required bool portal}) {
       uri.userInfo.isNotEmpty ||
       uri.hasPort) {
     throw StateError('Destino de pago inválido.');
+  }
+  return uri;
+}
+
+Uri trainerChangePaymentDestination(Object? value) {
+  final uri = Uri.tryParse(value is String ? value : '');
+  if (uri == null ||
+      uri.scheme != 'https' ||
+      uri.host != 'invoice.stripe.com' ||
+      uri.userInfo.isNotEmpty ||
+      uri.hasPort) {
+    throw StateError('Destino de factura inválido.');
   }
   return uri;
 }
@@ -88,6 +108,14 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
   bool _directoryAddon = false;
   bool _busy = false;
   String? _error, _notice;
+  Uri? _changePayment;
+  final _scroll = ScrollController();
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -124,7 +152,7 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
     }
   }
 
-  Future<void> _act(String action, {String? offerId}) async {
+  Future<void> _act(String action, {String? offerId, String? changeId}) async {
     if (_busy) return;
     setState(() {
       _busy = true;
@@ -140,7 +168,11 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
         await context.push<void>('/security?next=subscription');
         return;
       }
-      final result = await widget.repository.act(action, offerId: offerId);
+      final result = await widget.repository.act(
+        action,
+        offerId: offerId,
+        changeId: changeId,
+      );
       if (!mounted) return;
       if (result['url'] != null) {
         final uri = trainerPaymentDestination(
@@ -156,10 +188,34 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
         if (mounted) {
           setState(() {
             _data = data;
-            _notice = result['confirmed'] == true
-                ? 'Pago confirmado por el servidor. Tu acceso profesional está preparado.'
-                : 'Estado actualizado. El acceso solo se activa cuando el servidor confirma el pago.';
+            _changePayment = result['payment_url'] == null
+                ? null
+                : trainerChangePaymentDestination(result['payment_url']);
+            _notice = switch (result['state']) {
+              'scheduled' => 'Cambio programado para la renovación. Conservas las plazas actuales hasta esa fecha.',
+              'payment_pending' =>
+                'El cambio espera el pago. Conservas la cobertura ya pagada.',
+              'canceled_change' =>
+                'Cambio anulado. La suscripción actual se mantiene.',
+              _ =>
+                result['confirmed'] == true
+                    ? 'Pago confirmado por el servidor. Tu acceso profesional está preparado.'
+                    : action == 'quote_change'
+                    ? 'Revisa el importe y la fecha antes de confirmar.'
+                    : 'Estado actualizado. El acceso solo se activa cuando el servidor confirma el pago.',
+            };
           });
+          if (action == 'quote_change') {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted && _scroll.hasClients) {
+                _scroll.animateTo(
+                  0,
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOut,
+                );
+              }
+            });
+          }
         }
       }
     } catch (_) {
@@ -186,6 +242,27 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
     final sub = _data?['subscription'] as Map?;
     final offers = (_data?['offers'] as List?) ?? const [];
     final state = sub?['state'];
+    final change = _data?['change'] as Map?;
+    final changeState = change?['state'];
+    final openChange =
+        change != null &&
+        [
+          'prepared',
+          'quoted',
+          'processing',
+          'payment_pending',
+          'scheduled',
+        ].contains(changeState);
+    final canChoose =
+        (!openChange || ['prepared', 'quoted'].contains(changeState)) &&
+        (sub == null ||
+            [
+              'prepared',
+              'open',
+              'expired',
+              'canceled',
+              'active',
+            ].contains(state));
     final pendingOffer = ['prepared', 'open'].contains(state)
         ? (sub?['offer_id'] as String?)
         : null;
@@ -234,6 +311,7 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
         ),
       ),
       body: ListView(
+        controller: _scroll,
         padding: const EdgeInsets.all(24),
         children: [
           const ProfessionalSectionHeader(
@@ -249,6 +327,20 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
               style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
           if (_notice != null && _data?['suspended'] != true) Text(_notice!),
+          if (_changePayment != null)
+            OutlinedButton.icon(
+              onPressed: _busy
+                  ? null
+                  : () async {
+                      await (widget.openPayment?.call(_changePayment!) ??
+                          launchUrl(
+                            _changePayment!,
+                            webOnlyWindowName: '_blank',
+                          ));
+                    },
+              icon: const Icon(Icons.open_in_new),
+              label: const Text('Resolver pago en Stripe'),
+            ),
           if (_data?['suspended'] == true)
             const EntrenaCard(
               child: Text(
@@ -317,16 +409,88 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
             ),
             const SizedBox(height: 20),
           ],
+          if (_data?['suspended'] != true && openChange) ...[
+            EntrenaCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    changeState == 'scheduled'
+                        ? 'Cambio programado'
+                        : changeState == 'payment_pending'
+                        ? 'Cambio pendiente de pago'
+                        : 'Revisar cambio de plan',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  Text(
+                    '${(change['offer'] as Map)['title']} · ${(change['offer'] as Map)['capacity']} plazas',
+                  ),
+                  Text(
+                    'Nueva cuota: ${_money((change['offer'] as Map)['amount'])} / mes',
+                  ),
+                  if (change['amount'] != null)
+                    Text(
+                      'Importe ahora: ${_money(change['amount'])} (pruebas)',
+                    ),
+                  if (changeState == 'quoted')
+                    const Text(
+                      'La revisión vale durante 10 minutos. Si caduca, pulsa de nuevo «Revisar cambio» para actualizarla.',
+                    ),
+                  Text(
+                    change['kind'] == 'renewal'
+                        ? 'Se aplicará al renovar: ${_date(change['effective_at'] ?? '')}.'
+                        : 'Se aplicará cuando Stripe confirme el pago de la diferencia. Mantienes la fecha de renovación.',
+                  ),
+                  const Text(
+                    'Ningún alumno se elimina automáticamente. Si superas el nuevo cupo, podrás seguir trabajando con ellos; no podrás incorporar más hasta liberar plazas o ampliar.',
+                  ),
+                  const Text(
+                    'Los regalos de ADMIN se conservan por separado. El cambio modifica el acceso profesional y el cupo; no concede coberturas Pro nuevas.',
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: [
+                      if (['quoted', 'processing'].contains(changeState))
+                        FilledButton(
+                          onPressed: _busy
+                              ? null
+                              : () => _act(
+                                  'confirm_change',
+                                  changeId: change['id'] as String,
+                                ),
+                          child: Text(
+                            changeState == 'processing'
+                                ? 'Reintentar el mismo cambio'
+                                : 'Confirmar cambio en pruebas',
+                          ),
+                        ),
+                      if (changeState == 'payment_pending')
+                        OutlinedButton(
+                          onPressed: _busy ? null : () => _act('refresh'),
+                          child: const Text('Comprobar pago del cambio'),
+                        ),
+                      OutlinedButton(
+                        onPressed: _busy
+                            ? null
+                            : () => _act(
+                                'cancel_change',
+                                changeId: change['id'] as String,
+                              ),
+                        child: const Text('Anular cambio'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
           if (_data?['suspended'] != true &&
+              canChoose &&
               pendingOffer == null &&
-              catalogue.isNotEmpty &&
-              (sub == null ||
-                  [
-                    'prepared',
-                    'open',
-                    'expired',
-                    'canceled',
-                  ].contains(state))) ...[
+              catalogue.isNotEmpty) ...[
             DropdownButtonFormField<int>(
               key: ValueKey(selected),
               initialValue: selected,
@@ -359,9 +523,7 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
             ),
             const SizedBox(height: 16),
           ],
-          if (_data?['suspended'] != true &&
-              (sub == null ||
-                  ['prepared', 'open', 'expired', 'canceled'].contains(state)))
+          if (_data?['suspended'] != true && canChoose)
             ProfessionalCatalogGrid(
               children: [
                 for (final offer in visibleOffers)
@@ -383,14 +545,24 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
                         ),
                         const SizedBox(height: 16),
                         FilledButton(
-                          onPressed: _busy || _data?['enabled'] != true
+                          onPressed:
+                              _busy ||
+                                  _data?['enabled'] != true ||
+                                  (state == 'active' &&
+                                      offer['id'] == sub?['offer_id'])
                               ? null
                               : () => _act(
-                                  'checkout',
+                                  state == 'active'
+                                      ? 'quote_change'
+                                      : 'checkout',
                                   offerId: offer['id'] as String,
                                 ),
                           child: Text(
-                            state == 'open'
+                            state == 'active'
+                                ? ((offer['id'] == sub?['offer_id'])
+                                      ? 'Plan actual'
+                                      : 'Revisar cambio')
+                                : state == 'open'
                                 ? 'Continuar pago de prueba'
                                 : 'Contratar en pruebas',
                           ),
@@ -422,4 +594,7 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
         ? 'pendiente de comprobar'
         : '${date.day}/${date.month}/${date.year}';
   }
+
+  String _money(Object? amount) =>
+      '${((amount as num? ?? 0) / 100).toStringAsFixed(2)} €';
 }

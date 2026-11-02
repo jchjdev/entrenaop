@@ -8,6 +8,7 @@ on:
       - 'supabase/functions/tests/trainer_commerce_test.ts'
       - 'supabase/functions/tests/trainer_stripe_sandbox_test.ts'
       - 'supabase/functions/tests/trainer_platform_checkout_test.ts'
+      - 'supabase/functions/tests/trainer_subscription_changes_test.ts'
       - 'supabase/functions/trainer-commerce/**'
       - '.github/workflows/trainer-commerce.yml'
   workflow_dispatch:
@@ -29,7 +30,7 @@ jobs:
       # Solo proveedor simulado, respuestas HTTP de prueba y firmas HMAC locales.
       # No recibe credenciales, no conecta a Stripe ni modifica accesos o dinero.
       - name: Separación de circuitos, reintentos y firmas de avisos
-        run: node --test supabase/functions/tests/trainer_commerce_test.ts supabase/functions/tests/trainer_stripe_sandbox_test.ts supabase/functions/tests/trainer_platform_checkout_test.ts
+        run: node --test supabase/functions/tests/trainer_commerce_test.ts supabase/functions/tests/trainer_stripe_sandbox_test.ts supabase/functions/tests/trainer_platform_checkout_test.ts supabase/functions/tests/trainer_subscription_changes_test.ts
       - name: Comprobar tipos del adaptador y del núcleo existente
         run: >-
           npm exec --yes --package=typescript@5.9.3 -- tsc

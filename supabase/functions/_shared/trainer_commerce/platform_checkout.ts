@@ -1,5 +1,6 @@
 import { requireThat } from "./model.ts";
 import type { Actor, Context } from "./model.ts";
+import { SubscriptionChanges } from "./subscription_changes.ts";
 import {
   type StripeCheckoutBinding,
   StripeSandboxCheckout,
@@ -31,11 +32,12 @@ export function cancelsAtPaidPeriodEnd(
   paidUntil: unknown,
   now: number,
 ): boolean {
-  return subscription.cancel_at_period_end === true || (
-    Number.isSafeInteger(subscription.cancel_at) &&
-    Number(subscription.cancel_at) > now &&
-    typeof paidUntil === "string" &&
-    Date.parse(paidUntil) === Number(subscription.cancel_at) * 1000
+  return (
+    subscription.cancel_at_period_end === true ||
+    (Number.isSafeInteger(subscription.cancel_at) &&
+      Number(subscription.cancel_at) > now &&
+      typeof paidUntil === "string" &&
+      Date.parse(paidUntil) === Number(subscription.cancel_at) * 1000)
   );
 }
 
@@ -195,7 +197,14 @@ export class PlatformCheckout {
   async run(
     orderId: string,
     actor: Actor | null,
-    action: "checkout" | "refresh" | "portal",
+    action:
+      | "checkout"
+      | "refresh"
+      | "portal"
+      | "quote_change"
+      | "confirm_change"
+      | "cancel_change",
+    changeId?: string,
   ): Promise<Json> {
     const order = row(await this.rpc("claim", { id: orderId }));
     const token = { id: orderId, lease: order.lease };
@@ -333,6 +342,34 @@ export class PlatformCheckout {
         !order.subscription_id || order.subscription_id === subscription.id,
         "subscription_scope_mismatch",
       );
+      // Checkout conserva siempre su oferta inicial. La cobertura vigente es
+      // otra referencia, modificable solo tras evidencia canónica de Stripe.
+      const currentBinding = this.binding({
+        ...order,
+        offer: order.current_offer ?? order.offer,
+      });
+      const changes = new SubscriptionChanges(
+        this.stripe,
+        this.rpc,
+        order,
+        currentBinding,
+        token,
+        this.now,
+      );
+      if (action === "quote_change")
+        return await changes.quote(subscription, String(changeId));
+      if (action === "confirm_change")
+        return await changes.confirm(
+          subscription,
+          String(changeId),
+          paidPeriod,
+        );
+      if (action === "cancel_change")
+        return await changes.cancel(subscription, String(changeId), paidPeriod);
+      const changeResult = await changes.reconcile(subscription, paidPeriod);
+      if (changeResult.applied) return { state: "active", confirmed: true };
+      if (changeResult.pending)
+        return await changes.refreshResult(subscription, paidPeriod);
       let paid: PaidPeriod = null;
       if (subscription.latest_invoice) {
         const invoiceId = id(subscription.latest_invoice, "in");
@@ -340,7 +377,18 @@ export class PlatformCheckout {
           binding.command.context,
           `invoices/${invoiceId}?expand[]=payments.data.payment.payment_intent&expand[]=amount_paid_off_stripe`,
         );
-        paid = paidPeriod(subscription, invoice, binding, this.now());
+        let skipInvoice = changeResult.skipInvoice === true;
+        if (!skipInvoice && invoice.billing_reason === "subscription_update") {
+          const evidence = row(
+            await this.rpc("change_evidence", {
+              ...token,
+              invoice_id: invoice.id,
+            }),
+          );
+          skipInvoice = evidence.known === true;
+        }
+        if (!skipInvoice)
+          paid = paidPeriod(subscription, invoice, currentBinding, this.now());
       }
       const states: Record<string, string> = {
         active: "active",
@@ -375,7 +423,9 @@ export class PlatformCheckout {
     } finally {
       try {
         await this.rpc("release", token);
-      } catch { /* La lease caduca; jamás se libera la de otro proceso. */ }
+      } catch {
+        /* La lease caduca; jamás se libera la de otro proceso. */
+      }
     }
   }
 }

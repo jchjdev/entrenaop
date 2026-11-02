@@ -1,5 +1,15 @@
 # Registro de decisiones vigentes
 
+**Cambios de plan profesional y contraste de navegación · 02/11/2026:** Javier
+autoriza cambiar nivel y plazas desde Trainer, solo en pruebas. Se adopta ampliar
+o subir al confirmar el pago de la diferencia del periodo restante; cualquier
+reducción de capacidad o prestaciones se programa para renovar. No se expulsan
+alumnos: superar el nuevo cupo bloquea incorporaciones hasta liberar o ampliar.
+Los regalos y la suspensión de ADMIN siguen independientes del pago. Las ofertas
+iniciales de Checkout y el historial no se reescriben. El gris de la navegación
+lateral se comparte entre ADMIN y Trainer en claro y oscuro, sin cambiar el
+fondo del área de trabajo. [Contrato y comprobación](TRAINER_COMMERCIAL_CONTRACT.md#cambios-de-plan-y-plazas--02112026).
+
 **Dispositivos visuales y ampliación de marcas · 02/11/2026:** Javier aporta un
 vídeo de Kotcha y pide tarjetas visuales de relojes; reabre Huawei, Suunto,
 Amazfit, Polar y COROS después de priorizar Garmin. Se conserva el editor común

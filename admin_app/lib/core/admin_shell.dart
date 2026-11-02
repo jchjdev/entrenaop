@@ -120,8 +120,7 @@ class _AdminShellState extends State<AdminShell> {
     );
   }
 
-  Widget _sidebar() => Material(
-    color: context.visuals.surfaceLow,
+  Widget _sidebar() => ProfessionalNavigationSurface(
     child: SafeArea(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

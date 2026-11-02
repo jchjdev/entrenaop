@@ -150,7 +150,7 @@ function fixture() {
   };
   return { subscription, invoice };
 }
-test("solo el recibo pagado de la suscripci贸n, comprador y precio enlazados acredita el periodo", () => {
+test("solo el recibo pagado de la suscripci髇, comprador y precio enlazados acredita el periodo", () => {
   const { subscription, invoice } = fixture();
   assert.equal(
     paidPeriod(subscription, invoice, binding, now)?.invoiceId,
@@ -188,7 +188,7 @@ test("solo el recibo pagado de la suscripci贸n, comprador y precio enlazados acr
     null,
   );
 });
-test("rechaza l铆neas parciales, prorrateos, precios ajenos y fechas inventadas", () => {
+test("rechaza l韓eas parciales, prorrateos, precios ajenos y fechas inventadas", () => {
   const { subscription, invoice } = fixture();
   const line = invoice.lines.data[0];
   const edits = [
@@ -252,7 +252,7 @@ test("una cuenta ajena no usa ni libera recursos de Stripe y su lease se cierra"
   );
   assert.deepEqual(calls, ["claim", "release"]);
 });
-test("sin Customer guardado despu茅s de la ventana incierta cierra el pedido sin crear Checkout", async () => {
+test("sin Customer guardado despu閟 de la ventana incierta cierra el pedido sin crear Checkout", async () => {
   let requests = 0;
   const stripe = new StripeSandboxCheckout({
     secretKey: "rk_test_Fixture",
@@ -294,7 +294,7 @@ test("sin Customer guardado despu茅s de la ventana incierta cierra el pedido sin
   assert.equal(requests, 0);
 });
 
-test("HTTP no consulta al proveedor sin sesi贸n, desde otro origen o fuera del proyecto Dev", async () => {
+test("HTTP no consulta al proveedor sin sesi髇, desde otro origen o fuera del proyecto Dev", async () => {
   let calls = 0;
   const fetcher = async () => {
     calls++;
@@ -400,4 +400,58 @@ test("un webhook firmado ya completado no relee Stripe ni vuelve a conceder acce
   assert.equal(response.status, 200);
   assert.equal(calls.length, 1);
   assert.ok(calls[0].endsWith("/rpc/trainer_commerce_server"));
+});
+
+test("el aviso de fases usa la suscripci贸n can贸nica, no identidades del webhook", async () => {
+  const actions: string[] = [];
+  const fetcher: typeof fetch = async (input, init) => {
+    const url = String(input);
+    if (url.includes("api.stripe.com/v1/subscription_schedules/"))
+      return Response.json({
+        livemode: false,
+        customer: "cus_Canonical",
+        subscription: null,
+        released_subscription: "sub_Canonical",
+      });
+    const body = JSON.parse(String(init?.body));
+    const data = body.p_data;
+    actions.push(body.p_action);
+    if (body.p_action === "lookup") {
+      assert.deepEqual(data, {
+        subscription_id: "sub_Canonical",
+        customer_id: "cus_Canonical",
+      });
+      return Response.json(null);
+    }
+    return Response.json({ done: false });
+  };
+  const timestamp = Math.floor(Date.now() / 1000);
+  const body = JSON.stringify({
+    id: "evt_ScheduleFixture",
+    type: "subscription_schedule.released",
+    api_version: "2026-09-30.endive",
+    livemode: false,
+    data: {
+      object: {
+        id: "sub_sched_Fixture",
+        customer: "cus_Forged",
+        subscription: "sub_Forged",
+      },
+    },
+  });
+  const signature = createHmac("sha256", httpConfig.webhookSecret)
+    .update(`${timestamp}.${body}`)
+    .digest("hex");
+  const response = await createCommerceHandler(
+    httpConfig,
+    fetcher,
+  )(
+    new Request(httpConfig.url + "/functions/v1/trainer-commerce/webhook", {
+      method: "POST",
+      headers: { "Stripe-Signature": `t=${timestamp},v1=${signature}` },
+      body,
+    }),
+  );
+  assert.equal(response.status, 200);
+  assert.deepEqual(actions, ["event", "lookup", "event_done"]);
 });

@@ -37,7 +37,11 @@ class SubscriptionFixture implements TrainerSubscriptionRepository {
         : null,
   };
   @override
-  Future<SubscriptionJson> act(String action, {String? offerId}) async {
+  Future<SubscriptionJson> act(
+    String action, {
+    String? offerId,
+    String? changeId,
+  }) async {
     actions.add(action);
     if (action == 'refresh') return {'state': 'open', 'confirmed': false};
     return {'url': 'https://checkout.stripe.com/c/pay/cs_test_Fixture'};
@@ -87,21 +91,168 @@ class PlanCatalogueFixture extends SubscriptionFixture {
     ],
   };
   @override
-  Future<SubscriptionJson> act(String action, {String? offerId}) async {
+  Future<SubscriptionJson> act(
+    String action, {
+    String? offerId,
+    String? changeId,
+  }) async {
     selected = offerId;
-    return super.act(action, offerId: offerId);
+    return super.act(action, offerId: offerId, changeId: changeId);
   }
 }
 
 class ConcurrentPlanFixture extends PlanCatalogueFixture {
   @override
-  Future<SubscriptionJson> act(String action, {String? offerId}) async {
+  Future<SubscriptionJson> act(
+    String action, {
+    String? offerId,
+    String? changeId,
+  }) async {
     pending = true;
     throw StateError('Otra pestaña ya preparó un pago');
   }
 }
 
+class PlanChangeFixture extends PlanCatalogueFixture {
+  final operations = <String>[];
+  Map<String, dynamic>? change;
+  String kind = 'immediate';
+  @override
+  Future<SubscriptionJson> status() async => {
+    ...await super.status(),
+    'subscription': {
+      'id': 'order',
+      'state': 'active',
+      'offer_id': 'basic-5',
+      'title': 'Básico actual',
+      'amount': 1500,
+      'interval': 'month',
+      'paid_until': '2099-11-30T12:00:00Z',
+    },
+    'change': change,
+  };
+  @override
+  Future<SubscriptionJson> act(
+    String action, {
+    String? offerId,
+    String? changeId,
+  }) async {
+    operations.add(action);
+    if (action == 'quote_change') {
+      selected = offerId;
+      final offers = (await super.status())['offers'] as List;
+      change = {
+        'id': 'change-one',
+        'state': 'quoted',
+        'kind': kind,
+        'amount': kind == 'renewal' ? 0 : 620,
+        'effective_at': '2099-11-30T12:00:00Z',
+        'offer': offers.firstWhere((o) => o['id'] == offerId),
+      };
+      return {'change': change};
+    }
+    if (action == 'confirm_change') {
+      expect(changeId, 'change-one');
+      change!['state'] = kind == 'renewal' ? 'scheduled' : 'applied';
+      return {
+        'state': kind == 'renewal' ? 'scheduled' : 'active',
+        'confirmed': kind != 'renewal',
+      };
+    }
+    if (action == 'cancel_change') {
+      change!['state'] = 'canceled';
+      return {'state': 'canceled_change'};
+    }
+    return {'confirmed': false};
+  }
+}
+
 void main() {
+  Future<void> chooseChange(WidgetTester tester, PlanChangeFixture repo) async {
+    await tester.pumpWidget(
+      MaterialApp(home: TrainerSubscriptionPage(repository: repo)),
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byType(DropdownButtonFormField<int>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(DropdownButtonFormField<int>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Hasta 10 alumnos').last);
+    await tester.pumpAndSettle();
+    final card = find
+        .ancestor(of: find.text('basic 10'), matching: find.byType(Column))
+        .first;
+    final review = find.descendant(
+      of: card,
+      matching: find.text('Revisar cambio'),
+    );
+    await tester.ensureVisible(review);
+    await tester.pumpAndSettle();
+    await tester.tap(review);
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets(
+    'revisar ampliación muestra diferencia sin cobrar hasta confirmar',
+    (tester) async {
+      final repo = PlanChangeFixture();
+      await chooseChange(tester, repo);
+      expect(repo.operations, ['quote_change']);
+      expect(find.text('Importe ahora: 6.20 € (pruebas)'), findsOneWidget);
+      expect(find.textContaining('cuando Stripe confirme'), findsOneWidget);
+      final confirm = find.text('Confirmar cambio en pruebas');
+      await tester.ensureVisible(confirm);
+      await tester.pumpAndSettle();
+      await tester.tap(confirm);
+      await tester.pumpAndSettle();
+      expect(repo.operations, ['quote_change', 'confirm_change']);
+      expect(repo.selected, 'basic-10');
+    },
+  );
+  testWidgets(
+    'reducción muestra fecha y coste cero y permite anular el cambio programado',
+    (tester) async {
+      final repo = PlanChangeFixture()..kind = 'renewal';
+      await chooseChange(tester, repo);
+      expect(find.text('Importe ahora: 0.00 € (pruebas)'), findsOneWidget);
+      expect(find.textContaining('Se aplicará al renovar:'), findsOneWidget);
+      final confirm = find.text('Confirmar cambio en pruebas');
+      await tester.ensureVisible(confirm);
+      await tester.pumpAndSettle();
+      await tester.tap(confirm);
+      await tester.pumpAndSettle();
+      expect(find.text('Cambio programado'), findsOneWidget);
+      final cancel = find.text('Anular cambio');
+      await tester.ensureVisible(cancel);
+      await tester.pumpAndSettle();
+      await tester.tap(cancel);
+      await tester.pumpAndSettle();
+      expect(repo.operations, [
+        'quote_change',
+        'confirm_change',
+        'cancel_change',
+      ]);
+      expect(find.text('Cambio programado'), findsNothing);
+    },
+  );
+  test(
+    'la factura pendiente solo puede abrirse en el destino de Stripe esperado',
+    () {
+      expect(
+        trainerChangePaymentDestination('https://invoice.stripe.com/i/test_own')
+            .host,
+        'invoice.stripe.com',
+      );
+      for (final value in [
+        'https://evil.invalid/',
+        'http://invoice.stripe.com/i/a',
+        'https://x@invoice.stripe.com/i/a',
+        'https://invoice.stripe.com:444/i/a',
+      ]) {
+        expect(() => trainerChangePaymentDestination(value), throwsStateError);
+      }
+    },
+  );
   testWidgets('no ofrece pagar al suspendido sin suscripción activa', (
     tester,
   ) async {

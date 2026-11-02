@@ -1,10 +1,11 @@
 # Contrato comercial profesional · propuesta para el punto 14
 
-**Estado vigente · 31/10/2026:** el portal y el servidor ya incorporan contratación
+**Estado vigente · 02/11/2026:** el portal y el servidor ya incorporan contratación
 y activación confirmada mediante Checkout/webhook **en pruebas**. El catálogo de
 ensayo descrito al final no fija precios de venta. Javier confirma el encaje del
 directorio en los niveles; importes/cupos y cobertura Pro continúan como propuesta
-en [el borrador comercial](TRAINER_PRICING_DRAFT.md). No se activa producción.
+en [el borrador comercial](TRAINER_PRICING_DRAFT.md). Los cambios de plan y cupo
+se incorporan al ensayo con las reglas y límites del apartado final. No se activa producción.
 
 **Antecedentes COM-022 · 21–28/10/2026:** se comenzó con núcleo simulado y después
 adaptador Stripe, antes de integrar Checkout en portal. Esa descripción histórica
@@ -854,3 +855,62 @@ elige diez plazas y complemento, verifica MFA, conserva la selección y envía
 solo esa oferta al confirmar de nuevo. No se modifica la suscripción probada
 ni se concede cupo manual para ocultar la diferencia. Los cambios de plan de
 una suscripción activa siguen fuera del ensayo implementado.
+
+### Cambios de plan y plazas · 02/11/2026
+
+Trainer permite revisar otra oferta y confirmar un cambio de la suscripción
+existente, sin abrir una segunda compra. Se muestran cuota futura, importe ahora
+y fecha efectiva antes de confirmar. El servidor calcula la transición y Stripe
+calcula la diferencia; Flutter no envía importes ni concede derechos.
+
+- Ampliaciones y subidas sin pérdida de prestaciones: diferencia proporcional
+  del periodo restante, con la misma fecha de renovación. Solo se aplican tras
+  acreditar el pago. Una factura pendiente conserva la cobertura anterior y puede
+  resolverse en la página alojada de Stripe.
+- Reducciones de plazas, nivel o complementos: al renovar, sin cargo inmediato.
+  También se difieren los cambios mixtos que reducen alguna cobertura o no
+  aumentan el importe. Profesional/Completo conservan el directorio incluido al
+  sustituir el extra de Básico; su elegibilidad comercial sigue sin activarse.
+- Nunca se termina un vínculo por reducir el cupo. Si queda excedido, los alumnos
+  actuales conservan su servicio; la aceptación de nuevas incorporaciones se
+  bloquea. Las invitaciones pendientes no reservan plazas.
+- Se puede anular un cambio pendiente. Una renovación ya pagada se concilia,
+  incluso si coincide con la anulación. La cancelación ordinaria de renovación
+  sigue en «Gestionar suscripción»; conviene anular antes un cambio programado.
+
+`orders.offer_id` conserva la compra original; `current_offer_id` identifica
+solo la cobertura acreditada. Cada transición guarda origen, destino, revisión,
+fecha de cálculo, factura o fases de renovación y su estado. La misma lease,
+restricción de cambio abierto e idempotencia del proveedor protegen reintentos.
+Los webhooks de facturas, suscripciones y fases consultan recursos canónicos y
+concilian el pedido; los datos del navegador o metadata no son prueba de pago.
+Regalos manuales y suspensión administrativa conservan prioridad y auditoría.
+
+Migraciones Dev `20261102074159` y `20261102081757`; servidor
+`trainer-commerce` publicado con los nuevos eventos de sandbox. Los contratos
+SQL transaccionales verifican reducción con ocho alumnos y cinco plazas,
+incorporación bloqueada, pago pendiente, recibo/revisión únicos, aislamiento,
+MFA, regalos y suspensión. El ensayo de registro web se ajusta al campo
+`suspended` del contrato existente, sin eliminar sus comprobaciones de permisos.
+El adaptador y HTTP suman 53 pruebas; la UI verifica revisión sin cobro,
+confirmación explícita, anulación de reducción y destino de factura permitido.
+
+Se contrastó una vista previa real de Stripe sandbox: crédito y débito del
+periodo restante y total proporcional. Esto no acredita todavía un recorrido
+manual completo de ampliación, renovación y pago fallido en el portal publicado.
+Los casos automáticos de fases/pago utilizan respuestas simuladas; antes de
+comercializar deben validarse también reloj de prueba, permisos de la clave,
+autenticación bancaria, cancelación y ausencia de doble cobro con Stripe real
+en sandbox. No se modifica la suscripción de prueba de Javier para fingir esa
+aceptación.
+
+Límites del piloto: una suscripción y un ítem, cantidad uno, mensual, cobro
+automático y periodo previo pagado. No admite impuestos, descuentos, saldos
+externos ni prorrateos con arrastre por importe inferior al mínimo de cobro. La
+revisión vale diez minutos; una operación incierta antigua exige conciliación,
+no otra compra. Pro, directorio comercial, dinero real y cobros alumno →
+preparador siguen pendientes. La fiscalidad debe concretarse antes del modo activo.
+
+Siguiente recorrido comercial único: aceptar en sandbox un cambio de plazas,
+su reducción/anulación y un pago pendiente; después concretar tarifas finales
+y fiscalidad antes de comercializar.

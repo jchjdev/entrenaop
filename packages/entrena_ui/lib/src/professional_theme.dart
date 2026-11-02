@@ -2,6 +2,22 @@ import 'package:flutter/material.dart';
 
 import 'entrena_theme.dart';
 
+/// Separa la navegación del área de trabajo sin cambiar las superficies de
+/// las pantallas ni extender el acabado profesional a la app del deportista.
+class ProfessionalNavigationSurface extends StatelessWidget {
+  const ProfessionalNavigationSurface({super.key, required this.child});
+  final Widget child;
+
+  static Color background(Brightness brightness) =>
+      brightness == Brightness.dark
+      ? const Color(0xFF272B30)
+      : const Color(0xFFE3E7EC);
+
+  @override
+  Widget build(BuildContext context) =>
+      Material(color: background(Theme.of(context).brightness), child: child);
+}
+
 /// Acabado de escritorio; el deportista conserva sus superficies táctiles.
 @immutable
 class ProfessionalSurfaceStyle

@@ -55,6 +55,7 @@ void main() {
             visuals.surface,
             visuals.surfaceHigh,
             visuals.surfaceLow,
+            ProfessionalNavigationSurface.background(theme.brightness),
           ]) {
             expect(
               contrast(surface, scheme.onSurface),

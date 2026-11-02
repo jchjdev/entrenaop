@@ -134,6 +134,11 @@ export function createCommerceHandler(
           "customer.subscription.created",
           "customer.subscription.updated",
           "customer.subscription.deleted",
+          "subscription_schedule.updated",
+          "subscription_schedule.released",
+          "subscription_schedule.canceled",
+          "subscription_schedule.completed",
+          "subscription_schedule.aborted",
         ];
         if (!supported.includes(signal.type)) {
           return respond({ received: true, ignored: true });
@@ -156,7 +161,30 @@ export function createCommerceHandler(
           buyerId: "internal-reconciliation",
           contractId: "internal-reconciliation",
         };
-        if (signal.type.startsWith("checkout.")) {
+        if (signal.type.startsWith("subscription_schedule.")) {
+          requireThat(
+            /^sub_sched_[A-Za-z0-9]+$/.test(signal.objectId),
+            "invalid_event_object",
+          );
+          const schedule = await stripe.request(
+            context,
+            `subscription_schedules/${signal.objectId}`,
+          );
+          requireThat(
+            schedule.livemode === false,
+            "webhook_environment_mismatch",
+          );
+          const subscriptionId =
+            schedule.subscription ?? schedule.released_subscription;
+          if (!subscriptionId) {
+            await server("event_done", { event_id: signal.eventId });
+            return respond({ received: true, ignored: true });
+          }
+          lookup = {
+            subscription_id: subscriptionId,
+            customer_id: schedule.customer,
+          };
+        } else if (signal.type.startsWith("checkout.")) {
           requireThat(
             /^cs_test_[A-Za-z0-9]+$/.test(signal.objectId),
             "invalid_event_object",
@@ -237,11 +265,38 @@ export function createCommerceHandler(
       requireThat(assured === true, "mfa_required");
       const data = row(JSON.parse(raw));
       requireThat(
-        ["checkout", "refresh", "portal"].includes(String(data.action)),
+        [
+          "checkout",
+          "refresh",
+          "portal",
+          "quote_change",
+          "confirm_change",
+          "cancel_change",
+        ].includes(String(data.action)),
         "invalid_action",
       );
       let orderId: string;
-      if (data.action === "checkout") {
+      let changeId: string | undefined;
+      if (data.action === "quote_change") {
+        requireThat(
+          typeof data.offer_id === "string" && uuid.test(data.offer_id),
+          "invalid_offer",
+        );
+        const prepared = row(
+          await rpc(
+            "prepare_trainer_plan_change",
+            {
+              p_expected_owner: user.id,
+              p_offer: data.offer_id,
+            },
+            config.anonKey,
+            auth,
+          ),
+        );
+        orderId = String(prepared.order_id);
+        changeId = String(prepared.change_id);
+        requireThat(uuid.test(changeId), "invalid_change");
+      } else if (data.action === "checkout") {
         requireThat(
           typeof data.offer_id === "string" && uuid.test(data.offer_id),
           "invalid_offer",
@@ -266,11 +321,25 @@ export function createCommerceHandler(
         orderId = String(row(status.subscription).id);
       }
       requireThat(uuid.test(orderId), "invalid_order");
+      if (data.action === "confirm_change" || data.action === "cancel_change") {
+        requireThat(
+          typeof data.change_id === "string" && uuid.test(data.change_id),
+          "invalid_change",
+        );
+        changeId = data.change_id;
+      }
       return respond(
         await engine.run(
           orderId,
           { userId: String(user.id), mfa: true },
-          data.action as "checkout" | "refresh" | "portal",
+          data.action as
+            | "checkout"
+            | "refresh"
+            | "portal"
+            | "quote_change"
+            | "confirm_change"
+            | "cancel_change",
+          changeId,
         ),
       );
     } catch (error) {
@@ -283,11 +352,14 @@ export function createCommerceHandler(
         "invalid_action",
       ];
       // Sin cuerpos Stripe, datos de cliente ni credenciales en respuesta/logs.
-      return respond({
-        error: expected.includes(code)
-          ? code
-          : "commerce_temporarily_unavailable",
-      }, expected.includes(code) ? 403 : 503);
+      return respond(
+        {
+          error: expected.includes(code)
+            ? code
+            : "commerce_temporarily_unavailable",
+        },
+        expected.includes(code) ? 403 : 503,
+      );
     }
   };
 }

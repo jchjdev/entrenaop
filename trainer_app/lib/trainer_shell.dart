@@ -276,8 +276,7 @@ class _TrainerShellState extends State<TrainerShell>
 
     return ProfessionalWorkspaceShell(
       scaffoldKey: _scaffold,
-      navigation: Material(
-        color: context.visuals.surfaceLow,
+      navigation: ProfessionalNavigationSurface(
         child: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
