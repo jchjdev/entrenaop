@@ -1,5 +1,21 @@
 # Roadmap de EntrenaOP
 
+## Criterio rector del deportista · confirmado el 02/11/2026
+
+El recorrido principal es **preparación → plan adaptativo → entrenamientos y
+resultados → adaptación**, sin depender de un preparador. Los bloques de
+programas guiados, biblioteca, seguimiento profesional e integraciones amplían
+el producto; no sustituyen esa prioridad. Los guiados repiten contenido o avanzan
+por fases editoriales, con seguimiento separado del motor adaptativo.
+
+La revisión de navegación debe unir la preparación y su plan en una entrada
+principal, identificar el único generador activo y mantener accesibles las otras
+preparaciones y estados conservados. Queda descartada la propuesta pendiente de
+abrir Entrenar con una lista indiferenciada de programas. Se revisan duplicados
+y mensajes Pro desde este criterio, sin reescribir reglas deportivas ni equiparar cuotas de
+guiados con derechos del algoritmo. [Producto vigente](PRODUCT.md#prioridad-del-recorrido-adaptativo--02112026)
+y [rectificación](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#rectificación-la-preparación-adaptativa-es-la-entrada-principal--02112026).
+
 **01/11/2026 · Perfil y cambio profesional implementados y comprobados:** Javier autoriza Perfil
 compacto con Ajustes desde el engranaje y entrada como preparador dentro de
 Perfil. Corrige que Dispositivos y conexiones debe permanecer directamente a mano.

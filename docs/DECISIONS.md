@@ -1,5 +1,20 @@
 # Registro de decisiones vigentes
 
+**El núcleo del deportista es la preparación adaptativa autónoma · 02/11/2026:**
+Javier reafirma que el valor principal es el plan que planifica y adapta el
+entrenamiento a su evolución sin depender de un preparador. Preparación y plan
+son el objetivo personal y el entrenamiento que lo desarrolla; deben componer
+una entrada principal coherente. Los guiados son un recorrido distinto: rutinas
+repetibles o programas por fases. Se descarta presentar ambos como una colección
+equivalente de programas y relegar la preparación a una configuración secundaria.
+El catálogo/seguimiento sigue siendo una distinción válida, subordinada a esta
+prioridad. El reparto concreto de pantallas sigue pendiente; se conserva el
+motor, sus límites, el historial y los derechos comerciales actuales. En los
+guiados por fases, el avance implementado se confirma por el usuario conforme
+a instrucciones editoriales; una transición automática por marcas sería otro
+contrato deportivo. [Criterio de producto](PRODUCT.md#prioridad-del-recorrido-adaptativo--02112026)
+y [rectificación de navegación](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#rectificación-la-preparación-adaptativa-es-la-entrada-principal--02112026).
+
 **Entrenar y Biblioteca: frontera reabierta · 02/11/2026:** Javier señala
 redundancia entre el plan automático pausado en Planes, las preparaciones que
 repiten su estado y la promoción de crear un plan adaptativo. También cuestiona

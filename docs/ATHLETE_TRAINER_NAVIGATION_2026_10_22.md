@@ -1,5 +1,42 @@
 # Navegación del alumno y preparador · TRN-025 · 22/10/2026
 
+## Rectificación: la preparación adaptativa es la entrada principal · 02/11/2026
+
+Javier corrige la propuesta siguiente: el valor principal de EntrenaOP es el
+plan/preparación con algoritmo que ajusta el entrenamiento del deportista sin
+depender de un preparador. Las rutinas repetibles y los programas por fases son
+otro recorrido. La propuesta de agruparlos como una oferta indiferenciada y
+relegar las preparaciones queda descartada. Esta prioridad coincide con PLAN y los contratos
+del motor; PRG-001/002 incorpora guiados, no redefine el núcleo del producto.
+
+La revisión de documentación y código confirma:
+
+- Preparación es el objetivo personal con fecha, pruebas y marcas. Su plan añade
+  alcance, referencias, metas, activación y evolución; no son dos catálogos hermanos.
+- Pueden guardarse varias preparaciones, con un único generador adaptativo activo
+  por deportista. Cambiar de preparación generadora requiere revisar la propuesta
+  y pausar la anterior; la presentación no debe activar nada por sí sola.
+- Después de activar, resolver las sesiones pendientes permite calcular y publicar
+  la continuación con los resultados disponibles. El motor puede mantener,
+  reducir o solicitar revisión. La continuidad no exige publicar manualmente cada semana.
+- Una rutina guiada puede repetir circularmente sus sesiones sin duración total.
+  En Por fases, el autor publica instrucciones y duración orientativa; el usuario
+  confirma el avance. Actualmente no existe en ese modelo una regla que mida la
+  mejora y cambie automáticamente de fase. Esa automatización sería otro trabajo
+  deportivo, no una modificación de navegación.
+
+La recomendación revisada es abrir Entrenar por **la preparación y su plan**:
+estado, siguiente acción, entrenamiento pautado y evolución del plan en un único
+contexto. Otras preparaciones se gestionan desde ahí sin repetir la misma tarjeta
+como otro plan. Los guiados seguidos conservan una entrada diferenciada; Biblioteca
+mantiene catálogo, consulta y creación. La semana sigue siendo la agenda común y
+Disponibilidad el contexto compartido. Los nombres y pestañas exactos todavía
+son una propuesta, no una implementación aprobada.
+
+Se conservan los hallazgos de duplicidad de abajo y el acceso legítimo a planes
+pausados o históricos, pero su corrección debe respetar esta prioridad. Este
+tramo sólo corrige diagnóstico y documentación; no cambia Flutter ni el motor.
+
 ## Entrenar y Biblioteca: revisión del modelo · 02/11/2026
 
 Javier informa de una cuenta Free con plan automático pausado, consulta del
@@ -20,15 +57,11 @@ Comprobado en el código directamente relacionado:
 - Biblioteca contiene Programas, Sesiones y Ejercicios, incluidas las plantillas
   personales reutilizables. No equivale al calendario ni a las sesiones pautadas.
 
-La recomendación pendiente es mantener Biblioteca para explorar y crear contenido
-reutilizable, y Entrenar para utilizar y gestionar lo elegido. Entrenar podría
-abrir en Programas y permitir consultar Sesiones y Disponibilidad. Sesiones sería
-la agenda o trabajo concreto, no otra copia del catálogo ni otro resumen semanal
-como portada. Los guiados seguidos y el plan personalizado se organizan por estado,
-con los pausados separados de lo que se puede continuar. Automático y adaptativo
-deben tener un único nombre visible. Preparaciones describe objetivos, fecha y
-pruebas: su gestión y consulta deben conservarse, evitando presentarlas como otra
-colección de planes. La ubicación exacta de ese acceso sigue pendiente.
+La primera propuesta mantenía Biblioteca para explorar y crear contenido y hacía
+de Programas la portada de Entrenar. Javier corrige su jerarquía: ese planteamiento
+queda sustituido por la preparación adaptativa como entrada principal, según la
+rectificación anterior. Se conserva la separación catálogo/seguimiento, el acceso
+a la agenda común y la necesidad de evitar tarjetas y promociones duplicadas.
 
 El requisito Pro se comunica antes de intentar activar o retomar el plan, sin
 borrar ni ocultar la consulta legítima de lo conservado. Se recomienda una entrada

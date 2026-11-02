@@ -1,5 +1,29 @@
 # Producto EntrenaOP
 
+## Prioridad del recorrido adaptativo · 02/11/2026
+
+Javier reafirma el núcleo del producto: el deportista define su preparación y
+EntrenaOP planifica y adapta su entrenamiento con contexto, marcas y resultados,
+sin depender de un preparador. La preparación reúne objetivo, fecha y pruebas;
+su plan concreta y reajusta el trabajo. La activación inicial se revisa y acepta;
+la continuidad posterior utiliza los resultados y solicita revisión cuando
+corresponde. Autonomía no equivale a incrementar siempre la dificultad ni a
+garantizar una mejora. El alcance sigue limitado a las estrategias y protocolos
+revisados del [motor adaptativo](PROGRAMA_ADAPTATIVO.md).
+
+Los programas guiados complementan ese recorrido: pueden ser una rutina de
+sesiones que se repite circularmente o un programa editorial por fases. Conservan
+seguimiento e historial propios; actualmente el usuario confirma el avance de
+fase según las instrucciones publicadas. Esa confirmación no es una adaptación
+automática calculada a partir de sus marcas. [Contrato de guiados](PROGRAMAS_GUIADOS.md).
+
+Entrenar debe dar prioridad a la preparación y su plan adaptativo, con una sola
+representación de su estado y próxima acción. Puede haber varias preparaciones
+guardadas y un único generador adaptativo activo. Los guiados tienen un acceso
+propio y Biblioteca conserva catálogo y creación. La propuesta de presentar ambos
+como una lista equivalente en la portada queda descartada; el diseño de pantallas
+aún debe concretarse. [Criterios y revisión](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#rectificación-la-preparación-adaptativa-es-la-entrada-principal--02112026).
+
 **Ajuste de Perfil aprobado · 01/11/2026:** Perfil conserva identidad, evolución
 y acceso directo a Dispositivos y conexiones. El engranaje abre Ajustes para
 suscripción, información de la app y salida; Editar perfil reúne nombre y fecha
