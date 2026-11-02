@@ -50,6 +50,15 @@ No se reprician contratos ni se otorga Pro/directorio al cambiar el catálogo.
   cambios sigue pendiente; estas verificaciones no equivalen a ese pago real de
   sandbox. Producción y cobros reales permanecen sin activar.
 
+**Entrega verificada:** revisión `6cc21fcbfacf16251f7dc958aa767d918cd338e8`
+guardada en main. [Integración comercial](https://github.com/jchjdev/entrenaop/actions/runs/41431726785)
+y [publicación automática de Trainer](https://github.com/jchjdev/entrenaop/actions/runs/41431726692)
+terminan correctamente. HTTPS acredita esa revisión, recursos, hashes, cabeceras
+y conexión exclusiva a Dev. Comprobación visual del portal: entrada directa de
+siete plazas muestra 14,90/22,30/27,70 EUR; el acceso rápido de 35 muestra
+34,90/46,40/57,40 EUR. Se conserva la suscripción activa de cinco; no se inicia
+otra compra ni se confirma un cambio durante esta comprobación.
+
 ## 1. Base vigente y propuesta principal
 
 ### Posibles niveles comerciales · propuesta del 28/10/2026
