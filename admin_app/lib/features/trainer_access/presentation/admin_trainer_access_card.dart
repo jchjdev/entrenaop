@@ -21,6 +21,7 @@ class _AdminTrainerAccessCardState extends State<AdminTrainerAccessCard> {
   TrainerAccessChange? _pending;
   TrainerSuspensionChange? _pendingSuspension;
   bool _busy = true, _enabled = false;
+  bool _directoryEnabled = false;
   String? _error;
   @override
   void initState() {
@@ -50,6 +51,7 @@ class _AdminTrainerAccessCardState extends State<AdminTrainerAccessCard> {
         _pending = null;
         _pendingSuspension = null;
         _enabled = management.manualEnabled;
+        _directoryEnabled = management.manualDirectoryEnabled;
         _limit.text = '${management.manualLimit}';
       });
     } catch (e) {
@@ -84,6 +86,7 @@ class _AdminTrainerAccessCardState extends State<AdminTrainerAccessCard> {
         revision: access.revision,
         reason: reason,
         validUntil: _management!.manualValidUntil,
+        directoryEnabled: _directoryEnabled,
       );
       final confirmed = await showDialog<bool>(
         context: context,
@@ -94,6 +97,12 @@ class _AdminTrainerAccessCardState extends State<AdminTrainerAccessCard> {
             children: [
               Text(
                 '${change.enabled ? 'Conceder' : 'Retirar'} el acceso regalado de ${change.limit} plazas. Si tiene una suscripción pagada vigente, conservará ese acceso. Esto no levanta una suspensión ni cambia Pro, los vínculos o los cobros.',
+              ),
+              const SizedBox(height: 12),
+              Text(
+                change.enabled && change.directoryEnabled == true
+                    ? 'El regalo incluye permiso para publicar su ficha dentro de la app, con su misma vigencia. El entrenador decide si la publica.'
+                    : 'Este regalo no habilita la ficha en la app. Conserva los permisos que tenga por un plan pagado o el piloto.',
               ),
               const SizedBox(height: 20),
               EntrenaDialogActions(
@@ -299,6 +308,25 @@ class _AdminTrainerAccessCardState extends State<AdminTrainerAccessCard> {
                     ? (v) => setState(() => _enabled = v)
                     : null,
               ),
+              CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Incluir ficha en el directorio de la app'),
+                subtitle: const Text(
+                  'Comparte la vigencia del regalo. El entrenador debe aceptar las condiciones y publicar su ficha.',
+                ),
+                value: _directoryEnabled,
+                onChanged: editable && _enabled
+                    ? (value) =>
+                          setState(() => _directoryEnabled = value == true)
+                    : null,
+              ),
+              Text(switch (management.directorySource) {
+                'paid' => 'Ficha habilitada por su suscripción pagada.',
+                'manual' => 'Ficha habilitada por el acceso regalado.',
+                'pilot' => 'Ficha habilitada por el piloto de pruebas.',
+                _ => 'Ficha no habilitada actualmente.',
+              }),
+              const SizedBox(height: 12),
               TextField(
                 controller: _limit,
                 enabled: editable,

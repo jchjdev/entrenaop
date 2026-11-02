@@ -107,12 +107,16 @@ class TrainerManagement {
     : access = TrainerAccess.fromJson(Json.from(json['access'] as Map)),
       enabled = json['manual_access_enabled'] == true,
       manualEnabled = json['manual_enabled'] == true,
+      manualDirectoryEnabled = json['manual_directory_enabled'] == true,
+      directorySource = json['directory_source'] as String?,
       manualLimit = (json['manual_client_limit'] as num?)?.toInt() ?? 1,
       manualValidUntil = _date(json['manual_valid_until']),
       suspensionReason = json['suspension_reason'] as String?;
   final TrainerAccess access;
   final bool enabled;
   final bool manualEnabled;
+  final bool manualDirectoryEnabled;
+  final String? directorySource;
   final int manualLimit;
   final DateTime? manualValidUntil;
   final String? suspensionReason;
@@ -149,11 +153,13 @@ class TrainerAccessChange {
     required this.revision,
     required this.reason,
     this.validUntil,
+    this.directoryEnabled,
   });
   final String trainerId, reason;
   final int limit, revision;
   final bool enabled;
   final DateTime? validUntil;
+  final bool? directoryEnabled;
 }
 
 class TrainerSuspensionChange {
@@ -363,14 +369,21 @@ class SupabaseTrainerRepository implements TrainerRepository {
   Future<TrainerAccess> changeAccess(TrainerAccessChange change) async =>
       TrainerAccess.fromJson(
         _json(
-          await _rpc('admin_set_trainer_access', {
-            'p_trainer_id': change.trainerId,
-            'p_client_limit': change.limit,
-            'p_enabled': change.enabled,
-            'p_expected_revision': change.revision,
-            'p_reason': change.reason,
-            'p_valid_until': change.validUntil?.toUtc().toIso8601String(),
-          }),
+          await _rpc(
+            change.directoryEnabled == null
+                ? 'admin_set_trainer_access'
+                : 'admin_set_trainer_access_with_directory',
+            {
+              'p_trainer_id': change.trainerId,
+              'p_client_limit': change.limit,
+              'p_enabled': change.enabled,
+              'p_expected_revision': change.revision,
+              'p_reason': change.reason,
+              'p_valid_until': change.validUntil?.toUtc().toIso8601String(),
+              if (change.directoryEnabled != null)
+                'p_directory_enabled': change.directoryEnabled,
+            },
+          ),
         ),
       );
 

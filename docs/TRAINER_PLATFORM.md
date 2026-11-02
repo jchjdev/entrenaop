@@ -529,6 +529,14 @@ localidad y deben completar voluntariamente la ubicación. Se mantienen la RPC,
 la paginación, los favoritos y las puertas de visibilidad y acceso actuales.
 [Contrato, verificación y ensayo con Ervi](TRAINER_DIRECTORY_LOCATIONS_2026_11_02.md).
 
+**Regalo con ficha opcional · 02/11/2026:** ADMIN puede elegir si el regalo
+incluye publicar una ficha dentro de la app, con la vigencia del acceso manual.
+Es independiente del pago y del piloto: retirar una fuente no elimina otra
+vigente. No publica automáticamente, no habilita publicidad web y mantiene
+foto, consentimiento, moderación y suspensión profesional. Se conserva el
+piloto ya concedido, incluido Ervi.
+[Contrato](TRAINER_COMMERCIAL_CONTRACT.md#regalos-con-ficha-opcional-en-la-app--02112026).
+
 **Actualización del 02/11/2026:** el ensayo conecta la elegibilidad del
 directorio a la oferta vigente pagada: Profesional y Completo incluidos y
 Básico con opción adicional. Una mejora pendiente no habilita la ficha; una

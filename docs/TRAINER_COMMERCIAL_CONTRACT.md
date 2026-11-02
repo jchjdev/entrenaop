@@ -102,6 +102,41 @@ oferta Completo/50 a 67,90 EUR y su diálogo previo. Se cierra con «Conservar c
 programado»: el plan Completo/5 y el cambio Profesional/50 a 53,90 EUR para el
 30/11 siguen intactos. No se anula el cambio ni se confirma un pago en esta revisión.
 
+### Regalos con ficha opcional en la app · 02/11/2026
+
+Javier confirma que ADMIN debe elegir al regalar Trainer si incluye permiso
+para publicar ficha dentro de la app. La casilla comparte la vigencia de la
+fuente manual: retirar solo esa prestación conserva las herramientas; retirar
+el regalo conserva los permisos que procedan de una suscripción pagada o del
+piloto. Se mantiene el permiso individual previo de Ervi, sin convertirlo en
+una concesión manual nueva. La publicación sigue siendo decisión del propietario,
+con foto, consentimiento por canal y moderación. El regalo no incluye presencia
+web, Pro personal ni algoritmo.
+
+`manual_directory_enabled` se incorpora a la fuente manual existente. La
+elegibilidad comprueba acceso efectivo, suspensión, configuración manual y
+vigencia del regalo. Una RPC administrativa nueva guarda herramientas y ficha
+en la misma transacción, con bloqueo, revisión, reintento estable y auditoría.
+La RPC anterior delega en el mismo núcleo y conserva la selección existente;
+no borra ni añade publicidad por omitir un parámetro. El estado administrativo
+distingue ficha por pago, regalo o piloto, para que una casilla desmarcada no
+oculte por qué puede publicar quien tiene otra fuente vigente.
+
+ADMIN incorpora la casilla «Incluir ficha en el directorio de la app» y su
+confirmación, reutilizando la ficha de acceso profesional. Versión de la app
+administrativa `0.2.0+2`. Desarrollo y despliegue limitados a Dev; sin nuevos
+cargos, cambios en Stripe o publicaciones automáticas de perfiles.
+
+Validación del 02/11/2026: análisis sin incidencias de deportista, ADMIN y
+Trainer; baterías completas con 1.710, 370 y 444 pruebas superadas,
+respectivamente, y 26 del paquete profesional. Renderización de la nueva casilla
+en los dos temas. Migración `20261102201520` aplicada exclusivamente en Dev;
+contratos transaccionales de regalo, acceso, suspensión, contratación,
+directorio, piloto, cobertura pagada y contactos superados. El contrato nuevo
+también pasa con el esquema de provincia/isla del otro bloque, sin incorporar
+sus cambios a esta entrega. No hay avisos nuevos de seguridad frente a la
+comprobación previa. La publicación web de ADMIN se acreditará al terminar.
+
 ### Ficha incluida en la suscripción pagada · 02/11/2026
 
 La prueba posterior de Javier confirma que Completo/50 está pagado pero la

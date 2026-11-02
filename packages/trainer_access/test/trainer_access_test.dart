@@ -3,6 +3,46 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:trainer_access/trainer_access.dart';
 
 void main() {
+  test('la ficha regalada es explícita y distingue el piloto y los pagos', () {
+    final access = {
+      'trainer_id': 'coach',
+      'client_limit': 5,
+      'active_clients': 0,
+      'revision': 1,
+    };
+    final legacy = TrainerManagement.fromJson({
+      'access': access,
+      'manual_enabled': true,
+    });
+    expect(legacy.manualDirectoryEnabled, isFalse);
+    expect(legacy.directorySource, isNull);
+    final pilot = TrainerManagement.fromJson({
+      'access': access,
+      'manual_enabled': true,
+      'manual_directory_enabled': false,
+      'directory_source': 'pilot',
+    });
+    expect(pilot.manualDirectoryEnabled, isFalse);
+    expect(pilot.directorySource, 'pilot');
+    final gift = TrainerManagement.fromJson({
+      'access': access,
+      'manual_enabled': true,
+      'manual_directory_enabled': true,
+      'directory_source': 'manual',
+    });
+    expect(gift.manualDirectoryEnabled, isTrue);
+    expect(gift.directorySource, 'manual');
+    expect(
+      const TrainerAccessChange(
+        trainerId: 'coach',
+        limit: 5,
+        enabled: true,
+        revision: 1,
+        reason: 'Mantener selección anterior',
+      ).directoryEnabled,
+      isNull,
+    );
+  });
   test('invitaciones con identidad estable y 256 bits de secreto seguro', () {
     final drafts = List.generate(100, (_) => TrainerInvitationDraft.secure());
     expect(drafts.map((v) => v.id).toSet(), hasLength(100));

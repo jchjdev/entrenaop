@@ -12,6 +12,85 @@ Future<void> press(WidgetTester tester, String label) async {
 }
 
 void main() {
+  testWidgets('ADMIN puede regalar Trainer con y sin ficha en la app', (
+    tester,
+  ) async {
+    final repo = FakeTrainerRepository();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: ListView(
+            children: [
+              AdminTrainerAccessCard(repository: repo, userId: 'trainer-a'),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final choice = find.widgetWithText(
+      CheckboxListTile,
+      'Incluir ficha en el directorio de la app',
+    );
+    expect(tester.widget<CheckboxListTile>(choice).value, isFalse);
+    await tester.ensureVisible(choice);
+    await tester.tap(choice);
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byType(TextField).last,
+      'Regalo con ficha para probar',
+    );
+    await press(tester, 'Guardar acceso regalado');
+    expect(
+      find.textContaining('El regalo incluye permiso para publicar'),
+      findsOneWidget,
+    );
+    await press(tester, 'Confirmar');
+    expect(repo.changes.single.directoryEnabled, isTrue);
+    expect(repo.changes.single.enabled, isTrue);
+    await tester.ensureVisible(choice);
+    await tester.tap(choice);
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byType(TextField).last,
+      'Mantener herramientas sin ficha',
+    );
+    await press(tester, 'Guardar acceso regalado');
+    expect(
+      find.textContaining('Este regalo no habilita la ficha'),
+      findsOneWidget,
+    );
+    await press(tester, 'Confirmar');
+    expect(repo.changes.last.directoryEnabled, isFalse);
+    expect(repo.changes.last.enabled, isTrue);
+    expect(repo.suspensionChanges, isEmpty);
+  });
+  testWidgets('el permiso del piloto no se confunde con una ficha regalada', (
+    tester,
+  ) async {
+    final repo = FakeTrainerRepository()..directorySource = 'pilot';
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: ListView(
+            children: [
+              AdminTrainerAccessCard(repository: repo, userId: 'trainer-a'),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Ficha habilitada por el piloto de pruebas.'),
+      findsOneWidget,
+    );
+    expect(
+      tester.widget<CheckboxListTile>(find.byType(CheckboxListTile)).value,
+      isFalse,
+    );
+    expect(repo.changes, isEmpty);
+  });
   testWidgets(
     'configuración deshabilitada permite consulta y bloquea concesiones',
     (tester) async {

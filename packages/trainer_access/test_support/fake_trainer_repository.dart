@@ -15,6 +15,8 @@ class FakeTrainerRepository implements TrainerRepository {
   List<TrainerAccessChange> changes = [];
   List<TrainerSuspensionChange> suspensionChanges = [];
   bool manualEnabled = true;
+  bool manualDirectoryEnabled = false;
+  String? directorySource;
   int manualLimit = 3;
   DateTime? manualValidUntil;
   String? suspensionReason;
@@ -132,6 +134,8 @@ class FakeTrainerRepository implements TrainerRepository {
       TrainerManagement.fromJson({
         'manual_access_enabled': managementEnabled,
         'manual_enabled': manualEnabled,
+        'manual_directory_enabled': manualDirectoryEnabled,
+        'directory_source': directorySource,
         'manual_client_limit': manualLimit,
         'manual_valid_until': manualValidUntil?.toIso8601String(),
         'suspension_reason': suspensionReason,
@@ -149,6 +153,7 @@ class FakeTrainerRepository implements TrainerRepository {
   Future<TrainerAccess> changeAccess(TrainerAccessChange change) async {
     changes.add(change);
     if (saveError != null) throw saveError!;
+    manualDirectoryEnabled = change.directoryEnabled ?? manualDirectoryEnabled;
     return current;
   }
 

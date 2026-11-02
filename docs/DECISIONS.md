@@ -10,6 +10,16 @@ inferir ubicaciones. En presencial basta provincia o la localidad ya admitida;
 en online no se impone una ubicación. No cambian permisos ni publicación.
 [Contrato y comprobación](TRAINER_DIRECTORY_LOCATIONS_2026_11_02.md).
 
+**Regalar Trainer con ficha opcional en la app · 02/11/2026:** Javier confirma
+que ADMIN debe elegir si el acceso regalado incluye publicar una ficha en el
+directorio de la app. La elección es explícita y comparte la vigencia del regalo;
+no publica automáticamente ni concede Pro o publicidad web. Puede retirarse
+sin quitar las herramientas, conservando permisos de pago o piloto vigentes.
+Suspensión, foto, consentimiento y moderación mantienen sus controles. Las
+concesiones y sus reintentos se auditan con revisión; clientes administrativos
+anteriores conservan la elección existente. Ervi conserva el piloto previo.
+[Contrato](TRAINER_COMMERCIAL_CONTRACT.md#regalos-con-ficha-opcional-en-la-app--02112026).
+
 **Favoritos y herramientas de la app · 02/11/2026:** Javier pide ampliar los
 accesos y concreta que Ritmos y PAEF/PAFAS no deben repetirse como favoritos,
 porque ya están en sus cards. Se ofrecen los tres destinos personales actuales,
@@ -37,8 +47,9 @@ Básico la obtiene con su extra. Se exige cobertura pagada vigente y acceso
 profesional habilitado, leyendo la oferta actual en lugar de la compra inicial.
 Preparar o dejar pendiente un pago no concede el derecho; una bajada programada
 conserva la cobertura actual hasta renovar. Se mantienen consentimiento, foto,
-publicación voluntaria, moderación y el piloto individual existente. Los regalos
-de herramientas no conceden publicidad, Pro ni algoritmo. Continúa en pruebas,
+publicación voluntaria, moderación y el piloto individual existente. Un regalo
+de herramientas no incluye ficha salvo elección expresa de ADMIN; no concede
+Pro ni algoritmo. Continúa en pruebas,
 sin cargos nuevos ni cambios en Stripe.
 [Contrato y verificación](TRAINER_COMMERCIAL_CONTRACT.md#ficha-incluida-en-la-suscripción-pagada--02112026).
 
