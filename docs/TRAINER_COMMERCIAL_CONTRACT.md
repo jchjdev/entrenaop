@@ -93,6 +93,15 @@ confirmar cobro, conservar cupo elegido si falla la revisión, detenerse si camb
 la suscripción al anular y mantener facturación accesible ante un error de acceso.
 No se añaden migraciones ni cambios de servidor o ADMIN.
 
+**Publicación y comprobación visual:** revisión `604ff3e476e871cadac42a80c0de6ed65f994b77`
+publicada por [Trainer Dev](https://github.com/jchjdev/entrenaop/actions/runs/41435245437),
+con validación/despliegue correctos y HTTPS contrastado contra Dev. Mi cuenta
+presenta la tarjeta principal de facturación y abre la suscripción. En el caso
+Completo/5 → Profesional/50 se comprueban el aviso de cinco plazas actuales, la
+oferta Completo/50 a 67,90 EUR y su diálogo previo. Se cierra con «Conservar cambio
+programado»: el plan Completo/5 y el cambio Profesional/50 a 53,90 EUR para el
+30/11 siguen intactos. No se anula el cambio ni se confirma un pago en esta revisión.
+
 ## 1. Base vigente y propuesta principal
 
 ### Posibles niveles comerciales · propuesta del 28/10/2026
