@@ -1,5 +1,46 @@
 # Navegación del alumno y preparador · TRN-025 · 22/10/2026
 
+## Entrenar y Biblioteca: revisión del modelo · 02/11/2026
+
+Javier informa de una cuenta Free con plan automático pausado, consulta del
+programa y acceso Pro al intentar utilizarlo. Describe el mismo plan de nuevo en
+Preparaciones, otra preparación pendiente y una promoción adicional para crear
+un plan adaptativo. Cuestiona también las entradas a los guiados desde Entrenar
+y Biblioteca. Reabre la organización conceptual; todavía no aprueba otro reparto.
+
+Comprobado en el código directamente relacionado:
+
+- Planes muestra todos los programas adaptativos cuyo estado no sea `draft`,
+  incluidos pausados y completados; no es una lista exclusiva de programas en curso.
+- Preparaciones vuelve a componer cada objetivo con el progreso del mismo programa.
+- La promoción Pro aparece si no hay un programa `isCurrent`, por lo que un
+  pausado puede coexistir con una invitación genérica a crear otro.
+- Añadir en Tus programas guiados ya abre `/library?tab=programs`: hay una entrada
+  alternativa al mismo catálogo, sin una segunda colección independiente.
+- Biblioteca contiene Programas, Sesiones y Ejercicios, incluidas las plantillas
+  personales reutilizables. No equivale al calendario ni a las sesiones pautadas.
+
+La recomendación pendiente es mantener Biblioteca para explorar y crear contenido
+reutilizable, y Entrenar para utilizar y gestionar lo elegido. Entrenar podría
+abrir en Programas y permitir consultar Sesiones y Disponibilidad. Sesiones sería
+la agenda o trabajo concreto, no otra copia del catálogo ni otro resumen semanal
+como portada. Los guiados seguidos y el plan personalizado se organizan por estado,
+con los pausados separados de lo que se puede continuar. Automático y adaptativo
+deben tener un único nombre visible. Preparaciones describe objetivos, fecha y
+pruebas: su gestión y consulta deben conservarse, evitando presentarlas como otra
+colección de planes. La ubicación exacta de ese acceso sigue pendiente.
+
+El requisito Pro se comunica antes de intentar activar o retomar el plan, sin
+borrar ni ocultar la consulta legítima de lo conservado. Se recomienda una entrada
+contextual al plan personalizado, evitando promociones genéricas repetidas junto
+a un plan ya existente. Cambiar la presentación no cambia sus derechos comerciales.
+
+La afirmación de poder añadir cualquier cantidad de guiados no se ha contrastado
+en la cuenta: explorar no equivale a tener varios activos. COM-019/020 conserva
+un programa guiado activo en Free y varios en Pro, con pausa e historial. Una
+activación simultánea incompatible sería una incidencia separada que requiere
+verificar el estado real, no una razón para modificar cuotas durante este rediseño.
+
 ## Revisión de Perfil y acceso profesional · 01/11/2026
 
 Tras probar el reparto implementado, Javier rechaza la presencia del selector

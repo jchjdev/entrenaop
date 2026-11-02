@@ -1,5 +1,17 @@
 # Registro de decisiones vigentes
 
+**Entrenar y Biblioteca: frontera reabierta · 02/11/2026:** Javier señala
+redundancia entre el plan automático pausado en Planes, las preparaciones que
+repiten su estado y la promoción de crear un plan adaptativo. También cuestiona
+la distinción entre programas guiados en Entrenar y su catálogo en Biblioteca.
+Se confirma en Flutter la repetición y que Añadir guiados abre el mismo catálogo.
+Se recomienda separar contenido disponible de entrenamiento propio y unificar
+el nombre visible del plan automático/adaptativo; el nuevo reparto sigue en
+discusión, sin cambios de Flutter, permisos ni cuotas. Consultar un plan pausado
+conservado no significa poder reactivarlo sin Pro. La regla vigente de guiados
+sigue siendo un activo en Free; no se ha comprobado el estado de la cuenta citada.
+[Diagnóstico y propuesta](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#entrenar-y-biblioteca-revisión-del-modelo--02112026).
+
 **Perfil, Ajustes y acceso profesional aprobados · 01/11/2026:** tras probar la
 app, Javier rechaza el selector Personal/Entrenador de la cabecera y pide una
 entrada más discreta, posiblemente desde Perfil. Corrige el término visible a
