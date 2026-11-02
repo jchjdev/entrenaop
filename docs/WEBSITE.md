@@ -228,7 +228,21 @@ abrir contratación sin sesión. El guard de Trainer sigue resolviendo identidad
 estado de acceso y seguridad. No se añaden formularios de alta ni se envían
 importes, capacidades o identificadores de producto desde la maqueta.
 
-La comparativa usa los importes provisionales de
+**Actualización de contratación autorizada · 02/11/2026:** el portal pasa al
+catálogo gradual v3 de ensayo. La maqueta oculta debe adoptar un selector de
+**5 a 100 alumnos, de uno en uno**, con accesos rápidos 5/10/20/35/50/75/100.
+La tabla completa en céntimos está en
+[trainer_pricing_sandbox_v3.json](commercial/trainer_pricing_sandbox_v3.json),
+generada por `tools/trainer_pricing_catalog.py`. No interpolar precios con
+otra fórmula ni mostrar solo cinco cupos. Separar herramientas comunes de
+las diferencias entre niveles de
+[TRAINER_PRICING_DRAFT.md](TRAINER_PRICING_DRAFT.md#prestaciones-objetivo-y-estado-real),
+identificando Pro/directorio por plan y asistente como pendientes. Los enlaces
+siguen apuntando al catálogo autorizado del portal, sin pasar precios ni cupos
+como derechos desde la web. Este bloque prepara el contrato de actualización;
+no acredita que se haya modificado o publicado la maqueta del otro chat.
+
+**Estado anterior de la maqueta, pendiente de adaptar a v3:** la comparativa usa los importes provisionales de
 [TRAINER_PRICING_DRAFT.md](TRAINER_PRICING_DRAFT.md): cinco tramos de 5/10/20/50/100
 alumnos activos y tres niveles. Un selector cambia los tres importes; el extra
 opcional de directorio suma 4,90 EUR/mes únicamente al Básico. Hay una tabla

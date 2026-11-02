@@ -1,5 +1,25 @@
 # Roadmap de EntrenaOP
 
+**Trainer · catálogo gradual por unidades · 02/11/2026:** preparados y contrastados
+en Stripe sandbox los 384 precios/ofertas elegibles de 5 a 100 alumnos, de uno
+en uno: 380 precios nuevos y cuatro ofertas originales de cinco conservadas.
+Se mantiene cantidad Stripe 1 y cuota mensual cerrada; disminuye el coste
+marginal por volumen, sin repriciar contratos ni pedidos propios pendientes.
+El selector de Trainer permite número, +/− y accesos rápidos. La comparación
+separa herramientas disponibles de inclusiones Pro/directorio y asistente aún
+pendientes. Fuente y tabla completa preparadas para adaptar la web oculta;
+no se modifica esa maqueta en esta tarea.
+Dev: migración `20261102104303` aplicada y `trainer-commerce` v8 activa. Análisis
+Trainer limpio, 439 pruebas, servidor 53, cálculo 5 y TypeScript estricto.
+Siete pruebas SQL de catálogo, contratación, cambios, relaciones, suspensión y
+registro web terminan con ROLLBACK; incluyen las 384 capacidades y una tarifa
+retirada propia que sigue siendo retomable, sin permitir comprarla a otra cuenta.
+**Único siguiente recorrido comercial:** aceptar manualmente siete plazas →
+pago de prueba → acceso/cupo → ampliación → reducción/anulación, antes de fijar
+fiscalidad y precios reales. La publicación web se acredita en el contrato al
+verificar la revisión servida.
+[Contrato y límites](TRAINER_COMMERCIAL_CONTRACT.md#catálogo-por-unidades--02112026).
+
 **Deportista · reparto de Entrenar · 02/11/2026:** Javier aprueba el prototipo
 con **Preparación, Programas y Disponibilidad**. Implementado con las cards y el
 desplazamiento existentes: una preparación y su plan al frente, gestión de

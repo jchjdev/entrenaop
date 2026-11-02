@@ -50,6 +50,7 @@ class SubscriptionFixture implements TrainerSubscriptionRepository {
 
 class PlanCatalogueFixture extends SubscriptionFixture {
   String? selected;
+  List<int> capacities = const [5, 10];
   @override
   Future<SubscriptionJson> status() async => {
     'sandbox': true,
@@ -61,11 +62,13 @@ class PlanCatalogueFixture extends SubscriptionFixture {
             'offer_id': 'professional-10',
             'title': 'professional 10',
             'amount': 2000,
+            'capacity': 10,
+            'currency': 'EUR',
             'interval': 'month',
           }
         : null,
     'offers': [
-      for (final capacity in [5, 10]) ...[
+      for (final capacity in capacities) ...[
         for (final plan in ['basic', 'professional', 'complete'])
           {
             'id': '$plan-$capacity',
@@ -110,6 +113,20 @@ class ConcurrentPlanFixture extends PlanCatalogueFixture {
   }) async {
     pending = true;
     throw StateError('Otra pestaña ya preparó un pago');
+  }
+}
+
+class RetiredPendingFixture extends PlanCatalogueFixture {
+  RetiredPendingFixture() {
+    pending = true;
+  }
+  @override
+  Future<SubscriptionJson> status() async {
+    final data = await super.status();
+    data['offers'] = (data['offers'] as List)
+        .where((o) => o['id'] != 'professional-10')
+        .toList();
+    return data;
   }
 }
 
@@ -204,11 +221,12 @@ void main() {
       MaterialApp(home: TrainerSubscriptionPage(repository: repo)),
     );
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.byType(DropdownButtonFormField<int>));
+    await tester.ensureVisible(find.byKey(const ValueKey('trainer-capacity')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byType(DropdownButtonFormField<int>));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Hasta 10 alumnos').last);
+    await tester.enterText(
+      find.byKey(const ValueKey('trainer-capacity')),
+      '10',
+    );
     await tester.pumpAndSettle();
     final card = find
         .ancestor(of: find.text('basic 10'), matching: find.byType(Column))
@@ -317,7 +335,7 @@ void main() {
       );
       expect(find.text('Gestionar suscripción'), findsOneWidget);
       expect(find.text('Entrar al panel'), findsNothing);
-      expect(find.byType(DropdownButtonFormField<int>), findsNothing);
+      expect(find.byKey(const ValueKey('trainer-capacity')), findsNothing);
       expect(repo.actions, isEmpty);
     },
   );
@@ -353,9 +371,7 @@ void main() {
       addTearDown(router.dispose);
       await t.pumpWidget(MaterialApp.router(routerConfig: router));
       await t.pumpAndSettle();
-      await t.tap(find.byType(DropdownButtonFormField<int>));
-      await t.pumpAndSettle();
-      await t.tap(find.text('Hasta 10 alumnos').last);
+      await t.enterText(find.byKey(const ValueKey('trainer-capacity')), '10');
       await t.pumpAndSettle();
       await t.ensureVisible(find.byType(SwitchListTile));
       await t.pumpAndSettle();
@@ -380,11 +396,19 @@ void main() {
       await t.tap(find.text('Autenticador verificado'));
       await t.pumpAndSettle();
       await t.scrollUntilVisible(
-        find.byType(DropdownButtonFormField<int>),
+        find.byKey(const ValueKey('trainer-capacity')),
         -200,
       );
       await t.pumpAndSettle();
-      expect(find.text('Hasta 10 alumnos'), findsOneWidget);
+      expect(
+        t
+            .widget<TextFormField>(
+              find.byKey(const ValueKey('trainer-capacity')),
+            )
+            .controller!
+            .text,
+        '10',
+      );
       expect(find.text('Básico con directorio 10'), findsOneWidget);
       expect(find.text('basic 5'), findsNothing);
       expect(repo.actions, isEmpty);
@@ -405,12 +429,46 @@ void main() {
         MaterialApp(home: TrainerSubscriptionPage(repository: repo)),
       );
       await t.pumpAndSettle();
-      await t.scrollUntilVisible(find.text('Contratar en pruebas').first, 200);
-      await t.tap(find.text('Contratar en pruebas').first);
+      await t.scrollUntilVisible(
+        find.byKey(const ValueKey('trainer-offer-basic-5')),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
       await t.pumpAndSettle();
-      expect(find.byType(DropdownButtonFormField<int>), findsNothing);
+      await t.tap(find.byKey(const ValueKey('trainer-offer-basic-5')));
+      await t.pumpAndSettle();
+      expect(find.byKey(const ValueKey('trainer-capacity')), findsNothing);
       expect(find.text('basic 5'), findsNothing);
       expect(find.text('professional 10'), findsWidgets);
+    },
+  );
+
+  testWidgets(
+    'un pedido propio retoma su oferta retirada sin comprar el catálogo nuevo',
+    (t) async {
+      final repo = RetiredPendingFixture();
+      await t.pumpWidget(
+        MaterialApp(
+          home: TrainerSubscriptionPage(
+            repository: repo,
+            openPayment: (_) async => true,
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+      final pay = find.byKey(const ValueKey('trainer-offer-professional-10'));
+      await t.scrollUntilVisible(
+        pay,
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await t.pumpAndSettle();
+      await t.tap(pay);
+      await t.pumpAndSettle();
+      expect(repo.selected, 'professional-10');
+      expect(repo.actions, ['checkout']);
+      expect(find.byKey(const ValueKey('trainer-capacity')), findsNothing);
+      expect(t.takeException(), isNull);
     },
   );
 
@@ -427,7 +485,7 @@ void main() {
       ),
     );
     await t.pumpAndSettle();
-    expect(find.byType(DropdownButtonFormField<int>), findsNothing);
+    expect(find.byKey(const ValueKey('trainer-capacity')), findsNothing);
     expect(find.text('basic 5'), findsNothing);
     final button = find.text('Continuar pago de prueba');
     await t.ensureVisible(button);
@@ -444,11 +502,19 @@ void main() {
         MaterialApp(home: TrainerSubscriptionPage(repository: repo)),
       );
       await t.pumpAndSettle();
+      await t.scrollUntilVisible(
+        find.text('basic 5'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(find.text('basic 5'), findsOneWidget);
       expect(find.text('professional 10'), findsNothing);
-      await t.tap(find.byType(DropdownButtonFormField<int>));
-      await t.pumpAndSettle();
-      await t.tap(find.text('Hasta 10 alumnos').last);
+      await t.scrollUntilVisible(
+        find.byKey(const ValueKey('trainer-capacity')),
+        -200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await t.enterText(find.byKey(const ValueKey('trainer-capacity')), '10');
       await t.pumpAndSettle();
       final toggle = find.byType(SwitchListTile);
       await t.ensureVisible(toggle);
@@ -469,6 +535,100 @@ void main() {
       await t.pumpAndSettle();
       expect(repo.selected, 'basic-directory-10');
       expect(t.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'cupo por unidades y entrada inválida nunca contrata la selección anterior',
+    (t) async {
+      final repo = PlanCatalogueFixture()
+        ..capacities = List.generate(96, (i) => i + 5);
+      await t.pumpWidget(
+        MaterialApp(
+          home: TrainerSubscriptionPage(
+            repository: repo,
+            openPayment: (_) async => true,
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+      final field = find.byKey(const ValueKey('trainer-capacity'));
+      await t.enterText(field, '4');
+      await t.pumpAndSettle();
+      await t.scrollUntilVisible(
+        find.byKey(const ValueKey('trainer-offer-basic-5')),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(
+        t
+            .widget<FilledButton>(
+              find.byKey(const ValueKey('trainer-offer-basic-5')),
+            )
+            .onPressed,
+        isNull,
+      );
+      expect(repo.actions, isEmpty);
+      await t.scrollUntilVisible(
+        field,
+        -200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await t.enterText(field, '7');
+      await t.pumpAndSettle();
+      await t.tap(find.byTooltip('Ampliar cupo'));
+      await t.pumpAndSettle();
+      expect(t.widget<TextFormField>(field).controller!.text, '8');
+      await t.tap(find.byTooltip('Reducir cupo'));
+      await t.pumpAndSettle();
+      expect(t.widget<TextFormField>(field).controller!.text, '7');
+      final buy = find.byKey(const ValueKey('trainer-offer-basic-7'));
+      await t.scrollUntilVisible(
+        buy,
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await t.pumpAndSettle();
+      await t.tap(buy);
+      await t.pumpAndSettle();
+      expect(repo.selected, 'basic-7');
+      expect(repo.actions, ['checkout']);
+      expect(t.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'un atajo corrige el texto inválido y respeta los límites del cupo',
+    (t) async {
+      final repo = PlanCatalogueFixture()
+        ..capacities = List.generate(96, (i) => i + 5);
+      await t.pumpWidget(
+        MaterialApp(home: TrainerSubscriptionPage(repository: repo)),
+      );
+      await t.pumpAndSettle();
+      final field = find.byKey(const ValueKey('trainer-capacity'));
+      expect(
+        t
+            .widget<IconButton>(
+              find.widgetWithIcon(IconButton, Icons.remove_circle_outline),
+            )
+            .onPressed,
+        isNull,
+      );
+      await t.enterText(field, '101');
+      await t.pumpAndSettle();
+      await t.tap(find.widgetWithText(ActionChip, '100'));
+      await t.pumpAndSettle();
+      expect(t.widget<TextFormField>(field).controller!.text, '100');
+      expect(
+        t
+            .widget<IconButton>(
+              find.widgetWithIcon(IconButton, Icons.add_circle_outline),
+            )
+            .onPressed,
+        isNull,
+      );
+      expect(find.text('Elige un cupo disponible.'), findsNothing);
     },
   );
 

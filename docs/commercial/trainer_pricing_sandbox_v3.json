@@ -1,0 +1,756 @@
+{
+  "version": "20261102_v3",
+  "environment": "entrenaop-dev",
+  "sandbox": true,
+  "currency": "EUR",
+  "interval": "month",
+  "minimum_capacity": 5,
+  "maximum_capacity": 100,
+  "capacity_step": 1,
+  "tax_status": "Pendiente de fijar el PVP fiscal antes de vender.",
+  "billing": "Cuota fija por cupo contratado, no por altas ni alumnos usados.",
+  "commercial_entitlements": "Solo herramientas y cupo en este ensayo. Pro/directorio por plan y asistente pendientes.",
+  "included_capacity": 5,
+  "base_cents": {
+    "basic": 1290,
+    "professional": 1990,
+    "complete": 2490,
+    "basic_directory": 1780
+  },
+  "marginal_bands": [
+    {
+      "from": 6,
+      "to": 10,
+      "cents_per_additional_seat": {
+        "basic": 100,
+        "professional": 120,
+        "complete": 140,
+        "basic_directory": 100
+      }
+    },
+    {
+      "from": 11,
+      "to": 20,
+      "cents_per_additional_seat": {
+        "basic": 80,
+        "professional": 100,
+        "complete": 120,
+        "basic_directory": 80
+      }
+    },
+    {
+      "from": 21,
+      "to": 35,
+      "cents_per_additional_seat": {
+        "basic": 60,
+        "professional": 70,
+        "complete": 90,
+        "basic_directory": 60
+      }
+    },
+    {
+      "from": 36,
+      "to": 50,
+      "cents_per_additional_seat": {
+        "basic": 40,
+        "professional": 50,
+        "complete": 70,
+        "basic_directory": 40
+      }
+    },
+    {
+      "from": 51,
+      "to": 75,
+      "cents_per_additional_seat": {
+        "basic": 35,
+        "professional": 45,
+        "complete": 55,
+        "basic_directory": 35
+      }
+    },
+    {
+      "from": 76,
+      "to": 100,
+      "cents_per_additional_seat": {
+        "basic": 25,
+        "professional": 35,
+        "complete": 45,
+        "basic_directory": 25
+      }
+    }
+  ],
+  "monthly_prices": [
+    {
+      "capacity": 5,
+      "basic": 1290,
+      "professional": 1990,
+      "complete": 2490,
+      "basic_directory": 1780
+    },
+    {
+      "capacity": 6,
+      "basic": 1390,
+      "professional": 2110,
+      "complete": 2630,
+      "basic_directory": 1880
+    },
+    {
+      "capacity": 7,
+      "basic": 1490,
+      "professional": 2230,
+      "complete": 2770,
+      "basic_directory": 1980
+    },
+    {
+      "capacity": 8,
+      "basic": 1590,
+      "professional": 2350,
+      "complete": 2910,
+      "basic_directory": 2080
+    },
+    {
+      "capacity": 9,
+      "basic": 1690,
+      "professional": 2470,
+      "complete": 3050,
+      "basic_directory": 2180
+    },
+    {
+      "capacity": 10,
+      "basic": 1790,
+      "professional": 2590,
+      "complete": 3190,
+      "basic_directory": 2280
+    },
+    {
+      "capacity": 11,
+      "basic": 1870,
+      "professional": 2690,
+      "complete": 3310,
+      "basic_directory": 2360
+    },
+    {
+      "capacity": 12,
+      "basic": 1950,
+      "professional": 2790,
+      "complete": 3430,
+      "basic_directory": 2440
+    },
+    {
+      "capacity": 13,
+      "basic": 2030,
+      "professional": 2890,
+      "complete": 3550,
+      "basic_directory": 2520
+    },
+    {
+      "capacity": 14,
+      "basic": 2110,
+      "professional": 2990,
+      "complete": 3670,
+      "basic_directory": 2600
+    },
+    {
+      "capacity": 15,
+      "basic": 2190,
+      "professional": 3090,
+      "complete": 3790,
+      "basic_directory": 2680
+    },
+    {
+      "capacity": 16,
+      "basic": 2270,
+      "professional": 3190,
+      "complete": 3910,
+      "basic_directory": 2760
+    },
+    {
+      "capacity": 17,
+      "basic": 2350,
+      "professional": 3290,
+      "complete": 4030,
+      "basic_directory": 2840
+    },
+    {
+      "capacity": 18,
+      "basic": 2430,
+      "professional": 3390,
+      "complete": 4150,
+      "basic_directory": 2920
+    },
+    {
+      "capacity": 19,
+      "basic": 2510,
+      "professional": 3490,
+      "complete": 4270,
+      "basic_directory": 3000
+    },
+    {
+      "capacity": 20,
+      "basic": 2590,
+      "professional": 3590,
+      "complete": 4390,
+      "basic_directory": 3080
+    },
+    {
+      "capacity": 21,
+      "basic": 2650,
+      "professional": 3660,
+      "complete": 4480,
+      "basic_directory": 3140
+    },
+    {
+      "capacity": 22,
+      "basic": 2710,
+      "professional": 3730,
+      "complete": 4570,
+      "basic_directory": 3200
+    },
+    {
+      "capacity": 23,
+      "basic": 2770,
+      "professional": 3800,
+      "complete": 4660,
+      "basic_directory": 3260
+    },
+    {
+      "capacity": 24,
+      "basic": 2830,
+      "professional": 3870,
+      "complete": 4750,
+      "basic_directory": 3320
+    },
+    {
+      "capacity": 25,
+      "basic": 2890,
+      "professional": 3940,
+      "complete": 4840,
+      "basic_directory": 3380
+    },
+    {
+      "capacity": 26,
+      "basic": 2950,
+      "professional": 4010,
+      "complete": 4930,
+      "basic_directory": 3440
+    },
+    {
+      "capacity": 27,
+      "basic": 3010,
+      "professional": 4080,
+      "complete": 5020,
+      "basic_directory": 3500
+    },
+    {
+      "capacity": 28,
+      "basic": 3070,
+      "professional": 4150,
+      "complete": 5110,
+      "basic_directory": 3560
+    },
+    {
+      "capacity": 29,
+      "basic": 3130,
+      "professional": 4220,
+      "complete": 5200,
+      "basic_directory": 3620
+    },
+    {
+      "capacity": 30,
+      "basic": 3190,
+      "professional": 4290,
+      "complete": 5290,
+      "basic_directory": 3680
+    },
+    {
+      "capacity": 31,
+      "basic": 3250,
+      "professional": 4360,
+      "complete": 5380,
+      "basic_directory": 3740
+    },
+    {
+      "capacity": 32,
+      "basic": 3310,
+      "professional": 4430,
+      "complete": 5470,
+      "basic_directory": 3800
+    },
+    {
+      "capacity": 33,
+      "basic": 3370,
+      "professional": 4500,
+      "complete": 5560,
+      "basic_directory": 3860
+    },
+    {
+      "capacity": 34,
+      "basic": 3430,
+      "professional": 4570,
+      "complete": 5650,
+      "basic_directory": 3920
+    },
+    {
+      "capacity": 35,
+      "basic": 3490,
+      "professional": 4640,
+      "complete": 5740,
+      "basic_directory": 3980
+    },
+    {
+      "capacity": 36,
+      "basic": 3530,
+      "professional": 4690,
+      "complete": 5810,
+      "basic_directory": 4020
+    },
+    {
+      "capacity": 37,
+      "basic": 3570,
+      "professional": 4740,
+      "complete": 5880,
+      "basic_directory": 4060
+    },
+    {
+      "capacity": 38,
+      "basic": 3610,
+      "professional": 4790,
+      "complete": 5950,
+      "basic_directory": 4100
+    },
+    {
+      "capacity": 39,
+      "basic": 3650,
+      "professional": 4840,
+      "complete": 6020,
+      "basic_directory": 4140
+    },
+    {
+      "capacity": 40,
+      "basic": 3690,
+      "professional": 4890,
+      "complete": 6090,
+      "basic_directory": 4180
+    },
+    {
+      "capacity": 41,
+      "basic": 3730,
+      "professional": 4940,
+      "complete": 6160,
+      "basic_directory": 4220
+    },
+    {
+      "capacity": 42,
+      "basic": 3770,
+      "professional": 4990,
+      "complete": 6230,
+      "basic_directory": 4260
+    },
+    {
+      "capacity": 43,
+      "basic": 3810,
+      "professional": 5040,
+      "complete": 6300,
+      "basic_directory": 4300
+    },
+    {
+      "capacity": 44,
+      "basic": 3850,
+      "professional": 5090,
+      "complete": 6370,
+      "basic_directory": 4340
+    },
+    {
+      "capacity": 45,
+      "basic": 3890,
+      "professional": 5140,
+      "complete": 6440,
+      "basic_directory": 4380
+    },
+    {
+      "capacity": 46,
+      "basic": 3930,
+      "professional": 5190,
+      "complete": 6510,
+      "basic_directory": 4420
+    },
+    {
+      "capacity": 47,
+      "basic": 3970,
+      "professional": 5240,
+      "complete": 6580,
+      "basic_directory": 4460
+    },
+    {
+      "capacity": 48,
+      "basic": 4010,
+      "professional": 5290,
+      "complete": 6650,
+      "basic_directory": 4500
+    },
+    {
+      "capacity": 49,
+      "basic": 4050,
+      "professional": 5340,
+      "complete": 6720,
+      "basic_directory": 4540
+    },
+    {
+      "capacity": 50,
+      "basic": 4090,
+      "professional": 5390,
+      "complete": 6790,
+      "basic_directory": 4580
+    },
+    {
+      "capacity": 51,
+      "basic": 4125,
+      "professional": 5435,
+      "complete": 6845,
+      "basic_directory": 4615
+    },
+    {
+      "capacity": 52,
+      "basic": 4160,
+      "professional": 5480,
+      "complete": 6900,
+      "basic_directory": 4650
+    },
+    {
+      "capacity": 53,
+      "basic": 4195,
+      "professional": 5525,
+      "complete": 6955,
+      "basic_directory": 4685
+    },
+    {
+      "capacity": 54,
+      "basic": 4230,
+      "professional": 5570,
+      "complete": 7010,
+      "basic_directory": 4720
+    },
+    {
+      "capacity": 55,
+      "basic": 4265,
+      "professional": 5615,
+      "complete": 7065,
+      "basic_directory": 4755
+    },
+    {
+      "capacity": 56,
+      "basic": 4300,
+      "professional": 5660,
+      "complete": 7120,
+      "basic_directory": 4790
+    },
+    {
+      "capacity": 57,
+      "basic": 4335,
+      "professional": 5705,
+      "complete": 7175,
+      "basic_directory": 4825
+    },
+    {
+      "capacity": 58,
+      "basic": 4370,
+      "professional": 5750,
+      "complete": 7230,
+      "basic_directory": 4860
+    },
+    {
+      "capacity": 59,
+      "basic": 4405,
+      "professional": 5795,
+      "complete": 7285,
+      "basic_directory": 4895
+    },
+    {
+      "capacity": 60,
+      "basic": 4440,
+      "professional": 5840,
+      "complete": 7340,
+      "basic_directory": 4930
+    },
+    {
+      "capacity": 61,
+      "basic": 4475,
+      "professional": 5885,
+      "complete": 7395,
+      "basic_directory": 4965
+    },
+    {
+      "capacity": 62,
+      "basic": 4510,
+      "professional": 5930,
+      "complete": 7450,
+      "basic_directory": 5000
+    },
+    {
+      "capacity": 63,
+      "basic": 4545,
+      "professional": 5975,
+      "complete": 7505,
+      "basic_directory": 5035
+    },
+    {
+      "capacity": 64,
+      "basic": 4580,
+      "professional": 6020,
+      "complete": 7560,
+      "basic_directory": 5070
+    },
+    {
+      "capacity": 65,
+      "basic": 4615,
+      "professional": 6065,
+      "complete": 7615,
+      "basic_directory": 5105
+    },
+    {
+      "capacity": 66,
+      "basic": 4650,
+      "professional": 6110,
+      "complete": 7670,
+      "basic_directory": 5140
+    },
+    {
+      "capacity": 67,
+      "basic": 4685,
+      "professional": 6155,
+      "complete": 7725,
+      "basic_directory": 5175
+    },
+    {
+      "capacity": 68,
+      "basic": 4720,
+      "professional": 6200,
+      "complete": 7780,
+      "basic_directory": 5210
+    },
+    {
+      "capacity": 69,
+      "basic": 4755,
+      "professional": 6245,
+      "complete": 7835,
+      "basic_directory": 5245
+    },
+    {
+      "capacity": 70,
+      "basic": 4790,
+      "professional": 6290,
+      "complete": 7890,
+      "basic_directory": 5280
+    },
+    {
+      "capacity": 71,
+      "basic": 4825,
+      "professional": 6335,
+      "complete": 7945,
+      "basic_directory": 5315
+    },
+    {
+      "capacity": 72,
+      "basic": 4860,
+      "professional": 6380,
+      "complete": 8000,
+      "basic_directory": 5350
+    },
+    {
+      "capacity": 73,
+      "basic": 4895,
+      "professional": 6425,
+      "complete": 8055,
+      "basic_directory": 5385
+    },
+    {
+      "capacity": 74,
+      "basic": 4930,
+      "professional": 6470,
+      "complete": 8110,
+      "basic_directory": 5420
+    },
+    {
+      "capacity": 75,
+      "basic": 4965,
+      "professional": 6515,
+      "complete": 8165,
+      "basic_directory": 5455
+    },
+    {
+      "capacity": 76,
+      "basic": 4990,
+      "professional": 6550,
+      "complete": 8210,
+      "basic_directory": 5480
+    },
+    {
+      "capacity": 77,
+      "basic": 5015,
+      "professional": 6585,
+      "complete": 8255,
+      "basic_directory": 5505
+    },
+    {
+      "capacity": 78,
+      "basic": 5040,
+      "professional": 6620,
+      "complete": 8300,
+      "basic_directory": 5530
+    },
+    {
+      "capacity": 79,
+      "basic": 5065,
+      "professional": 6655,
+      "complete": 8345,
+      "basic_directory": 5555
+    },
+    {
+      "capacity": 80,
+      "basic": 5090,
+      "professional": 6690,
+      "complete": 8390,
+      "basic_directory": 5580
+    },
+    {
+      "capacity": 81,
+      "basic": 5115,
+      "professional": 6725,
+      "complete": 8435,
+      "basic_directory": 5605
+    },
+    {
+      "capacity": 82,
+      "basic": 5140,
+      "professional": 6760,
+      "complete": 8480,
+      "basic_directory": 5630
+    },
+    {
+      "capacity": 83,
+      "basic": 5165,
+      "professional": 6795,
+      "complete": 8525,
+      "basic_directory": 5655
+    },
+    {
+      "capacity": 84,
+      "basic": 5190,
+      "professional": 6830,
+      "complete": 8570,
+      "basic_directory": 5680
+    },
+    {
+      "capacity": 85,
+      "basic": 5215,
+      "professional": 6865,
+      "complete": 8615,
+      "basic_directory": 5705
+    },
+    {
+      "capacity": 86,
+      "basic": 5240,
+      "professional": 6900,
+      "complete": 8660,
+      "basic_directory": 5730
+    },
+    {
+      "capacity": 87,
+      "basic": 5265,
+      "professional": 6935,
+      "complete": 8705,
+      "basic_directory": 5755
+    },
+    {
+      "capacity": 88,
+      "basic": 5290,
+      "professional": 6970,
+      "complete": 8750,
+      "basic_directory": 5780
+    },
+    {
+      "capacity": 89,
+      "basic": 5315,
+      "professional": 7005,
+      "complete": 8795,
+      "basic_directory": 5805
+    },
+    {
+      "capacity": 90,
+      "basic": 5340,
+      "professional": 7040,
+      "complete": 8840,
+      "basic_directory": 5830
+    },
+    {
+      "capacity": 91,
+      "basic": 5365,
+      "professional": 7075,
+      "complete": 8885,
+      "basic_directory": 5855
+    },
+    {
+      "capacity": 92,
+      "basic": 5390,
+      "professional": 7110,
+      "complete": 8930,
+      "basic_directory": 5880
+    },
+    {
+      "capacity": 93,
+      "basic": 5415,
+      "professional": 7145,
+      "complete": 8975,
+      "basic_directory": 5905
+    },
+    {
+      "capacity": 94,
+      "basic": 5440,
+      "professional": 7180,
+      "complete": 9020,
+      "basic_directory": 5930
+    },
+    {
+      "capacity": 95,
+      "basic": 5465,
+      "professional": 7215,
+      "complete": 9065,
+      "basic_directory": 5955
+    },
+    {
+      "capacity": 96,
+      "basic": 5490,
+      "professional": 7250,
+      "complete": 9110,
+      "basic_directory": 5980
+    },
+    {
+      "capacity": 97,
+      "basic": 5515,
+      "professional": 7285,
+      "complete": 9155,
+      "basic_directory": 6005
+    },
+    {
+      "capacity": 98,
+      "basic": 5540,
+      "professional": 7320,
+      "complete": 9200,
+      "basic_directory": 6030
+    },
+    {
+      "capacity": 99,
+      "basic": 5565,
+      "professional": 7355,
+      "complete": 9245,
+      "basic_directory": 6055
+    },
+    {
+      "capacity": 100,
+      "basic": 5590,
+      "professional": 7390,
+      "complete": 9290,
+      "basic_directory": 6080
+    }
+  ]
+}

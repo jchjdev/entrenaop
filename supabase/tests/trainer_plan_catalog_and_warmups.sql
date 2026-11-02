@@ -4,10 +4,10 @@ do $$
 declare buyer uuid; other uuid:=gen_random_uuid(); order_id uuid; token uuid; offer commerce_private.offers;
  j jsonb; k jsonb; access public.trainer_access; n integer:=0;
 begin
- if (select count(*) from commerce_private.offers where active and plan_key<>'legacy')<>20 then
+ if (select count(*) from commerce_private.offers where active and plan_key<>'legacy')<>384 then
    raise exception 'Falta un precio/cupo del catálogo de ensayo'; end if;
  if exists(select 1 from commerce_private.offers where plan_key<>'legacy' and
-   (capacity not in(5,10,20,50,100) or interval<>'month' or currency<>'EUR')) then
+   (capacity not between 5 and 100 or interval<>'month' or currency<>'EUR')) then
    raise exception 'Catálogo fuera del contrato mensual'; end if;
  update commerce_private.settings set enabled=true;
  insert into auth.users(id,email,email_confirmed_at) values(other,other||'@commerce.invalid',now());
@@ -70,6 +70,6 @@ begin
  begin perform public.list_published_workout_warmups(other);raise exception 'Anon consulta catálogo';
    exception when insufficient_privilege then null; end;
  reset role;
- if n<>20 then raise exception 'No se probaron todas las ofertas'; end if;
+ if n<>384 then raise exception 'No se probaron todas las ofertas'; end if;
 end $$;
 rollback;

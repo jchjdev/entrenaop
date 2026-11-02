@@ -150,6 +150,10 @@ for (const circuit of ["platform_access", "coach_service"] as const) {
     const fields = new URLSearchParams(String(last.init.body));
     assert.equal(fields.get("mode"), "subscription");
     assert.equal(fields.get("line_items[0][price]"), "price_fixture");
+    assert.equal(fields.get("line_items[0][quantity]"), "1");
+    const capacityNotice=fields.get("custom_text[submit][message]");
+    if(circuit==="platform_access") assert.match(capacityNotice!,/5 alumnos/);
+    else assert.equal(capacityNotice,null);
     assert.equal(fields.get("line_items[0][price_data][unit_amount]"), null);
     assert.equal(fields.get("customer"), "cus_fixture");
     assert.equal(fields.get("subscription_data[metadata][eop_buyer]"), "buyer");

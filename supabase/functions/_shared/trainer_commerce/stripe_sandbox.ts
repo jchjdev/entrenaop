@@ -238,6 +238,9 @@ export class StripeSandboxCheckout {
       "line_items[0][quantity]": "1",
       client_reference_id: id,
       locale: "es",
+      ...(context.circuit === "platform_access" ? {
+        "custom_text[submit][message]": `Ensayo sin cobro real. Cupo incluido: ${offer.capacity} alumnos. Pro y directorio por plan pendientes de activar.`,
+      } : {}),
       integration_identifier: `entrenaop_trainer_${
         id.replaceAll("-", "").slice(0, 8).split("").map((hex) =>
           String.fromCharCode(97 + parseInt(hex, 16))

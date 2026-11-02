@@ -1,18 +1,19 @@
-# Precios y cupos profesionales · borrador del 31/10/2026
+# Precios y cupos profesionales · ensayo v3 del 02/11/2026
 
-## Propuesta gradual v2 · 02/11/2026 · pendiente de aprobar
+## Catálogo gradual v3 · 02/11/2026 · autorizado solo para pruebas
 
-Javier confirma que deben definirse mejor las diferencias entre niveles y que
-el volumen debe tener un descuento lógico. Se concreta esta **hipótesis para
-debate**, sin cambiar importes Stripe, contratos ni la web oculta. No acredita
-rentabilidad; antes de vender se contrastarán coste de medios, soporte,
-procesamiento, impuestos y uso real.
+Javier aprueba llevar la propuesta gradual al sandbox de Stripe y al catálogo
+Dev, con cupos elegibles **de uno en uno entre 5 y 100**. No autoriza cobros
+reales ni cambiar el precio de contratos ya pagados. Se conservan los totales
+propuestos en 5/10/20/50/100 y se introducen fronteras en 35 y 75, puntos medios
+entre 20/50 y 50/100. No acredita rentabilidad: antes de vender se contrastarán
+medios, soporte, procesamiento, impuestos y uso real.
 
 ### Dos decisiones independientes
 
 1. Nivel de servicio: Básico, Profesional o Completo.
 2. Plazas contratadas: cualquier entero entre 5 y 100. Más de 100 queda para
-   una propuesta específica. El mínimo de cinco también es una hipótesis.
+   una propuesta específica. Cinco es el mínimo del ensayo, revisable antes de vender.
 
 Solo los alumnos externos activos ocupan plaza. Las plazas contratadas son la
 capacidad máxima elegida, no una facturación variable automática por actividad.
@@ -55,8 +56,10 @@ actual ni se promete procesamiento gratuito o soporte prioritario ilimitado.
 | Primeras 5, cuota total | 12,90 | 19,90 | 24,90 |
 | Cada adicional de la 6 a la 10 | +1,00 | +1,20 | +1,40 |
 | Cada adicional de la 11 a la 20 | +0,80 | +1,00 | +1,20 |
-| Cada adicional de la 21 a la 50 | +0,50 | +0,60 | +0,80 |
-| Cada adicional de la 51 a la 100 | +0,30 | +0,40 | +0,50 |
+| Cada adicional de la 21 a la 35 | +0,60 | +0,70 | +0,90 |
+| Cada adicional de la 36 a la 50 | +0,40 | +0,50 | +0,70 |
+| Cada adicional de la 51 a la 75 | +0,35 | +0,45 | +0,55 |
+| Cada adicional de la 76 a la 100 | +0,25 | +0,35 | +0,45 |
 
 Se suman los bloques usados, sin recalcular retroactivamente todas las plazas
 al precio del último tramo. Así el total siempre aumenta al añadir capacidad,
@@ -64,18 +67,28 @@ el coste medio por alumno baja y el salto de frontera no crea cobros bruscos.
 El descuento es por volumen dentro del mismo nivel; no se anuncia un ahorro
 frente a prestaciones sueltas que no tengan un precio independiente comparable.
 
+La división mantiene los totales de v2: el bloque 21–50 se reparte en dos
+mitades de 15 plazas con su media anterior ±0,10 EUR; el bloque 51–100, en dos
+mitades de 25 con su media anterior ±0,05 EUR. La primera mitad facilita la
+transición y la segunda recompensa mayor volumen. Así se conservan 50/100 y
+las seis tarifas marginales descienden en todos los niveles, sin descuentos
+arbitrarios sobre el total ni saltos al pasar de 35 a 36 o de 75 a 76.
+
 | Cupo elegido | Básico/mes | Profesional/mes | Completo/mes |
 | --- | ---: | ---: | ---: |
 | 5 | 12,90 | 19,90 | 24,90 |
 | 7 | 14,90 | 22,30 | 27,70 |
 | 10 | 17,90 | 25,90 | 31,90 |
 | 20 | 25,90 | 35,90 | 43,90 |
+| 35 | 34,90 | 46,40 | 57,40 |
 | 50 | 40,90 | 53,90 | 67,90 |
+| 75 | 49,65 | 65,15 | 81,65 |
 | 100 | 55,90 | 73,90 | 92,90 |
 
-Importes orientativos en EUR, sin PVP fiscal definitivo. No sustituyen la tabla
-activa del sandbox. El Básico con directorio mantendría un suplemento fijo a
-definir; los 4,90 EUR anteriores siguen siendo hipótesis, no un coste verificado.
+Importes en EUR vigentes únicamente en el ensayo; el PVP fiscal definitivo
+sigue pendiente. Básico con directorio añade **4,90 EUR/mes** al mismo cupo;
+Profesional y Completo lo incluyen en su oferta objetivo. La selección del
+extra no publica ninguna ficha automáticamente.
 Medios mantienen cuotas técnicas: ni Pro ni mayor cupo prometen vídeos,
 almacenamiento, transferencia o generación ilimitados.
 
@@ -88,12 +101,26 @@ coste medio por alumno. Comparativa desplegable, límites de medios y alcance
 actual junto a la contratación. Las funciones pendientes deben identificarse
 como futuras, sin usar la tarjeta de precio para fingir que ya se entregan.
 No mostrar saltos a diez cuando se necesitan seis. La maqueta y el portal deben
-conservar etiquetas explícitas mientras propuesta y catálogo de pruebas difieran.
+conservar etiquetas explícitas de ensayo y de prestaciones futuras.
 
-Esta tarea registra la propuesta y comprueba el cálculo para las 96 cantidades
-posibles; no implementa todavía el nuevo catálogo o una transición mixta.
+Fuente de cálculo: `tools/trainer_pricing_catalog.py`, con céntimos enteros.
+[Tabla completa exportable para la web oculta](commercial/trainer_pricing_sandbox_v3.json).
+Se comprueban las 96 capacidades por cada una de las cuatro variantes comerciales.
+Cada oferta tiene precio fijo mensual y cantidad Stripe 1: no se cambia el modelo
+de factura ya probado. Cuatro ofertas de cinco conservan su identidad y versión;
+las otras 380 son nuevas. Las 16 ofertas antiguas de cupos superiores dejan de
+ofrecerse para compras nuevas en Dev, conservando filas y precios Stripe para
+pedidos preparados, facturas, renovaciones y auditoría. No se migra un contrato
+pagado ni un cambio ya confirmado al catálogo nuevo de forma automática.
+
+La ampliación sin pérdida de prestaciones se confirma tras pagar la diferencia;
+las reducciones se programan al renovar. Una transición mixta, por ejemplo
+Completo/5 → Profesional/10, sigue aplicándose en conjunto al renovar: separar
+el aumento inmediato de la bajada posterior requiere otra decisión comercial.
 
 ## Revisión abierta · 02/11/2026
+
+**Histórico:** los precios y cupos de esta revisión quedan sustituidos por v3 arriba. La transición mixta sigue pendiente.
 
 Javier pide revisar importes y cupos, especialmente Completo/100 a 206,90 EUR,
 y permitir estudiar cantidades como 5, 6, 7, 8 o 9 alumnos. La tabla siguiente

@@ -1,5 +1,17 @@
 # Registro de decisiones vigentes
 
+**Catálogo profesional por unidades y descuento marginal · 02/11/2026:** Javier
+aprueba configurar en Stripe sandbox y Dev cualquier cupo entero de 5 a 100.
+Se conservan los importes de referencia en 5/10/20/50/100 y se añaden fronteras
+en 35 y 75 con coste marginal decreciente; no se retarifan todas las plazas al
+cruzar un tramo. El Básico con directorio mantiene +4,90 EUR/mes. Las cuatro
+ofertas de cinco se reutilizan; las nuevas ofertas no reprician contratos,
+pedidos ya preparados ni regalos de ADMIN. El ensayo activa herramientas y cupo:
+Pro/directorio por plan y asistente siguen pendientes y deben indicarse como
+tales en el portal y la web oculta. No se cambia la regla de transición mixta
+ni se autorizan pagos reales.
+[Catálogo, diferencias y fórmula](TRAINER_PRICING_DRAFT.md#catálogo-gradual-v3--02112026--autorizado-solo-para-pruebas).
+
 **Acceso a sesiones adaptativas tras retirar Pro: revisión abierta · 02/11/2026:**
 Javier aporta un vídeo donde una cuenta Free consulta un plan antiguo y comienza
 dos entrenamientos, y pide concretar si debe cerrarse todo el programa. El vídeo,

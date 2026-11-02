@@ -2,14 +2,53 @@
 
 **Estado vigente · 02/11/2026:** el portal y el servidor ya incorporan contratación
 y activación confirmada mediante Checkout/webhook **en pruebas**. El catálogo de
-ensayo descrito al final no fija precios de venta. Javier confirma el encaje del
-directorio en los niveles; importes/cupos y cobertura Pro continúan como propuesta
+ensayo descrito al final no fija precios de venta. Javier aprueba el catálogo
+gradual v3 únicamente para pruebas; cobertura Pro/fiscalidad continúan pendientes
 en [el borrador comercial](TRAINER_PRICING_DRAFT.md). Los cambios de plan y cupo
 se incorporan al ensayo con las reglas y límites del apartado final. No se activa producción.
 
 **Antecedentes COM-022 · 21–28/10/2026:** se comenzó con núcleo simulado y después
 adaptador Stripe, antes de integrar Checkout en portal. Esa descripción histórica
 no representa el estado actual ni una aprobación de tarifas definitivas.
+
+## Catálogo por unidades · 02/11/2026
+
+Oferta fija mensual por cada cupo de 5 a 100, con descuentos marginales desde
+11/21/36/51/76. Se mantienen cuatro ofertas originales de cinco y se crean
+380 precios nuevos en el sandbox, con las mismas cuatro familias de productos.
+La línea Stripe conserva cantidad 1 y precio cerrado; el cliente elige solo
+una identidad de oferta y el servidor valida importe, moneda, plazo y cupo.
+La capacidad también se muestra expresamente en Checkout.
+
+Las otras 16 ofertas anteriores dejan de poder comprarse por nuevas cuentas
+en Dev. Sus filas y sus precios Stripe se conservan para las suscripciones,
+pedidos y cambios ya confirmados. Un pedido propio pendiente puede retomarse
+con su oferta aunque deje de venderse; la pantalla usa el estado del pedido
+autorizado y el servidor mantiene la comprobación de propietario y MFA.
+No se reprician contratos ni se otorga Pro/directorio al cambiar el catálogo.
+
+[Fórmula, comparación entre niveles y límites](TRAINER_PRICING_DRAFT.md).
+[Exportación de los 96 cupos para la web oculta](commercial/trainer_pricing_sandbox_v3.json).
+
+### Comprobación del catálogo v3 · 02/11/2026
+
+- Leídos los 401 precios activos del sandbox: coinciden los 384 elegidos en
+  identificador, producto, importe entero, moneda, mensualidad, uso y modo de
+  prueba; los 380 nuevos también en su clave de catálogo. El conector oculta
+  los metadatos de los precios y no se usa su lectura como acreditación.
+- Dev `sxbxfjqgoddzhtcyhalw`: migración `20261102104303` y Edge `trainer-commerce`
+  v8 activa. El cambio de catálogo no escribe pedidos, contratos ni regalos.
+- Trainer: análisis limpio y 439 pruebas. Servidor: 53 pruebas y comprobación
+  TypeScript estricta. Curva/generador: cinco pruebas con las 96 cantidades,
+  puntos de frontera, monotonicidad, suplemento constante y mapeos inválidos.
+- SQL transaccional: catálogo por unidades, catálogo/calentamientos (384 ofertas),
+  cambios de plan, Checkout, suspensión, estado web y vínculos, todos con ROLLBACK.
+  Antes de aplicar se prueba además el catálogo completo dentro de una transacción
+  descartada. Una compra propia retirada conserva precio/cupo y es idempotente;
+  otra cuenta no puede comprar esa oferta ni leer el pedido ajeno.
+- La aceptación manual de una compra nueva de siete plazas y sus posteriores
+  cambios sigue pendiente; estas verificaciones no equivalen a ese pago real de
+  sandbox. Producción y cobros reales permanecen sin activar.
 
 ## 1. Base vigente y propuesta principal
 

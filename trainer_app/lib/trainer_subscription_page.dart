@@ -6,6 +6,8 @@ import 'package:trainer_access/authenticated_rpc.dart';
 import 'package:trainer_access/trainer_security.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'trainer_capacity_picker.dart';
+
 typedef SubscriptionJson = Map<String, dynamic>;
 
 abstract class TrainerSubscriptionRepository {
@@ -109,6 +111,7 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
   bool _busy = false;
   String? _error, _notice;
   Uri? _changePayment;
+  bool _capacityValid = true;
   final _scroll = ScrollController();
   @override
   void dispose() {
@@ -140,7 +143,12 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
     });
     try {
       final data = await widget.repository.status();
-      if (mounted) setState(() => _data = data);
+      if (mounted) {
+        setState(() {
+          _data = data;
+          _capacity ??= (data['subscription'] as Map?)?['capacity'] as int?;
+        });
+      }
     } catch (_) {
       if (mounted) {
         setState(
@@ -276,8 +284,15 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
     final selected = capacities.contains(_capacity)
         ? _capacity
         : capacities.firstOrNull;
+    final pendingOffers = offers.where((o) => o['id'] == pendingOffer).toList();
+    // La oferta puede dejar de venderse mientras existe un pedido propio abierto.
+    // El estado autorizado del servidor conserva su importe y su identidad.
     final visibleOffers = pendingOffer != null
-        ? offers.where((o) => o['id'] == pendingOffer).toList()
+        ? pendingOffers.isNotEmpty
+              ? pendingOffers
+              : [
+                  {...sub!, 'id': pendingOffer},
+                ]
         : catalogue.isEmpty
         ? offers
         : catalogue
@@ -491,22 +506,39 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
               canChoose &&
               pendingOffer == null &&
               catalogue.isNotEmpty) ...[
-            DropdownButtonFormField<int>(
-              key: ValueKey(selected),
-              initialValue: selected,
-              decoration: const InputDecoration(
-                labelText: 'Cupo de alumnos activos',
-              ),
-              items: [
-                for (final capacity in capacities)
-                  DropdownMenuItem(
-                    value: capacity,
-                    child: Text('Hasta $capacity alumnos'),
-                  ),
+            TrainerCapacityPicker(
+              value: selected!,
+              capacities: capacities,
+              enabled: !_busy,
+              onChanged: (value) => setState(() {
+                _capacityValid = value != null;
+                if (value != null) _capacity = value;
+              }),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final capacity in [5, 10, 20, 35, 50, 75, 100])
+                  if (capacities.contains(capacity))
+                    ActionChip(
+                      label: Text('$capacity'),
+                      onPressed: _busy
+                          ? null
+                          : () {
+                              FocusScope.of(context).unfocus();
+                              setState(() {
+                                _capacity = capacity;
+                                _capacityValid = true;
+                              });
+                            },
+                    ),
               ],
-              onChanged: _busy
-                  ? null
-                  : (value) => setState(() => _capacity = value),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Precio total mensual. Los alumnos adicionales cuestan menos por tramos; los anteriores no se vuelven a tarifar.',
             ),
             if (addon != null)
               SwitchListTile.adaptive(
@@ -520,6 +552,10 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
               ),
             const Text(
               'Ensayo de acceso y cupo. Las coberturas Pro y la presencia en el directorio de estos planes siguen pendientes de conectar.',
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Herramientas comunes en todos los niveles: ejercicios, sesiones y programas; agenda y citas; asignación, resultados, técnica, formularios y conversación. Para mí e inactivos no ocupan plaza. El alumno realiza lo pautado sin comprar Pro.',
             ),
             const SizedBox(height: 16),
           ],
@@ -540,13 +576,39 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
                           '${(offer['amount'] / 100).toStringAsFixed(2)} € / ${offer['interval'] == 'year' ? 'año' : 'mes'}',
                         ),
                         Text('${offer['capacity']} plazas de alumnos'),
+                        Text(
+                          '${((offer['amount'] as num) / 100 / (offer['capacity'] as num)).toStringAsFixed(2)} € por plaza contratada al mes',
+                        ),
+                        const SizedBox(height: 12),
+                        if ([
+                          'basic',
+                          'professional',
+                          'complete',
+                        ].contains(offer['plan_key']))
+                          Text(switch (offer['plan_key']) {
+                            'professional' => 'Oferta objetivo: directorio, Pro personal y asistencia del algoritmo para preparar propuestas revisadas por ti.',
+                            'complete' => 'Oferta objetivo: directorio, Pro personal, asistencia del algoritmo y Pro autónomo para tus alumnos activos.',
+                            _ => 'Planificación manual con las herramientas comunes. Directorio como extra opcional.',
+                          }),
+                        if ([
+                              'professional',
+                              'complete',
+                            ].contains(offer['plan_key']) ||
+                            offer['directory_option'] == true)
+                          const Text(
+                            'Las inclusiones de Pro/directorio por pago y el asistente profesional están pendientes. El ensayo activa herramientas y cupo.',
+                          ),
                         const Text(
                           'Importe simulado para probar el recorrido. No es una tarifa comercial.',
                         ),
                         const SizedBox(height: 16),
                         FilledButton(
+                          key: ValueKey('trainer-offer-${offer['id']}'),
                           onPressed:
                               _busy ||
+                                  (!_capacityValid &&
+                                      pendingOffer == null &&
+                                      catalogue.isNotEmpty) ||
                                   _data?['enabled'] != true ||
                                   (state == 'active' &&
                                       offer['id'] == sub?['offer_id'])
@@ -574,7 +636,7 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
             ),
           const SizedBox(height: 20),
           const Text(
-            'Esta suscripción es para tus herramientas profesionales. Pro personal y el pago de tus alumnos por tus servicios se gestionan por separado.',
+            'Esta suscripción es para tus herramientas profesionales. Las inclusiones Pro de la oferta objetivo siguen pendientes. El pago de tus alumnos por tus servicios se gestiona en un circuito separado.',
           ),
           Align(
             alignment: Alignment.centerLeft,
