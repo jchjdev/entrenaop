@@ -5,7 +5,7 @@ el importe previo a confirmar, ampliación tras pago proporcional, reducción al
 renovar y anulación de cambios. Se conservan alumnos, historial, regalo y
 suspensión administrativa; el exceso de cupo bloquea incorporaciones. El
 servidor Dev y las dos migraciones están aplicados. Análisis limpio y baterías:
-raíz 1.625 + una omisión previa, ADMIN 368 + dos previas, Trainer 435, UI común
+raíz 1.625 + una omisión previa, ADMIN 368 + dos previas, Trainer 436, UI común
 64 y servidor 53. SQL de cambios, contratación, catálogo, relaciones, suspensión
 y registro web con ROLLBACK. La vista previa real de Stripe no sustituye la
 aceptación manual completa de los cambios en sandbox. Único siguiente recorrido

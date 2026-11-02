@@ -877,6 +877,8 @@ calcula la diferencia; Flutter no envía importes ni concede derechos.
 - Se puede anular un cambio pendiente. Una renovación ya pagada se concilia,
   incluso si coincide con la anulación. La cancelación ordinaria de renovación
   sigue en «Gestionar suscripción»; conviene anular antes un cambio programado.
+  La suspensión profesional permite anular cambios, pero bloquea confirmar
+  nuevos cargos; no retira el acceso a la gestión de la suscripción.
 
 `orders.offer_id` conserva la compra original; `current_offer_id` identifica
 solo la cobertura acreditada. Cada transición guarda origen, destino, revisión,

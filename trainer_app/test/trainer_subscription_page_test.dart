@@ -4,12 +4,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 class SubscriptionFixture implements TrainerSubscriptionRepository {
+  bool suspended = false;
   final actions = <String>[];
   bool enabled = true;
   bool confirmed = false;
   bool pending = false;
   bool mfa = true;
-  bool suspended = false;
   @override
   Future<bool> assured() async => mfa;
   @override
@@ -120,6 +120,7 @@ class PlanChangeFixture extends PlanCatalogueFixture {
   @override
   Future<SubscriptionJson> status() async => {
     ...await super.status(),
+    'suspended': suspended,
     'subscription': {
       'id': 'order',
       'state': 'active',
@@ -168,6 +169,36 @@ class PlanChangeFixture extends PlanCatalogueFixture {
 }
 
 void main() {
+  testWidgets(
+    'la suspensión permite anular un cambio pero no confirmar nuevos cargos',
+    (tester) async {
+      final repo = PlanChangeFixture()..suspended = true;
+      repo.change = {
+        'id': 'change-one',
+        'state': 'quoted',
+        'kind': 'renewal',
+        'amount': 0,
+        'effective_at': '2099-11-30T12:00:00Z',
+        'offer': {'title': 'Básico reducido', 'capacity': 5, 'amount': 1500},
+      };
+      await tester.pumpWidget(
+        MaterialApp(home: TrainerSubscriptionPage(repository: repo)),
+      );
+      await tester.pumpAndSettle();
+      final confirm = find.widgetWithText(
+        FilledButton,
+        'Confirmar cambio en pruebas',
+      );
+      await tester.scrollUntilVisible(confirm, 250);
+      expect(tester.widget<FilledButton>(confirm).onPressed, isNull);
+      final cancel = find.text('Anular cambio');
+      await tester.ensureVisible(cancel);
+      await tester.pumpAndSettle();
+      await tester.tap(cancel);
+      await tester.pumpAndSettle();
+      expect(repo.operations, ['cancel_change']);
+    },
+  );
   Future<void> chooseChange(WidgetTester tester, PlanChangeFixture repo) async {
     await tester.pumpWidget(
       MaterialApp(home: TrainerSubscriptionPage(repository: repo)),

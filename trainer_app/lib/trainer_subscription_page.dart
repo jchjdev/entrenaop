@@ -409,7 +409,7 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
             ),
             const SizedBox(height: 20),
           ],
-          if (_data?['suspended'] != true && openChange) ...[
+          if (openChange) ...[
             EntrenaCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -454,7 +454,7 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
                     children: [
                       if (['quoted', 'processing'].contains(changeState))
                         FilledButton(
-                          onPressed: _busy
+                          onPressed: _busy || _data?['suspended'] == true
                               ? null
                               : () => _act(
                                   'confirm_change',
