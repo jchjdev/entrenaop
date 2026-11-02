@@ -138,12 +138,18 @@ class _ProOfferPageState extends State<ProOfferPage> {
       ),
       if (!(widget.purchases?.enabled ?? false))
         const OutlinedButton(onPressed: null, child: Text('Restaurar compras')),
-      const Wrap(
+      Wrap(
         alignment: WrapAlignment.center,
         spacing: 12,
         children: [
-          TextButton(onPressed: null, child: Text('Condiciones')),
-          TextButton(onPressed: null, child: Text('Privacidad')),
+          TextButton(
+            onPressed: () => context.push('/terms'),
+            child: const Text('Condiciones'),
+          ),
+          TextButton(
+            onPressed: () => context.push('/privacy'),
+            child: const Text('Privacidad'),
+          ),
         ],
       ),
       const SizedBox(height: 8),

@@ -170,10 +170,11 @@ su límite de evidencia; no se convierten en funcionalidades por desarrollar.
    de suscripciones de la tienda desde Mi suscripción. El panel actual consulta
    acceso y prueba compras; la gestión de regalos del admin no sustituye esa
    operación para quien paga.
-3. **Condiciones y privacidad:** ambos botones de `ProOfferPage` tienen
-   `onPressed: null`, incluso cuando Test Store está habilitado. Falta enlazar
-   documentos definitivos. Esta constatación de interfaz no acredita contenido
-   contractual ni una revisión jurídica.
+3. **Condiciones y privacidad:** desde la revisión de Ajustes del 02/11 ambos
+   botones abren documentos públicos de la versión de pruebas, también accesibles
+   sin cuenta. Ya no están deshabilitados. Sigue pendiente completar/revisar los
+   documentos definitivos para la contratación real; esta información no acredita
+   un cierre jurídico ni habilita ventas.
 4. **Recuperación automática de conciliación:** existe consulta al proveedor al
    comprar/restaurar o pulsar la sincronización. Al volver a la app,
    `ProAccessBuilder` solo lee `get_my_pro_access` y no existe un barrido programado

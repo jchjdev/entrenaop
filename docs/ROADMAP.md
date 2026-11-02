@@ -1,5 +1,17 @@
 # Roadmap de EntrenaOP
 
+**Deportista · Ajustes y ayuda, primera entrega · 02/11/2026:** Cuenta y Pro,
+Ayuda e Información conservan el diseño y los procesos existentes; FAQ, soporte
+por borrador revisable, preferencias reales y documentos informativos ya tienen
+recorrido. `ayuda@entrenaop.es` creado como alias del buzón operativo. Análisis
+limpio, 105 pruebas focales y **1.702 correctas/una omisión previa** en raíz.
+Faltan instalación iPhone, revisión jurídica definitiva y los destinos externos
+todavía sin configurar. No se activa contratación nativa ni descuento militar.
+**Único siguiente bloque de datos de Ajustes:** definir e implementar eliminación
+de cuenta con conservación/anónimización, sesiones/conexiones y datos compartidos;
+no sustituirlo por borrar preferencias ni enviar un correo.
+[Alcance y límites](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#ajustes-ayuda-y-contacto--02112026).
+
 **Deportista · inicios adaptativos sin Pro cerrados en Dev · 02/11/2026:** Javier
 elige conservar consulta e historial y exigir Pro vigente para nuevos inicios;
 una ejecución abierta puede terminarse. La migración `20261102103402` protege el

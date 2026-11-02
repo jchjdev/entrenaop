@@ -1,5 +1,64 @@
 # Navegación del alumno y preparador · TRN-025 · 22/10/2026
 
+## Ajustes, ayuda y contacto · 02/11/2026
+
+Javier autoriza llevar la propuesta a la app con su diseño y arquitectura.
+Perfil conserva identidad, evolución, conexiones y acceso profesional. Ajustes
+agrupa **Cuenta y Pro**, **Ayuda** e **Información** mediante EntrenaCard y
+ProfileOptionTile, con versión y cerrar sesión al final.
+
+- Mi suscripción conserva el acceso efectivo y las operaciones de prueba que
+  ya existían; no concede Pro desde Flutter ni activa compras nativas reales.
+- Notificaciones reutiliza StudentPushSettings, sus preferencias y el mismo
+  coordinador por cuenta/dispositivo. La ausencia de transporte o servidor se
+  indica y se permite volver a comprobar; no se guardan interruptores ficticios.
+- FAQ explica Preparación/plan adaptativo, Programas, consulta antes de comenzar,
+  pérdida de Pro, preparador y conexiones, con destinos y retorno reales.
+- Informar de un problema prepara un `mailto` con texto revisable. El usuario
+  elige si incorpora versión, revisión y plataforma; no se adjuntan sesiones,
+  conversaciones, identificadores de cuenta ni credenciales. Si no abre el
+  correo, conserva el texto y permite copiar contacto/mensaje y reintentar.
+  Renovar la sesión conserva el borrador; cambiar de propietario lo descarta.
+- Privacidad y Condiciones abren información de la versión de pruebas, también
+  desde la oferta Pro y sin iniciar sesión, sin lecturas de datos privados.
+  No constituyen un cierre jurídico ni las condiciones definitivas de venta.
+
+**Correo autorizado y creado:** `ayuda@entrenaop.es` es alias de
+`javier.charlez@entrenaop.es`, confirmado en el panel de Hostinger y dentro del
+plan existente, con uso 1/5 de alias. No requiere otra contraseña. Los MX públicos
+apuntan a mx1/mx2.hostinger.com. Esto acredita configuración y encaminamiento,
+no una recepción extremo a extremo de un mensaje de prueba. No se enviaron
+correos ni se cambiaron DNS, credenciales o suscripciones del alojamiento.
+
+**Fronteras:** AppSupportResources y OpenSupportLink son puertos pequeños;
+PlatformAppSupport compone los destinos y el lanzador externo. El router inyecta
+ambos, aísla formularios por propietario y abre documentos públicos estáticos.
+No se añaden paquetes, tablas, RPC, servicios de tickets ni lógica de Pro local.
+
+**Opciones condicionadas:** APP_INSTAGRAM_URL, APP_RATING_URL y
+APP_PROMOTION_REDEMPTION_URL sólo aceptan HTTPS sin credenciales. Vacías ocultan
+las filas: no se inventa un perfil social, ficha de tienda ni promoción activa.
+La implementación permite conectar esos destinos cuando estén aprobados; el
+descuento militar y sus condiciones continúan pendientes en PRODUCT/PRO_LAUNCH.
+
+**Límite de cuenta:** no existe endpoint de baja reutilizable. Hay referencias
+restrictivas en clientes/pedidos/recibos, directorio, denuncias y contactos, además
+de objetos Storage y datos compartidos. Borrar Auth o preferencias no implementa
+la baja. El siguiente bloque de datos debe definir conservación/anónimización,
+limpieza de conexiones/Storage/sesiones y suscripción externa, con contrato de
+servidor y pruebas aisladas. Un correo no se presenta como eliminación efectiva.
+
+**Comprobación del 02/11:** análisis global limpio, 105 pruebas focales de Perfil,
+Pro y router real, y batería completa de raíz con **1.702 correctas y una omisión
+previa**. Incluye activación/guardado de recordatorios con el coordinador actual,
+FAQ y retorno, soporte vacío/error/reintento/copia/diagnóstico opt-in, renovación
+y cambio de cuenta, documentos públicos sin consultas privadas y enlaces desde
+Pro a 320 px/texto 2×. Render de Ajustes con fuentes reales revisado; es un widget,
+no una instalación iOS. Capturas locales en build/performance_v2_review y prueba
+del alias en build/profile_settings_review, fuera de Git. No se han modificado
+ADMIN, Trainer, paquetes compartidos, SQL ni producción de las aplicaciones.
+La creación del alias del dominio sí corresponde a la petición expresa de Javier.
+
 ## Filtro compartido al añadir sesiones · 02/11/2026
 
 «Añadir entrenamiento al día» usa el filtro existente de Biblioteca. Su

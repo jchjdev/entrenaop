@@ -43,7 +43,11 @@ abre su vista previa y no comienza al consultarla.
 
 **Ajuste de Perfil aprobado · 01/11/2026:** Perfil conserva identidad, evolución
 y acceso directo a Dispositivos y conexiones. El engranaje abre Ajustes para
-suscripción, información de la app y salida; Editar perfil reúne nombre y fecha
+suscripción, notificaciones, FAQ, soporte, información de uso/privacidad, versión
+y salida. Desde el 02/11 se utiliza `ayuda@entrenaop.es`, alias del buzón operativo.
+Los documentos visibles corresponden a pruebas; contratación nativa, condiciones
+definitivas, descuento militar y eliminación de cuenta conservan sus límites.
+Editar perfil reúne nombre y fecha
 de nacimiento, manteniendo la foto editable desde el avatar. Entrar como
 preparador sustituye el selector global y conserva avisos y contexto personal y
 profesional separados. [Criterios vigentes](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#revisión-de-perfil-y-acceso-profesional--01112026).

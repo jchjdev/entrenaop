@@ -1,5 +1,17 @@
 # Registro de decisiones vigentes
 
+**Ajustes, ayuda y contacto de EntrenaOP · 02/11/2026:** Javier autoriza completar
+Ajustes manteniendo Perfil deportivo y dispositivos a mano, con las cards del
+proyecto. Cuenta y Pro, Ayuda e Información reutilizan suscripción, preferencias
+de avisos, versión y salida. Se añaden FAQ y borrador de soporte revisable, con
+diagnóstico mínimo opcional y copia/reintento. Autoriza crear `ayuda@entrenaop.es`:
+se crea como alias del buzón operativo de Javier en Hostinger, sin nuevo plan.
+Los documentos públicos de la versión de pruebas se leen también desde Pro y
+antes de identificarse. Instagram, valoración y canje sólo aparecen con destino
+configurado; no se aprueban precios militares, acreditación ni cobros reales.
+La eliminación de cuenta no se simula: necesita un contrato de datos propio.
+[Entrega y límites](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#ajustes-ayuda-y-contacto--02112026).
+
 **Filtro de Añadir entrenamiento al día heredado de Biblioteca · 02/11/2026:**
 Javier pide filtrar el selector y especifica reutilizar el filtro existente.
 Se comparte la composición de búsqueda, tipo y duración de Biblioteca, junto

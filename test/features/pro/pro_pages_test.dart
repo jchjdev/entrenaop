@@ -2,6 +2,7 @@ import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop/features/pro/domain/pro_offer.dart';
 import 'package:entrenaop/features/pro/presentation/pages/pro_pages.dart';
 import 'package:entrenaop/features/pro/presentation/widgets/pro_discovery_card.dart';
+import 'package:entrenaop/features/profile/presentation/pages/profile_legal_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -26,6 +27,14 @@ void main() {
     final router = GoRouter(
       initialLocation: initial,
       routes: [
+        for (final path in ['/terms', '/privacy'])
+          GoRoute(
+            path: path,
+            builder: (_, _) => ProfileLegalPage(
+              privacy: path == '/privacy',
+              contactEmail: 'ayuda@entrenaop.es',
+            ),
+          ),
         GoRoute(
           path: '/plan',
           builder: (_, _) => const Scaffold(
@@ -94,6 +103,36 @@ void main() {
       await tester.pumpAndSettle();
     }
     await capturePerformanceWidget(tester, name);
+  }
+
+  for (final (label, path) in [
+    ('Condiciones', '/terms'),
+    ('Privacidad', '/privacy'),
+  ]) {
+    testWidgets('Pro abre $label y vuelve a su oferta sin iniciar compras', (
+      tester,
+    ) async {
+      final router = await mount(
+        tester,
+        initial: '/pro',
+        size: const Size(320, 850),
+        scale: 2,
+      );
+      await show(tester, find.text(label));
+      await tester.tap(find.text(label));
+      await tester.pumpAndSettle();
+      expect(router.state.uri.path, path);
+      expect(
+        find.text(
+          'Información de la versión de pruebas · 2 de noviembre de 2026',
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+      expect(router.state.uri.path, '/pro');
+      expect(tester.takeException(), isNull);
+    });
   }
 
   testWidgets('el candado conserva el contexto y cerrar devuelve al origen', (

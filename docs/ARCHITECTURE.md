@@ -1,5 +1,14 @@
 # Arquitectura de EntrenaOP
 
+**Ajustes y soporte · 02/11/2026:** AppSupportResources y OpenSupportLink separan
+los destinos públicos del lanzador de plataforma. El router compone recursos,
+launchUrl y diagnóstico mínimo; no se añaden capas ni paquetes para un borrador
+de correo. Las subrutas de Ajustes conservan estado en una renovación y remontan
+por propietario al cambiar de cuenta. Notificaciones reutiliza su coordinador y
+persistencia originales. `/privacy` y `/terms` son documentos informativos
+públicos estáticos, sin datos de cuenta. No amplían permisos de otros recursos.
+El correo no implementa la baja de cuenta; sigue necesitando un contrato de datos.
+
 **Inicio adaptativo y pérdida de Pro · 02/11/2026:** la guarda comercial se
 aplica al núcleo `trainer_private.start_workout_execution` después de la
 autorización y la recuperación de una ejecución abierta, antes del único

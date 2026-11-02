@@ -51,6 +51,120 @@ void main() {
     sl.registerFactory<WorkoutHistoryCubit>(_History.new);
   }
 
+  for (final entry in [
+    ('Preguntas frecuentes', 'help'),
+    ('Notificaciones', 'notifications'),
+    ('Informar de un problema', 'support'),
+  ]) {
+    testWidgets(
+      'Ajustes abre ${entry.$2} con router real y conserva el retorno',
+      (tester) async {
+        final auth = _Auth();
+        final dates = _BirthDates(auth);
+        final router = await mount(
+          tester,
+          auth,
+          dates,
+          path: '/profile/settings',
+        );
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.text(entry.$1));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(entry.$1));
+        await tester.pumpAndSettle();
+        expect(router.config.state.uri.path, '/profile/settings/${entry.$2}');
+        expect(find.byKey(ValueKey('settings-${entry.$2}-A')), findsOneWidget);
+        expect(find.byType(NavigationBar), findsNothing);
+        await tester.tap(find.byType(BackButton));
+        await tester.pumpAndSettle();
+        expect(router.config.state.uri.path, '/profile/settings');
+        expect(find.text('Cuenta y Pro'), findsOneWidget);
+        expect(dates.reads, isEmpty);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
+  testWidgets(
+    'el borrador de soporte sobrevive a renovar A y se reinicia al cambiar a B',
+    (tester) async {
+      final auth = _Auth();
+      final dates = _BirthDates(auth);
+      await mount(tester, auth, dates, path: '/profile/settings/support');
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byType(TextFormField),
+        'Incidencia privada de A',
+      );
+      await tester.ensureVisible(find.text('Incluir datos de la instalación'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Incluir datos de la instalación'));
+      await tester.pumpAndSettle();
+      final original = tester.element(
+        find.byKey(const ValueKey('settings-support-A')),
+      );
+      auth.loading();
+      await tester.pump();
+      auth.setUser('A', renewed: true);
+      await tester.pumpAndSettle();
+      expect(
+        tester.element(find.byKey(const ValueKey('settings-support-A'))),
+        same(original),
+      );
+      expect(
+        tester
+            .widget<TextFormField>(find.byType(TextFormField))
+            .controller!
+            .text,
+        'Incidencia privada de A',
+      );
+      expect(
+        tester.widget<CheckboxListTile>(find.byType(CheckboxListTile)).value,
+        isTrue,
+      );
+      auth.setUser('B');
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('settings-support-A')), findsNothing);
+      expect(find.byKey(const ValueKey('settings-support-B')), findsOneWidget);
+      expect(
+        tester
+            .widget<TextFormField>(find.byType(TextFormField))
+            .controller!
+            .text,
+        isEmpty,
+      );
+      expect(
+        tester.widget<CheckboxListTile>(find.byType(CheckboxListTile)).value,
+        isFalse,
+      );
+      expect(find.text('Incidencia privada de A'), findsNothing);
+      expect(dates.reads, isEmpty);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  for (final path in ['/privacy', '/terms']) {
+    testWidgets(
+      '$path es público y no consulta datos privados al entrar como invitado',
+      (tester) async {
+        final auth = _Auth()..guest();
+        final dates = _BirthDates(auth);
+        final router = await mount(tester, auth, dates, path: path);
+        await tester.pumpAndSettle();
+        expect(router.config.state.uri.path, path);
+        expect(
+          find.text(path == '/privacy' ? 'Privacidad' : 'Condiciones de uso'),
+          findsWidgets,
+        );
+        expect(find.text('Deportista A'), findsNothing);
+        expect(find.byType(NavigationBar), findsNothing);
+        expect(dates.reads, isEmpty);
+        expect((sl<ProfilePhotoRepository>() as _Photos).reads, isEmpty);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   testWidgets('Ajustes vuelve a Perfil y los dispositivos siguen a mano', (
     tester,
   ) async {
@@ -282,6 +396,7 @@ class _Auth extends Cubit<AuthState> implements AuthCubit {
   String owner = 'A';
 
   void loading() => emit(AuthLoading());
+  void guest() => emit(AuthUnauthenticated());
 
   void setUser(String id, {bool renewed = false}) {
     owner = id;
@@ -328,13 +443,16 @@ class _Names implements ProfileNameRepository {
 class _Photos implements ProfilePhotoRepository {
   _Photos(this.auth);
   final _Auth auth;
+  final reads = <String>[];
 
   @override
   String get ownerId => auth.owner;
 
   @override
-  Future<ProfilePhotoState> own() async =>
-      const ProfilePhotoState(path: null, revision: 0);
+  Future<ProfilePhotoState> own() async {
+    reads.add(auth.owner);
+    return const ProfilePhotoState(path: null, revision: 0);
+  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

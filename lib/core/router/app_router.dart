@@ -89,6 +89,11 @@ import 'package:entrenaop/features/physical_assessment/data/repositories/fas_per
 import 'package:entrenaop/features/profile/presentation/pages/profile_page.dart';
 import 'package:entrenaop/features/profile/presentation/pages/edit_profile_page.dart';
 import 'package:entrenaop/features/profile/presentation/pages/profile_settings_page.dart';
+import 'package:entrenaop/features/profile/data/platform_app_support.dart';
+import 'package:entrenaop/features/profile/presentation/pages/profile_help_page.dart';
+import 'package:entrenaop/features/profile/presentation/pages/profile_notifications_page.dart';
+import 'package:entrenaop/features/profile/presentation/pages/profile_support_page.dart';
+import 'package:entrenaop/features/profile/presentation/pages/profile_legal_page.dart';
 import 'package:entrenaop/features/pro/domain/pro_offer.dart';
 import 'package:entrenaop/features/pro/presentation/pages/pro_pages.dart';
 import 'package:entrenaop/features/pro/domain/pro_access.dart';
@@ -183,6 +188,10 @@ class AppRouter {
       refreshListenable: _notifier,
       redirect: (context, state) {
         final authState = authCubit.state;
+        // Documentos públicos, sin datos de cuenta, también antes de registrarse.
+        if (state.uri.path == '/privacy' || state.uri.path == '/terms') {
+          return null;
+        }
         if (authState is AuthPasswordRecovery) {
           return state.matchedLocation == '/reset-password'
               ? null
@@ -219,6 +228,20 @@ class AppRouter {
         return null;
       },
       routes: [
+        _workflowRoute(
+          path: '/privacy',
+          builder: (_, _) => ProfileLegalPage(
+            privacy: true,
+            contactEmail: PlatformAppSupport.resources.email,
+          ),
+        ),
+        _workflowRoute(
+          path: '/terms',
+          builder: (_, _) => ProfileLegalPage(
+            privacy: false,
+            contactEmail: PlatformAppSupport.resources.email,
+          ),
+        ),
         _workflowRoute(
           path: '/contacts',
           builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
@@ -1164,8 +1187,40 @@ class AppRouter {
                                 ? const SizedBox.shrink()
                                 : ProfileSettingsPage(
                                     key: ValueKey('settings-${auth.user.id}'),
+                                    resources: PlatformAppSupport.resources,
+                                    openLink: PlatformAppSupport.open,
                                   ),
                           ),
+                      routes: [
+                        _workflowRoute(
+                          path: 'help',
+                          builder: (_, _) => _settingsChild(
+                            authCubit,
+                            'help',
+                            const ProfileHelpPage(),
+                          ),
+                        ),
+                        _workflowRoute(
+                          path: 'notifications',
+                          builder: (_, _) => _settingsChild(
+                            authCubit,
+                            'notifications',
+                            const ProfileNotificationsPage(),
+                          ),
+                        ),
+                        _workflowRoute(
+                          path: 'support',
+                          builder: (_, _) => _settingsChild(
+                            authCubit,
+                            'support',
+                            ProfileSupportPage(
+                              resources: PlatformAppSupport.resources,
+                              openLink: PlatformAppSupport.open,
+                              loadDiagnostic: PlatformAppSupport.diagnostic,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     materialAppRoute(
                       path: 'trainer',
@@ -1682,6 +1737,19 @@ class AppRouter {
       ],
     );
   }
+
+  Widget _settingsChild(AuthCubit authCubit, String name, Widget child) =>
+      BlocBuilder<AuthCubit, AuthState>(
+        bloc: authCubit,
+        buildWhen: (_, next) =>
+            next is AuthAuthenticated || next is AuthUnauthenticated,
+        builder: (_, auth) => auth is AuthAuthenticated
+            ? KeyedSubtree(
+                key: ValueKey('settings-$name-${auth.user.id}'),
+                child: child,
+              )
+            : const SizedBox.shrink(),
+      );
 
   Widget _coachWorkspace(String owner, Widget child) {
     // Las composiciones sin transporte (por ejemplo pruebas de rutas aisladas)
