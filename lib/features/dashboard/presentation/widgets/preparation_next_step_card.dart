@@ -24,6 +24,13 @@ class PreparationNextStepCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (:icon, :title, :description, :action, :route) = switch (nextStep) {
+      _ when program?.proRequired == true => (
+        icon: Icons.lock_outline_rounded,
+        title: 'Pro inactivo · Solo consulta',
+        description: 'Tu preparación y tus resultados se conservan. Necesitas Pro para empezar más entrenamientos del plan adaptativo.',
+        action: 'Consultar mi plan',
+        route: '/plan/goal/${program!.goalId}/plan',
+      ),
       _ when savedGoalCount > 1 && program?.isCurrent != true => (
         icon: Icons.flag_outlined,
         title: 'Elige una preparación',

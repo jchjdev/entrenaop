@@ -1,5 +1,18 @@
 # Arquitectura de EntrenaOP
 
+**Inicio adaptativo y pérdida de Pro · 02/11/2026:** la guarda comercial se
+aplica al núcleo `trainer_private.start_workout_execution` después de la
+autorización y la recuperación de una ejecución abierta, antes del único
+INSERT. Por ello cubre agenda, inicio revisado, plantilla y dispositivos sin
+alterar las asignaciones del preparador ni los recursos Free. `pro_required`
+se expone como metadato de lectura en preview, setup y resumen, fuera del hash
+de prescripción y del estado deportivo persistido. Los adaptadores lo traducen
+a `proRequired`; el cliente presenta consulta, bloquea nuevos inicios y convierte
+una denegación comercial durante el inicio en una vista de lectura sin reintento.
+Revalidar el acceso no comienza automáticamente una sesión. No hay concesiones
+locales, borrados de historial ni cambios al algoritmo o a la intención guardada.
+[Contrato y verificación](PRO_LAUNCH.md#implementación-y-comprobación-del-0211).
+
 **Entrenar y consulta adaptativa · 02/11/2026:** `TrainingHubPage` conserva su
 `TabController` y `DashboardCubit`; presenta Preparación, Programas y
 Disponibilidad. La gestión se desplaza a `/plan/preparations` y conserva todos

@@ -2,12 +2,18 @@
 
 ## Revisión del inicio adaptativo sin Pro · 02/11/2026
 
+**Criterio elegido y aplicado en Dev:** Javier confirma conservar consulta e
+historial y bloquear nuevos inicios adaptativos sin Pro efectivo vigente.
+Las ejecuciones ya abiertas pueden continuar y finalizar. Activación, cálculo,
+publicación y adaptación mantienen sus guardas anteriores. Se conserva la
+separación entre permisos del preparador, programas editoriales y recursos Free.
+
 Javier aporta una grabación de 79,96 segundos: jcharjim consulta su preparación
 con la tarjeta «Pausada», entra en semanas de octubre y comienza tanto Carrera
 fácil como Entrenamiento combinado. Reabre el criterio comercial y propone
 valorar un cierre completo del programa al perder Pro.
 
-**Hechos comprobados mediante vídeo, código y lecturas de entrenaop-dev:**
+**Diagnóstico previo al arreglo, comprobado mediante vídeo, código y Dev:**
 
 - La cuenta tiene acceso Pro efectivo falso según `has_pro_access`, además de
   perfil Free. Existe una concesión manual de desarrollo anterior retirada;
@@ -32,13 +38,11 @@ no cubrió suficientemente el inicio tras perder Pro. Los ensayos anteriores de
 caducidad comprobaban conservación de estado, parada de generación y cuotas;
 eso no acredita bloqueo de nuevos inicios de pautas conservadas.
 
-**Propuesta pendiente de confirmar:** mantener consulta del plan, pautas
-conservadas y resultados como lectura; exigir Pro efectivo vigente para empezar
-otra sesión del algoritmo, generar, revisar o adaptar; permitir continuar y
-cerrar una ejecución ya iniciada. La alternativa es conservar sólo resultados
-e historial y cerrar también la consulta del plan. Ninguna opción borra datos.
-La consulta completa fue aprobada previamente: no se retira sin concretar ese
-cambio comercial con Javier.
+La opción elegida mantiene consulta del plan, pautas conservadas y resultados
+como lectura; exige Pro efectivo vigente para empezar otra sesión del algoritmo,
+generar, revisar o adaptar y permite continuar y cerrar una ejecución ya iniciada.
+Javier descarta cerrar la consulta. No se borran ni cancelan pautas para simular
+el bloqueo comercial, ni se cambia la pausa voluntaria o la intención automática.
 
 La corrección debe distinguir bloqueo comercial de pausa voluntaria y mostrar
 el mismo acceso efectivo en Inicio, Entrenar, consulta y agenda. El servidor
@@ -49,9 +53,48 @@ preparador. Cancelar una renovación conserva Pro hasta su vencimiento efectivo.
 La futura verificación necesita Pro vigente, retirada/caducidad, sesión antigua
 pendiente, ejecución ya abierta, recuperación de Pro y entradas alternativas.
 
-Esta revisión sólo consulta Dev y registra el diagnóstico. No modifica usuarios,
-concesiones, sesiones, funciones, permisos ni producción. La elección del alcance
-comercial y su implementación continúan pendientes.
+### Implementación y comprobación del 02/11
+
+`20261102103402_adaptive_session_start_requires_pro.sql` incorpora la guarda al
+único núcleo que inserta ejecuciones, después de comprobar acceso y recuperar
+una ejecución propia abierta. No introduce una función alternativa sin guarda.
+La vista previa añade `pro_required` fuera del hash de prescripción: retirar Pro
+impide el inicio sin falsear un cambio de receta. La consulta de preparación y
+su resumen exponen el mismo metadato; el estado deportivo guardado se conserva.
+El cliente bloquea Comenzar, ofrece Ver Pro y actualiza el acceso al volver;
+una retirada entre lectura e inicio transforma la vista en consulta sin reintento.
+Inicio, Entrenar, plan y calendario distinguen el bloqueo comercial de la pausa.
+
+Una actividad de reloj recibida después de perder Pro no abre otra ejecución
+adaptativa si aún no existía: se conserva la actividad original del dispositivo.
+Las ejecuciones ya abiertas sí permiten la continuidad y el cierre. Las pruebas
+de Apple y Garmin mantienen sus contratos para los demás casos.
+
+Verificación en **entrenaop-dev**, sin tocar producción:
+
+- Historial CLI local/Dev coincidente; migración `20261102103402` aplicada.
+- Cinco pruebas SQL con fixtures aislados y `ROLLBACK`: nuevo contrato de Pro,
+  vista previa, descarte, Apple completion y Garmin automatic completion. Cubren
+  Pro vigente, retirada/caducidad, consulta, tres entradas, revocación entre lectura
+  e inicio, continuidad/cierre reales, descarte, propiedad y servicios Free.
+- En jcharjim, comprobación transaccional de las dos sesiones pendientes:
+  **seis inicios rechazados por `pro_required`, ninguna ejecución creada** y
+  consulta de las dos pautas conservada. No se modifican concesiones ni sesiones.
+- `flutter analyze` limpio y batería completa de raíz: **1.671 correctas y una
+  omisión previa**. Ocho pruebas nuevas de la consulta Free, seis de inicio/vista
+  previa y una de Inicio. Después se comprueba también la vista previa Free a
+  320 px y texto 2× dentro de su batería focal de 18 pruebas correctas.
+- Asesores de seguridad consultados. Existen avisos generales de configuración
+  y funciones definer del proyecto; esta entrega comprueba las ACL afectadas y
+  no presenta esos avisos como una auditoría global resuelta. El núcleo y
+  `require_pro_access` siguen sin EXECUTE directo para `authenticated`, y éste
+  tampoco tiene INSERT en `workout_executions`.
+
+El bloqueo ya protege a los clientes instalados que usen Dev. Los nuevos textos
+y controles de la app requieren compilar e instalar la revisión desde Mac y
+aceptar el recorrido físico. Los ensayos deportivos antiguos que conceden Pro
+temporalmente a todos los perfiles no se ejecutan sobre las cuentas reales;
+la nueva prueba comercial utiliza exclusivamente fixtures propios aislados.
 
 **COM-021 · 28/10/2026:** referencia general actual 3,99 €/mes y 39,99 €/año;
 la presentación se actualiza y el precio del proveedor sigue gobernando la compra.

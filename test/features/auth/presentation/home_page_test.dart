@@ -146,6 +146,10 @@ void main() {
           builder: (_, _) => const Scaffold(body: Text('Preparación elegida')),
         ),
         GoRoute(
+          path: '/plan/goal/:id/plan',
+          builder: (_, _) => const Scaffold(body: Text('Plan en consulta')),
+        ),
+        GoRoute(
           path: '/plan/goal/:id/training',
           builder: (_, _) => const Scaffold(body: Text('Revisión')),
         ),
@@ -547,6 +551,36 @@ void main() {
       await tester.tap(find.text('Ver preparaciones'));
       await tester.pumpAndSettle();
       expect(router.state.uri.path, '/plan/preparations');
+    },
+  );
+  testWidgets(
+    'Inicio Free consulta el plan conservado sin llevar a activar ni prometer continuidad',
+    (tester) async {
+      final router = await mount(
+        tester,
+        PreparationOverview(
+          assessments: const [],
+          preferences: null,
+          goals: const [goal],
+          weekStart: week,
+          weeklyWorkouts: const [],
+          programs: const [
+            AdaptiveProgramProgress(
+              goalId: 'goal-1',
+              name: 'Mejora FAS',
+              status: 'paused',
+              message: 'Mensaje deportivo anterior.',
+              proRequired: true,
+            ),
+          ],
+        ),
+      );
+      expect(find.text('Pro inactivo · Solo consulta'), findsOneWidget);
+      expect(find.text('Mensaje deportivo anterior.'), findsNothing);
+      await tester.ensureVisible(find.text('Consultar mi plan'));
+      await tester.tap(find.text('Consultar mi plan'));
+      await tester.pumpAndSettle();
+      expect(router.state.uri.path, '/plan/goal/goal-1/plan');
     },
   );
 }

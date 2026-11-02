@@ -25,7 +25,8 @@ class AdaptivePlanPage extends StatelessWidget {
         final cubit = context.read<AdaptivePlanCubit>();
         final detail = state.detail;
         final publishedSessions = _publishedSessions(state);
-        final visibleWorkouts = state.paused
+        final proRequired = state.setup?.proRequired == true;
+        final visibleWorkouts = state.paused && !proRequired
             ? state.workouts.where(
                 (item) => item.status != ScheduledWorkoutStatus.planned,
               )
@@ -69,7 +70,9 @@ class AdaptivePlanPage extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               Text(
-                                state.paused
+                                setup.proRequired
+                                    ? 'Pro inactivo · Solo consulta'
+                                    : state.paused
                                     ? 'PLAN ADAPTATIVO · PAUSADO'
                                     : state.needsReview
                                     ? 'PLAN ADAPTATIVO · PENDIENTE DE REVISIÓN'
@@ -95,7 +98,9 @@ class AdaptivePlanPage extends StatelessWidget {
                               ],
                               const SizedBox(height: 12),
                               Text(
-                                state.paused
+                                setup.proRequired
+                                    ? 'Conservas tu preparación, lo pautado y tus resultados. Necesitas Pro vigente para comenzar otro entrenamiento adaptativo.'
+                                    : state.paused
                                     ? 'Conservamos tu preparación y tus resultados. Puedes consultar lo pautado; retomarlo requiere revisar la propuesta.'
                                     : setup.programState['message']
                                               as String? ??
@@ -114,7 +119,9 @@ class AdaptivePlanPage extends StatelessWidget {
                                   .clamp(48, 160)
                                   .toDouble(),
                           decoration: InputDecoration(
-                            labelText: state.paused
+                            labelText: setup.proRequired
+                                ? 'Pautas conservadas'
+                                : state.paused
                                 ? 'Pauta anterior'
                                 : 'Semana del plan',
                           ),
@@ -141,6 +148,7 @@ class AdaptivePlanPage extends StatelessWidget {
                             _PublishedSessionCard(
                               session: session,
                               paused: state.paused,
+                              proRequired: setup.proRequired,
                             ),
                             const SizedBox(height: 12),
                           ],
@@ -163,6 +171,7 @@ class AdaptivePlanPage extends StatelessWidget {
                           _SessionCard(
                             workout: workout,
                             paused: state.paused,
+                            proRequired: setup.proRequired,
                             onReturn: cubit.load,
                           ),
                           const SizedBox(height: 12),
@@ -205,6 +214,10 @@ class _PlanAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final needsSetup =
+        state.setup?.proRequired == true &&
+        (state.setup?.programState['status'] == null ||
+            state.setup?.programState['status'] == 'draft');
     Widget action(bool? isPro) => FilledButton.icon(
       onPressed: () async {
         final cubit = context.read<AdaptivePlanCubit>();
@@ -215,11 +228,13 @@ class _PlanAction extends StatelessWidget {
       },
       icon: Icon(state.paused ? Icons.play_arrow_rounded : Icons.tune_rounded),
       label: Text(
-        '${state.paused
+        '${needsSetup
+            ? 'Configurar mi plan'
+            : state.paused || state.setup?.proRequired == true
             ? 'Retomar mi plan'
             : state.needsReview
             ? 'Revisar mi plan'
-            : 'Gestionar mi plan'}${isPro == false ? ' · Pro' : ''}',
+            : 'Gestionar mi plan'}${isPro == false || state.setup?.proRequired == true ? ' · Pro' : ''}',
       ),
     );
     // Un fallo al comprobar derechos sólo afecta a la acción comercial: la
@@ -237,10 +252,12 @@ class _SessionCard extends StatelessWidget {
   const _SessionCard({
     required this.workout,
     required this.paused,
+    required this.proRequired,
     required this.onReturn,
   });
   final ScheduledWorkout workout;
   final bool paused;
+  final bool proRequired;
   final Future<void> Function() onReturn;
 
   @override
@@ -253,7 +270,12 @@ class _SessionCard extends StatelessWidget {
       ScheduledWorkoutStatus.abandoned => 'Abandonado',
       ScheduledWorkoutStatus.skipped => 'Omitido',
       ScheduledWorkoutStatus.inProgress => 'En curso',
-      ScheduledWorkoutStatus.planned => paused ? 'Pauta anterior' : 'Pautado',
+      ScheduledWorkoutStatus.planned =>
+        proRequired
+            ? 'Pauta conservada'
+            : paused
+            ? 'Pauta anterior'
+            : 'Pautado',
     };
     return EntrenaCard(
       child: Column(
@@ -352,9 +374,14 @@ Object? _canonical(Object? value) => switch (value) {
 /// La pauta retirada se lee de su decisión publicada, sin reconstruirla con
 /// el algoritmo actual ni intentar comenzar sus sesiones canceladas.
 class _PublishedSessionCard extends StatelessWidget {
-  const _PublishedSessionCard({required this.session, required this.paused});
+  const _PublishedSessionCard({
+    required this.session,
+    required this.paused,
+    required this.proRequired,
+  });
   final Map<String, dynamic> session;
   final bool paused;
+  final bool proRequired;
 
   @override
   Widget build(BuildContext context) {
@@ -373,7 +400,11 @@ class _PublishedSessionCard extends StatelessWidget {
           [
             if (date != null) DateFormat('dd/MM/yyyy').format(date),
             if (session['minutes'] != null) '${session['minutes']} min',
-            paused ? 'Pauta anterior' : 'Pauta publicada',
+            proRequired
+                ? 'Pauta conservada'
+                : paused
+                ? 'Pauta anterior'
+                : 'Pauta publicada',
           ].join(' · '),
         ),
         children: [

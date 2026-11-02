@@ -97,7 +97,9 @@ class TrainingPreparationOverview extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            program?.isPaused == true
+                            program?.proRequired == true
+                                ? Icons.lock_outline_rounded
+                                : program?.isPaused == true
                                 ? Icons.pause_rounded
                                 : program?.needsReview == true
                                 ? Icons.info_outline_rounded
@@ -137,7 +139,9 @@ class TrainingPreparationOverview extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 hasPlan
-                    ? program!.isPaused
+                    ? program!.proRequired
+                          ? 'Pro inactivo · Solo consulta. Conservas tu preparación y tus resultados; empezar otro entrenamiento adaptativo requiere Pro vigente.'
+                          : program.isPaused
                           ? 'Tu objetivo, tu plan y tus resultados siguen aquí. Puedes consultarlos antes de retomarlo.'
                           : program.message
                     : goalId == null
@@ -163,7 +167,9 @@ class TrainingPreparationOverview extends StatelessWidget {
                   onPressed: () => context.push('/plan/goal/$goalId/plan'),
                   icon: const Icon(Icons.arrow_forward_rounded),
                   label: Text(
-                    program!.isPaused || program.status == 'complete'
+                    program!.proRequired ||
+                            program.isPaused ||
+                            program.status == 'complete'
                         ? 'Consultar mi plan'
                         : 'Ver mi plan',
                   ),
@@ -185,19 +191,25 @@ class TrainingPreparationOverview extends StatelessWidget {
                   label: 'Configurar mi plan',
                   primary: true,
                 ),
-              if (program?.isPaused == true ||
+              if (program?.proRequired == true ||
+                  program?.isPaused == true ||
                   program?.needsReview == true) ...[
                 const SizedBox(height: 8),
                 _PlanAction(
                   goalId: goalId!,
                   load: loadProAccess,
-                  label: program!.isPaused ? 'Retomar' : 'Revisar lo pendiente',
+                  label: program!.proRequired || program.isPaused
+                      ? 'Retomar'
+                      : 'Revisar lo pendiente',
                 ),
               ],
             ],
           ),
         ),
-        if (program?.isCurrent == true && next != null) ...[
+        if (next != null &&
+            ((program?.isCurrent == true && program?.proRequired != true) ||
+                (program?.proRequired == true &&
+                    next.status == ScheduledWorkoutStatus.inProgress))) ...[
           const SizedBox(height: 20),
           EntrenaCard(
             child: Column(
@@ -225,7 +237,13 @@ class TrainingPreparationOverview extends StatelessWidget {
                   '${DateFormat('dd/MM').format(next.scheduledDate)} · ${next.estimatedDurationMinutes == null ? 'Plan adaptativo' : '${next.estimatedDurationMinutes} min · Plan adaptativo'}',
                 ),
                 const SizedBox(height: 12),
-                const Text('Consulta lo pautado antes de comenzar.'),
+                Text(
+                  program?.proRequired == true
+                      ? next.status == ScheduledWorkoutStatus.inProgress
+                            ? 'Puedes continuar y terminar este entrenamiento ya iniciado.'
+                            : 'Puedes consultar lo pautado. Empezar otro entrenamiento adaptativo requiere Pro.'
+                      : 'Consulta lo pautado antes de comenzar.',
+                ),
                 const SizedBox(height: 16),
                 OutlinedButton(
                   onPressed: () => context.push(

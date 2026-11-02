@@ -46,6 +46,9 @@ class SupabasePreparationTrainingRepository
               name: row['name'] as String,
               status: row['status'] as String,
               message: row['message'] as String,
+              proRequired:
+                  row['pro_required'] == true ||
+                  row['continuation_code'] == 'pro_required',
               currentWeek: DateTime.tryParse(
                 row['current_week'] as String? ?? '',
               ),
@@ -78,6 +81,7 @@ class SupabasePreparationTrainingRepository
       ) as Map,
     );
     return PreparationTrainingData(
+      proRequired: j['pro_required'] == true,
       availableRunning: j['available_running'] == true,
       availablePerformance: j['available_performance'] == true,
       trainingScope: TrainingScope.parse(j['training_scope']),

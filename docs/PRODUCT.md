@@ -1,5 +1,14 @@
 # Producto EntrenaOP
 
+**Pérdida de Pro · criterio confirmado el 02/11/2026:** se conservan preparación,
+consulta de pautas e historial. Iniciar otra sesión adaptativa requiere Pro
+efectivo vigente, igual que generar o adaptar el plan; una ejecución ya abierta
+puede continuar y finalizar. La app muestra «Pro inactivo · Solo consulta» sin
+confundirlo con una pausa voluntaria ni prometer otra semana. Las sesiones del
+preparador y los recursos Free mantienen sus reglas. El bloqueo se comprueba en
+servidor, incluidos los accesos directos y dispositivos.
+[Contrato y comprobación](PRO_LAUNCH.md#implementación-y-comprobación-del-0211).
+
 ## Prioridad del recorrido adaptativo · 02/11/2026
 
 Javier reafirma el núcleo del producto: el deportista define su preparación y

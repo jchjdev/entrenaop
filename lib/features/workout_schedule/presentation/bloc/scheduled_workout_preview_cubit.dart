@@ -1,6 +1,8 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
+import '../../../pro/domain/pro_access.dart';
+
 import '../../domain/entities/scheduled_workout_preview.dart';
 import '../../domain/usecases/scheduled_workout_preview_usecases.dart';
 
@@ -87,6 +89,8 @@ class ScheduledWorkoutPreviewCubit extends Cubit<ScheduledWorkoutPreviewState> {
               ? null
               : preview.hasResult
               ? 'Este entrenamiento ya tiene un resultado. Puedes consultarlo.'
+              : preview.proRequired
+              ? 'Pro inactivo · Solo consulta. Necesitas Pro para comenzar otro entrenamiento adaptativo.'
               : preview.canStart
               ? 'El entrenamiento ha cambiado. Revisa lo pautado antes de comenzar.'
               : 'Este entrenamiento ya no está pendiente y no se puede comenzar.',
@@ -125,6 +129,22 @@ class ScheduledWorkoutPreviewCubit extends Cubit<ScheduledWorkoutPreviewState> {
           status: ScheduledWorkoutPreviewStatus.ready,
           preview: preview,
           executionId: executionId,
+        ),
+      );
+    } on ProAccessDenied catch (denied) {
+      if (isClosed || request != _request) return;
+      // La vigencia puede cambiar desde la lectura. Conservar la pauta no
+      // permite reintentar un inicio que el servidor acaba de denegar.
+      emit(
+        ScheduledWorkoutPreviewState(
+          status: ScheduledWorkoutPreviewStatus.ready,
+          preview: ScheduledWorkoutPreview(
+            scheduled: preview.scheduled,
+            workout: preview.workout,
+            revision: preview.revision,
+            proRequired: true,
+          ),
+          message: denied.message,
         ),
       );
     } on ScheduledWorkoutPreviewChanged {

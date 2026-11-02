@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import '../../../pro/domain/pro_access.dart';
+
 import 'package:bloc/bloc.dart';
 import 'package:entrenaop/features/exercises/domain/usecases/get_exercise_by_id_usecase.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
@@ -131,7 +133,9 @@ class WorkoutPreviewCubit extends Cubit<WorkoutPreviewState> {
           status: WorkoutPreviewStatus.failure,
           workout: workout,
           exerciseThumbnails: state.exerciseThumbnails,
-          errorMessage: kDebugMode
+          errorMessage: error is ProAccessDenied
+              ? error.message
+              : kDebugMode
               ? 'No hemos podido crear el registro.\n$error'
               : 'No hemos podido crear el registro.',
         ),

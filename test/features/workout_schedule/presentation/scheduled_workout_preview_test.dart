@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:entrenaop/features/pro/domain/pro_access.dart';
+
 import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
@@ -16,6 +18,142 @@ import 'package:go_router/go_router.dart';
 import 'package:workout_core/performance_set.dart';
 
 void main() {
+  test(
+    'Free conserva la pauta pero no puede solicitar otro inicio adaptativo',
+    () async {
+      final repository = _PreviewRepository()
+        ..preview = scheduledWorkoutPreviewFixture(
+          proRequired: true,
+          source: ScheduledWorkoutSource.algorithm,
+        );
+      final cubit = _cubit(repository);
+      addTearDown(cubit.close);
+      await cubit.load();
+      expect(cubit.state.preview!.workout.blocks, isNotEmpty);
+      expect(cubit.state.canStart, isFalse);
+      await cubit.start();
+      expect(repository.startedRevisions, isEmpty);
+      expect(cubit.state.preview!.revision, 'revision-3');
+    },
+  );
+
+  test('retirar Pro entre consulta e inicio bloquea reintentos y recuperarlo no inicia solo', () async {
+    final repository = _PreviewRepository();
+    final cubit = _cubit(repository);
+    addTearDown(cubit.close);
+    await cubit.load();
+    repository.onStart = (_) async => throw const ProAccessDenied(
+      ProRestriction.adaptiveProgram,
+      'Necesitas Pro para empezar otro entrenamiento adaptativo.',
+    );
+    await cubit.start();
+    expect(cubit.state.preview!.proRequired, isTrue);
+    expect(cubit.state.canStart, isFalse);
+    expect(cubit.state.executionId, isNull);
+    expect(cubit.state.preview!.revision, 'revision-3');
+    await cubit.start();
+    expect(repository.startedRevisions, hasLength(1));
+    repository.onStart = null;
+    await cubit.load();
+    expect(cubit.state.canStart, isTrue);
+    expect(repository.startedRevisions, hasLength(1));
+    await cubit.start();
+    expect(repository.startedRevisions, hasLength(2));
+    expect(cubit.state.executionId, 'execution');
+  });
+
+  test(
+    'una ejecución adaptativa abierta antes de perder Pro permite continuar',
+    () async {
+      final repository = _PreviewRepository()
+        ..preview = scheduledWorkoutPreviewFixture(
+          source: ScheduledWorkoutSource.algorithm,
+          status: ScheduledWorkoutStatus.inProgress,
+        );
+      final cubit = _cubit(repository);
+      addTearDown(cubit.close);
+      await cubit.load();
+      expect(cubit.state.canStart, isTrue);
+      await cubit.start();
+      expect(cubit.state.executionId, 'execution');
+    },
+  );
+
+  testWidgets(
+    'vista previa Free sigue visible y volver de Pro actualiza sin empezar',
+    (tester) async {
+      final repository = _PreviewRepository()
+        ..preview = scheduledWorkoutPreviewFixture(
+          proRequired: true,
+          source: ScheduledWorkoutSource.algorithm,
+        );
+      final cubit = _cubit(repository);
+      addTearDown(cubit.close);
+      await cubit.load();
+      final router = _router(cubit, direct: true);
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        MaterialApp.router(theme: EntrenaTheme.dark, routerConfig: router),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('scheduled-preview-start')),
+        findsNothing,
+      );
+      expect(find.text('Pro inactivo · Solo consulta'), findsOneWidget);
+      await tester.tap(find.text('Ver Pro'));
+      await tester.pumpAndSettle();
+      expect(router.state.uri.path, '/pro');
+      expect(router.state.uri.queryParameters['goal'], 'goal');
+      repository.preview = scheduledWorkoutPreviewFixture(
+        source: ScheduledWorkoutSource.algorithm,
+      );
+      router.pop();
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('scheduled-preview-start')),
+        findsOneWidget,
+      );
+      expect(repository.startedRevisions, isEmpty);
+      expect(repository.lookups, hasLength(2));
+    },
+  );
+
+  testWidgets(
+    'consulta Free mantiene acciones accesibles a 320 px y texto 2×',
+    (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(320, 480);
+      addTearDown(tester.view.reset);
+      final repository = _PreviewRepository()
+        ..preview = scheduledWorkoutPreviewFixture(
+          proRequired: true,
+          source: ScheduledWorkoutSource.algorithm,
+        );
+      final cubit = _cubit(repository);
+      addTearDown(cubit.close);
+      await cubit.load();
+      final router = _router(cubit, direct: true);
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        MaterialApp.router(
+          theme: EntrenaTheme.dark,
+          routerConfig: router,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: TextScaler.linear(2)),
+            child: child!,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      expect(find.text('Ver Pro').hitTestable(), findsOneWidget);
+      expect(find.text('Actualizar acceso').hitTestable(), findsOneWidget);
+      expect(repository.startedRevisions, isEmpty);
+    },
+  );
+
   test('consultar y reintentar no inicia ni altera la pauta', () async {
     final repository = _PreviewRepository();
     final cubit = _cubit(repository);
@@ -344,6 +482,10 @@ GoRouter _router(ScheduledWorkoutPreviewCubit cubit, {bool direct = false}) {
         : '/plan/week?date=2026-09-23',
     routes: [
       GoRoute(
+        path: '/pro',
+        builder: (_, _) => const Scaffold(body: Text('Oferta Pro')),
+      ),
+      GoRoute(
         path: '/plan/week',
         builder: (context, _) => Scaffold(
           body: TextButton(
@@ -412,14 +554,20 @@ ScheduledWorkoutPreview scheduledWorkoutPreviewFixture({
   int version = 3,
   ScheduledWorkoutStatus status = ScheduledWorkoutStatus.planned,
   DateTime? scheduledDate,
+  bool proRequired = false,
+  ScheduledWorkoutSource source = ScheduledWorkoutSource.coach,
 }) => ScheduledWorkoutPreview(
+  proRequired: proRequired,
   scheduled: ScheduledWorkout(
     id: 'scheduled',
     templateId: 'private',
     templateName: 'Fuerza y carrera',
     templateVersion: version,
     scheduledDate: scheduledDate ?? DateTime(2026, 9, 23),
-    source: ScheduledWorkoutSource.coach,
+    source: source,
+    preparationGoalId: source == ScheduledWorkoutSource.algorithm
+        ? 'goal'
+        : null,
     status: status,
     executionId: status == ScheduledWorkoutStatus.planned ? null : 'execution',
     coachName: 'Ervi',

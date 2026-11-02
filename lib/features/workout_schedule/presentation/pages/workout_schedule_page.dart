@@ -305,7 +305,11 @@ class _ProgramProgressCard extends StatelessWidget {
           children: [
             Text(program.name, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
-            Text(program.message),
+            Text(
+              program.proRequired
+                  ? 'Pro inactivo · Solo consulta. Tu preparación y tus resultados se conservan.'
+                  : program.message,
+            ),
             if (future &&
                 program.isStarted &&
                 !program.isPaused &&
@@ -329,10 +333,13 @@ class _ProgramProgressCard extends StatelessWidget {
                     label: const Text('Ir a mis entrenamientos'),
                   ),
                 TextButton(
-                  onPressed: () =>
-                      context.push('/plan/goal/${program.goalId}/training'),
+                  onPressed: () => context.push(
+                    '/plan/goal/${program.goalId}/${program.proRequired ? 'plan' : 'training'}',
+                  ),
                   child: Text(
-                    program.isPaused
+                    program.proRequired
+                        ? 'Consultar mi plan'
+                        : program.isPaused
                         ? 'Retomar mi programa'
                         : program.needsReview
                         ? 'Revisar lo pendiente'

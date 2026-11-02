@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:entrenaop/features/pro/domain/pro_access.dart';
+
 import 'package:entrenaop/features/workout_schedule/data/repositories/supabase_scheduled_workout_preview_repository.dart';
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout_preview.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -26,6 +28,35 @@ void main() {
     );
   });
   tearDown(() async => server.client.dispose());
+
+  test(
+    'lee el bloqueo Pro sin ocultar ni cambiar la versión pautada',
+    () async {
+      server.payload['pro_required'] = true;
+      final preview = await repository.get('scheduled');
+      expect(preview.proRequired, isTrue);
+      expect(preview.canStart, isFalse);
+      expect(preview.workout.blocks, isNotEmpty);
+      expect(preview.revision, server.payload['revision']);
+      expect(server.requests, hasLength(1));
+    },
+  );
+
+  test('traduce Pro retirado al iniciar y no reintenta el RPC', () async {
+    server.code = 'P0001';
+    server.details = 'pro_required';
+    await expectLater(
+      repository.startReviewed('scheduled', 'revision'),
+      throwsA(
+        isA<ProAccessDenied>().having(
+          (e) => e.restriction,
+          'restricción',
+          ProRestriction.adaptiveProgram,
+        ),
+      ),
+    );
+    expect(server.requests, hasLength(1));
+  });
 
   test(
     'consulta sólo scheduled_id y convierte la versión pautada completa',
@@ -147,6 +178,7 @@ class _Server {
   final sent = Completer<void>();
   Completer<http.Response>? pending;
   String? code;
+  String? details;
   final payload = _payload();
   late final client = SupabaseClient(
     'https://scheduled-preview.example.invalid',
@@ -180,7 +212,11 @@ class _Server {
     if (!sent.isCompleted) sent.complete();
     if (code != null) {
       return http.Response(
-        jsonEncode({'code': code, 'message': 'No disponible'}),
+        jsonEncode({
+          'code': code,
+          'message': 'No disponible',
+          'details': details,
+        }),
         code == '40001' ? 409 : 403,
         headers: {'content-type': 'application/json'},
         request: request,

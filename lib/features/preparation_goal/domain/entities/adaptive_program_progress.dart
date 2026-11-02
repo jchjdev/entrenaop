@@ -9,6 +9,7 @@ class AdaptiveProgramProgress extends Equatable {
     required this.message,
     this.currentWeek,
     this.nextGenerationOn,
+    this.proRequired = false,
   });
 
   final String goalId;
@@ -17,6 +18,7 @@ class AdaptiveProgramProgress extends Equatable {
   final String message;
   final DateTime? currentWeek;
   final DateTime? nextGenerationOn;
+  final bool proRequired;
   bool get isStarted => status != 'draft';
   bool get needsReview => status == 'needs_review';
   bool get isPaused => status == 'paused';
@@ -30,5 +32,6 @@ class AdaptiveProgramProgress extends Equatable {
     message,
     currentWeek,
     nextGenerationOn,
+    proRequired,
   ];
 }

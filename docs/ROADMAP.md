@@ -1,5 +1,24 @@
 # Roadmap de EntrenaOP
 
+**Deportista · inicios adaptativos sin Pro cerrados en Dev · 02/11/2026:** Javier
+elige conservar consulta e historial y exigir Pro vigente para nuevos inicios;
+una ejecución abierta puede terminarse. La migración `20261102103402` protege el
+núcleo compartido por agenda, preview, plantilla y dispositivos. Metadatos de
+acceso separados del estado deportivo corrigen la pausa aparente y la promesa
+de continuidad en Free. El cliente muestra Solo consulta y maneja una retirada
+de Pro entre lectura e inicio sin reintentar ni crear ejecuciones.
+Verificación: historial local/Dev coincidente, cinco contratos SQL con ROLLBACK,
+seis intentos reales rechazados para las dos pautas de jcharjim sin crear datos,
+análisis limpio y **1.671 pruebas raíz correctas, una omisión previa**. Tras ello,
+la batería focal de preview añade accesibilidad Free 320 px/2×: 18 correctas.
+Se mantienen las reglas de sesiones personales/oficiales, Programas y preparador;
+producción no se consulta ni modifica.
+**Único siguiente recorrido de este bloque:** instalar la revisión desde Mac y
+aceptar en iPhone consulta Free → Ver Pro → volver, retirada entre vista previa
+e inicio, continuidad/finalización de una sesión abierta y recuperación de Pro.
+El bloqueo de servidor ya protege Dev; la actualización de interfaz requiere
+ese nuevo binario. [Contrato y límites](PRO_LAUNCH.md#implementación-y-comprobación-del-0211).
+
 **Trainer · catálogo gradual por unidades · 02/11/2026:** preparados y contrastados
 en Stripe sandbox los 384 precios/ofertas elegibles de 5 a 100 alumnos, de uno
 en uno: 380 precios nuevos y cuatro ofertas originales de cinco conservadas.

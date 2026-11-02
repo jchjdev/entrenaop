@@ -9,15 +9,18 @@ class ScheduledWorkoutPreview extends Equatable {
     required this.scheduled,
     required this.workout,
     required this.revision,
+    this.proRequired = false,
   });
 
   final ScheduledWorkout scheduled;
   final WorkoutTemplate workout;
   final String revision;
+  final bool proRequired;
 
   bool get canStart =>
-      scheduled.status == ScheduledWorkoutStatus.planned ||
-      scheduled.status == ScheduledWorkoutStatus.inProgress;
+      !proRequired &&
+      (scheduled.status == ScheduledWorkoutStatus.planned ||
+          scheduled.status == ScheduledWorkoutStatus.inProgress);
 
   bool get hasResult =>
       scheduled.executionId != null &&
@@ -25,7 +28,7 @@ class ScheduledWorkoutPreview extends Equatable {
           scheduled.status == ScheduledWorkoutStatus.abandoned);
 
   @override
-  List<Object?> get props => [scheduled, workout, revision];
+  List<Object?> get props => [scheduled, workout, revision, proRequired];
 }
 
 /// La pauta cambió después de consultarla; se exige revisar la nueva versión.

@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/navigation/workflow_exit_guard.dart';
 import '../../../../core/presentation/widgets/entrena_card.dart';
 import '../../../workouts/presentation/pages/workout_preview_page.dart';
+import '../../../pro/domain/pro_offer.dart';
 import '../../domain/entities/scheduled_workout.dart';
 import '../../domain/entities/scheduled_workout_preview.dart';
 import '../bloc/scheduled_workout_preview_cubit.dart';
@@ -181,7 +182,29 @@ class _PreviewAction extends StatelessWidget {
                     onPressed: state.busy ? null : cubit.load,
                     child: Text(state.busy ? 'Actualizando…' : 'Reintentar'),
                   )
-                else if (preview.canStart)
+                else if (preview.proRequired) ...[
+                  const Text(
+                    'Pro inactivo · Solo consulta',
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  FilledButton.icon(
+                    onPressed: () async {
+                      await context.push(
+                        ProOfferContext(
+                          goalId: preview.scheduled.preparationGoalId,
+                        ).location(),
+                      );
+                      if (context.mounted) cubit.load();
+                    },
+                    icon: const Icon(Icons.lock_outline_rounded),
+                    label: const Text('Ver Pro'),
+                  ),
+                  TextButton(
+                    onPressed: state.busy ? null : cubit.load,
+                    child: const Text('Actualizar acceso'),
+                  ),
+                ] else if (preview.canStart)
                   FilledButton.icon(
                     key: const ValueKey('scheduled-preview-start'),
                     onPressed: state.canStart ? cubit.start : null,

@@ -1,6 +1,8 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:trainer_access/authenticated_rpc.dart';
 
+import '../../../pro/domain/pro_access.dart';
+
 import '../../../workouts/data/models/workout_template_model.dart';
 import '../../domain/entities/scheduled_workout_preview.dart';
 import '../../domain/repositories/scheduled_workout_preview_repository.dart';
@@ -39,6 +41,7 @@ class SupabaseScheduledWorkoutPreviewRepository
       scheduled: scheduled,
       workout: workout,
       revision: revision,
+      proRequired: data['pro_required'] == true,
     );
   }
 
@@ -56,6 +59,8 @@ class SupabaseScheduledWorkoutPreviewRepository
         },
       ) as String;
     } on PostgrestException catch (error) {
+      final denied = ProAccessDenied.fromDetails(error.details);
+      if (denied != null) throw denied;
       if (error.code == '40001') {
         throw const ScheduledWorkoutPreviewChanged();
       }

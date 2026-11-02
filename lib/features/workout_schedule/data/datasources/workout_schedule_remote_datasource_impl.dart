@@ -2,6 +2,8 @@ import 'package:entrenaop/features/workout_schedule/data/datasources/workout_sch
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:trainer_access/authenticated_rpc.dart';
 
+import '../../../pro/domain/pro_access.dart';
+
 import '../../../../core/config/app_config.dart';
 
 class WorkoutScheduleRemoteDataSourceImpl
@@ -130,10 +132,16 @@ class WorkoutScheduleRemoteDataSourceImpl
 
   @override
   Future<String> start(String scheduledId) async {
-    final response = await supabaseClient.rpc(
-      'start_scheduled_workout',
-      params: {'p_scheduled_id': scheduledId},
-    );
-    return response as String;
+    try {
+      final response = await supabaseClient.rpc(
+        'start_scheduled_workout',
+        params: {'p_scheduled_id': scheduledId},
+      );
+      return response as String;
+    } on PostgrestException catch (error) {
+      final denied = ProAccessDenied.fromDetails(error.details);
+      if (denied != null) throw denied;
+      rethrow;
+    }
   }
 }

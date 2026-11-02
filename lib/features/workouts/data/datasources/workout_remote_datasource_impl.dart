@@ -187,7 +187,7 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
 
   @override
   Future<String> startExecution(String templateId) async {
-    final response = await supabaseClient.rpc(
+    final response = await _commercialRpc(
       'start_workout_execution',
       params: {'p_template_id': templateId},
     );

@@ -9,6 +9,7 @@ import '../entities/adaptive_program_path.dart';
 class PreparationTrainingData {
   const PreparationTrainingData({
     this.hasRunning = false,
+    this.proRequired = false,
     bool? availableRunning,
     this.availablePerformance = true,
     this.trainingScope = TrainingScope.full,
@@ -30,6 +31,7 @@ class PreparationTrainingData {
     required this.publishedWeeks,
   }) : availableRunning = availableRunning ?? hasRunning;
   final bool availableRunning;
+  final bool proRequired;
   final bool availablePerformance;
   final TrainingScope trainingScope;
   final Map<String, dynamic>? activeProgram;

@@ -12,16 +12,20 @@ tales en el portal y la web oculta. No se cambia la regla de transición mixta
 ni se autorizan pagos reales.
 [Catálogo, diferencias y fórmula](TRAINER_PRICING_DRAFT.md#catálogo-gradual-v3--02112026--autorizado-solo-para-pruebas).
 
-**Acceso a sesiones adaptativas tras retirar Pro: revisión abierta · 02/11/2026:**
+**Acceso adaptativo sin Pro: consulta conservada e inicios bloqueados · 02/11/2026:**
 Javier aporta un vídeo donde una cuenta Free consulta un plan antiguo y comienza
 dos entrenamientos, y pide concretar si debe cerrarse todo el programa. El vídeo,
 el código y entrenaop-dev confirman acceso Pro efectivo falso y permiso de inicio
 de sesiones antiguas sin comprobar Pro. Generación/adaptación sí están protegidas.
 El resumen muestra pausa comercial mientras la consulta lee el estado deportivo
-guardado; ambos estados se presentan de forma incoherente. Se recomienda mantener
-consulta e historial, exigir Pro para nuevos inicios adaptativos y permitir cerrar
-una sesión ya abierta. La alternativa de limitar también la consulta del plan
-queda pendiente de elegir; esta revisión no cambia derechos ni datos de cuentas.
+guardado; ambos estados se presentaban de forma incoherente. Javier elige mantener
+consulta e historial, exigir Pro vigente para nuevos inicios adaptativos y permitir
+continuar y cerrar una ejecución ya abierta. Se aplica en el núcleo de servidor,
+incluidos accesos por agenda, vista previa, plantilla y dispositivos, y la app
+presenta «Pro inactivo · Solo consulta» sin modificar el estado deportivo.
+Dev actualizado y verificado con ROLLBACK; interfaces y recorrido físico pendientes
+de compilar e instalar desde Mac. La sesión del preparador y los recursos Free
+mantienen sus derechos independientes.
 [Diagnóstico, límites y propuesta](PRO_LAUNCH.md#revisión-del-inicio-adaptativo-sin-pro--02112026).
 
 **Entrenar con la preparación como protagonista · 02/11/2026:** Javier aprueba

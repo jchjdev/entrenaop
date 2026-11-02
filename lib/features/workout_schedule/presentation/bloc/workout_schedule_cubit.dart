@@ -5,6 +5,8 @@ import 'package:entrenaop/features/workout_schedule/presentation/bloc/workout_sc
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/get_starter_workout_usecase.dart';
 
+import '../../../pro/domain/pro_access.dart';
+
 class WorkoutScheduleCubit extends Cubit<WorkoutScheduleState> {
   WorkoutScheduleCubit({
     required GetWorkoutScheduleUseCase getSchedule,
@@ -185,11 +187,13 @@ class WorkoutScheduleCubit extends Cubit<WorkoutScheduleState> {
       final executionId = await _startWorkout(scheduledId);
       await _reloadItems();
       return executionId;
-    } catch (_) {
+    } catch (error) {
       emit(
         state.copyWith(
           clearBusy: true,
-          errorMessage: 'No hemos podido iniciar la sesión programada.',
+          errorMessage: error is ProAccessDenied
+              ? error.message
+              : 'No hemos podido iniciar la sesión programada.',
         ),
       );
       return null;
