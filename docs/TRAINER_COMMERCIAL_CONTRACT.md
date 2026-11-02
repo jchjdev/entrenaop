@@ -125,6 +125,18 @@ cero, con `livemode=false`. La anterior bajada programada a Profesional/50 está
 anulada. Esto acredita la ampliación inmediata positiva con método existente;
 no acredita cobros reales ni los recorridos de rechazo/autenticación adicional.
 
+**Entrega verificada:** Trainer Dev sirve la revisión conjunta
+`331ccab407c161700f0e6e7c7222de05c1e4af95`
+([publicación correcta](https://github.com/jchjdev/entrenaop/actions/runs/41445403053)).
+Comprobados por HTTPS entorno `development`, proyecto `sxbxfjqgoddzhtcyhalw`,
+recursos, hash y cabeceras. En navegador se ve la nueva explicación y la cuenta
+conserva Completo/50; la propuesta de bajada a Básico/50 sigue solo revisada.
+No se confirma ni anula otra operación durante esta inspección.
+Análisis de Trainer limpio y 443 pruebas correctas; el proceso conjunto también
+valida la aplicación del deportista y ADMIN. La protección frente a un `main`
+avanzado se mantiene intacta y la revisión publicada conserva ambos trabajos.
+Captura local ignorada: `build/trainer-pricing-review/public-profile-copy.jpg`.
+
 ## 1. Base vigente y propuesta principal
 
 ### Posibles niveles comerciales · propuesta del 28/10/2026
