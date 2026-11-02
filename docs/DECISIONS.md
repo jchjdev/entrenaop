@@ -1,5 +1,11 @@
 # Registro de decisiones vigentes
 
+**Nombre visible Programas · 02/11/2026:** Javier corrige la propuesta de
+Entrenar: la pestaña y sus textos deben decir **Programas**, sin «Guiados» ni
+«programas guiados». Se actualiza el prototipo; la aplicación todavía no cambia.
+La distinción de dominio respecto al plan adaptativo se conserva.
+[Criterio de producto](PRODUCT.md#prioridad-del-recorrido-adaptativo--02112026).
+
 **Cambios de plan profesional y contraste de navegación · 02/11/2026:** Javier
 autoriza cambiar nivel y plazas desde Trainer, solo en pruebas. Se adopta ampliar
 o subir al confirmar el pago de la diferencia del periodo restante; cualquier

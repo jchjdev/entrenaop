@@ -17,6 +17,11 @@ seguimiento e historial propios; actualmente el usuario confirma el avance de
 fase según las instrucciones publicadas. Esa confirmación no es una adaptación
 automática calculada a partir de sus marcas. [Contrato de guiados](PROGRAMAS_GUIADOS.md).
 
+**Nombre visible confirmado · 02/11/2026:** en la propuesta de Entrenar se usa
+**Programas** en la pestaña y sus textos, sin «Guiados» ni «programas guiados».
+Esta corrección de nombre no cambia las modalidades ni su funcionamiento; por
+ahora está aplicada al prototipo, pendiente de llevar el reparto a la app.
+
 Entrenar debe dar prioridad a la preparación y su plan adaptativo, con una sola
 representación de su estado y próxima acción. Puede haber varias preparaciones
 guardadas y un único generador adaptativo activo. Los guiados tienen un acceso
