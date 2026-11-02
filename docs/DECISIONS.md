@@ -1,5 +1,12 @@
 # Registro de decisiones vigentes
 
+**Filtro de Añadir entrenamiento al día heredado de Biblioteca · 02/11/2026:**
+Javier pide filtrar el selector y especifica reutilizar el filtro existente.
+Se comparte la composición de búsqueda, tipo y duración de Biblioteca, junto
+con su misma lógica de coincidencia. Se conservan Mis sesiones/Biblioteca,
+versiones, fecha seleccionada y carga/reintento. Buscar no pauta ni inicia.
+[Integración](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#filtro-compartido-al-añadir-sesiones--02112026).
+
 **Día sin sesiones: agenda antes que estado del plan · 02/11/2026:** Javier
 detecta que Inicio sustituye un día vacío por «Tu plan guardado» y Mi semana
 mezcla ese vacío con activar preparaciones. El resumen de una fecha sin sesiones

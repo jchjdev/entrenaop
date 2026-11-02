@@ -1,5 +1,29 @@
 # Navegación del alumno y preparador · TRN-025 · 22/10/2026
 
+## Filtro compartido al añadir sesiones · 02/11/2026
+
+«Añadir entrenamiento al día» usa el filtro existente de Biblioteca. Su
+composición se extrae a `WorkoutLibrarySearchControls`, que ambas pantallas
+consumen sobre `LibrarySearchControls` y `WorkoutLibraryFilter`; no se duplica
+la búsqueda ni se crea otra clasificación de sesiones.
+
+Se conservan búsqueda por nombre, descripción y ejercicios, sin distinguir
+mayúsculas ni tildes, tipo Fuerza y acondicionamiento/Carrera y los tramos de
+duración existentes. El contador, desplegar filtros y limpiar se mantienen.
+Mis sesiones y Biblioteca conservan sus grupos después de filtrar. Cabecera,
+controles y resultados se desplazan juntos y dejan espacio al teclado.
+
+Filtrar actúa sobre las sesiones ya cargadas; no recarga ni cambia la agenda.
+Elegir sigue enviando la plantilla existente al flujo de pautado en la fecha
+seleccionada. Se conservan carga, reintento y ausencia real de catálogo, que se
+distingue de una búsqueda sin coincidencias. El modelo deportivo, los derechos
+y los paquetes compartidos con ADMIN/Trainer permanecen iguales.
+
+Verificación: análisis global limpio, 37 pruebas focales de filtros/Biblioteca/
+agenda y batería raíz completa con **1.678 correctas y una omisión previa**.
+Incluye combinaciones, búsqueda sin tildes por varios campos, pauta en la fecha
+elegida, limpiar, reintento y teclado con texto 2× en pantalla de 320 px.
+
 ## Día sin sesiones · 02/11/2026
 
 El vídeo de Javier muestra que seleccionar una fecha vacía en Inicio coloca la

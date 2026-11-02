@@ -849,6 +849,176 @@ void main() {
   );
 
   testWidgets(
+    'añadir reutiliza búsqueda, tipo y duración y pauta la versión elegida en su fecha',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final workouts = _FakeWorkoutRepository();
+      workouts.onPublic = () async => const [
+        WorkoutTemplateSummary(
+          id: 'running',
+          name: 'Carrera técnica',
+          description: null,
+          estimatedDurationMinutes: 40,
+          origin: WorkoutTemplateOrigin.system,
+          version: 2,
+          isRunning: true,
+        ),
+        WorkoutTemplateSummary(
+          id: 'strength',
+          name: 'Fuerza base',
+          description: null,
+          estimatedDurationMinutes: 35,
+          origin: WorkoutTemplateOrigin.system,
+          version: 1,
+          exerciseNames: ['Técnica de dominadas'],
+        ),
+      ];
+      workouts.onPersonal = () async => const [
+        WorkoutTemplateSummary(
+          id: 'long-run',
+          name: 'Mi carrera larga',
+          description: 'Técnica',
+          estimatedDurationMinutes: 60,
+          origin: WorkoutTemplateOrigin.user,
+          version: 3,
+          isRunning: true,
+        ),
+        WorkoutTemplateSummary(
+          id: 'mine',
+          name: 'Mi sesión de dominadas',
+          description: null,
+          estimatedDurationMinutes: 25,
+          origin: WorkoutTemplateOrigin.user,
+          version: 1,
+        ),
+      ];
+      final repository = _FakeScheduleRepository(items: []);
+      final cubit = _cubit(repository, workouts);
+      addTearDown(cubit.close);
+      await cubit.load();
+      final date = DateTime(2026, 9, 24);
+      cubit.selectDay(date);
+      final router = GoRouter(
+        initialLocation: '/plan/week',
+        routes: [
+          GoRoute(
+            path: '/plan/week',
+            builder: (_, _) => BlocProvider.value(
+              value: cubit,
+              child: const WorkoutSchedulePage(),
+            ),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        MaterialApp.router(theme: EntrenaTheme.dark, routerConfig: router),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Añadir entrenamiento al día'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'TECNICA');
+      await tester.pumpAndSettle();
+      expect(find.text('3 de 4 sesiones'), findsOneWidget);
+      await _showPickerItem(tester, find.text('Filtros'));
+      await tester.tap(find.text('Filtros'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(DropdownButtonFormField<String>).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Carrera').last);
+      await tester.pumpAndSettle();
+      expect(find.text('2 de 4 sesiones'), findsOneWidget);
+      await tester.ensureVisible(
+        find.byType(DropdownButtonFormField<String>).last,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(DropdownButtonFormField<String>).last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Más de 45 min').last);
+      await tester.pumpAndSettle();
+      expect(find.text('1 de 4 sesiones'), findsOneWidget);
+      expect(find.text('Fuerza base'), findsNothing);
+      expect(find.text('Carrera técnica'), findsNothing);
+      expect(repository.scheduledTemplateId, isNull);
+      await _showPickerItem(tester, find.text('Mi carrera larga'));
+      await tester.tap(find.text('Mi carrera larga'));
+      await tester.pumpAndSettle();
+      expect(repository.scheduledTemplateId, 'long-run');
+      expect(repository.scheduledDate, date);
+      expect(cubit.state.selectedDay, date);
+      expect(tester.takeException(), isNull);
+    },
+  );
+  testWidgets(
+    'el filtro del selector se limpia y cabe con teclado y texto doble a 320 px',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final repository = _FakeScheduleRepository(items: []);
+      final cubit = _cubit(repository, _FakeWorkoutRepository());
+      addTearDown(cubit.close);
+      await cubit.load();
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: EntrenaTheme.dark,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: const TextScaler.linear(2)),
+            child: child!,
+          ),
+          home: BlocProvider.value(
+            value: cubit,
+            child: const WorkoutSchedulePage(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Añadir entrenamiento al día'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Añadir entrenamiento al día'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'inexistente');
+      await tester.pumpAndSettle();
+      tester.view.viewInsets = const FakeViewPadding(bottom: 240);
+      await tester.pumpAndSettle();
+      await _showPickerItem(tester, find.byType(TextField));
+      expect(
+        tester.getBottomLeft(find.byType(TextField)).dy,
+        lessThanOrEqualTo(400),
+      );
+      await _showPickerItem(
+        tester,
+        find.text('No hay sesiones que coincidan con tu búsqueda.'),
+      );
+      expect(
+        find
+            .text('No hay sesiones que coincidan con tu búsqueda.')
+            .hitTestable(),
+        findsOneWidget,
+      );
+      await _showPickerItem(
+        tester,
+        find.text('Limpiar búsqueda y filtros'),
+        -120,
+      );
+      await tester.tap(find.text('Limpiar búsqueda y filtros'));
+      await tester.pumpAndSettle();
+      await _showPickerItem(tester, find.byType(TextField), -120);
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        isEmpty,
+      );
+      expect(find.text('2 de 2 sesiones'), findsOneWidget);
+      expect(cubit.state.personalTemplates, hasLength(1));
+      expect(cubit.state.publicTemplates, hasLength(1));
+      expect(repository.scheduledTemplateId, isNull);
+      expect(tester.takeException(), isNull);
+    },
+  );
+  testWidgets(
     'el selector reintenta su error sin ocultar ni vaciar la agenda',
     (tester) async {
       tester.view.physicalSize = const Size(320, 640);
@@ -909,9 +1079,8 @@ void main() {
       expect(find.text('Reintentar').hitTestable(), findsOneWidget);
       await tester.tap(find.text('Reintentar'));
       await tester.pumpAndSettle();
+      await _showPickerItem(tester, find.text('Mi sesión de dominadas'));
       expect(find.text('Mi sesión de dominadas'), findsOneWidget);
-      await tester.ensureVisible(find.text('Mi sesión de dominadas'));
-      await tester.pumpAndSettle();
       await tester.tap(find.text('Mi sesión de dominadas'));
       await tester.pumpAndSettle();
       expect(schedule.scheduledTemplateId, 'personal-1');
@@ -958,6 +1127,28 @@ void main() {
     expect(cubit.state.weekStart, DateTime(2026, 9, 28));
     expect(cubit.state.selectedDay, DateTime(2026, 10, 4));
   });
+}
+
+Future<void> _showPickerItem(
+  WidgetTester tester,
+  Finder target, [
+  double step = 120,
+]) async {
+  if (target.evaluate().isNotEmpty) {
+    await tester.ensureVisible(target);
+  } else {
+    await tester.scrollUntilVisible(
+      target,
+      step,
+      scrollable: find
+          .descendant(
+            of: find.byKey(const ValueKey('schedule-template-picker-list')),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+  }
+  await tester.pumpAndSettle();
 }
 
 WorkoutScheduleCubit _cubit(

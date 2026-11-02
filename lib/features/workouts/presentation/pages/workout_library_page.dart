@@ -3,7 +3,7 @@ import 'package:entrenaop/features/workouts/presentation/bloc/workout_library_cu
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_library_state.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/session_creation.dart';
 import 'package:entrenaop/features/workouts/presentation/workout_library_filter.dart';
-import 'package:entrenaop/features/library/presentation/widgets/library_search_controls.dart';
+import 'package:entrenaop/features/workouts/presentation/widgets/workout_library_search_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -200,44 +200,16 @@ class _LibraryContentState extends State<_LibraryContent>
                       load: widget.loadProAccess!,
                       sessions: true,
                     ),
-                  LibrarySearchControls(
+                  WorkoutLibrarySearchControls(
                     controller: _search,
-                    searchLabel: 'Buscar sesiones',
+                    filter: filter,
                     onQueryChanged: (_) => setState(() {}),
+                    onTypeChanged: (value) => setState(() => _type = value),
+                    onDurationChanged: (value) =>
+                        setState(() => _duration = value),
                     onReset: _reset,
-                    activeFilters: _activeFilters,
                     resultCount: workouts.length,
                     totalCount: widget.workouts.length,
-                    resultNoun: 'sesiones',
-                    filterFields: [
-                      LibraryFilterField(
-                        label: 'Tipo de sesión',
-                        value: _type?.name,
-                        options: const {
-                          'strength': 'Fuerza y acondicionamiento',
-                          'running': 'Carrera',
-                        },
-                        onChanged: (value) => setState(
-                          () => _type = value == null
-                              ? null
-                              : LibrarySessionType.values.byName(value),
-                        ),
-                      ),
-                      LibraryFilterField(
-                        label: 'Duración',
-                        value: _duration?.name,
-                        options: const {
-                          'short': 'Menos de 30 min',
-                          'medium': 'De 30 a 45 min',
-                          'long': 'Más de 45 min',
-                        },
-                        onChanged: (value) => setState(
-                          () => _duration = value == null
-                              ? null
-                              : LibrarySessionDuration.values.byName(value),
-                        ),
-                      ),
-                    ],
                   ),
                   const SizedBox(height: 20),
                   if (!personal && !_hasSearch) ...[

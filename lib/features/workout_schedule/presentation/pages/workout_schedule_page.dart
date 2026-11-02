@@ -7,6 +7,8 @@ import 'package:workout_editor_ui/device_activity_summary_card.dart';
 import 'package:entrenaop/features/workout_schedule/presentation/bloc/workout_schedule_cubit.dart';
 import 'package:entrenaop/features/workout_schedule/presentation/bloc/workout_schedule_state.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
+import 'package:entrenaop/features/workouts/presentation/widgets/workout_library_search_controls.dart';
+import 'package:entrenaop/features/workouts/presentation/workout_library_filter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -732,94 +734,149 @@ class _ScheduledWorkoutCard extends StatelessWidget {
   }
 }
 
-class _TemplatePicker extends StatelessWidget {
+class _TemplatePicker extends StatefulWidget {
   const _TemplatePicker({required this.date});
 
   final DateTime date;
 
   @override
+  State<_TemplatePicker> createState() => _TemplatePickerState();
+}
+
+class _TemplatePickerState extends State<_TemplatePicker> {
+  final _search = TextEditingController();
+  LibrarySessionType? _type;
+  LibrarySessionDuration? _duration;
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
+  void _reset() => setState(() {
+    _search.clear();
+    _type = null;
+    _duration = null;
+  });
+
+  @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: SizedBox(
-        height: MediaQuery.sizeOf(context).height * 0.75,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
+    return Padding(
+      padding: EdgeInsets.only(bottom: keyboardInset),
+      child: SafeArea(
+        child: SizedBox(
+          height: (MediaQuery.sizeOf(context).height - keyboardInset) * 0.75,
+          child: BlocBuilder<WorkoutScheduleCubit, WorkoutScheduleState>(
+            builder: (context, state) {
+              final filter = WorkoutLibraryFilter(
+                query: _search.text,
+                type: _type,
+                duration: _duration,
+              );
+              final personal = state.personalTemplates
+                  .where(filter.matches)
+                  .toList();
+              final public = state.publicTemplates
+                  .where(filter.matches)
+                  .toList();
+              final total =
+                  state.personalTemplates.length + state.publicTemplates.length;
+              // Cabecera, filtros y resultados se desplazan juntos para dejar
+              // espacio al teclado y al texto ampliado sin recortar controles.
+              return ListView(
+                key: const ValueKey('schedule-template-picker-list'),
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
                 children: [
-                  const Text(
-                    'Añadir sesión',
-                    style: TextStyle(fontSize: 23, fontWeight: FontWeight.w900),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 4, 8, 14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Añadir sesión',
+                          style: TextStyle(
+                            fontSize: 23,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _longDate(widget.date),
+                          style: const TextStyle(color: Colors.white60),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _longDate(date),
-                    style: const TextStyle(color: Colors.white60),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: BlocBuilder<WorkoutScheduleCubit, WorkoutScheduleState>(
-                builder: (context, state) {
                   if (state.libraryStatus == ScheduleLibraryStatus.initial ||
-                      state.libraryStatus == ScheduleLibraryStatus.loading) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (state.libraryStatus == ScheduleLibraryStatus.failure) {
-                    return Center(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text(
-                              'No hemos podido cargar las sesiones para añadir.',
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 12),
-                            OutlinedButton.icon(
-                              onPressed: () => context
-                                  .read<WorkoutScheduleCubit>()
-                                  .loadLibrary(),
-                              icon: const Icon(Icons.refresh_rounded),
-                              label: const Text('Reintentar'),
-                            ),
-                          ],
+                      state.libraryStatus == ScheduleLibraryStatus.loading)
+                    const Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else if (state.libraryStatus == ScheduleLibraryStatus.failure)
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            'No hemos podido cargar las sesiones para añadir.',
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 12),
+                          OutlinedButton.icon(
+                            onPressed: () => context
+                                .read<WorkoutScheduleCubit>()
+                                .loadLibrary(),
+                            icon: const Icon(Icons.refresh_rounded),
+                            label: const Text('Reintentar'),
+                          ),
+                        ],
+                      ),
+                    )
+                  else ...[
+                    Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: WorkoutLibrarySearchControls(
+                        controller: _search,
+                        filter: filter,
+                        onQueryChanged: (_) => setState(() {}),
+                        onTypeChanged: (value) => setState(() => _type = value),
+                        onDurationChanged: (value) =>
+                            setState(() => _duration = value),
+                        onReset: _reset,
+                        resultCount: personal.length + public.length,
+                        totalCount: total,
+                      ),
+                    ),
+                    if (personal.isEmpty && public.isEmpty)
+                      ListTile(
+                        title: Text(
+                          total == 0 ? 'No hay sesiones disponibles.' : 'No hay sesiones que coincidan con tu búsqueda.',
                         ),
                       ),
-                    );
-                  }
-                  final personal = state.personalTemplates;
-                  final public = state.publicTemplates;
-                  return ListView(
-                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
-                    children: [
-                      if (personal.isNotEmpty) ...[
-                        const _PickerSectionTitle('Mis sesiones'),
-                        ...personal.map(
-                          (template) => _TemplateTile(template: template),
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-                      const _PickerSectionTitle('Biblioteca'),
-                      if (public.isEmpty)
-                        const ListTile(
-                          title: Text('No hay sesiones disponibles.'),
-                        )
-                      else
-                        ...public.map(
-                          (template) => _TemplateTile(template: template),
-                        ),
+                    if (personal.isNotEmpty) ...[
+                      const _PickerSectionTitle('Mis sesiones'),
+                      ...personal.map(
+                        (template) => _TemplateTile(template: template),
+                      ),
+                      const SizedBox(height: 12),
                     ],
-                  );
-                },
-              ),
-            ),
-          ],
+                    if (public.isNotEmpty) ...[
+                      const _PickerSectionTitle('Biblioteca'),
+                      ...public.map(
+                        (template) => _TemplateTile(template: template),
+                      ),
+                    ],
+                  ],
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
