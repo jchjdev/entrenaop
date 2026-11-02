@@ -50,6 +50,7 @@ class SubscriptionFixture implements TrainerSubscriptionRepository {
 
 class PlanCatalogueFixture extends SubscriptionFixture {
   String? selected;
+  bool directoryEnabled = false;
   List<int> capacities = const [5, 10];
   @override
   Future<SubscriptionJson> status() async => {
@@ -79,6 +80,7 @@ class PlanCatalogueFixture extends SubscriptionFixture {
             'capacity': capacity,
             'plan_key': plan,
             'directory_option': plan != 'basic',
+            'directory_enabled': directoryEnabled && plan != 'basic',
           },
         {
           'id': 'basic-directory-$capacity',
@@ -89,6 +91,7 @@ class PlanCatalogueFixture extends SubscriptionFixture {
           'capacity': capacity,
           'plan_key': 'basic',
           'directory_option': true,
+          'directory_enabled': directoryEnabled,
         },
       ],
     ],
@@ -244,6 +247,33 @@ class MixedPlanChangeFixture extends PlanChangeFixture {
 }
 
 void main() {
+  testWidgets('explica la ficha habilitada sin prometer inclusiones Pro', (
+    t,
+  ) async {
+    final repo = PlanCatalogueFixture()..directoryEnabled = true;
+    await t.pumpWidget(
+      MaterialApp(home: TrainerSubscriptionPage(repository: repo)),
+    );
+    await t.pumpAndSettle();
+    await t.ensureVisible(find.byType(SwitchListTile));
+    await t.pumpAndSettle();
+    expect(
+      find.textContaining(
+        'Esta opción está incluida en Profesional y Completo',
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('contratarlo aún no activa tu visibilidad'),
+      findsNothing,
+    );
+    expect(
+      find.textContaining('Las inclusiones Pro siguen pendientes.'),
+      findsOneWidget,
+    );
+    expect(repo.actions, isEmpty);
+    expect(t.takeException(), isNull);
+  });
   Future<void> openExpansion(
     WidgetTester t,
     MixedPlanChangeFixture repo,

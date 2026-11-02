@@ -363,6 +363,9 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
           (o) => ['basic', 'professional', 'complete'].contains(o['plan_key']),
         )
         .toList();
+    final directoryAvailable = catalogue.any(
+      (offer) => offer['directory_enabled'] == true,
+    );
     final sourceOffer = change?['from_offer'] as Map?;
     final futureOffer = change?['offer'] as Map?;
     final moreSeatsAtRenewal =
@@ -691,16 +694,20 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
                 title: Text(
                   'Aparecer como preparador en la app (+${addon.toStringAsFixed(2)} €/mes)',
                 ),
-                subtitle: const Text(
-                  'Para que posibles alumnos encuentren tu perfil y contacten contigo. Tú decides si publicas tu ficha. En estas pruebas, contratarlo aún no activa tu visibilidad.',
+                subtitle: Text(
+                  directoryAvailable
+                      ? 'Para que posibles alumnos encuentren tu perfil y contacten contigo. Tú decides si publicas tu ficha. Esta opción está incluida en Profesional y Completo.'
+                      : 'Para que posibles alumnos encuentren tu perfil y contacten contigo. Tú decides si publicas tu ficha. En estas pruebas, contratarlo aún no activa tu visibilidad.',
                 ),
                 value: _directoryAddon,
                 onChanged: _busy
                     ? null
                     : (value) => setState(() => _directoryAddon = value),
               ),
-            const Text(
-              'Ensayo de acceso y cupo. Las inclusiones Pro y la opción de mostrar tu perfil en la app siguen pendientes de activar por suscripción.',
+            Text(
+              directoryAvailable
+                  ? 'Contratación en pruebas. El plan pagado permite publicar tu ficha si incluye esta prestación; requiere foto y aceptación. Las inclusiones Pro siguen pendientes.'
+                  : 'Ensayo de acceso y cupo. Las inclusiones Pro y la opción de mostrar tu perfil en la app siguen pendientes de activar por suscripción.',
             ),
             const SizedBox(height: 16),
             const Text(
@@ -744,8 +751,10 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
                               'complete',
                             ].contains(offer['plan_key']) ||
                             offer['directory_option'] == true)
-                          const Text(
-                            'Las inclusiones Pro, la visibilidad de tu perfil por suscripción y el asistente profesional están pendientes. El ensayo activa herramientas y cupo.',
+                          Text(
+                            offer['directory_enabled'] == true
+                                ? 'Este plan permite publicar tu ficha de preparador. Las inclusiones Pro y el asistente profesional siguen pendientes.'
+                                : 'Las inclusiones Pro, la visibilidad de tu perfil por suscripción y el asistente profesional están pendientes. El ensayo activa herramientas y cupo.',
                           ),
                         const Text(
                           'Importe simulado para probar el recorrido. No es una tarifa comercial.',

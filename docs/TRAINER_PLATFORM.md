@@ -519,6 +519,16 @@ de ADMIN. Su publicación y validación se acreditan en
 
 ## Directorio profesional futuro · TRN-040 · 28/10/2026
 
+**Actualización del 02/11/2026:** el ensayo conecta la elegibilidad del
+directorio a la oferta vigente pagada: Profesional y Completo incluidos y
+Básico con opción adicional. Una mejora pendiente no habilita la ficha; una
+bajada programada conserva la cobertura actual hasta renovar. Acceso
+profesional, caducidad, suspensión, foto, consentimiento por canal y moderación
+mantienen sus controles. La compra no publica automáticamente ni concede Pro.
+El piloto individual previo se conserva. Esto sustituye el límite comercial
+pendiente descrito en las entregas anteriores, únicamente en Dev.
+[Contrato y verificación](TRAINER_COMMERCIAL_CONTRACT.md#ficha-incluida-en-la-suscripción-pagada--02112026).
+
 **Inicio de implementación autorizado el 30/10/2026, exclusivamente en Dev.**
 Javier confirma pasar de los acuerdos futuros a una primera entrega, conservando
 el trabajo simultáneo de Arquitectura. Se desarrolla el directorio de entrenadores

@@ -28,7 +28,7 @@ invitaciones pendientes quedan excluidos conforme al contrato actual.
 | Agenda, citas, asignación, resultados, técnica, formularios y conversación | Incluido | Incluido | Incluido | Implementado; aceptación de recorridos en curso |
 | Para mí, sin ocupar plaza; varios preparadores por alumno con aislamiento | Incluido | Incluido | Incluido | Implementado |
 | El alumno recibe, ejecuta y registra lo pautado sin comprar Pro | Incluido | Incluido | Incluido | Contrato implementado |
-| Ficha en directorio, voluntaria y sujeta a controles | Extra opcional | Incluido | Incluido | Directorio de ensayo existente; elegibilidad pagada pendiente |
+| Ficha en directorio, voluntaria y sujeta a controles | Extra opcional | Incluido | Incluido | Conectada al plan vigente pagado en Dev; requiere foto, consentimiento y publicación |
 | Pro personal del preparador | Compra o concesión aparte | Incluido | Incluido | Concesión comercial por plan pendiente |
 | Algoritmo como asistente para preparar y adaptar propuestas de alumnos | No incluido | Previsto | Previsto | Herramienta profesional pendiente; exige revisión del preparador |
 | Pro autónomo de los alumnos activos vinculados | Compra individual aparte | Compra individual aparte | Incluido | Concesión, vigencia y convivencia con compras personales pendientes |

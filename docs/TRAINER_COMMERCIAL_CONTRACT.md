@@ -102,6 +102,36 @@ oferta Completo/50 a 67,90 EUR y su diálogo previo. Se cierra con «Conservar c
 programado»: el plan Completo/5 y el cambio Profesional/50 a 53,90 EUR para el
 30/11 siguen intactos. No se anula el cambio ni se confirma un pago en esta revisión.
 
+### Ficha incluida en la suscripción pagada · 02/11/2026
+
+La prueba posterior de Javier confirma que Completo/50 está pagado pero la
+ficha queda inelegible: el catálogo mantiene `directory_enabled=false` y la
+consulta del directorio usa `offer_id`, aunque los cupos ya utilizan la oferta
+vigente. Se conecta en Dev la prestación acordada, sin otro cobro: Profesional
+y Completo incluyen ficha; Básico requiere su opción adicional.
+
+`20261102160609_trainer_directory_paid_plan_access` configura esa prestación
+en las ofertas de ensayo y hace que `commercial_eligible` lea
+`coalesce(current_offer_id,offer_id)`. Mantiene acceso profesional habilitado y
+periodo pagado vigente. No cambia importes, identidad de precios, recibos,
+compra inicial, Pro, algoritmo ni concesiones de ADMIN. Un pago pendiente no
+concede publicidad; una bajada futura conserva el plan vigente hasta renovar.
+El piloto individual sigue siendo independiente. La foto, consentimiento,
+canal, publicación voluntaria y moderación conservan sus controles existentes.
+El catálogo informa a Trainer de `directory_enabled` para no presentar esta
+prestación como pendiente cuando el servidor ya la ha habilitado.
+
+Análisis de Trainer limpio y 444 pruebas correctas. El contrato SQL nuevo y los
+cinco de directorio, piloto, contactos, contratación y cambios de plan pasan
+con ROLLBACK antes del despliegue; el nuevo vuelve a pasar tras aplicar solo en
+Dev. El asesor de seguridad no añade hallazgos a los existentes. La cuenta
+probada conserva Completo/50, foto y borrador; el servidor confirma elegibilidad
+verdadera. No se publica su ficha en nombre del propietario.
+Historial Dev cotejado: 280 migraciones coincidentes. La comprobación visual de
+la cuenta muestra `Publicar ficha` y `Guardar ficha` habilitados, con foto y
+borrador conservados. Captura local ignorada:
+`build/trainer-pricing-review/directory-paid-profile-ready.jpg`.
+
 ### Perfil visible y confirmación de cobro · 02/11/2026
 
 Javier señala que «Directorio en Básico» no explica el beneficio. El control pasa

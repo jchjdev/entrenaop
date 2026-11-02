@@ -1,5 +1,17 @@
 # Registro de decisiones vigentes
 
+**Ficha del directorio incluida en el plan pagado · 02/11/2026:** Javier detecta
+que su cuenta de prueba con Completo no puede publicar y pide resolverlo. Se
+conecta en Dev la prestación ya acordada: Profesional y Completo incluyen ficha;
+Básico la obtiene con su extra. Se exige cobertura pagada vigente y acceso
+profesional habilitado, leyendo la oferta actual en lugar de la compra inicial.
+Preparar o dejar pendiente un pago no concede el derecho; una bajada programada
+conserva la cobertura actual hasta renovar. Se mantienen consentimiento, foto,
+publicación voluntaria, moderación y el piloto individual existente. Los regalos
+de herramientas no conceden publicidad, Pro ni algoritmo. Continúa en pruebas,
+sin cargos nuevos ni cambios en Stripe.
+[Contrato y verificación](TRAINER_COMMERCIAL_CONTRACT.md#ficha-incluida-en-la-suscripción-pagada--02112026).
+
 **Ajustes, ayuda y contacto de EntrenaOP · 02/11/2026:** Javier autoriza completar
 Ajustes manteniendo Perfil deportivo y dispositivos a mano, con las cards del
 proyecto. Cuenta y Pro, Ayuda e Información reutilizan suscripción, preferencias
