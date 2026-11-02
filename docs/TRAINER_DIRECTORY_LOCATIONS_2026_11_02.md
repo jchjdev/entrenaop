@@ -12,7 +12,8 @@ además un selector de isla opcional. La localidad es texto libre opcional y
 admite hasta 80 caracteres. Al cambiar provincia se limpia la isla anterior.
 La Graciosa se incluye como opción de Las Palmas, sin asignarle un código INE.
 Fuentes: [provincias INE](https://www.ine.es/daco/daco42/codmun/cod_provincia.htm)
-e [islas INE](https://www.ine.es/daco/daco42/codmun/cod_islas.htm).
+e [islas INE](https://www.ine.es/daco/daco42/codmun/cod_islas.htm), con
+[La Graciosa en Las Palmas](https://www.miteco.gob.es/es/parques-nacionales-oapn/centros-fincas/graciosa/ficha-tecnica.html).
 
 En presencial basta con provincia o con la localidad ya admitida; en online no
 se obliga a indicar ubicación. La ficha muestra localidad, isla y provincia,
@@ -84,3 +85,24 @@ las acciones de Ervi, no se cambian sus datos ni su consentimiento por él y no
 se amplía todavía a centros, mapas o geolocalización. La app local necesita
 recompilar para mostrar el nuevo campo y la etiqueta; Trainer se sirve desde
 su publicación Dev verificada. Producción no se consulta ni modifica.
+
+## Publicación comprobada
+
+El bloque de ubicación se guarda en `864aa4e1`; la integración con el regalo
+opcional de ficha queda en `ce1f27407477fdf8ac532d633d3873d3334bd2bc`. Ambos
+commits se subieron juntos, manteniendo main estable durante las publicaciones.
+Las validaciones y el despliegue de
+[Trainer Dev](https://github.com/jchjdev/entrenaop/actions/runs/41541658189)
+han terminado correctamente. También finalizaron la validación, publicación y
+conservación de paquetes de
+[ADMIN Dev](https://github.com/jchjdev/entrenaop/actions/runs/41541658068);
+su comprobación auxiliar de conservación necesitó un reintento por transporte,
+resuelto sin modificar código ni repetir la publicación.
+
+La comprobación HTTPS independiente acredita en ambos hosts el commit
+`ce1f2740`, entorno development, proyecto Dev, fuentes limpias, SHA-256 del
+JavaScript, arranque y recursos correctos. El `version.json` de cada publicación
+aislada confirma `0.2.0+2`; el archivo legado de la raíz no identifica la versión
+activa. La evidencia local se conserva en
+`build/directory-location-publication-proof.json`. Queda pendiente únicamente
+el ensayo manual descrito arriba, sin modificar la ficha de Ervi por él.
