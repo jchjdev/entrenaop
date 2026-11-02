@@ -101,6 +101,10 @@ import 'package:entrenaop/features/running_tools/presentation/pages/running_pace
 import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparation_goal_cubit.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparation_detail_cubit.dart';
+import 'package:entrenaop/features/preparation_goal/presentation/bloc/adaptive_plan_cubit.dart';
+import 'package:entrenaop/features/preparation_goal/domain/repositories/published_adaptive_week_repository.dart';
+import 'package:entrenaop/features/preparation_goal/presentation/pages/adaptive_plan_page.dart';
+import 'package:entrenaop/features/preparation_goal/domain/usecases/get_preparation_detail_usecase.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/pages/preparation_detail_page.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/pages/running_intake_page.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/pages/running_context_form_page.dart';
@@ -478,6 +482,24 @@ class AppRouter {
                       ),
                   routes: [
                     materialAppRoute(
+                      path: 'preparations',
+                      builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
+                        bloc: authCubit,
+                        buildWhen: (_, next) =>
+                            next is AuthAuthenticated ||
+                            next is AuthUnauthenticated,
+                        builder: (_, auth) => auth is! AuthAuthenticated
+                            ? const SizedBox.shrink()
+                            : BlocProvider(
+                                key: ValueKey(
+                                  'preparation-manager-${auth.user.id}',
+                                ),
+                                create: (_) => sl<DashboardCubit>(),
+                                child: const TrainingPreparationsPage(),
+                              ),
+                      ),
+                    ),
+                    materialAppRoute(
                       path: 'week',
                       builder: (context, state) =>
                           BlocBuilder<AuthCubit, AuthState>(
@@ -612,6 +634,44 @@ class AppRouter {
                             ),
                           ),
                           routes: [
+                            materialAppRoute(
+                              path: 'plan',
+                              builder: (_, state) => BlocBuilder<AuthCubit, AuthState>(
+                                bloc: authCubit,
+                                buildWhen: (_, next) =>
+                                    next is AuthAuthenticated ||
+                                    next is AuthUnauthenticated,
+                                builder: (_, auth) => auth is! AuthAuthenticated
+                                    ? const SizedBox.shrink()
+                                    : BlocProvider(
+                                        key: ValueKey(
+                                          'adaptive-plan-${auth.user.id}-${state.pathParameters['goalId']}-${state.uri.queryParameters['week'] ?? ''}',
+                                        ),
+                                        create: (_) => AdaptivePlanCubit(
+                                          goalId:
+                                              state.pathParameters['goalId']!,
+                                          repository:
+                                              sl<
+                                                PreparationTrainingRepository
+                                              >(),
+                                          getDetail:
+                                              sl<GetPreparationDetailUseCase>(),
+                                          publishedRepository:
+                                              sl<
+                                                PublishedAdaptiveWeekRepository
+                                              >(),
+                                          initialWeek: DateTime.tryParse(
+                                            state.uri.queryParameters['week'] ??
+                                                '',
+                                          ),
+                                        )..load(),
+                                        child: AdaptivePlanPage(
+                                          loadProAccess:
+                                              sl<ProAccessRepository>().load,
+                                        ),
+                                      ),
+                              ),
+                            ),
                             _workflowRoute(
                               path: 'training',
                               builder: (context, state) => BlocBuilder<AuthCubit, AuthState>(

@@ -108,13 +108,13 @@ class _Content extends StatelessWidget {
                     Card(
                       child: ListTile(
                         leading: const Icon(Icons.fitness_center),
-                        title: const Text('Programa de entrenamiento'),
+                        title: const Text('Mi plan adaptativo'),
                         subtitle: const Text(
-                          'Configura o revisa tus objetivos, punto de partida y propuesta de entrenamiento.',
+                          'Consulta tu plan, sus entrenamientos y el recorrido de tu preparación.',
                         ),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () async {
-                          await context.push('/plan/goal/${goal.id}/training');
+                          await context.push('/plan/goal/${goal.id}/plan');
                           if (context.mounted) {
                             context.read<PreparationDetailCubit>().load();
                           }

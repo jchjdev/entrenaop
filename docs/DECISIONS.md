@@ -1,8 +1,22 @@
 # Registro de decisiones vigentes
 
+**Entrenar con la preparación como protagonista · 02/11/2026:** Javier aprueba
+llevar a la app el prototipo con **Preparación, Programas y Disponibilidad**.
+Preparación reúne objetivo y plan adaptativo en una única tarjeta; el resto de
+objetivos se gestiona en un destino secundario. Programas conserva rutinas y
+fases editoriales, separado del algoritmo y con Biblioteca como catálogo común.
+Consultar el plan y sus semanas es una lectura independiente de activar,
+revisar o retomar; estas acciones mantienen su flujo y derechos Pro. Un pausado
+conserva la consulta de su pauta publicada aunque sus pendientes se hayan
+retirado de la agenda. Se mantienen cards, desplazamiento interno, calendario,
+editor de disponibilidad y procesos deportivos. Sustituye los nombres y el
+reparto pendientes de las revisiones anteriores, sin alterar cuotas ni motor.
+[Recorrido y comprobación](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#entrenar-preparación-programas-y-disponibilidad--02112026).
+
 **Nombre visible Programas · 02/11/2026:** Javier corrige la propuesta de
 Entrenar: la pestaña y sus textos deben decir **Programas**, sin «Guiados» ni
-«programas guiados». Se actualiza el prototipo; la aplicación todavía no cambia.
+«programas guiados». Se corrige primero el prototipo y después se autoriza e
+implementa el reparto descrito arriba.
 La distinción de dominio respecto al plan adaptativo se conserva.
 [Criterio de producto](PRODUCT.md#prioridad-del-recorrido-adaptativo--02112026).
 

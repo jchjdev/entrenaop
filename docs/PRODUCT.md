@@ -17,17 +17,20 @@ seguimiento e historial propios; actualmente el usuario confirma el avance de
 fase según las instrucciones publicadas. Esa confirmación no es una adaptación
 automática calculada a partir de sus marcas. [Contrato de guiados](PROGRAMAS_GUIADOS.md).
 
-**Nombre visible confirmado · 02/11/2026:** en la propuesta de Entrenar se usa
+**Nombre visible confirmado · 02/11/2026:** en Entrenar se usa
 **Programas** en la pestaña y sus textos, sin «Guiados» ni «programas guiados».
-Esta corrección de nombre no cambia las modalidades ni su funcionamiento; por
-ahora está aplicada al prototipo, pendiente de llevar el reparto a la app.
+Esta corrección de nombre no cambia las modalidades ni su funcionamiento.
 
 Entrenar debe dar prioridad a la preparación y su plan adaptativo, con una sola
 representación de su estado y próxima acción. Puede haber varias preparaciones
 guardadas y un único generador adaptativo activo. Los guiados tienen un acceso
-propio y Biblioteca conserva catálogo y creación. La propuesta de presentar ambos
-como una lista equivalente en la portada queda descartada; el diseño de pantallas
-aún debe concretarse. [Criterios y revisión](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#rectificación-la-preparación-adaptativa-es-la-entrada-principal--02112026).
+propio y Biblioteca conserva catálogo y creación. El reparto aprobado e
+implementado es **Preparación, Programas y Disponibilidad**, con desplazamiento
+interno. Gestionar preparaciones abre los objetivos guardados; consultar un plan
+lee sus semanas publicadas, incluso pausado en Free. Activar, revisar o retomar
+conserva Pro y la aceptación explícita del flujo existente. La próxima sesión
+abre su vista previa y no comienza al consultarla.
+[Recorrido y límites](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#entrenar-preparación-programas-y-disponibilidad--02112026).
 
 **Ajuste de Perfil aprobado · 01/11/2026:** Perfil conserva identidad, evolución
 y acceso directo a Dispositivos y conexiones. El engranaje abre Ajustes para
@@ -39,8 +42,9 @@ profesional separados. [Criterios vigentes](ATHLETE_TRAINER_NAVIGATION_2026_10_2
 ## Navegación del deportista reorganizada · 01/11/2026
 
 Javier aprueba Inicio, Entrenar, Biblioteca, Preparador y Perfil como destinos
-inferiores. Inicio conserva sus cards y semana compacta; Entrenar abre Planes,
-con Preparaciones y Disponibilidad como caras desplazables. Ver semana lleva al
+inferiores. Inicio conserva sus cards y semana compacta; tras la revisión del
+02/11, Entrenar abre Preparación, con Programas y Disponibilidad como caras
+desplazables. Ver semana lleva al
 calendario común y Disponibilidad reutiliza el editor completo. Preparador reúne
 relación y seguimiento, búsqueda e indicador de novedades. Perfil conserva cuenta
 y conexiones y aloja el acceso a Evolución. El cambio al trabajo profesional

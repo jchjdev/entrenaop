@@ -110,6 +110,10 @@ void main() {
           builder: (_, _) => const Scaffold(body: Text('Ficha del programa')),
         ),
         GoRoute(
+          path: '/plan/preparations',
+          builder: (_, _) => const Scaffold(body: Text('Elegir preparación')),
+        ),
+        GoRoute(
           path: '/plan',
           builder: (_, _) => const Scaffold(body: Text('Elegir preparación')),
         ),
@@ -542,7 +546,7 @@ void main() {
       await tester.ensureVisible(find.text('Ver preparaciones'));
       await tester.tap(find.text('Ver preparaciones'));
       await tester.pumpAndSettle();
-      expect(router.state.uri.path, '/plan');
+      expect(router.state.uri.path, '/plan/preparations');
     },
   );
 }

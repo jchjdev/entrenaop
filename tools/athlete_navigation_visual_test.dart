@@ -51,8 +51,9 @@ void main() {
     ('inicio', 390.0, 1.0, 2, true, '/home'),
     ('sin-avisos', 390.0, 1.0, 0, true, '/home'),
     ('inicio-accesible', 320.0, 2.0, 2, true, '/home'),
-    ('entrenar-planes', 390.0, 1.0, 2, true, '/plan'),
-    ('entrenar-preparaciones', 390.0, 1.0, 2, true, '/plan?tab=preparations'),
+    ('entrenar-preparacion', 390.0, 1.0, 2, true, '/plan'),
+    ('entrenar-programas', 390.0, 1.0, 2, true, '/plan?tab=programs'),
+    ('entrenar-preparaciones', 390.0, 1.0, 2, true, '/plan/preparations'),
     ('entrenar-disponibilidad', 390.0, 1.0, 2, true, '/plan?tab=availability'),
     ('entrenar-accesible', 320.0, 2.0, 2, true, '/plan?tab=availability'),
     ('preparador', 390.0, 1.0, 2, true, '/my-trainer'),
@@ -163,6 +164,15 @@ void main() {
                         selectedDate: DateTime(2026, 11, 1),
                       ),
                     ),
+                    routes: [
+                      GoRoute(
+                        path: 'preparations',
+                        builder: (_, _) => BlocProvider.value(
+                          value: cubit,
+                          child: const TrainingPreparationsPage(),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -272,6 +282,20 @@ void main() {
               ),
           ['Inicio', 'Entrenar', 'Biblioteca', 'Preparador', 'Perfil'],
         );
+        if (screen.startsWith('entrenar-')) {
+          final nav = find.byType(NavigationBar);
+          final rect = tester.getRect(nav);
+          expect(rect.top, greaterThanOrEqualTo(0));
+          expect(rect.bottom, lessThanOrEqualTo(900));
+          expect(rect.width, lessThanOrEqualTo(width));
+          expect(nav.hitTestable(), findsOneWidget);
+          expect(
+            find
+                .descendant(of: nav, matching: find.text('Perfil'))
+                .hitTestable(),
+            findsOneWidget,
+          );
+        }
       }
       expect(find.byTooltip('Mi perfil'), findsNothing);
       expect(find.byTooltip('$unread avisos sin leer'), findsNothing);
@@ -341,6 +365,22 @@ class _Overview implements GetPreparationOverviewUseCase {
       ),
       weekStart: today.subtract(Duration(days: today.weekday - 1)),
       weeklyWorkouts: [
+        for (var i = 0; i < 4; i++)
+          ScheduledWorkout(
+            id: 'adaptive-$i',
+            templateId: 'adaptive-template-$i',
+            templateName: i == 2 ? 'Carrera suave' : 'Fuerza y rendimiento',
+            templateVersion: 1,
+            scheduledDate: today
+                .subtract(Duration(days: today.weekday - 1))
+                .add(Duration(days: [0, 1, 3, 4][i])),
+            source: ScheduledWorkoutSource.algorithm,
+            preparationGoalId: 'fas',
+            estimatedDurationMinutes: i == 2 ? 35 : 45,
+            status: i < 2
+                ? ScheduledWorkoutStatus.completed
+                : ScheduledWorkoutStatus.planned,
+          ),
         ScheduledWorkout(
           id: 'fixture',
           templateId: 'fixture',
@@ -372,7 +412,7 @@ Future<void> _capture(
   final image = await render.toImage();
   final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
   final file = File(
-    '${const String.fromEnvironment('ATHLETE_CAPTURE_DIR', defaultValue: 'docs/visual-audit/athlete-navigation-2026-11-01')}/$name.png',
+    '${const String.fromEnvironment('ATHLETE_CAPTURE_DIR', defaultValue: 'docs/visual-audit/athlete-training-2026-11-02')}/$name.png',
   );
   await file.parent.create(recursive: true);
   await file.writeAsBytes(bytes!.buffer.asUint8List());

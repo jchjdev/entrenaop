@@ -1,5 +1,23 @@
 # Arquitectura de EntrenaOP
 
+**Entrenar y consulta adaptativa · 02/11/2026:** `TrainingHubPage` conserva su
+`TabController` y `DashboardCubit`; presenta Preparación, Programas y
+Disponibilidad. La gestión se desplaza a `/plan/preparations` y conserva todos
+los objetivos, sin repetirlos en la portada. Las URLs antiguas `tab=plans` y
+`tab=preparations` llegan a Preparación; `tab=programs` abre Programas.
+`/plan/goal/:goalId/plan` compone `AdaptivePlanCubit` con los puertos existentes
+de preparación y el nuevo `PublishedAdaptiveWeekRepository`, inyectado mediante
+GetIt. Su adaptador consulta las decisiones publicadas de fuerza y carrera bajo
+RLS, con filtros explícitos de cuenta, preparación, lunes y versión vigente.
+No llama a calcular, avanzar, publicar ni activar. Esto conserva la consulta de
+la pauta retirada al pausar, sin recrearla con el algoritmo actual. La pantalla
+lee fases reales, sesiones y dosis publicadas; los entrenamientos vigentes usan
+la vista previa exacta y los resultados el historial existente. Configurar o
+retomar sigue pasando por la ruta `training` y su gate Pro. Los controladores se
+identifican por cuenta/preparación/semana y descartan respuestas tardías; la
+renovación de la misma identidad conserva estado. No cambian SQL, permisos,
+dependencias ni los ejecutores.
+
 **Perfil y acceso profesional · 01/11/2026:** se retira el selector superior del
 shell. `WorkspaceNavigationScope` expone únicamente callbacks de presentación
 para entrar en la rama profesional y volver a la última rama personal distinta

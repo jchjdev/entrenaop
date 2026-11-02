@@ -64,13 +64,14 @@ class _TrainingGuidedProgramsState extends State<TrainingGuidedPrograms> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             HomeSectionHeading(
-              title: 'Tus programas guiados',
+              title: 'Tus programas',
               action: TextButton.icon(
                 onPressed: () => context.push('/library?tab=programs'),
                 icon: const Icon(Icons.add_rounded, size: 18),
-                label: const Text('Añadir'),
+                label: const Text('Explorar'),
               ),
             ),
+            const Text('Rutinas y programas por fases que sigues a tu ritmo.'),
             const SizedBox(height: 12),
             if (state.loading) const LinearProgressIndicator(minHeight: 2),
             if (state.error != null) ...[
@@ -91,7 +92,7 @@ class _TrainingGuidedProgramsState extends State<TrainingGuidedPrograms> {
             if (!state.loading && state.error == null && state.items.isEmpty)
               const EntrenaCard(
                 child: Text(
-                  'Todavía no sigues ningún programa guiado. Puedes elegir uno en la biblioteca.',
+                  'Todavía no sigues ningún programa. Puedes elegir uno en la biblioteca.',
                 ),
               ),
             if (state.items.isNotEmpty)

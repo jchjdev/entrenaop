@@ -1,3 +1,7 @@
+import '../../../support/pro_access_fixture.dart';
+
+import 'package:entrenaop/features/pro/presentation/widgets/pro_access_widgets.dart';
+
 import '../../../helpers/performance_visual_review.dart';
 import '../../../support/guided_program_fixture.dart';
 
@@ -88,6 +92,8 @@ void main() {
     String? section,
     DateTime? selectedDate,
     GuidedProgramRepository? guidedPrograms,
+    LoadProAccess? loadProAccess,
+    bool light = false,
   }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = Size(width, height);
@@ -98,7 +104,9 @@ void main() {
     addTearDown(cubit.close);
     await cubit.load();
     final router = GoRouter(
-      initialLocation: '/plan',
+      initialLocation: section == 'preparations'
+          ? '/plan/preparations'
+          : '/plan',
       routes: [
         GoRoute(
           path: '/plan',
@@ -108,12 +116,22 @@ void main() {
               initialSection: section,
               selectedDate: selectedDate,
               guidedPrograms: guidedPrograms,
+              loadProAccess: loadProAccess,
             ),
+          ),
+        ),
+        GoRoute(
+          path: '/plan/preparations',
+          builder: (_, _) => BlocProvider.value(
+            value: cubit,
+            child: const TrainingPreparationsPage(),
           ),
         ),
         for (final path in [
           '/plan/week',
           '/plan/week/active/:id',
+          '/plan/week/session/:id',
+          '/plan/goal/:id/plan',
           '/plan/goal',
           '/plan/goal/:id',
           '/plan/goal/:id/training',
@@ -136,7 +154,7 @@ void main() {
       RepaintBoundary(
         key: const ValueKey('review-boundary'),
         child: MaterialApp.router(
-          theme: EntrenaTheme.dark,
+          theme: light ? EntrenaTheme.light : EntrenaTheme.dark,
           debugShowCheckedModeBanner: false,
           routerConfig: router,
           builder: (context, child) => MediaQuery(
@@ -151,8 +169,11 @@ void main() {
     return (router: router, cubit: cubit, source: source);
   }
 
-  Finder pane(String section) =>
-      find.byKey(PageStorageKey('training-$section-scroll'));
+  Finder pane(String section) => find.byKey(
+    PageStorageKey(
+      'training-${section == 'plans' ? 'preparation' : section}-scroll',
+    ),
+  );
   Finder inside(String section, Finder target) =>
       find.descendant(of: pane(section), matching: target);
   Future<void> select(WidgetTester tester, String label) async {
@@ -174,14 +195,14 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('abre Planes y conserva la agenda sin repetir la semana', (
+  testWidgets('abre Preparación y conserva la agenda sin repetir la semana', (
     tester,
   ) async {
     final result = await mount(tester, _overview(goals: []));
     expect(find.text('Entrenar'), findsOneWidget);
     expect(
       find.text(
-        'No hay plan automático en curso. Puedes seguir entrenando las sesiones de tu semana y los programas guiados.',
+        'Elige para qué quieres prepararte. Tu plan tendrá en cuenta tus marcas, disponibilidad y resultados.',
       ),
       findsOneWidget,
     );
@@ -228,7 +249,8 @@ void main() {
         ),
         findsOneWidget,
       );
-      await show(tester, 'plans', find.text('Hipertrofia básica'));
+      await select(tester, 'Programas');
+      await show(tester, 'programs', find.text('Hipertrofia básica'));
       await tester.tap(find.byKey(const ValueKey('training-guided-program')));
       await tester.pumpAndSettle();
       expect(result.router.state.uri.path, '/library/programs/program');
@@ -239,10 +261,10 @@ void main() {
   testWidgets('deslizar y tocar sincronizan las caras sin iniciar procesos', (
     tester,
   ) async {
-    await mount(tester, _overview());
+    await mount(tester, _overview(), guidedPrograms: GuidedTestRepository());
     await tester.drag(find.byType(TabBarView), const Offset(-310, 0));
     await tester.pumpAndSettle();
-    expect(find.text('Tus preparaciones').hitTestable(), findsOneWidget);
+    expect(find.text('Tus programas').hitTestable(), findsOneWidget);
     expect(tester.widget<TabBar>(find.byType(TabBar)).controller!.index, 1);
     await select(tester, 'Disponibilidad');
     expect(
@@ -251,9 +273,9 @@ void main() {
     );
     await tester.drag(find.byType(TabBarView), const Offset(310, 0));
     await tester.pumpAndSettle();
-    expect(find.text('Tus preparaciones').hitTestable(), findsOneWidget);
-    await select(tester, 'Planes');
-    expect(find.text('Plan automático').hitTestable(), findsOneWidget);
+    expect(find.text('Tus programas').hitTestable(), findsOneWidget);
+    await select(tester, 'Preparación');
+    expect(find.text('Tu plan adaptativo').hitTestable(), findsOneWidget);
   });
 
   testWidgets(
@@ -304,23 +326,23 @@ void main() {
           _overview(programs: [_program(status)]),
         );
         final label = status == 'training'
-            ? 'Ver mi programa'
+            ? 'Ver mi plan'
             : status == 'needs_review'
             ? 'Revisar lo pendiente'
-            : 'Consultar programa';
+            : 'Consultar mi plan';
         const section = 'plans';
         if (status == 'paused') {
           expect(find.textContaining('PROGRAMA EN CURSO'), findsNothing);
-          expect(find.text('PLAN AUTOMÁTICO · Pausada'), findsOneWidget);
+          expect(find.text('Pausada'), findsOneWidget);
         }
         await show(tester, section, find.text(label));
         await tester.tap(inside(section, find.text(label)));
         await tester.pumpAndSettle();
         expect(
           result.router.state.uri.path,
-          status == 'paused' || status == 'complete'
-              ? '/plan/goal/g'
-              : '/plan/goal/g/training',
+          status == 'needs_review'
+              ? '/plan/goal/g/training'
+              : '/plan/goal/g/plan',
         );
         result.router.pop();
         await tester.pumpAndSettle();
@@ -363,7 +385,10 @@ void main() {
     // El aviso puede aumentar el contenido, pero no reinicia el scroll a cero.
     expect(after, greaterThanOrEqualTo(before));
     result.source.fail = false;
-    await tester.drag(scrollable, const Offset(0, 600));
+    // Llegar al botón sin sobrepasar el inicio y disparar otro refresco por gesto.
+    await tester.ensureVisible(
+      inside('availability', find.text('Reintentar cargar Entrenar')),
+    );
     await tester.pumpAndSettle();
     expect(
       inside(
@@ -425,7 +450,7 @@ void main() {
     expect(retry.hitTestable(), findsOneWidget);
     await tester.tap(retry);
     await tester.pumpAndSettle();
-    expect(find.text('Plan automático'), findsOneWidget);
+    expect(find.text('Tu plan adaptativo'), findsOneWidget);
   });
 
   for (final programId in [
@@ -502,7 +527,8 @@ void main() {
         ),
       );
       final result = await mount(tester, _overview(goals: [_goal, second]));
-      await tester.tap(find.text('Ver preparaciones'));
+      await show(tester, 'plans', find.text('Gestionar preparaciones'));
+      await tester.tap(find.text('Gestionar preparaciones'));
       await tester.pumpAndSettle();
       await show(tester, 'preparations', find.text('Otra preparación'));
       await show(tester, 'preparations', find.text('Ver preparación').last);
@@ -553,11 +579,9 @@ void main() {
         _overview(programs: [_program('training')]),
         guidedPrograms: guided,
       );
-      await show(tester, 'plans', find.text('Reintentar programas'));
-      expect(
-        inside('plans', find.text('PLAN AUTOMÁTICO · En curso')),
-        findsOneWidget,
-      );
+      expect(inside('plans', find.text('En curso')), findsOneWidget);
+      await select(tester, 'Programas');
+      await show(tester, 'programs', find.text('Reintentar programas'));
       await tester.tap(find.text('Ver semana'));
       await tester.pumpAndSettle();
       expect(result.router.state.uri.path, '/plan/week');
@@ -566,15 +590,20 @@ void main() {
   );
 
   testWidgets(
-    'Planes carga todas las páginas de programas seguidos y refresca al regresar',
+    'Programas carga todas las páginas de programas seguidos y refresca al regresar',
     (tester) async {
       final guided = _PagedGuided();
-      final result = await mount(tester, _overview(), guidedPrograms: guided);
+      final result = await mount(
+        tester,
+        _overview(),
+        guidedPrograms: guided,
+        section: 'programs',
+      );
       expect(guided.requests, [
         (page: 0, followed: true),
         (page: 1, followed: true),
       ]);
-      await show(tester, 'plans', find.text('Programa guardado 4'));
+      await show(tester, 'programs', find.text('Programa guardado 4'));
       await tester.tap(find.byKey(const ValueKey('training-guided-saved-4')));
       await tester.pumpAndSettle();
       expect(result.router.state.uri.path, '/library/programs/saved-4');
@@ -589,6 +618,179 @@ void main() {
       ]);
     },
   );
+
+  testWidgets(
+    'una preparación generadora prevalece sobre pausadas e históricas',
+    (tester) async {
+      await mount(
+        tester,
+        _overview(
+          programs: [
+            _program('paused', id: 'other', name: 'Anterior pausada'),
+            _program('complete', id: 'finished', name: 'Preparación terminada'),
+            _program('training'),
+          ],
+        ),
+      );
+      expect(find.text('Preparación actual'), findsOneWidget);
+      expect(find.text('Anterior pausada'), findsNothing);
+      expect(find.text('Preparación terminada'), findsNothing);
+      expect(find.text('Tus programas'), findsNothing);
+      expect(find.text('PLAN ADAPTATIVO · PRO'), findsNothing);
+      await capturePerformanceWidget(tester, 'entrenar-preparacion-principal');
+    },
+  );
+
+  testWidgets(
+    'Free pausado permite consultar y comunica Pro antes de retomar',
+    (tester) async {
+      final access = ProAccessFixture();
+      final result = await mount(
+        tester,
+        _overview(
+          programs: [_program('paused')],
+          workouts: [_workout('antigua', ScheduledWorkoutStatus.planned)],
+        ),
+        loadProAccess: access.load,
+      );
+      expect(find.text('Consultar mi plan'), findsOneWidget);
+      await show(tester, 'plans', find.text('Retomar · Pro'));
+      expect(find.text('Ver entrenamiento'), findsNothing);
+      expect(find.text('Crear mi plan · Pro'), findsNothing);
+      await capturePerformanceWidget(tester, 'entrenar-free-pausado');
+      await tester.tap(find.text('Consultar mi plan'));
+      await tester.pumpAndSettle();
+      expect(result.router.state.uri.path, '/plan/goal/g/plan');
+      result.router.pop();
+      await tester.pumpAndSettle();
+      await show(tester, 'plans', find.text('Retomar · Pro'));
+      await tester.tap(find.text('Retomar · Pro'));
+      await tester.pumpAndSettle();
+      expect(result.router.state.uri.path, '/plan/goal/g/training');
+    },
+  );
+
+  testWidgets(
+    'siguiente entrenamiento y progreso sólo pertenecen al plan actual',
+    (tester) async {
+      final result = await mount(
+        tester,
+        _overview(
+          programs: [_program('training')],
+          workouts: [
+            _workout('preparador', ScheduledWorkoutStatus.planned, coach: true),
+            _workout('libre', ScheduledWorkoutStatus.planned, extra: true),
+            _workout('completada', ScheduledWorkoutStatus.completed),
+            _workout('futura', ScheduledWorkoutStatus.planned),
+            _workout('abierta', ScheduledWorkoutStatus.inProgress),
+          ],
+        ),
+      );
+      await show(tester, 'plans', find.text('ENTRENAMIENTO EN CURSO'));
+      expect(find.text('Semana del 05/10 · 1 de 3 resueltas'), findsOneWidget);
+      expect(find.text('Sesión abierta'), findsOneWidget);
+      expect(find.text('Sesión preparador'), findsNothing);
+      expect(find.text('Sesión libre'), findsNothing);
+      await show(tester, 'plans', find.text('Ver entrenamiento'));
+      await capturePerformanceWidget(
+        tester,
+        'entrenar-siguiente-entrenamiento',
+      );
+      await tester.tap(find.text('Ver entrenamiento'));
+      await tester.pumpAndSettle();
+      expect(result.router.state.uri.path, '/plan/week/session/abierta');
+      expect(result.router.state.uri.queryParameters['date'], '2026-10-07');
+    },
+  );
+
+  testWidgets('explorar Biblioteca y volver conserva Programas', (
+    tester,
+  ) async {
+    final guided = GuidedTestRepository();
+    final result = await mount(
+      tester,
+      _overview(),
+      guidedPrograms: guided,
+      section: 'programs',
+    );
+    await tester.tap(find.text('Explorar'));
+    await tester.pumpAndSettle();
+    expect(result.router.state.uri.toString(), '/library?tab=programs');
+    result.router.pop();
+    await tester.pumpAndSettle();
+    expect(tester.widget<TabBar>(find.byType(TabBar)).controller!.index, 1);
+    expect(find.text('Tus programas').hitTestable(), findsOneWidget);
+    expect(find.text('Guiados'), findsNothing);
+    expect(guided.starts, isEmpty);
+  });
+
+  testWidgets('elegir una preparación vacía no activa ni inicia el plan', (
+    tester,
+  ) async {
+    final result = await mount(tester, _overview(goals: []));
+    expect(find.text('Tu próxima preparación'), findsOneWidget);
+    await show(tester, 'plans', find.text('Elegir preparación'));
+    expect(
+      find.textContaining('Elegir tu preparación no lo activa'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Elegir preparación'));
+    await tester.pumpAndSettle();
+    expect(result.router.state.uri.path, '/plan/goal');
+  });
+
+  for (final width in [320.0, 390.0]) {
+    testWidgets('Programas se conserva accesible a $width px con texto 2×', (
+      tester,
+    ) async {
+      await mount(
+        tester,
+        _overview(),
+        guidedPrograms: GuidedTestRepository(),
+        section: 'programs',
+        width: width,
+        height: 480,
+        textScale: 2,
+      );
+      await show(tester, 'programs', find.text('Hipertrofia básica'));
+      expect(tester.takeException(), isNull);
+      await capturePerformanceWidget(
+        tester,
+        'entrenar-programas-${width.toInt()}-accesible',
+      );
+    });
+  }
+
+  testWidgets(
+    'portada en claro mantiene la jerarquía sin promociones repetidas',
+    (tester) async {
+      await mount(
+        tester,
+        _overview(programs: [_program('training')]),
+        light: true,
+        width: 390,
+      );
+      expect(find.text('Tu plan adaptativo'), findsOneWidget);
+      expect(find.text('PLAN ADAPTATIVO · PRO'), findsNothing);
+      await capturePerformanceWidget(tester, 'entrenar-preparacion-claro');
+    },
+  );
+  testWidgets('un objetivo nuevo no queda tapado por un plan finalizado', (
+    tester,
+  ) async {
+    await mount(
+      tester,
+      _overview(
+        programs: [
+          _program('complete', id: 'old-goal', name: 'Preparación finalizada'),
+        ],
+      ),
+    );
+    expect(find.text('Preparación actual'), findsOneWidget);
+    expect(find.text('Preparación finalizada'), findsNothing);
+    await show(tester, 'plans', find.text('Configurar mi plan'));
+    expect(find.text('Configurar mi plan').hitTestable(), findsOneWidget);
+  });
 }
 
 class _Overview implements GetPreparationOverviewUseCase {

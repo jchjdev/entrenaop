@@ -1,5 +1,29 @@
 # Roadmap de EntrenaOP
 
+**Deportista · reparto de Entrenar · 02/11/2026:** Javier aprueba el prototipo
+con **Preparación, Programas y Disponibilidad**. Implementado con las cards y el
+desplazamiento existentes: una preparación y su plan al frente, gestión de
+objetivos aparte, programas seguidos separados y calendario/editor compartidos.
+La consulta de semanas del plan es independiente de activar o retomar; Free
+puede leer su pauta pausada, incluidas las sesiones retiradas conservadas en las
+decisiones publicadas. Los procesos Pro y el inicio explícito siguen en sus
+flujos existentes. La lectura se inyecta por puertos, conserva RLS y propiedad,
+descarta respuestas tardías y respeta las dosis y el alcance publicados.
+No cambia algoritmo, suscripciones, SQL, dependencias ni las otras aplicaciones.
+
+Comprobación final del 02/11: `flutter analyze` limpio y batería completa de la
+raíz con **1.656 pruebas correctas y una omisión previa**. Incluye navegación
+real Free/Pro, renovación/cambio de cuenta, respuesta tardía, estado/scroll al
+volver, cuotas y ejecutores existentes, y regresiones de lectura histórica y
+unidades. Seis capturas reales y sus límites quedan en
+[auditoría visual](visual-audit/athlete-training-2026-11-02/README.md).
+**Único siguiente recorrido de este bloque:** compilar e instalar desde Mac y
+aceptar en iPhone Preparación → plan → semana → entrenamiento → volver;
+pausado Free → consulta → retomar Pro; revisión/activación/pausa con sus guardas;
+Programas → Biblioteca → volver; Disponibilidad → editar/guardar → volver.
+La validación automática no acredita instalación ni aceptación física.
+[Contrato del recorrido](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#entrenar-preparación-programas-y-disponibilidad--02112026).
+
 **Trainer · cambios de plan y plazas · 02/11/2026:** implementados en el ensayo
 el importe previo a confirmar, ampliación tras pago proporcional, reducción al
 renovar y anulación de cambios. Se conservan alumnos, historial, regalo y

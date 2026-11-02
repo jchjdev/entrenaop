@@ -1,3 +1,4 @@
+import 'package:entrenaop/features/preparation_goal/domain/repositories/published_adaptive_week_repository.dart';
 import 'package:entrenaop/features/pro/domain/pro_access.dart';
 
 import '../../support/pro_access_fixture.dart';
@@ -60,6 +61,16 @@ void main() {
     sl.registerSingleton<PreparationGoalRepository>(goals);
     sl.registerSingleton<WorkoutScheduleRepository>(schedule);
     sl.registerSingleton<PreparationTrainingRepository>(_Training());
+    sl.registerSingleton<PublishedAdaptiveWeekRepository>(_Published());
+    sl.registerSingleton<GetPreparationDetailUseCase>(
+      GetPreparationDetailUseCase(
+        goalRepository: goals,
+        loadRunningTests: goals.loadRunningTests,
+        loadTroopAssessments: (_) async => [],
+        loadRunningReferenceCandidates: (_) async => [],
+        scheduleRepository: schedule,
+      ),
+    );
     sl.registerSingleton<RunningIntakeContextRepository>(_Context());
     sl.registerSingleton<RunningWeekPlanRepository>(_RunningWeek());
     sl.registerSingleton<TrainingPreferencesRepository>(_Preferences());
@@ -101,30 +112,39 @@ void main() {
     await t.tap(find.byTooltip('Cerrar'));
     await t.pumpAndSettle();
     expect(router.config.state.uri.path, '/plan/goal/troop');
-    expect(find.text('Programa de entrenamiento'), findsOneWidget);
+    expect(find.text('Mi plan adaptativo'), findsOneWidget);
     expect(t.takeException(), isNull);
   });
 
-  testWidgets('preparación abre su programa y vuelve al mismo detalle', (
-    t,
-  ) async {
-    final router = AppRouter(_Auth());
-    addTearDown(router.dispose);
-    router.config.go('/plan/goal/troop');
-    await t.pumpWidget(MaterialApp.router(routerConfig: router.config));
-    await t.pumpAndSettle();
-    expect(find.text('Ingreso · Tropa'), findsOneWidget);
-    await t.tap(find.text('Programa de entrenamiento'));
-    await t.pumpAndSettle();
-    expect(router.config.state.uri.path, '/plan/goal/troop/training');
-    expect(find.text('Paso 1 de 4 · Tu programa'), findsOneWidget);
-    router.config.pop();
-    await t.pumpAndSettle();
-    expect(router.config.state.uri.path, '/plan/goal/troop');
-    expect(find.text('Ingreso · Tropa'), findsOneWidget);
-    expect(find.text('Programa de entrenamiento'), findsOneWidget);
-    expect(t.takeException(), isNull);
-  });
+  testWidgets(
+    'preparación consulta su plan, configura y vuelve al mismo detalle',
+    (t) async {
+      final router = AppRouter(_Auth());
+      addTearDown(router.dispose);
+      router.config.go('/plan/goal/troop');
+      await t.pumpWidget(MaterialApp.router(routerConfig: router.config));
+      await t.pumpAndSettle();
+      expect(find.text('Ingreso · Tropa'), findsOneWidget);
+      await t.tap(find.text('Mi plan adaptativo'));
+      await t.pumpAndSettle();
+      expect(router.config.state.uri.path, '/plan/goal/troop/plan');
+      expect(find.text('Mi plan adaptativo'), findsOneWidget);
+      await t.ensureVisible(find.text('Gestionar mi plan'));
+      await t.tap(find.text('Gestionar mi plan'));
+      await t.pumpAndSettle();
+      expect(router.config.state.uri.path, '/plan/goal/troop/training');
+      expect(find.text('Paso 1 de 4 · Tu programa'), findsOneWidget);
+      router.config.pop();
+      await t.pumpAndSettle();
+      expect(router.config.state.uri.path, '/plan/goal/troop/plan');
+      router.config.pop();
+      await t.pumpAndSettle();
+      expect(router.config.state.uri.path, '/plan/goal/troop');
+      expect(find.text('Ingreso · Tropa'), findsOneWidget);
+      expect(find.text('Mi plan adaptativo'), findsOneWidget);
+      expect(t.takeException(), isNull);
+    },
+  );
 
   for (final suffix in [
     '',
@@ -371,4 +391,10 @@ class _Schedule implements WorkoutScheduleRepository {
       [];
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _Published implements PublishedAdaptiveWeekRepository {
+  @override
+  Future<PublishedAdaptiveWeek> read(String goalId, DateTime week) async =>
+      const PublishedAdaptiveWeek();
 }

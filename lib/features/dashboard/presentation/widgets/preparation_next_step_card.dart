@@ -29,7 +29,7 @@ class PreparationNextStepCard extends StatelessWidget {
         title: 'Elige una preparación',
         description: 'No hay un programa en curso. Elige qué preparación quieres configurar o retomar y revisa su propuesta antes de empezar.',
         action: 'Ver preparaciones',
-        route: '/plan',
+        route: '/plan/preparations',
       ),
       PreparationNextStep.adaptiveProgram => (
         icon: program!.needsReview

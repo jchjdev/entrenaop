@@ -110,6 +110,8 @@ import 'package:entrenaop/features/pro/domain/pro_purchases.dart';
 import 'package:flutter/foundation.dart';
 import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_training_repository.dart';
 import 'package:entrenaop/features/preparation_goal/data/repositories/preparation_training_repository_impl.dart';
+import 'package:entrenaop/features/preparation_goal/data/repositories/published_adaptive_week_repository_impl.dart';
+import 'package:entrenaop/features/preparation_goal/domain/repositories/published_adaptive_week_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:entrenaop/core/config/app_config.dart';
@@ -301,6 +303,9 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => RunningWeekPlanRepository(sl()));
   sl.registerLazySingleton<PreparationTrainingRepository>(
     () => SupabasePreparationTrainingRepository(sl()),
+  );
+  sl.registerLazySingleton<PublishedAdaptiveWeekRepository>(
+    () => SupabasePublishedAdaptiveWeekRepository(sl()),
   );
   sl.registerLazySingleton(() => RunningReferenceSelectionRepository(sl()));
   sl.registerLazySingleton(

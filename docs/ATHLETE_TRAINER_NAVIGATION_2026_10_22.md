@@ -1,5 +1,51 @@
 # Navegación del alumno y preparador · TRN-025 · 22/10/2026
 
+## Entrenar: Preparación, Programas y Disponibilidad · 02/11/2026
+
+Javier aprueba llevar a Flutter el prototipo revisado, corrigiendo el nombre
+visible a **Programas**. La implementación conserva la estética de EntrenaCard,
+portadas y encuadres, el desplazamiento sincronizado y la barra inferior.
+
+- **Preparación** muestra una sola preparación principal: prevalece el generador
+  actual, después el pausado conservado; sin ellos se consulta el primer objetivo
+  guardado. Un objetivo nuevo no queda oculto detrás de un plan finalizado.
+  Objetivo y plan adaptativo comparten tarjeta. El progreso se obtiene de las
+  sesiones reales del algoritmo de esa preparación; no suma sesiones libres ni
+  del preparador. La próxima sesión prioriza una ejecución abierta y abre
+  **Ver entrenamiento**, con inicio explícito posterior.
+- **Gestionar preparaciones** abre `/plan/preparations`: todos los objetivos,
+  estados, consulta, marcas y añadir. La portada deja de repetir estas tarjetas
+  y la promoción genérica de crear otro plan Pro. Inicio conserva sus cards.
+- **Programas** reúne todos los seguidos, incluidas sus páginas de catálogo y
+  estados, mediante el Cubit existente. Explorar abre la misma Biblioteca y
+  volver conserva pestaña y posición. Se mantienen cuota Free, pausa, historial
+  y confirmación editorial del avance de fases.
+- **Disponibilidad** conserva días, minutos, material y editor completo actual;
+  guardar contexto no activa un programa ni inicia un entrenamiento.
+- **Ver semana** abre el calendario común conservando la fecha recibida. Las
+  URLs antiguas de Planes/Preparaciones siguen resolviendo a la portada de
+  Preparación; `tab=programs` selecciona la nueva cara de Programas.
+
+**Consulta separada del uso:** `/plan/goal/:goalId/plan` lee estado, semanas
+publicadas, fases reales y sesiones de esa preparación. También puede abrirse
+desde la ficha de objetivo. Free conserva la consulta del plan pausado; retomar
+comunica Pro antes de pasar al flujo existente. Consultar nunca calcula, avanza,
+publica, activa ni comienza sesiones. La pauta retirada al pausar se recupera de
+las decisiones publicadas conservadas con filtros de propietario y RLS. Sus
+dosis, descansos, instrucciones, tiempos y cargas se muestran sin prescribir
+otros valores, y no tienen acción de inicio. Resultados y pautas vigentes usan
+historial y vista previa exacta existentes. Las fases se identifican como estado
+actual, evitando atribuirlas retrospectivamente a otra semana consultada.
+
+**Verificación del 02/11:** análisis global limpio, **1.656 pruebas correctas y
+una omisión previa** en la raíz. Los casos incluyen router real, Free/Pro,
+renovación/cambio de cuenta, semanas, dosis/unidades, pautas de diferente alcance
+y retorno con scroll/selección. Se conservan las pruebas de permisos, cuotas,
+activación, guardas y ejecutores. [Capturas y límites](visual-audit/athlete-training-2026-11-02/README.md).
+El siguiente recorrido físico se registra en ROADMAP. No cambia ADMIN, Trainer, Biblioteca, SQL,
+suscripciones, cuotas ni algoritmo. El iPhone requiere compilar e instalar esta
+revisión desde Mac; las pruebas locales no acreditan esa instalación.
+
 ## Rectificación: la preparación adaptativa es la entrada principal · 02/11/2026
 
 Javier corrige la propuesta siguiente: el valor principal de EntrenaOP es el
