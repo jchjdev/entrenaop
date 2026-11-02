@@ -109,6 +109,8 @@ void main() {
       ),
     );
     await t.pumpAndSettle();
+    expect(find.text('31-10-2026 11:00'), findsOneWidget);
+    expect(find.text('31-10-2026 12:00'), findsOneWidget);
     expect(
       t.getTopLeft(find.text('Mensaje anterior')).dy,
       lessThan(t.getTopLeft(find.text('Último mensaje')).dy),

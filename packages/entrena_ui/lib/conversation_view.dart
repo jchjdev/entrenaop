@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'app_dates.dart';
 
 import 'src/professional_workspace.dart';
 
@@ -403,10 +404,7 @@ class _ConversationViewState extends State<ConversationView>
                                   Text(entry.contextLabel!),
                                 SelectableText(entry.body),
                                 Text(
-                                  entry.createdAt
-                                      .toLocal()
-                                      .toString()
-                                      .substring(0, 16),
+                                  formatAppDateTime(entry.createdAt.toLocal()),
                                   style: Theme.of(context).textTheme.bodySmall,
                                 ),
                               ],

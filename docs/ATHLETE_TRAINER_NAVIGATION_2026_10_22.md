@@ -38,6 +38,11 @@ canje de códigos condicionado a un destino configurado en Ajustes.
 Las fechas completas visibles se unifican en `dd-MM-yyyy`, incluidos avisos,
 agenda profesional, citas, vistas previas, marcas, preparación e historial.
 `formatAppDate` permite presentar fechas interpoladas con el mismo criterio.
+Javier detecta también el formato inverso en el chat: `ConversationView` mostraba
+la fecha técnica con `toString().substring`. Las conversaciones personales y
+profesionales usan ahora `formatAppDateTime` (`dd-MM-yyyy HH:mm`), conservando
+hora local, orden, paginación, borradores y operaciones de envío. Los dos
+formateadores residen en `entrena_ui`; la app reexporta su entrada existente.
 Se conserva `es_ES` para los calendarios, los resúmenes cortos día/mes, las horas,
 las zonas civiles de las citas y el formato ISO de rutas, repositorios y datos.
 No se sustituyen las fechas técnicas por su etiqueta visible.
@@ -50,6 +55,9 @@ entrada/vuelta de calculadoras y conservación de las rutas ISO.
 Verificación final: análisis global sin incidencias, 15 pruebas de rutas e
 identidad del perfil y batería completa de raíz con 1.710 correctas y una
 omisión previa. Capturas de favoritos y selector revisadas con el tema real.
+La ampliación del formato al chat queda incluida en la misma entrega `1.1.0+4`:
+12 pruebas del componente compartido, 75 de conversación/espacio profesional,
+1.710 de raíz y 444 de Trainer correctas; ambos análisis sin incidencias.
 
 ## Ajustes, ayuda y contacto · 02/11/2026
 

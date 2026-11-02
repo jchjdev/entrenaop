@@ -53,6 +53,7 @@ void main() {
         ),
       );
       await t.pumpAndSettle();
+      expect(find.text('27-10-2026 10:01'), findsOneWidget);
       await t.enterText(find.byType(TextField), 'Tengo una duda de técnica');
       await t.pump(const Duration(seconds: 15));
       await t.pumpAndSettle();

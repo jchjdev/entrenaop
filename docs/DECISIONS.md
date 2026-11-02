@@ -14,6 +14,7 @@ Actualiza el límite de favoritos de UI-026 sin cambiar pautas ni permisos.
 actualización funcional cambie también la versión visible. Esta entrega usa
 `1.1.0+4` y se registra el criterio de incremento en AGENTS. Las fechas completas
 visibles siguen día-mes-año; las rutas y datos conservan ISO y su zona civil.
+Incluye el chat con preparadores, que conserva la hora local y el mismo historial.
 El contacto se presenta como «Equipo de ayuda de EntrenaOP» y se retira de las
 condiciones el apartado de promociones que explicaba descuentos militares.
 El canje condicionado de códigos ya previsto en Ajustes no cambia.
