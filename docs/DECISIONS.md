@@ -1,5 +1,17 @@
 # Registro de decisiones vigentes
 
+**Acceso a sesiones adaptativas tras retirar Pro: revisión abierta · 02/11/2026:**
+Javier aporta un vídeo donde una cuenta Free consulta un plan antiguo y comienza
+dos entrenamientos, y pide concretar si debe cerrarse todo el programa. El vídeo,
+el código y entrenaop-dev confirman acceso Pro efectivo falso y permiso de inicio
+de sesiones antiguas sin comprobar Pro. Generación/adaptación sí están protegidas.
+El resumen muestra pausa comercial mientras la consulta lee el estado deportivo
+guardado; ambos estados se presentan de forma incoherente. Se recomienda mantener
+consulta e historial, exigir Pro para nuevos inicios adaptativos y permitir cerrar
+una sesión ya abierta. La alternativa de limitar también la consulta del plan
+queda pendiente de elegir; esta revisión no cambia derechos ni datos de cuentas.
+[Diagnóstico, límites y propuesta](PRO_LAUNCH.md#revisión-del-inicio-adaptativo-sin-pro--02112026).
+
 **Entrenar con la preparación como protagonista · 02/11/2026:** Javier aprueba
 llevar a la app el prototipo con **Preparación, Programas y Disponibilidad**.
 Preparación reúne objetivo y plan adaptativo en una única tarjeta; el resto de

@@ -1,5 +1,58 @@
 # Pro: interfaz inicial y conexión de pagos
 
+## Revisión del inicio adaptativo sin Pro · 02/11/2026
+
+Javier aporta una grabación de 79,96 segundos: jcharjim consulta su preparación
+con la tarjeta «Pausada», entra en semanas de octubre y comienza tanto Carrera
+fácil como Entrenamiento combinado. Reabre el criterio comercial y propone
+valorar un cierre completo del programa al perder Pro.
+
+**Hechos comprobados mediante vídeo, código y lecturas de entrenaop-dev:**
+
+- La cuenta tiene acceso Pro efectivo falso según `has_pro_access`, además de
+  perfil Free. Existe una concesión manual de desarrollo anterior retirada;
+  no se trata de confundir el campo `role` con una compra vigente.
+- Conserva dos sesiones `algorithm/planned` con plantillas privadas propias de
+  origen `algorithm`. Su estado deportivo sigue `training/auto_advance=true`.
+- `refresh_adaptive_programs` proyecta una pausa comercial en la respuesta para
+  Free sin modificar ese estado. La consulta de preparación lee el estado
+  deportivo original y por eso puede describir el plan como en marcha.
+- `advance_adaptive_program` no genera al faltar Pro; activación, cálculo y
+  publicación tienen sus guardas. El vídeo acredita uso de entrenamiento ya
+  pautado, no generación nueva ni acceso a los datos de otra persona.
+- `start_reviewed_scheduled_workout` valida dueño, estado y versión y delega en
+  `trainer_private.start_scheduled_workout`; éste no exige Pro para `algorithm`.
+  El inicio directo por plantilla también acepta origen `algorithm` propio sin
+  comprobar Pro. Por tanto, corregir sólo el botón o una única ruta no cierra
+  el acceso. `authenticated` no tiene INSERT directo en `workout_executions` en
+  el proyecto Dev contrastado.
+
+La nueva consulta ha hecho accesible este camino y la validación del reparto
+no cubrió suficientemente el inicio tras perder Pro. Los ensayos anteriores de
+caducidad comprobaban conservación de estado, parada de generación y cuotas;
+eso no acredita bloqueo de nuevos inicios de pautas conservadas.
+
+**Propuesta pendiente de confirmar:** mantener consulta del plan, pautas
+conservadas y resultados como lectura; exigir Pro efectivo vigente para empezar
+otra sesión del algoritmo, generar, revisar o adaptar; permitir continuar y
+cerrar una ejecución ya iniciada. La alternativa es conservar sólo resultados
+e historial y cerrar también la consulta del plan. Ninguna opción borra datos.
+La consulta completa fue aprobada previamente: no se retira sin concretar ese
+cambio comercial con Javier.
+
+La corrección debe distinguir bloqueo comercial de pausa voluntaria y mostrar
+el mismo acceso efectivo en Inicio, Entrenar, consulta y agenda. El servidor
+debe comprobar todos los inicios, incluidos el acceso directo a la plantilla y
+las rutas de dispositivos; no basta ocultar Comenzar. Se mantienen separados
+las sesiones propias/oficiales Free, la cuota de Programas y lo pautado por un
+preparador. Cancelar una renovación conserva Pro hasta su vencimiento efectivo.
+La futura verificación necesita Pro vigente, retirada/caducidad, sesión antigua
+pendiente, ejecución ya abierta, recuperación de Pro y entradas alternativas.
+
+Esta revisión sólo consulta Dev y registra el diagnóstico. No modifica usuarios,
+concesiones, sesiones, funciones, permisos ni producción. La elección del alcance
+comercial y su implementación continúan pendientes.
+
 **COM-021 · 28/10/2026:** referencia general actual 3,99 €/mes y 39,99 €/año;
 la presentación se actualiza y el precio del proveedor sigue gobernando la compra.
 Test Store EUR actualizado y releído el 28/10: 39.990.000 microunidades anual y
