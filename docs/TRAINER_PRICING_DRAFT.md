@@ -1,5 +1,98 @@
 # Precios y cupos profesionales · borrador del 31/10/2026
 
+## Propuesta gradual v2 · 02/11/2026 · pendiente de aprobar
+
+Javier confirma que deben definirse mejor las diferencias entre niveles y que
+el volumen debe tener un descuento lógico. Se concreta esta **hipótesis para
+debate**, sin cambiar importes Stripe, contratos ni la web oculta. No acredita
+rentabilidad; antes de vender se contrastarán coste de medios, soporte,
+procesamiento, impuestos y uso real.
+
+### Dos decisiones independientes
+
+1. Nivel de servicio: Básico, Profesional o Completo.
+2. Plazas contratadas: cualquier entero entre 5 y 100. Más de 100 queda para
+   una propuesta específica. El mínimo de cinco también es una hipótesis.
+
+Solo los alumnos externos activos ocupan plaza. Las plazas contratadas son la
+capacidad máxima elegida, no una facturación variable automática por actividad.
+Un alta dentro del cupo no añade cargos. Para mí, inactivos, archivados e
+invitaciones pendientes quedan excluidos conforme al contrato actual.
+
+### Prestaciones objetivo y estado real
+
+| Prestación | Básico | Profesional | Completo | Estado |
+| --- | --- | --- | --- | --- |
+| Ejercicios, sesiones y programas propios; biblioteca oficial autorizada | Incluido | Incluido | Incluido | Implementado |
+| Agenda, citas, asignación, resultados, técnica, formularios y conversación | Incluido | Incluido | Incluido | Implementado; aceptación de recorridos en curso |
+| Para mí, sin ocupar plaza; varios preparadores por alumno con aislamiento | Incluido | Incluido | Incluido | Implementado |
+| El alumno recibe, ejecuta y registra lo pautado sin comprar Pro | Incluido | Incluido | Incluido | Contrato implementado |
+| Ficha en directorio, voluntaria y sujeta a controles | Extra opcional | Incluido | Incluido | Directorio de ensayo existente; elegibilidad pagada pendiente |
+| Pro personal del preparador | Compra o concesión aparte | Incluido | Incluido | Concesión comercial por plan pendiente |
+| Algoritmo como asistente para preparar y adaptar propuestas de alumnos | No incluido | Previsto | Previsto | Herramienta profesional pendiente; exige revisión del preparador |
+| Pro autónomo de los alumnos activos vinculados | Compra individual aparte | Compra individual aparte | Incluido | Concesión, vigencia y convivencia con compras personales pendientes |
+
+El entrenador conserva en todos los niveles la decisión de qué asignar. El
+asistente propuesto debe reutilizar el motor deportivo y su versionado, y
+permitir revisar o descartar antes de publicar. No es asesoramiento generativo
+ni autoriza a sustituir automáticamente planes personales u otros preparadores.
+Pro autónomo no es necesario para el servicio asignado: el Completo añadiría
+las prestaciones personales de Pro que correspondan, con derechos por origen.
+
+No anunciar como disponible una fila pendiente. Hoy el ensayo pagado activa
+solo herramientas profesionales y cupo: los nombres de nivel todavía no
+conceden las diferencias comerciales de esta tabla. Para un lanzamiento real,
+no ofrecer el suplemento de una prestación que no pueda entregarse.
+
+Los futuros cobros alumno → preparador se consideran un circuito común de
+gestión, con comisiones y condiciones por concretar. No se incluyen en la venta
+actual ni se promete procesamiento gratuito o soporte prioritario ilimitado.
+
+### Curva mensual propuesta, en céntimos y por tramos marginales
+
+| Plazas | Básico | Profesional | Completo |
+| --- | ---: | ---: | ---: |
+| Primeras 5, cuota total | 12,90 | 19,90 | 24,90 |
+| Cada adicional de la 6 a la 10 | +1,00 | +1,20 | +1,40 |
+| Cada adicional de la 11 a la 20 | +0,80 | +1,00 | +1,20 |
+| Cada adicional de la 21 a la 50 | +0,50 | +0,60 | +0,80 |
+| Cada adicional de la 51 a la 100 | +0,30 | +0,40 | +0,50 |
+
+Se suman los bloques usados, sin recalcular retroactivamente todas las plazas
+al precio del último tramo. Así el total siempre aumenta al añadir capacidad,
+el coste medio por alumno baja y el salto de frontera no crea cobros bruscos.
+El descuento es por volumen dentro del mismo nivel; no se anuncia un ahorro
+frente a prestaciones sueltas que no tengan un precio independiente comparable.
+
+| Cupo elegido | Básico/mes | Profesional/mes | Completo/mes |
+| --- | ---: | ---: | ---: |
+| 5 | 12,90 | 19,90 | 24,90 |
+| 7 | 14,90 | 22,30 | 27,70 |
+| 10 | 17,90 | 25,90 | 31,90 |
+| 20 | 25,90 | 35,90 | 43,90 |
+| 50 | 40,90 | 53,90 | 67,90 |
+| 100 | 55,90 | 73,90 | 92,90 |
+
+Importes orientativos en EUR, sin PVP fiscal definitivo. No sustituyen la tabla
+activa del sandbox. El Básico con directorio mantendría un suplemento fijo a
+definir; los 4,90 EUR anteriores siguen siendo hipótesis, no un coste verificado.
+Medios mantienen cuotas técnicas: ni Pro ni mayor cupo prometen vídeos,
+almacenamiento, transferencia o generación ilimitados.
+
+### Cómo presentarlo en la web oculta
+
+Una lista de herramientas comunes y tres tarjetas con la diferencia concreta:
+«Planifica y acompaña», «Añade asistencia y Pro personal», «Incluye Pro para tus
+alumnos». Selector compartido de cupo por unidades, precio total mensual y
+coste medio por alumno. Comparativa desplegable, límites de medios y alcance
+actual junto a la contratación. Las funciones pendientes deben identificarse
+como futuras, sin usar la tarjeta de precio para fingir que ya se entregan.
+No mostrar saltos a diez cuando se necesitan seis. La maqueta y el portal deben
+conservar etiquetas explícitas mientras propuesta y catálogo de pruebas difieran.
+
+Esta tarea registra la propuesta y comprueba el cálculo para las 96 cantidades
+posibles; no implementa todavía el nuevo catálogo o una transición mixta.
+
 ## Revisión abierta · 02/11/2026
 
 Javier pide revisar importes y cupos, especialmente Completo/100 a 206,90 EUR,

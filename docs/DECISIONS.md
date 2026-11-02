@@ -30,6 +30,15 @@ bajada de nivel al renovar es una propuesta, pendiente de acordar su coste y
 confirmación. No se alteran contratos ni pagos existentes por esta revisión.
 [Borrador y propuesta de revisión](TRAINER_PRICING_DRAFT.md#revisión-abierta--02112026).
 
+**Diferencias comerciales y descuento por volumen · 02/11/2026:** Javier pide
+definir las prestaciones de cada nivel y cupos con un descuento lógico al crecer,
+incluyendo su explicación en la web oculta. Se conserva el acceso a las
+herramientas profesionales y al servicio asignado sin otro Pro obligatorio.
+La curva v2 por unidades, sus importes y los niveles objetivo son propuestas
+pendientes de aprobación y de contrastar costes; no sustituyen Stripe ni
+conceden automáticamente Pro, directorio o algoritmo profesional.
+[Matriz, curva y estado real](TRAINER_PRICING_DRAFT.md#propuesta-gradual-v2--02112026--pendiente-de-aprobar).
+
 **Cambios de plan profesional y contraste de navegación · 02/11/2026:** Javier
 autoriza cambiar nivel y plazas desde Trainer, solo en pruebas. Se adopta ampliar
 o subir al confirmar el pago de la diferencia del periodo restante; cualquier
