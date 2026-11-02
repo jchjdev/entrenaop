@@ -131,6 +131,12 @@ Historial Dev cotejado: 280 migraciones coincidentes. La comprobación visual de
 la cuenta muestra `Publicar ficha` y `Guardar ficha` habilitados, con foto y
 borrador conservados. Captura local ignorada:
 `build/trainer-pricing-review/directory-paid-profile-ready.jpg`.
+Trainer Dev publicado en `27a95a4cb05a82bc1ada8ceb5a2bd193cdc6dd22`
+([flujo correcto](https://github.com/jchjdev/entrenaop/actions/runs/41481160957)),
+con revisión, entorno Dev, recursos, hash y cabeceras verificados por HTTPS.
+La página de suscripción conserva Completo/50 y la bajada programada a Básico
+con directorio/50 a 45,80 EUR desde el 30/11, sin cancelar ni confirmar nuevos
+pagos en esta tarea.
 
 ### Perfil visible y confirmación de cobro · 02/11/2026
 
