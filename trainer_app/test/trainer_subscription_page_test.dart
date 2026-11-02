@@ -392,6 +392,7 @@ void main() {
       expect(repo.operations, ['quote_change']);
       expect(find.text('Importe ahora: 6.20 € (pruebas)'), findsOneWidget);
       expect(find.textContaining('cuando Stripe confirme'), findsOneWidget);
+      expect(find.textContaining('método de pago guardado'), findsOneWidget);
       final confirm = find.byKey(const ValueKey('confirm-subscription-change'));
       await tester.ensureVisible(confirm);
       await tester.pumpAndSettle();
@@ -399,6 +400,12 @@ void main() {
       await tester.pumpAndSettle();
       expect(repo.operations, ['quote_change', 'confirm_change']);
       expect(repo.selected, 'basic-10');
+      expect(
+        find.text(
+          'Pago de prueba confirmado. Tu plan y tus plazas están actualizados.',
+        ),
+        findsOneWidget,
+      );
     },
   );
   testWidgets(

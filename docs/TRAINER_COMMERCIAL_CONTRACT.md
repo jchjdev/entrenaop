@@ -102,6 +102,29 @@ oferta Completo/50 a 67,90 EUR y su diálogo previo. Se cierra con «Conservar c
 programado»: el plan Completo/5 y el cambio Profesional/50 a 53,90 EUR para el
 30/11 siguen intactos. No se anula el cambio ni se confirma un pago en esta revisión.
 
+### Perfil visible y confirmación de cobro · 02/11/2026
+
+Javier señala que «Directorio en Básico» no explica el beneficio. El control pasa
+a decir «Aparecer como preparador en la app», con el suplemento mensual y una
+explicación: posibles alumnos podrán encontrar el perfil y contactar con el
+preparador; publicar la ficha es voluntario. La vinculación automática de esta
+visibilidad a la suscripción sigue pendiente y se declara en el texto del ensayo.
+Se mantiene `directory_option` como contrato interno, sin cambiar productos,
+precios, cupos, concesiones ni condiciones de publicación.
+
+Se explica antes de confirmar una ampliación que Stripe puede intentar cobrar
+la diferencia con el medio guardado; solo se ofrece completar el pago fuera si
+requiere intervención. La confirmación vuelve al inicio para mostrar el resultado
+y el cupo vigente. No se fuerza otro Checkout ni se genera otro cobro.
+
+**Comprobación de la prueba realizada por Javier:** servidor Dev acredita el
+cambio a Completo/50, cuota 67,90 EUR, cupo efectivo 50 y vigencia hasta 30/11.
+La factura canónica del sandbox confirma actualización de suscripción,
+`charge_automatically`, estado pagado, 40,57 EUR satisfechos y saldo pendiente
+cero, con `livemode=false`. La anterior bajada programada a Profesional/50 está
+anulada. Esto acredita la ampliación inmediata positiva con método existente;
+no acredita cobros reales ni los recorridos de rechazo/autenticación adicional.
+
 ## 1. Base vigente y propuesta principal
 
 ### Posibles niveles comerciales · propuesta del 28/10/2026

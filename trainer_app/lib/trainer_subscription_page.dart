@@ -236,13 +236,13 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
                 'Cambio anulado. La suscripción actual se mantiene.',
               _ =>
                 result['confirmed'] == true
-                    ? 'Pago confirmado por el servidor. Tu acceso profesional está preparado.'
+                    ? '${data['sandbox'] == true ? 'Pago de prueba' : 'Pago'} confirmado. Tu plan y tus plazas están actualizados.'
                     : action == 'quote_change'
                     ? 'Revisa el importe y la fecha antes de confirmar.'
                     : 'Estado actualizado. El acceso solo se activa cuando el servidor confirma el pago.',
             };
           });
-          if (action == 'quote_change') {
+          if (action == 'quote_change' || action == 'confirm_change') {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted && _scroll.hasClients) {
                 _scroll.animateTo(
@@ -598,6 +598,13 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
                   const Text(
                     'Los regalos de ADMIN se conservan por separado. El cambio modifica el acceso profesional y el cupo; no concede coberturas Pro nuevas.',
                   ),
+                  if (change['kind'] == 'immediate' &&
+                      changeState == 'quoted') ...[
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Al confirmar, Stripe intentará cobrar la diferencia con el método de pago guardado. Si necesita tu intervención, podrás completar el pago en Stripe.',
+                    ),
+                  ],
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: 12,
@@ -682,7 +689,10 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
             if (addon != null)
               SwitchListTile.adaptive(
                 title: Text(
-                  'Directorio en Básico (+${addon.toStringAsFixed(2)} €/mes)',
+                  'Aparecer como preparador en la app (+${addon.toStringAsFixed(2)} €/mes)',
+                ),
+                subtitle: const Text(
+                  'Para que posibles alumnos encuentren tu perfil y contacten contigo. Tú decides si publicas tu ficha. En estas pruebas, contratarlo aún no activa tu visibilidad.',
                 ),
                 value: _directoryAddon,
                 onChanged: _busy
@@ -690,7 +700,7 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
                     : (value) => setState(() => _directoryAddon = value),
               ),
             const Text(
-              'Ensayo de acceso y cupo. Las coberturas Pro y la presencia en el directorio de estos planes siguen pendientes de conectar.',
+              'Ensayo de acceso y cupo. Las inclusiones Pro y la opción de mostrar tu perfil en la app siguen pendientes de activar por suscripción.',
             ),
             const SizedBox(height: 16),
             const Text(
@@ -725,9 +735,9 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
                           'complete',
                         ].contains(offer['plan_key']))
                           Text(switch (offer['plan_key']) {
-                            'professional' => 'Oferta objetivo: directorio, Pro personal y asistencia del algoritmo para preparar propuestas revisadas por ti.',
-                            'complete' => 'Oferta objetivo: directorio, Pro personal, asistencia del algoritmo y Pro autónomo para tus alumnos activos.',
-                            _ => 'Planificación manual con las herramientas comunes. Directorio como extra opcional.',
+                            'professional' => 'Oferta objetivo: perfil en la app para que nuevos alumnos te encuentren y contacten contigo, Pro personal y asistencia del algoritmo para preparar propuestas revisadas por ti.',
+                            'complete' => 'Oferta objetivo: perfil en la app para que nuevos alumnos te encuentren y contacten contigo, Pro personal, asistencia del algoritmo y Pro autónomo para tus alumnos activos.',
+                            _ => 'Planificación manual con las herramientas comunes. Como extra, mostrar tu perfil en la app para que nuevos alumnos te encuentren y contacten contigo.',
                           }),
                         if ([
                               'professional',
@@ -735,7 +745,7 @@ class _TrainerSubscriptionPageState extends State<TrainerSubscriptionPage> {
                             ].contains(offer['plan_key']) ||
                             offer['directory_option'] == true)
                           const Text(
-                            'Las inclusiones de Pro/directorio por pago y el asistente profesional están pendientes. El ensayo activa herramientas y cupo.',
+                            'Las inclusiones Pro, la visibilidad de tu perfil por suscripción y el asistente profesional están pendientes. El ensayo activa herramientas y cupo.',
                           ),
                         const Text(
                           'Importe simulado para probar el recorrido. No es una tarifa comercial.',
