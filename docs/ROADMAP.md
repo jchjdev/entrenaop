@@ -1,5 +1,19 @@
 # Roadmap de EntrenaOP
 
+**PRG-010 · Terminar sin registrar todo · 03/11/2026:** recorrido técnico cerrado
+en app y Supabase Dev para rutinas repetibles y sesiones sueltas oficiales o
+personales. Se conserva lo confirmado y lo restante queda sin registrar, con
+confirmación, historial, cancelación, vuelta al origen, cola offline y protección
+de borradores. No cambia el cierre de programas por fases, preparaciones
+adaptativas ni pautas del preparador. Se corrige además la exigencia accidental
+de Pro al iniciar copias editoriales de programas: contexto privado transaccional,
+cuota Free conservada y guarda adaptativa vigente. Análisis raíz limpio, 1.763
+pruebas correctas (una omisión existente), cinco contratos SQL con ROLLBACK y
+293 migraciones cotejadas. App **1.6.0+14**. Límite conocido: pendiente recompilar
+e instalar en iPhone para aceptación física. El único siguiente bloque recomendado
+es revisar las pantallas que Javier tiene pendientes de enviar, comenzando por
+contrastar este cierre en el dispositivo. [Contrato](PROGRAMAS_GUIADOS.md#terminar-sin-registrar-todo--prg-010--03112026).
+
 **Apple · cierre parcial y consulta de intervalos · 03/11/2026:** se separa
 la finalización de una pauta acreditada de su detalle individual por series.
 Se preservan medidas, ausencias y grabaciones de cada reloj. Se añaden tarjetas

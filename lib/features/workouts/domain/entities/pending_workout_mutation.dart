@@ -5,6 +5,7 @@ enum WorkoutMutationType {
   completeAmrap,
   skipSet,
   finish,
+  finishWithoutFullRecording,
   abandon,
 }
 

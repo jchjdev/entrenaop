@@ -182,6 +182,16 @@ class _DetailContentState extends State<_DetailContent> {
                   recordings: execution.deviceResults,
                   detailsIncomplete: execution.deviceDetailsIncomplete,
                 ),
+                if (execution.completedWithoutFullRecording)
+                  const Card(
+                    child: ListTile(
+                      leading: Icon(Icons.task_alt_rounded),
+                      title: Text('Entrenamiento terminado'),
+                      subtitle: Text(
+                        'Has terminado sin registrar todo. Conservamos los resultados confirmados; el resto queda sin registrar.',
+                      ),
+                    ),
+                  ),
                 WorkoutTechniqueSection(execution: execution),
                 if (execution.notes case final notes?
                     when notes.trim().isNotEmpty) ...[
@@ -281,6 +291,8 @@ class _DetailContentState extends State<_DetailContent> {
                       group,
                       key: ValueKey(group.key),
                       isCorrecting: widget.isCorrecting,
+                      completedWithoutFullRecording:
+                          execution.completedWithoutFullRecording,
                       expanded: _expanded.contains(group.key),
                       onToggle: () => setState(() {
                         if (!_expanded.add(group.key)) {
@@ -537,11 +549,13 @@ class _ExerciseResultCard extends StatelessWidget {
     this.group, {
     super.key,
     required this.isCorrecting,
+    required this.completedWithoutFullRecording,
     required this.expanded,
     required this.onToggle,
   });
 
   final _ExerciseGroup group;
+  final bool completedWithoutFullRecording;
   final bool isCorrecting;
   final bool expanded;
   final VoidCallback onToggle;
@@ -614,7 +628,9 @@ class _ExerciseResultCard extends StatelessWidget {
                       if (skipped > 0)
                         '$skipped ${skipped == 1 ? 'omitida' : 'omitidas'}',
                       if (pending > 0)
-                        '$pending ${pending == 1 ? 'pendiente' : 'pendientes'}',
+                        completedWithoutFullRecording
+                            ? '$pending sin registrar'
+                            : '$pending ${pending == 1 ? 'pendiente' : 'pendientes'}',
                     ].join(' · '),
                   ),
                   if (completed.isNotEmpty) ...[
@@ -668,7 +684,12 @@ class _ExerciseResultCard extends StatelessWidget {
                     children: [
                       for (final set in group.sets) ...[
                         const Divider(height: 1),
-                        _SetResultRow(set, isCorrecting: isCorrecting),
+                        _SetResultRow(
+                          set,
+                          isCorrecting: isCorrecting,
+                          completedWithoutFullRecording:
+                              completedWithoutFullRecording,
+                        ),
                       ],
                     ],
                   ),
@@ -682,9 +703,14 @@ class _ExerciseResultCard extends StatelessWidget {
 }
 
 class _SetResultRow extends StatelessWidget {
-  const _SetResultRow(this.set, {required this.isCorrecting});
+  const _SetResultRow(
+    this.set, {
+    required this.isCorrecting,
+    required this.completedWithoutFullRecording,
+  });
 
   final WorkoutExecutionSet set;
+  final bool completedWithoutFullRecording;
   final bool isCorrecting;
 
   @override
@@ -716,7 +742,14 @@ class _SetResultRow extends StatelessWidget {
               children: [
                 Text('Objetivo · ${_target(set)}'),
                 const SizedBox(height: 3),
-                Text(_result(set), style: TextStyle(color: statusColor)),
+                Text(
+                  _result(
+                    set,
+                    completedWithoutFullRecording:
+                        completedWithoutFullRecording,
+                  ),
+                  style: TextStyle(color: statusColor),
+                ),
               ],
             ),
           ),
@@ -1217,7 +1250,13 @@ String _target(WorkoutExecutionSet set) {
   return parts.join(' · ');
 }
 
-String _result(WorkoutExecutionSet set) {
+String _result(
+  WorkoutExecutionSet set, {
+  bool completedWithoutFullRecording = false,
+}) {
+  if (completedWithoutFullRecording && set.status == WorkoutSetStatus.pending) {
+    return 'Sin registrar';
+  }
   if (set.performancePrescription case final p?) {
     if (set.status == WorkoutSetStatus.skipped) return 'Omitida';
     final r = set.performanceResult;

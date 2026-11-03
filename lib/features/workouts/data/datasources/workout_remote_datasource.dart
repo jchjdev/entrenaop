@@ -55,6 +55,13 @@ abstract class WorkoutRemoteDataSource {
     int? utcOffsetMinutes,
   });
 
+  Future<void> finishWithoutFullRecording(
+    String operationId,
+    String executionId, {
+    required DateTime performedAt,
+    required int utcOffsetMinutes,
+  });
+
   Future<List<String>> discardExecution(String executionId);
 
   Future<List<String>> getDiscardedResourceIds(List<String> resourceIds);

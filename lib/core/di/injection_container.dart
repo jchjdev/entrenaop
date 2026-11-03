@@ -370,6 +370,9 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => CorrectWorkoutSetUseCase(sl()));
   sl.registerLazySingleton(() => SkipWorkoutSetUseCase(sl()));
   sl.registerLazySingleton(() => FinishWorkoutExecutionUseCase(sl()));
+  sl.registerLazySingleton(
+    () => FinishWorkoutWithoutFullRecordingUseCase(sl()),
+  );
   sl.registerLazySingleton(() => AbandonWorkoutExecutionUseCase(sl()));
   sl.registerLazySingleton(() => DiscardWorkoutExecutionUseCase(sl()));
   sl.registerLazySingleton(() => GetPendingWorkoutMutationCountUseCase(sl()));
@@ -414,6 +417,7 @@ Future<void> initDependencies() async {
       completeAmrap: sl(),
       skipSet: sl(),
       finishExecution: sl(),
+      finishWithoutFullRecording: sl(),
       abandonExecution: sl(),
       discardExecution: sl(),
       getPendingMutationCount: sl(),

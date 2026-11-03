@@ -142,6 +142,10 @@ WorkoutExecution _execution({
 
 class _FakeWorkoutRepository implements WorkoutRepository {
   @override
+  Future<WorkoutMutationDisposition> finishWithoutFullRecording(
+    String executionId,
+  ) async => throw UnimplementedError();
+  @override
   Future<void> discardExecution(String executionId) async =>
       throw UnimplementedError();
   _FakeWorkoutRepository({this.history = const [], this.execution});

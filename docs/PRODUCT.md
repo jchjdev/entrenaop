@@ -1,5 +1,12 @@
 # Producto EntrenaOP
 
+**Terminar sin registrar todo · 03/11/2026:** las rutinas repetibles y las sesiones
+sueltas oficiales/personales permiten declarar el entrenamiento terminado sin
+rellenar todas las series. Se conservan los resultados introducidos y se indica
+lo que queda sin registrar, sin convertirlo en abandono ni inventar mediciones.
+Preparaciones adaptativas, programas por fases y pautas del preparador conservan
+sus reglas. [Contrato](PROGRAMAS_GUIADOS.md#terminar-sin-registrar-todo--prg-010--03112026).
+
 **Resultados parciales de Apple Watch · 03/11/2026:** una carrera identificada
 de forma segura puede completar la sesión aunque falte su detalle por series.
 El deportista y su preparador consultan las medidas e intervalos disponibles,

@@ -14,6 +14,23 @@ void main() {
     'workout_execution_sets': <Map<String, dynamic>>[],
   };
 
+  test(
+    'lee el cierre sin registro y conserva las dos capacidades al proyectar',
+    () {
+      final legacy = WorkoutExecutionModel.fromJson(record());
+      expect(legacy.completedWithoutFullRecording, isFalse);
+      expect(legacy.canFinishWithoutFullRecording, isFalse);
+      final data = record()
+        ..['completed_without_full_recording'] = true
+        ..['can_finish_without_full_recording'] = true;
+      final updated = WorkoutExecutionModel.fromJson(data)
+          .copyWith(notes: 'Conservada');
+      expect(updated.completedWithoutFullRecording, isTrue);
+      expect(updated.canFinishWithoutFullRecording, isTrue);
+      expect(updated.finalRpe, isNull);
+    },
+  );
+
   test('el historial antiguo no se clasifica por nombre ni por sus series', () {
     final data = record()..['template_name'] = 'Carrera y fuerza';
     data['workout_execution_sets'] = [

@@ -38,6 +38,10 @@ class WorkoutExecutionModel {
       startedAt: DateTime.parse(json['started_at'] as String),
       completedAt: _dateOrNull(json['completed_at']),
       finalRpe: json['final_rpe'] as int?,
+      canFinishWithoutFullRecording:
+          json['can_finish_without_full_recording'] == true,
+      completedWithoutFullRecording:
+          json['completed_without_full_recording'] == true,
       notes: json['notes'] as String?,
       abandonmentReason: _abandonmentReason(json['abandonment_reason']),
       averageHeartRateBpm: json['average_heart_rate_bpm'] as int?,

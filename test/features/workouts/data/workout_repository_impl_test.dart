@@ -27,6 +27,80 @@ void main() {
   });
 
   test(
+    'el cierre sin registro conserva operación y fecha al reintentar offline',
+    () async {
+      dataSource.failFinish = true;
+      final disposition = await repository.finishWithoutFullRecording(
+        'execution-1',
+      );
+      expect(disposition, WorkoutMutationDisposition.queued);
+      final queued = mutationQueue.mutations.single;
+      final snapshot = Map<String, dynamic>.from(queued.values);
+      expect(queued.type, WorkoutMutationType.finishWithoutFullRecording);
+      expect(snapshot.containsKey('p_final_rpe'), isFalse);
+      dataSource.failFinish = false;
+      await repository.syncPendingMutations();
+      expect(dataSource.unrecordedOperations, [
+        queued.operationId,
+        queued.operationId,
+      ]);
+      expect(
+        dataSource.performedAt!.toUtc().toIso8601String(),
+        snapshot['p_performed_at'],
+      );
+      expect(dataSource.utcOffsetMinutes, snapshot['p_utc_offset_minutes']);
+      expect(mutationQueue.mutations, isEmpty);
+    },
+  );
+
+  test(
+    'envía las series pendientes de sincronizar antes del cierre sin registro',
+    () async {
+      dataSource.failComplete = true;
+      await repository.completeSet(
+        const WorkoutSetResultInput(resultId: 'set-1', actualReps: 6),
+      );
+      expect(mutationQueue.mutations.length, 1);
+      dataSource.failComplete = false;
+      dataSource.events.clear();
+      await repository.finishWithoutFullRecording('execution-1');
+      expect(dataSource.events.last, 'finishUnrecorded');
+      expect(dataSource.completedValues!['p_actual_reps'], 6);
+      expect(mutationQueue.mutations, isEmpty);
+    },
+  );
+
+  test(
+    'un rechazo de permiso del cierre no se convierte en una operación offline',
+    () async {
+      dataSource.unrecordedError = const PostgrestException(
+        message: 'No permitido',
+        code: '42501',
+      );
+      await expectLater(
+        repository.finishWithoutFullRecording('execution-1'),
+        throwsA(isA<PostgrestException>()),
+      );
+      expect(mutationQueue.mutations, isEmpty);
+    },
+  );
+
+  test('el cierre sin registros no cruza cuentas durante el envío', () async {
+    var owner = 'user-A';
+    repository = WorkoutRepositoryImpl(
+      remoteDataSource: dataSource,
+      mutationQueue: mutationQueue,
+      currentUserId: () => owner,
+    );
+    dataSource.afterFinish = () => owner = 'user-B';
+    await expectLater(
+      repository.finishWithoutFullRecording('execution-1'),
+      throwsA(isA<AuthException>()),
+    );
+    expect(mutationQueue.mutations, isEmpty);
+  });
+
+  test(
     'publicar omite RIR de duración o distancia y conserva el borrador decimal',
     () {
       for (final type in WorkoutTargetType.values) {
@@ -631,6 +705,25 @@ void main() {
 }
 
 class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
+  final unrecordedOperations = <String>[];
+  Object? unrecordedError;
+  @override
+  Future<void> finishWithoutFullRecording(
+    String operationId,
+    String executionId, {
+    required DateTime performedAt,
+    required int utcOffsetMinutes,
+  }) async {
+    events.add('finishUnrecorded');
+    unrecordedOperations.add(operationId);
+    if (unrecordedError case final error?) throw error;
+    if (failFinish) throw StateError('Sin conexión');
+    afterFinish?.call();
+    this.performedAt = performedAt;
+    this.utcOffsetMinutes = utcOffsetMinutes;
+    finishedExecutionId = executionId;
+  }
+
   final events = <String>[];
   bool failFinish = false;
   void Function()? afterFinish;

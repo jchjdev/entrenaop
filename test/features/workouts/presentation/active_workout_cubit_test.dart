@@ -46,6 +46,206 @@ import 'package:go_router/go_router.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 
 void main() {
+  for (final partial in [false, true]) {
+    testWidgets(
+      'terminar sin registrar todo conserva datos y permite volver: parcial=$partial',
+      (tester) async {
+        tester.view.physicalSize = const Size(390, 844);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        final repository = _Repository()
+          ..execution = _executionWithStatuses([
+            partial ? WorkoutSetStatus.completed : WorkoutSetStatus.pending,
+            WorkoutSetStatus.pending,
+          ], allowUnrecorded: true);
+        final before = repository.execution.sets;
+        final (cubit, router) = await _mountSession(tester, repository);
+        await capturePerformanceWidget(
+          tester,
+          'sesion-cierre-opcional-$partial-390',
+        );
+        await tester.tap(find.text('Terminar sin registrar todo'));
+        await tester.pumpAndSettle();
+        await capturePerformanceWidget(
+          tester,
+          'confirmar-cierre-opcional-$partial-390',
+        );
+        await tester.tap(find.text('Seguir entrenando'));
+        await tester.pumpAndSettle();
+        expect(repository.unrecordedFinishAttempts, 0);
+        await tester.tap(find.text('Terminar sin registrar todo'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Terminar sesión'));
+        await tester.pumpAndSettle();
+        expect(repository.unrecordedFinishAttempts, 1);
+        expect(repository.abandonAttempts, 0);
+        expect(repository.finishAttempts, 0);
+        expect(cubit.state.status, ActiveWorkoutStatus.completed);
+        expect(cubit.state.execution!.completedWithoutFullRecording, isTrue);
+        expect(cubit.state.execution!.sets, before);
+        expect(cubit.state.execution!.finalRpe, isNull);
+        expect(find.text('Entrenamiento terminado'), findsOneWidget);
+        await capturePerformanceWidget(
+          tester,
+          'cierre-sin-registro-$partial-390',
+        );
+        await tester.tap(find.text('Volver'));
+        await tester.pumpAndSettle();
+        expect(router.state.matchedLocation, '/');
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
+  testWidgets('el cierre sin registros se adapta a 320 px y texto grande', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final repository = _Repository()
+      ..execution = _execution(allowUnrecorded: true);
+    await _mountSession(tester, repository, textScaler: TextScaler.linear(2));
+    await tester.tap(find.text('Terminar sin registrar todo'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Terminar sesión'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Terminar sesión'));
+    await tester.pumpAndSettle();
+    expect(find.text('Entrenamiento terminado'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('sin permiso de programa conserva el cierre normal', (
+    tester,
+  ) async {
+    final repository = _Repository();
+    final (cubit, _) = await _mountSession(tester, repository);
+    expect(find.text('Terminar sin registrar todo'), findsNothing);
+    await cubit.finishWithoutFullRecording();
+    await cubit.finish(finalRpe: 5);
+    expect(repository.unrecordedFinishAttempts, 0);
+    expect(repository.finishAttempts, 0);
+    expect(cubit.state.execution!.status, WorkoutExecutionStatus.inProgress);
+  });
+
+  test(
+    'el cierre sin registros encolado no se reabre por un fallo posterior',
+    () async {
+      final repository = _Repository()
+        ..execution = _execution(allowUnrecorded: true)
+        ..unrecordedDisposition = WorkoutMutationDisposition.queued
+        ..failPendingAfterFinish = true;
+      final cubit = _cubit(repository);
+      addTearDown(cubit.close);
+      await cubit.load();
+      await cubit.finishWithoutFullRecording();
+      expect(cubit.state.status, ActiveWorkoutStatus.completed);
+      expect(cubit.state.pendingSyncCount, 1);
+      expect(
+        cubit.state.execution!.sets.every(
+          (s) => s.status == WorkoutSetStatus.pending,
+        ),
+        isTrue,
+      );
+      await cubit.finishWithoutFullRecording();
+      expect(repository.unrecordedFinishAttempts, 1);
+    },
+  );
+
+  test(
+    'no pierde borradores al intentar terminar sin registrar todo',
+    () async {
+      final repository = _Repository()
+        ..execution = _execution(allowUnrecorded: true);
+      final cubit = _cubit(repository);
+      addTearDown(cubit.close);
+      await cubit.load();
+      await cubit.updateDraft(
+        const WorkoutSetResultInput(resultId: 'set-1', actualReps: 6),
+        {'reps': '6'},
+      );
+      await cubit.finishWithoutFullRecording();
+      expect(repository.unrecordedFinishAttempts, 0);
+      expect(cubit.state.drafts['set-1']!.result.actualReps, 6);
+      expect(cubit.state.errorMessage, contains('pendientes'));
+    },
+  );
+
+  testWidgets(
+    'el cierre sin registrar todo también funciona al salir con atrás',
+    (tester) async {
+      final repository = _Repository()
+        ..execution = _execution(allowUnrecorded: true);
+      final (_, router) = await _mountSession(tester, repository);
+      await tester.tap(find.byTooltip('Salir de la sesión'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.widgetWithText(OutlinedButton, 'Terminar sin registrar todo'),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Terminar sesión'));
+      await tester.pumpAndSettle();
+      expect(repository.unrecordedFinishAttempts, 1);
+      expect(router.state.matchedLocation, '/');
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  test('conserva el borrador AMRAP antes del cierre sin registro', () async {
+    final repository = _Repository()
+      ..execution = _amrapExecution(allowUnrecorded: true);
+    final cubit = _cubit(repository);
+    addTearDown(cubit.close);
+    await cubit.load();
+    await cubit.changeAmrapRounds(0, 1);
+    await cubit.finishWithoutFullRecording();
+    expect(repository.unrecordedFinishAttempts, 0);
+    expect(cubit.state.amrapDrafts[0]!.rounds, '1');
+    expect(cubit.state.errorMessage, contains('AMRAP'));
+  });
+
+  test('un fallo de cierre conserva la sesión y permite reintentar', () async {
+    final repository = _Repository()
+      ..execution = _execution(allowUnrecorded: true)
+      ..failFinish = true;
+    final cubit = _cubit(repository);
+    addTearDown(cubit.close);
+    await cubit.load();
+    await cubit.finishWithoutFullRecording();
+    expect(cubit.state.status, ActiveWorkoutStatus.failure);
+    expect(cubit.state.execution!.status, WorkoutExecutionStatus.inProgress);
+    repository.failFinish = false;
+    await cubit.finishWithoutFullRecording();
+    expect(cubit.state.status, ActiveWorkoutStatus.completed);
+    expect(repository.unrecordedFinishAttempts, 2);
+  });
+
+  testWidgets('el descanso no reabre ni duplica un cierre en curso', (
+    tester,
+  ) async {
+    final gate = Completer<void>();
+    final repository = _Repository()
+      ..execution = _execution(allowUnrecorded: true)
+      ..unrecordedGate = gate;
+    final cubit = _cubit(repository);
+    addTearDown(cubit.close);
+    await cubit.load();
+    await cubit.completeCurrentSet(
+      const WorkoutSetResultInput(resultId: 'set-1', actualReps: 6),
+    );
+    expect(cubit.state.status, ActiveWorkoutStatus.resting);
+    final finishing = cubit.finishWithoutFullRecording();
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 2));
+    expect(cubit.state.status, ActiveWorkoutStatus.saving);
+    await cubit.finishWithoutFullRecording();
+    gate.complete();
+    await finishing;
+    expect(repository.unrecordedFinishAttempts, 1);
+    expect(cubit.state.status, ActiveWorkoutStatus.completed);
+  });
+
   testWidgets(
     'completar datos en descanso abre directamente la última serie terminada',
     (tester) async {
@@ -1560,8 +1760,11 @@ void main() {
   }
 }
 
-WorkoutExecution _executionWithStatuses(List<WorkoutSetStatus> statuses) {
-  final execution = _execution();
+WorkoutExecution _executionWithStatuses(
+  List<WorkoutSetStatus> statuses, {
+  bool allowUnrecorded = false,
+}) {
+  final execution = _execution(allowUnrecorded: allowUnrecorded);
   return execution.copyWith(
     sets: [
       for (var i = 0; i < execution.sets.length; i++)
@@ -1712,6 +1915,9 @@ ActiveWorkoutCubit _cubit(
   completeAmrap: CompleteAmrapBlockUseCase(repository),
   skipSet: SkipWorkoutSetUseCase(repository),
   finishExecution: FinishWorkoutExecutionUseCase(repository),
+  finishWithoutFullRecording: FinishWorkoutWithoutFullRecordingUseCase(
+    repository,
+  ),
   abandonExecution: AbandonWorkoutExecutionUseCase(repository),
   discardExecution: DiscardWorkoutExecutionUseCase(repository),
   getPendingMutationCount: GetPendingWorkoutMutationCountUseCase(repository),
@@ -1720,6 +1926,29 @@ ActiveWorkoutCubit _cubit(
 );
 
 class _Repository implements WorkoutRepository {
+  int unrecordedFinishAttempts = 0;
+  Completer<void>? unrecordedGate;
+  WorkoutMutationDisposition unrecordedDisposition =
+      WorkoutMutationDisposition.synced;
+  @override
+  Future<WorkoutMutationDisposition> finishWithoutFullRecording(
+    String executionId,
+  ) async {
+    unrecordedFinishAttempts++;
+    await unrecordedGate?.future;
+    if (failFinish) throw StateError('Sin conexión');
+    execution = execution.copyWith(
+      status: WorkoutExecutionStatus.completed,
+      completedWithoutFullRecording: true,
+      completedAt: DateTime.now().toUtc(),
+      resultSource: WorkoutResultSource.manual,
+    );
+    if (unrecordedDisposition == WorkoutMutationDisposition.queued) {
+      pendingMutationCount++;
+    }
+    return unrecordedDisposition;
+  }
+
   WorkoutExecution execution = _execution();
   WorkoutSetResultInput? lastSetResult;
   int amrapAttempts = 0;
@@ -1936,7 +2165,8 @@ WorkoutExecution _tabataExecution() => _execution().copyWith(
   ),
 );
 
-WorkoutExecution _execution() => WorkoutExecution(
+WorkoutExecution _execution({bool allowUnrecorded = false}) => WorkoutExecution(
+  canFinishWithoutFullRecording: allowUnrecorded,
   id: 'execution-1',
   templateId: 'template-1',
   templateName: 'EMOM de fuerza',
@@ -1973,44 +2203,46 @@ WorkoutExecution _execution() => WorkoutExecution(
   ],
 );
 
-WorkoutExecution _amrapExecution() => WorkoutExecution(
-  id: 'execution-1',
-  templateId: 'template-1',
-  templateName: 'AMRAP de fuerza',
-  templateVersion: 1,
-  status: WorkoutExecutionStatus.inProgress,
-  startedAt: DateTime.utc(2026, 9, 21, 20),
-  sets: const [
-    WorkoutExecutionSet(
-      id: 'set-1',
-      blockOrder: 0,
-      blockName: 'Trabajo principal',
-      blockFormat: WorkoutBlockFormat.amrap,
-      blockTimeCapSeconds: 600,
-      itemOrder: 0,
-      exerciseId: 'exercise-1',
-      exerciseName: 'Dominadas',
-      setOrder: 0,
-      targetReps: 10,
-      restAfterSeconds: 0,
-      status: WorkoutSetStatus.pending,
-    ),
-    WorkoutExecutionSet(
-      id: 'set-2',
-      blockOrder: 0,
-      blockName: 'Trabajo principal',
-      blockFormat: WorkoutBlockFormat.amrap,
-      blockTimeCapSeconds: 600,
-      itemOrder: 1,
-      exerciseId: 'exercise-2',
-      exerciseName: 'Flexiones',
-      setOrder: 0,
-      targetReps: 8,
-      restAfterSeconds: 0,
-      status: WorkoutSetStatus.pending,
-    ),
-  ],
-);
+WorkoutExecution _amrapExecution({bool allowUnrecorded = false}) =>
+    WorkoutExecution(
+      canFinishWithoutFullRecording: allowUnrecorded,
+      id: 'execution-1',
+      templateId: 'template-1',
+      templateName: 'AMRAP de fuerza',
+      templateVersion: 1,
+      status: WorkoutExecutionStatus.inProgress,
+      startedAt: DateTime.utc(2026, 9, 21, 20),
+      sets: const [
+        WorkoutExecutionSet(
+          id: 'set-1',
+          blockOrder: 0,
+          blockName: 'Trabajo principal',
+          blockFormat: WorkoutBlockFormat.amrap,
+          blockTimeCapSeconds: 600,
+          itemOrder: 0,
+          exerciseId: 'exercise-1',
+          exerciseName: 'Dominadas',
+          setOrder: 0,
+          targetReps: 10,
+          restAfterSeconds: 0,
+          status: WorkoutSetStatus.pending,
+        ),
+        WorkoutExecutionSet(
+          id: 'set-2',
+          blockOrder: 0,
+          blockName: 'Trabajo principal',
+          blockFormat: WorkoutBlockFormat.amrap,
+          blockTimeCapSeconds: 600,
+          itemOrder: 1,
+          exerciseId: 'exercise-2',
+          exerciseName: 'Flexiones',
+          setOrder: 0,
+          targetReps: 8,
+          restAfterSeconds: 0,
+          status: WorkoutSetStatus.pending,
+        ),
+      ],
+    );
 
 class _TimerStore implements WorkoutTimerStore {
   _TimerStore([this.snapshot]);

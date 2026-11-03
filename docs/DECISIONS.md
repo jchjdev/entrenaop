@@ -1,5 +1,20 @@
 # Registro de decisiones vigentes
 
+**PRG-010 · Terminar sin registrar todo · 03/11/2026:** Javier confirma que el
+deportista puede terminar una rutina repetible sin registrar todas sus series.
+Se distingue haber terminado de entrenar de haber declarado resultados: cierre
+completado con marca explícita de registro incompleto, datos confirmados intactos,
+series restantes sin registrar y sin RPE inventado. Cubre también sesiones sueltas
+oficiales y personales; no modifica pautas del preparador, preparaciones
+adaptativas ni programas por fases. Comprobación de ámbito/propiedad en servidor,
+recibos idempotentes y cola por cuenta. [Contrato y validación](PROGRAMAS_GUIADOS.md#terminar-sin-registrar-todo--prg-010--03112026).
+
+La comprobación de PRG-010 detecta y corrige una regresión del inicio: las copias
+editoriales `algorithm` estaban recibiendo la guarda adaptativa Pro. El programa
+autorizado usa un contexto privado y transaccional; Free conserva su plaza de
+programa y el inicio adaptativo sigue requiriendo Pro, incluso por plantilla
+directa. No cambia el criterio comercial acordado.
+
 **INT-023 · Tipos de fase y ritmo de recuperación · 03/11/2026:** Javier señala
 que una recuperación Apple no debe presentarse como carrera con ritmo absurdo.
 Garmin ya entrega intensidad e índice FIT; se conserva su correspondencia.

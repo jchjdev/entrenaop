@@ -263,6 +263,29 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
   }
 
   @override
+  Future<WorkoutMutationDisposition> finishWithoutFullRecording(
+    String executionId,
+  ) {
+    final performedAt = DateTime.now();
+    final mutation = _mutation(
+      WorkoutMutationType.finishWithoutFullRecording,
+      executionId,
+      {
+        'p_performed_at': performedAt.toUtc().toIso8601String(),
+        'p_utc_offset_minutes': performedAt.timeZoneOffset.inMinutes,
+      },
+    );
+    return _performOrQueue(mutation, () async {
+      // Un resultado confirmado offline debe llegar antes que su cierre;
+      // de otro modo quedaría una serie real atrapada tras la sesión terminada.
+      await syncPendingMutations();
+      _requireAccount(mutation.userId);
+      await _sendPending(mutation);
+      _requireAccount(mutation.userId);
+    });
+  }
+
+  @override
   Future<int> getPendingMutationCount() async =>
       (await mutationQueue.readAll()).length;
 
@@ -388,6 +411,15 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
             mutation.values['p_result_source'] as String? ?? 'manual',
           ),
         ),
+        WorkoutMutationType.finishWithoutFullRecording =>
+          remoteDataSource.finishWithoutFullRecording(
+            mutation.operationId,
+            mutation.resourceId,
+            performedAt: DateTime.parse(
+              mutation.values['p_performed_at'] as String,
+            ),
+            utcOffsetMinutes: mutation.values['p_utc_offset_minutes'] as int,
+          ),
         WorkoutMutationType.abandon => remoteDataSource.abandonExecution(
           mutation.operationId,
           mutation.resourceId,

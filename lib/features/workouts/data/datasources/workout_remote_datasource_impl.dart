@@ -36,6 +36,7 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
     started_at,
     completed_at,
     final_rpe,
+    completed_without_full_recording,
     notes,
     abandonment_reason,
     average_heart_rate_bpm,
@@ -197,13 +198,23 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
   @override
   Future<Map<String, dynamic>?> getExecution(String executionId) async {
     final owner = supabaseClient.auth.currentUser?.id;
-    final row = await supabaseClient
+    var row = await supabaseClient
         .from('workout_executions')
         .select(_executionSelect)
         .eq('id', executionId)
         .maybeSingle();
     if (supabaseClient.auth.currentUser?.id != owner) {
       throw const AuthException('La cuenta ha cambiado.');
+    }
+    if (row != null && owner != null && row['status'] == 'in_progress') {
+      final allowed = await supabaseClient.rpc(
+        'can_finish_workout_without_full_recording',
+        params: {'p_execution_id': executionId},
+      );
+      if (supabaseClient.auth.currentUser?.id != owner) {
+        throw const AuthException('La cuenta ha cambiado.');
+      }
+      row = {...row, 'can_finish_without_full_recording': allowed == true};
     }
     if (row == null || owner == null || row['result_source'] != 'device') {
       return row;
@@ -278,6 +289,22 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
         .limit(query.limit);
     return response.cast<Map<String, dynamic>>();
   }
+
+  @override
+  Future<void> finishWithoutFullRecording(
+    String operationId,
+    String executionId, {
+    required DateTime performedAt,
+    required int utcOffsetMinutes,
+  }) => supabaseClient.rpc(
+    'finish_workout_without_full_recording_idempotent',
+    params: {
+      'p_operation_id': operationId,
+      'p_execution_id': executionId,
+      'p_performed_at': performedAt.toUtc().toIso8601String(),
+      'p_utc_offset_minutes': utcOffsetMinutes,
+    },
+  );
 
   @override
   Future<void> completeSet(String operationId, Map<String, dynamic> values) =>

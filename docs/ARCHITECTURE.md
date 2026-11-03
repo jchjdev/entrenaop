@@ -1,5 +1,16 @@
 # Arquitectura de EntrenaOP
 
+**Cierre manual sin registro completo · 03/11/2026:** intención explícita con
+repositorio/caso de uso, cola por propietario y RPC idempotente propia. La marca
+de cierre declarado vive en la ejecución; las series sin resultados no cambian.
+Servidor valida propiedad y ámbito: sesiones sueltas `system`/`user` o rutinas
+repetibles, nunca pautas protegidas ni programas por fases. El cierre normal y
+los cierres acreditados de dispositivos conservan sus contratos.
+La materialización de programas Free distingue su copia editorial del algoritmo
+adaptativo mediante un contexto privado de inicio limitado a plantilla, titular
+y transacción. Lo crea y retira el RPC autorizado; no lo aporta Flutter.
+[Detalle](PROGRAMAS_GUIADOS.md#terminar-sin-registrar-todo--prg-010--03112026).
+
 **Resultado Apple parcial · 03/11/2026:** la finalización acreditada del reloj
 se separa de la atribución de intervalos a series. Un recibo privado de Apple
 permite cerrar la sesión preservando series sin atribución; no abre la

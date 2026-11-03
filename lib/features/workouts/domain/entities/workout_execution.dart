@@ -38,6 +38,8 @@ class WorkoutExecution extends Equatable {
     this.observedDistanceMeters,
     this.deviceResults = const [],
     this.deviceDetailsIncomplete = false,
+    this.canFinishWithoutFullRecording = false,
+    this.completedWithoutFullRecording = false,
   });
 
   final String id;
@@ -60,6 +62,8 @@ class WorkoutExecution extends Equatable {
   final double? observedDistanceMeters;
   final List<DeviceActivitySummary> deviceResults;
   final bool deviceDetailsIncomplete;
+  final bool canFinishWithoutFullRecording;
+  final bool completedWithoutFullRecording;
   Duration? get measuredDuration => observedTimerSeconds == null
       ? null
       : Duration(microseconds: (observedTimerSeconds! * 1000000).round());
@@ -101,6 +105,7 @@ class WorkoutExecution extends Equatable {
     WorkoutResultSource? resultSource,
     List<WorkoutExecutionSet>? sets,
     List<WorkoutAmrapResult>? amrapResults,
+    bool? completedWithoutFullRecording,
   }) => WorkoutExecution(
     id: id,
     templateId: templateId,
@@ -122,6 +127,9 @@ class WorkoutExecution extends Equatable {
     observedDistanceMeters: observedDistanceMeters,
     deviceResults: deviceResults,
     deviceDetailsIncomplete: deviceDetailsIncomplete,
+    canFinishWithoutFullRecording: canFinishWithoutFullRecording,
+    completedWithoutFullRecording:
+        completedWithoutFullRecording ?? this.completedWithoutFullRecording,
     sets: sets ?? this.sets,
     amrapResults: amrapResults ?? this.amrapResults,
   );
@@ -148,6 +156,8 @@ class WorkoutExecution extends Equatable {
     observedDistanceMeters,
     deviceResults,
     deviceDetailsIncomplete,
+    canFinishWithoutFullRecording,
+    completedWithoutFullRecording,
     sets,
     amrapResults,
   ];

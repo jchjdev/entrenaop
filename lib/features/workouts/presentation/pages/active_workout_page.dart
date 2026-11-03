@@ -59,6 +59,7 @@ class ActiveWorkoutPage extends StatelessWidget {
   );
 
   Future<bool> _confirmExit(BuildContext context) async {
+    final execution = context.read<ActiveWorkoutCubit>().state.execution;
     final action = await showDialog<_SessionExitAction>(
       context: context,
       builder: (dialogContext) => EntrenaDialog(
@@ -77,6 +78,18 @@ class ActiveWorkoutPage extends StatelessWidget {
               primaryLabel: 'Continuar',
               onPrimary: () => Navigator.pop(dialogContext),
               secondary: [
+                if (execution?.canFinishWithoutFullRecording == true &&
+                    execution?.currentSet != null)
+                  OutlinedButton(
+                    onPressed: () => Navigator.pop(
+                      dialogContext,
+                      _SessionExitAction.finishWithoutFullRecording,
+                    ),
+                    child: const Text(
+                      'Terminar sin registrar todo',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                 OutlinedButton(
                   onPressed: () => Navigator.pop(
                     dialogContext,
@@ -115,6 +128,8 @@ class ActiveWorkoutPage extends StatelessWidget {
     return switch (action) {
       _SessionExitAction.resumeLater => true,
       _SessionExitAction.abandon => _requestWorkoutAbandonment(context),
+      _SessionExitAction.finishWithoutFullRecording =>
+        _requestFinishWithoutFullRecording(context),
       _SessionExitAction.discard => _requestWorkoutDiscard(context),
       null => false,
     };
@@ -141,7 +156,10 @@ class ActiveWorkoutPage extends StatelessWidget {
         title: BlocBuilder<ActiveWorkoutCubit, ActiveWorkoutState>(
           buildWhen: (previous, current) => previous.status != current.status,
           builder: (context, state) => Text(switch (state.status) {
-            ActiveWorkoutStatus.completed => 'Sesión completada',
+            ActiveWorkoutStatus.completed =>
+              state.execution?.completedWithoutFullRecording == true
+                  ? 'Sesión terminada'
+                  : 'Sesión completada',
             ActiveWorkoutStatus.abandoned => 'Sesión cerrada',
             ActiveWorkoutStatus.discarded => 'Sesión descartada',
             _
@@ -476,6 +494,17 @@ class _ActiveContentState extends State<_ActiveContent> {
                 ),
               ),
               Expanded(child: body),
+              if (execution.canFinishWithoutFullRecording && current != null)
+                SafeArea(
+                  top: false,
+                  child: TextButton.icon(
+                    onPressed: saving
+                        ? null
+                        : () => _requestFinishWithoutFullRecording(context),
+                    icon: const Icon(Icons.task_alt_rounded),
+                    label: const Text('Terminar sin registrar todo'),
+                  ),
+                ),
             ],
           ),
         ),
@@ -675,7 +704,41 @@ class _ActiveContentState extends State<_ActiveContent> {
   }
 }
 
-enum _SessionExitAction { resumeLater, abandon, discard }
+enum _SessionExitAction {
+  resumeLater,
+  abandon,
+  discard,
+  finishWithoutFullRecording,
+}
+
+Future<bool> _requestFinishWithoutFullRecording(BuildContext context) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => EntrenaDialog(
+      title: const Text('¿Has terminado de entrenar?'),
+      content: const Text(
+        'Guardaremos tu sesión como terminada y conservaremos lo que hayas registrado. '
+        'Las series restantes quedarán sin datos.',
+      ),
+      actions: [
+        EntrenaDialogActions(
+          primaryLabel: 'Terminar sesión',
+          onPrimary: () => Navigator.pop(dialogContext, true),
+          secondary: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Seguir entrenando'),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+  if (confirmed != true || !context.mounted) return false;
+  final cubit = context.read<ActiveWorkoutCubit>();
+  await cubit.finishWithoutFullRecording();
+  return cubit.state.status == ActiveWorkoutStatus.completed;
+}
 
 void _leaveDiscardedWorkout(BuildContext context) {
   if (context.canPop()) {
@@ -954,18 +1017,26 @@ class _Completed extends StatelessWidget {
             color: Color(0xFFFF8A50),
           ),
           const SizedBox(height: 16),
-          const Text(
-            'Sesión completada',
-            style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900),
+          Text(
+            execution.completedWithoutFullRecording
+                ? 'Entrenamiento terminado'
+                : 'Sesión completada',
+            style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900),
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
-            '${workoutHasAmrap(execution) ? workoutProgressLabel(execution) : '${execution.completedSetCount} completadas'}'
-            '${workoutHasAmrap(execution) || execution.skippedSetCount == 0 ? '' : ' · ${execution.skippedSetCount} omitidas'}'
-            ' · RPE ${execution.finalRpe ?? '-'}',
+            execution.completedWithoutFullRecording
+                ? execution.completedSetCount == 0
+                      ? 'Tu sesión se ha guardado sin registros de series.'
+                      : 'Hemos guardado tus resultados. El resto de las series queda sin registrar.'
+                : '${workoutHasAmrap(execution) ? workoutProgressLabel(execution) : '${execution.completedSetCount} completadas'}'
+                      '${workoutHasAmrap(execution) || execution.skippedSetCount == 0 ? '' : ' · ${execution.skippedSetCount} omitidas'}'
+                      ' · RPE ${execution.finalRpe ?? '-'}',
             style: const TextStyle(color: Colors.white60),
+            textAlign: TextAlign.center,
           ),
-          if (isRunning) ...[
+          if (isRunning && !execution.completedWithoutFullRecording) ...[
             const SizedBox(height: 8),
             Text(
               runningAssessmentLabel(assessRunningExecution(execution.sets)),

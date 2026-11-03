@@ -30,6 +30,8 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     required CompleteAmrapBlockUseCase completeAmrap,
     required SkipWorkoutSetUseCase skipSet,
     required FinishWorkoutExecutionUseCase finishExecution,
+    required FinishWorkoutWithoutFullRecordingUseCase
+    finishWithoutFullRecording,
     required AbandonWorkoutExecutionUseCase abandonExecution,
     required DiscardWorkoutExecutionUseCase discardExecution,
     required GetPendingWorkoutMutationCountUseCase getPendingMutationCount,
@@ -44,6 +46,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
        _completeAmrap = completeAmrap,
        _skipSet = skipSet,
        _finishExecution = finishExecution,
+       _finishWithoutFullRecording = finishWithoutFullRecording,
        _abandonExecution = abandonExecution,
        _discardExecution = discardExecution,
        _getPendingMutationCount = getPendingMutationCount,
@@ -57,6 +60,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   final CompleteAmrapBlockUseCase _completeAmrap;
   final SkipWorkoutSetUseCase _skipSet;
   final FinishWorkoutExecutionUseCase _finishExecution;
+  final FinishWorkoutWithoutFullRecordingUseCase _finishWithoutFullRecording;
   final AbandonWorkoutExecutionUseCase _abandonExecution;
   final DiscardWorkoutExecutionUseCase _discardExecution;
   final GetPendingWorkoutMutationCountUseCase _getPendingMutationCount;
@@ -802,20 +806,58 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     String? notes,
     int? averageHeartRateBpm,
     int? maxHeartRateBpm,
+  }) => _finish(
+    finalRpe: finalRpe,
+    notes: notes,
+    averageHeartRateBpm: averageHeartRateBpm,
+    maxHeartRateBpm: maxHeartRateBpm,
+  );
+
+  Future<void> finishWithoutFullRecording() =>
+      _finish(withoutFullRecording: true);
+
+  Future<void> _finish({
+    bool withoutFullRecording = false,
+    int? finalRpe,
+    String? notes,
+    int? averageHeartRateBpm,
+    int? maxHeartRateBpm,
   }) async {
     if (_draftBusy || state.status == ActiveWorkoutStatus.saving) return;
     final execution = state.execution;
     if (execution == null ||
         execution.status != WorkoutExecutionStatus.inProgress ||
-        execution.currentSet != null) {
+        (!withoutFullRecording && execution.currentSet != null) ||
+        (withoutFullRecording &&
+            (!execution.canFinishWithoutFullRecording ||
+                execution.currentSet == null))) {
       return;
     }
-    if (state.unconfirmedDraftCount > 0) {
+    if (withoutFullRecording &&
+        _amrapDrafts.values.any(
+          (draft) => draft.rounds != '0' || draft.hasPartial,
+        )) {
+      _refresh(
+        error: 'Confirma el resultado AMRAP antes de terminar. Tus datos se conservan.',
+      );
+      return;
+    }
+    if (state.unconfirmedDraftCount > 0 ||
+        (withoutFullRecording &&
+            _drafts.values.any(
+              (draft) =>
+                  !draft.confirmed &&
+                  (draft.endedAt != null ||
+                      draft.fields.values.any((v) => v.trim().isNotEmpty)),
+            ))) {
       _refresh(
         error: 'Revisa las series con datos pendientes antes de finalizar.',
       );
       return;
     }
+    // Este cierre también se ofrece durante el descanso. Su temporizador no
+    // debe volver a publicar ready/resting mientras se espera al servidor.
+    _restTimer?.cancel();
     _publish(
       ActiveWorkoutState(
         status: ActiveWorkoutStatus.saving,
@@ -826,13 +868,15 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     var disposition = WorkoutMutationDisposition.synced;
     try {
       await _flushSessionEdits();
-      disposition = await _finishExecution(
-        executionId,
-        finalRpe: finalRpe,
-        notes: notes,
-        averageHeartRateBpm: averageHeartRateBpm,
-        maxHeartRateBpm: maxHeartRateBpm,
-      );
+      disposition = withoutFullRecording
+          ? await _finishWithoutFullRecording(executionId)
+          : await _finishExecution(
+              executionId,
+              finalRpe: finalRpe!,
+              notes: notes,
+              averageHeartRateBpm: averageHeartRateBpm,
+              maxHeartRateBpm: maxHeartRateBpm,
+            );
     } catch (_) {
       _publish(
         ActiveWorkoutState(
@@ -854,11 +898,20 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       averageHeartRateBpm: averageHeartRateBpm,
       maxHeartRateBpm: maxHeartRateBpm,
       resultSource: WorkoutResultSource.manual,
+      completedWithoutFullRecording: withoutFullRecording,
     );
     _drafts.clear();
     _amrapDrafts.clear();
     String? warning;
     try {
+      _restTimer?.cancel();
+      await _timerStore.clear(_restTimerId);
+      if (execution.currentSet case final current?) {
+        await _timerStore.clear(_timerId(current.id));
+        if (current.blockFormat == WorkoutBlockFormat.tabata) {
+          await _timerStore.clear('$executionId:tabata:${current.blockOrder}');
+        }
+      }
       await _draftStore.clear(executionId);
       await _amrapDraftStore.clear(executionId);
     } catch (_) {

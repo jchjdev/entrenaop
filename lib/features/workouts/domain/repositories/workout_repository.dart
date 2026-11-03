@@ -53,6 +53,10 @@ abstract class WorkoutRepository {
     WorkoutAbandonmentReason reason,
   );
 
+  Future<WorkoutMutationDisposition> finishWithoutFullRecording(
+    String executionId,
+  );
+
   Future<int> getPendingMutationCount();
 
   /// Descarta la ejecución en curso y sus resultados solo tras confirmación remota.

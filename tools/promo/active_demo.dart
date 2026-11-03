@@ -36,6 +36,9 @@ class _DemoActiveWorkoutState extends State<DemoActiveWorkout> {
       correctSet: CorrectWorkoutSetUseCase(repository),
       skipSet: SkipWorkoutSetUseCase(repository),
       finishExecution: FinishWorkoutExecutionUseCase(repository),
+      finishWithoutFullRecording: FinishWorkoutWithoutFullRecordingUseCase(
+        repository,
+      ),
       abandonExecution: AbandonWorkoutExecutionUseCase(repository),
       discardExecution: DiscardWorkoutExecutionUseCase(repository),
       getPendingMutationCount: GetPendingWorkoutMutationCountUseCase(

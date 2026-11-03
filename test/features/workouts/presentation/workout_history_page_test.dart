@@ -13,6 +13,20 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_editor_ui/running_pace_chart.dart';
 
 void main() {
+  testWidgets('el cierre declarado distingue sin registrar de no realizada', (
+    tester,
+  ) async {
+    await _pumpGroups(tester, [
+      _historySet(0, reps: 6),
+      _historySet(1, status: WorkoutSetStatus.pending),
+    ], completedWithoutFullRecording: true);
+    expect(find.text('Entrenamiento terminado'), findsOneWidget);
+    await _toggleAll(tester, 'Desplegar todo');
+    expect(find.text('Sin registrar'), findsOneWidget);
+    expect(find.text('No realizada'), findsNothing);
+    expect(find.textContaining('1 sin registrar'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
   testWidgets(
     'el historial usa el gráfico compartido y abre el resultado medido de la serie',
     (tester) async {
@@ -363,8 +377,12 @@ Future<void> _pumpGroups(
   WidgetTester tester,
   List<WorkoutExecutionSet> sets, {
   double scale = 1,
+  bool completedWithoutFullRecording = false,
 }) async {
-  final repository = _GroupedHistoryRepository(sets);
+  final repository = _GroupedHistoryRepository(
+    sets,
+    completedWithoutFullRecording: completedWithoutFullRecording,
+  );
   final cubit = WorkoutHistoryDetailCubit(
     executionId: 'history-groups',
     getExecution: GetWorkoutExecutionUseCase(repository),
@@ -422,11 +440,18 @@ WorkoutExecutionSet _historySet(
 );
 
 class _GroupedHistoryRepository extends _Repository {
-  _GroupedHistoryRepository(this.sets);
+  _GroupedHistoryRepository(
+    this.sets, {
+    this.completedWithoutFullRecording = false,
+  });
   final List<WorkoutExecutionSet> sets;
+  final bool completedWithoutFullRecording;
   @override
   Future<WorkoutExecution?> getExecution(String executionId) async =>
-      execution.copyWith(sets: sets);
+      execution.copyWith(
+        sets: sets,
+        completedWithoutFullRecording: completedWithoutFullRecording,
+      );
 }
 
 class _AmrapRepository extends _Repository {
@@ -488,6 +513,10 @@ class _AmrapRepository extends _Repository {
 }
 
 class _Repository implements WorkoutRepository {
+  @override
+  Future<WorkoutMutationDisposition> finishWithoutFullRecording(
+    String executionId,
+  ) async => throw UnimplementedError();
   @override
   Future<void> discardExecution(String executionId) async =>
       throw UnimplementedError();

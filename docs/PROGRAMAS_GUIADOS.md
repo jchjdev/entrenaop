@@ -1,5 +1,84 @@
 # Programas guiados oficiales
 
+## Terminar sin registrar todo · PRG-010 · 03/11/2026
+
+Javier confirma el cierre de una sesión aunque el deportista no quiera introducir
+resultados de todas las series. Una rutina repetible (`mode=guide`) ofrece
+**Terminar sin registrar todo** durante la ejecución y al salir. La confirmación
+**¿Has terminado de entrenar?** conserva los resultados confirmados y deja el
+resto sin registrar. El historial distingue **Sin registros** y **Registro
+parcial**; no presenta esas series como realizadas, omitidas o abandonadas.
+La opción también cubre sesiones independientes de biblioteca y personales,
+incluidas las añadidas manualmente a un día. Actualmente la autoría de programas
+es administrativa; el deportista crea sesiones personales, no programas nuevos.
+
+El servidor vuelve a comprobar propietario y procedencia en cada cierre. Una
+ejecución vinculada a programa debe pertenecer a una única fase repetible; las
+sesiones independientes deben proceder de una plantilla `system` o `user`.
+Cualquier pauta `coach`, `algorithm`, `preparation` o ligada a una preparación
+queda fuera, aunque use una plantilla pública. Se conserva el cierre normal de
+programas por fases, del motor adaptativo y de las sesiones del preparador, así
+como sus controles Pro. Una ejecución ya iniciada conserva la posibilidad de
+terminar con sus reglas habituales.
+
+La marca `workout_executions.completed_without_full_recording` distingue el cierre
+declarado. Las series pendientes mantienen estado y valores ausentes. La nueva
+RPC `finish_workout_without_full_recording_idempotent` no llama al cierre normal
+ni modifica datos deportivos; usa bloqueo, recibo propio y reloj de realización.
+La lectura de elegibilidad es `SECURITY INVOKER`; la mutación es deliberadamente
+`SECURITY DEFINER` porque las tablas no admiten escritura directa del cliente.
+Solo `authenticated` puede llamarla, con propietario explícito, ámbito limitado y
+`search_path` vacío. El aviso genérico del advisor sobre esa exposición es
+intencional y está cubierto por el contrato SQL; no se concede acceso anónimo.
+
+Flutter separa la nueva intención en repositorio/caso de uso/Cubit y conserva la
+cola existente por cuenta. Los resultados confirmados pendientes de envío se
+sincronizan antes del cierre; si no hay conexión, se encola detrás conservando
+operación y fecha. Un dato escrito sin confirmar o un borrador AMRAP no se pierde:
+se pide revisarlo antes de cerrar. Una respuesta aceptada o encolada no reabre
+la sesión por un fallo posterior al limpiar temporizadores o almacenamiento.
+Cancelar conserva la sesión y volver desde el resultado regresa al origen.
+
+Migración `20261103195151_guide_workout_unrecorded_completion`, solo Dev. Durante
+una publicación simultánea desde otro chat se ejecutó su DDL sin llegar a registrar
+el asiento. Se cotejaron columna, constraints, ACL y cuerpos de ambas funciones,
+se reconciliaron con la versión final y se acreditó el contrato con ROLLBACK
+antes de reparar únicamente ese asiento. No se repitieron los ALTER de columna
+ni se modificaron las funciones de cierre de dispositivos.
+
+La app sube a **1.6.0+14**. `workout_unrecorded_completion.sql` verifica propiedad,
+sesión sin registros/parcial, ausencia de RPE y de resultados fabricados,
+idempotencia, operación ajena, repetición, catálogo/personal, rechazo de fases y
+pautas protegidas y persistencia del bloqueo normal de series pendientes.
+Las regresiones Flutter cubren cancelar/terminar/volver, vista estrecha y texto
+grande, borradores, historial, lectura del modelo, orden de sincronización y
+reintentos offline.
+
+La regresión SQL de cuotas Free detectó además que la guarda de inicios Pro del
+02/11 confundía la copia `algorithm` de un programa editorial con una preparación
+adaptativa. `20261103200722_guided_session_start_scope` corrige ese caso: después
+de verificar cuota, seguimiento, fase, posición y descansos, el RPC de programas
+crea un contexto privado para esa plantilla/propietario/transacción, llama al
+constructor común y lo retira dentro de la misma operación. El cliente no tiene
+permisos sobre la tabla y no puede sustituir el contexto con un GUC, JWT o una
+copia antigua. Se conserva el único constructor y sus comprobaciones de Pro
+para todos los demás inicios `algorithm`. La tabla tiene RLS y permanece vacía al
+finalizar; no se concede otro RPC sin guarda ni se cambia la autoría de plantillas.
+Pasan en Dev los contratos de cuotas/pausa Free, acceso adaptativo Pro, ejecución
+completa de programas (con contexto de ensayo MFA aal2) y resultado parcial Apple,
+además del nuevo cierre. Todas las pruebas terminan con ROLLBACK.
+El advisor informa también de RLS sin políticas en la tabla privada de contexto:
+es intencional, porque ningún rol cliente debe leerla ni escribirla. Se comprueba
+que está vacía tras los ensayos y que no quedan usuarios de prueba.
+
+Comprobación del 03/11/2026: análisis raíz limpio, **1.763 pruebas correctas y una
+omisión existente**, capturas de widgets reales revisadas a 390 px y recorrido a
+320 px con texto 2×. Cinco contratos SQL transaccionales correctos en Dev; las
+**293 migraciones** coinciden entre árbol e historial remoto. No hay cambios en
+paquetes compartidos, Trainer, ADMIN ni funciones de recepción de dispositivos.
+La instalación y aceptación física de 1.6.0+14 en iPhone queda para recompilar
+desde main en el Mac; las pruebas de widgets no acreditan esa instalación.
+
 ## Papelera administrativa · ADM-003 · 21/10/2026
 
 Programas guiados ofrece **Papelera** y **⋯ → Mover a papelera** en cada versión.

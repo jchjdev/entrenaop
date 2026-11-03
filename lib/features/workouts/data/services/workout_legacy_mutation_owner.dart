@@ -29,6 +29,7 @@ class WorkoutLegacyMutationOwner {
             .maybeSingle();
       case WorkoutMutationType.completeAmrap:
       case WorkoutMutationType.finish:
+      case WorkoutMutationType.finishWithoutFullRecording:
       case WorkoutMutationType.abandon:
         row = await _client
             .from('workout_executions')

@@ -89,6 +89,14 @@ class FinishWorkoutExecutionUseCase {
   );
 }
 
+class FinishWorkoutWithoutFullRecordingUseCase {
+  const FinishWorkoutWithoutFullRecordingUseCase(this._repository);
+  final WorkoutRepository _repository;
+
+  Future<WorkoutMutationDisposition> call(String executionId) =>
+      _repository.finishWithoutFullRecording(executionId);
+}
+
 class AbandonWorkoutExecutionUseCase {
   const AbandonWorkoutExecutionUseCase(this._repository);
 
