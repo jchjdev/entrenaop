@@ -8,9 +8,12 @@ pautas externas propias. Análisis de las tres apps y baterías raíz/Trainer/AD
 correctos (1743/449/370; omisiones existentes 1/0/2). Pruebas SQL con ROLLBACK
 cubren cierre parcial, idempotencia, pruebas, cancelaciones, referencia,
 ventana y permisos; también pasan los contratos previos de Garmin y Apple.
-La consulta real se contrasta después de publicar. El cierre de la carrera
-ya realizada con Garmin se conserva; la prueba de cierre Apple aislado usa
-fixtures y no equivale a una nueva aceptación física. Siguiente recorrido:
+Trainer `0.3.0+6` y ADMIN `0.3.0+5` (`801a393c`) publicados y contrastados por
+HTTPS, versión, hash y proyecto Dev. La sesión real se consulta visualmente en
+Trainer/Para mí: listado Apple plegable, último intervalo conservado y ausencias
+sin ceros inventados. La grabación real también cierra correctamente en una
+copia aislada con ROLLBACK; la ejecución original de Garmin se conserva. No
+equivale a una nueva aceptación física del flujo en segundo plano. Siguiente recorrido:
 contrastar una próxima carrera Apple con sincronización normal y mantener
 fuerza Apple fuera de las capacidades anunciadas hasta implementarla y probarla.
 [Contrato](DEVICE_APPLE_WATCH.md#resultado-parcial-y-grabaciones-por-dispositivo--03112026).

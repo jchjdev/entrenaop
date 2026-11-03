@@ -26,10 +26,28 @@ medidas existentes. No publican identificadores nativos, referencias privadas,
 metadatos, localización ni credenciales. Las distancias ausentes siguen siendo
 NULL. Apple y Garmin conservan sus medidas independientes.
 
-La aceptación de este cambio utiliza la carrera ya recibida para la consulta
-profesional, y fixtures transaccionales para el cierre parcial Apple aislado,
-sin alterar el resultado de Garmin existente. No acredita fuerza Apple ni una
-prueba física nueva de segundo plano o del contador nativo.
+La comprobación de medidas contempla también pasos por tiempo: el formato
+canónico de carrera exige distancia observada aunque no sea el objetivo de
+finalización. Si falta, o una recuperación registrada no cabe en sus campos
+canónicos (por ejemplo, subsegundo o cero metros), se conserva el cierre parcial
+y el intervalo nativo íntegro, sin convertir ausencias en cero ni rechazar
+todo el entrenamiento. Los valores cero realmente registrados se conservan.
+
+Se reproduce también la grabación real existente en una copia de pauta y
+cuentas sintéticas, dentro de una transacción con ROLLBACK: cierra la sesión,
+conserva todos los intervalos y medidas, deja las series sin atribución y permite
+su consulta por el autor. La observación original y la ejecución de Garmin
+mantienen sus huellas e identidad. No se crea otra ejecución real de la cita.
+
+Trainer Dev `0.3.0+6` y ADMIN Dev `0.3.0+5`, revisión `801a393c`, están publicados
+y cotejados mediante HTTPS, versión, SHA-256 y proyecto exclusivamente Dev.
+Se abre la sesión real en Para mí → Ver resultados: la grabación Apple ofrece
+su lista plegable, se contrasta su último intervalo y se comprueba que los
+intervalos sin distancia no muestran metros inventados. La grabación Garmin
+permanece independiente. La app del deportista incorpora el mismo componente
+en `1.5.0+11`, guardado en GitHub; su instalación física no se sustituye por la
+publicación web. Esto no acredita fuerza Apple ni una nueva prueba física de
+segundo plano o del contador nativo.
 
 ## Comprobación con la grabación existente · 03/11/2026
 

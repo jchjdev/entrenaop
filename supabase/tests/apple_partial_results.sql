@@ -80,6 +80,32 @@ begin
   perform set_config('request.jwt.claim.sub',coach::text,true);
   perform set_config('request.jwt.claims',jsonb_build_object('sub',coach,'role','authenticated','aal','aal2','session_id',coach_session)::text,true);
  end loop;
+ -- Todas las fases presentes tampoco permiten inventar la distancia de un
+ -- tramo por tiempo, ni forzar ceros de recuperación en campos incompatibles.
+ recipe:=jsonb_set(recipe,'{blocks,0,exercises,0,sets}',jsonb_build_array(
+  jsonb_build_object('target_duration_seconds',90,'rest_after_seconds',0,'recovery_type','walking','recovery_duration_seconds',10),
+  jsonb_build_object('target_duration_seconds',5,'rest_after_seconds',0)));
+ template:=trainer_private.save_trainer_workout(gen_random_uuid(),recipe);
+ foreach mode in array array['missing_distance','zero_recovery','short_recovery'] loop
+  extra:=gen_random_uuid();
+  perform trainer_private.assign_trainer_workout(extra,relation,template,current_date,null);
+  perform set_config('request.jwt.claim.sub',owner::text,true);
+  perform set_config('request.jwt.claims',jsonb_build_object('sub',owner,'role','authenticated','aal','aal1','session_id',session)::text,true);
+  preview:=public.apple_training_command(owner,'preview',jsonb_build_object('scheduled_id',extra));
+  claim:=public.apple_training_command(owner,'prepare',jsonb_build_object('scheduled_id',extra,'revision',preview->>'revision','attempt_id',gen_random_uuid()));
+  perform public.apple_training_command(owner,'record',jsonb_build_object('scheduled_id',extra,'revision',claim->>'revision','attempt_id',claim->>'attempt_id'));
+  obs:=obs||jsonb_build_object('workout_id',gen_random_uuid(),'plan_id',claim->>'plan_id','revision',claim->>'revision','matches_prescription',true,
+   'timer_seconds',case when mode='short_recovery' then 95.1 else 105 end,'intervals',jsonb_build_array(
+    jsonb_build_object('id',gen_random_uuid(),'started_at',started,'ended_at',started+interval '90 seconds','timer_seconds',90,'distance_meters',390),
+    jsonb_strip_nulls(jsonb_build_object('id',gen_random_uuid(),'started_at',started+interval '90 seconds','ended_at',started+interval '100 seconds',
+     'timer_seconds',case when mode='short_recovery' then 0.1 else 10 end,'distance_meters',case when mode='zero_recovery' then 0 when mode='short_recovery' then 1 end)),
+    jsonb_strip_nulls(jsonb_build_object('id',gen_random_uuid(),'started_at',started+interval '100 seconds','ended_at',started+interval '105 seconds','timer_seconds',5,
+     'distance_meters',case when mode<>'missing_distance' then 0 end))));
+  answer:=public.apple_results_command(owner,'ingest',jsonb_build_object('observations',jsonb_build_array(obs)));
+  if answer->'automatic'->0->>'state'<>'completed' or answer->'automatic'->0->>'details_incomplete'<>'true' then raise exception 'Bloquea %: %',mode,answer;end if;
+  perform set_config('request.jwt.claim.sub',coach::text,true);
+  perform set_config('request.jwt.claims',jsonb_build_object('sub',coach,'role','authenticated','aal','aal2','session_id',coach_session)::text,true);
+ end loop;
  extra:=gen_random_uuid();
  perform trainer_private.assign_trainer_workout(extra,relation,template,current_date,null);
  perform set_config('request.jwt.claim.sub',owner::text,true);
