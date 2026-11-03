@@ -1,5 +1,15 @@
 # Roadmap de EntrenaOP
 
+**Preparaciones · revisión de recorridos · 03/11/2026:** auditados el vídeo y las
+fronteras de estado, navegación, formularios, cuenta y asincronía con tres agentes
+y pruebas focales. Se reproducen ciclos ficha/plan, respuestas fuera de orden,
+retención de ficha ante cambio directo de cuenta, selección finalizado/borrador,
+validación tardía y pérdidas de borradores; se distinguen de comportamientos
+correctos y estados sintéticos no acreditados en servidor. No se ha cambiado la
+app ni la selección de preparación. El único siguiente bloque recomendado es
+corregir esos casos y consolidar el interior alrededor de una ficha coherente,
+con propuesta visual antes de cambiar su organización. [Evidencia, límites y propuesta](audits/preparation-flow-review-2026-11-03.md).
+
 **PRG-010 · Terminar sin registrar todo · 03/11/2026:** recorrido técnico cerrado
 en app y Supabase Dev para rutinas repetibles y sesiones sueltas oficiales o
 personales. Se conserva lo confirmado y lo restante queda sin registrar, con
