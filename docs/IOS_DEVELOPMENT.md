@@ -1,5 +1,30 @@
 # Desarrollo iOS en macOS
 
+## Recuperar la firma del Mac mini · 03/11/2026
+
+Xcode rechaza la instalación en Iphone-JVR con «The executable is ad-hoc
+signed». La comprobación directa del Mac identifica la causa: su único
+certificado Apple Development está revocado (`CSSMERR_TP_CERT_REVOKED`), y la
+verificación del paquete falla por esa misma revocación. Limpiar la compilación
+no renueva el certificado. No se acredita qué operación lo revocó.
+
+Se crea una nueva identidad Apple Development desde Xcode → Settings → Apple
+Accounts → equipo de Javier → Manage Certificates → +. Se conserva el
+certificado del MacBook Air de Isabel y no se trasladan claves privadas entre
+equipos. El esquema **Runner iPhone** vuelve a Run Release; se preservan los
+otros ajustes locales de firma y las resoluciones SPM del Mac.
+
+La firma por SSH falla con `errSecInternalComponent`. Se termina desde la
+sesión interactiva de Xcode, autorizando el acceso de `codesign` al llavero en
+el propio Mac. La preparación se repite sobre `80110ebd` con el entorno Dev
+explícito; Xcode acredita **Build Succeeded**, versión **1.4.0+7**, y el snapshot
+Dart contiene esa revisión. `codesign --verify --deep --strict` valida el
+paquete completo; el perfil incluye Iphone-JVR. `devicectl` acredita su
+instalación por reemplazo, sin desinstalar la app. Tras desbloquear el teléfono,
+se acredita el arranque sin depurador y el proceso Runner activo después de
+abrirlo. Esta comprobación no sustituye la aceptación visual ni los recorridos
+funcionales de la versión.
+
 ## Probar Trainer y el chat actualizado · 27/10/2026
 
 Las fuentes de `main` incluyen el refresco del chat del deportista cada 15
