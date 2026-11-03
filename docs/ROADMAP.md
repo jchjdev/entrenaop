@@ -1,5 +1,15 @@
 # Roadmap de EntrenaOP
 
+**Garmin · completar con series recortadas identificadas · 03/11/2026:**
+se separa identidad de intervalo y cumplimiento de la distancia. Los índices
+nativos continuos y tipos compatibles permiten guardar lo realizado frente a
+la pauta sin exigir que una serie recortada mida lo prescrito. No se cambian
+mediciones, receta, permisos, ambigüedad ni ventana de cierre. Pasan 268 pruebas
+de servidor, tipos y contratos SQL; la simulación del 10×400 real cierra de forma
+idempotente y conserva todas las mediciones, con ROLLBACK. Despliegue Dev y
+conciliación de la recepción existente en curso. No se cambia el binario iOS.
+[Contrato](DEVICE_GARMIN_ACTIVITY_RETURN.md#series-recortadas-con-identidad--03112026).
+
 **Dispositivos · lectura profesional común de resultados recibidos · 03/11/2026:**
 se corrige la diferencia Apple/Garmin antes de completar una pauta. Titular y
 preparador autor usan el mismo lector por cita y tarjetas compartidas; se exige

@@ -64,7 +64,7 @@ export function validateRunningObservation(value: ObservedRunningActivity): void
 }
 
 export type ActivityStep = {kind: string; measure: 'seconds' | 'meters' | 'manual'; value: number | null};
-/** Una candidatura por estructura; el titular revisa los emparejamientos antes de confirmar. */
+/** Identificar un paso no acredita haber cumplido su distancia o intensidad objetivo. */
 export function proposeLapMapping(steps: readonly ActivityStep[], laps: readonly ObservedLap[]): (number[] | null)[] {
   let groups: ObservedLap[][] = laps.map(lap => [lap]);
   if (steps.length !== laps.length) {
@@ -78,6 +78,11 @@ export function proposeLapMapping(steps: readonly ActivityStep[], laps: readonly
     // Solo evidencia explícita del índice de paso, nunca proximidad temporal.
     if (groups.length !== steps.length || groups.some((g,i)=>g[0].workoutStepIndex!==i)) return steps.map(()=>null);
   }
+  // Un índice nativo continuo identifica cada paso aunque se haya terminado
+  // antes con Lap. Conservamos todas sus mediciones, también las de Auto Lap.
+  // Sin esa evidencia se mantiene la candidatura conservadora por estructura.
+  const indexed = groups.length === steps.length && groups.every((group,index) =>
+    group.every(lap => lap.workoutStepIndex === index));
   const compatible = (step: ActivityStep, group: ObservedLap[]) => group.every(lap => {
     const kind = lap.intensity;
     if (kind === null) return false;
@@ -87,7 +92,7 @@ export function proposeLapMapping(steps: readonly ActivityStep[], laps: readonly
     if (step.kind === 'run' && !['active', 'interval'].includes(kind)) return false;
     // Una vuelta automática no se convierte en repetición por compartir fecha.
     return true;
-  }) && (step.measure !== 'meters' || Math.abs(group.reduce((sum,lap)=>sum+lap.distanceMeters,0)-step.value!)<=Math.max(5,step.value!*.03));
+  }) && (indexed || step.measure !== 'meters' || Math.abs(group.reduce((sum,lap)=>sum+lap.distanceMeters,0)-step.value!)<=Math.max(5,step.value!*.03));
   return steps.every((step, i) => compatible(step, groups[i])) ? groups.map(group => group.map(lap => lap.index)) : steps.map(() => null);
 }
 

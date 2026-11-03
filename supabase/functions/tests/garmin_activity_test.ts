@@ -122,3 +122,32 @@ test('agrupa Auto Lap solo con índice nativo continuo y conserva todas las vuel
   assert.deepEqual(proposeLapMapping(steps,laps),[[0,1],[2],[3],[4]]);
   assert.deepEqual(proposeLapMapping(steps,laps.map(lap=>({...lap,workoutStepIndex:null}))),[null,null,null,null]);
 });
+
+test('una serie recortada con índice nativo conserva el mapa y sus mediciones reales', () => {
+  const activity = garminFitActivity(syntheticFit(), metadata);
+  const steps = [{kind:'warmup',measure:'manual' as const,value:null},
+    {kind:'run',measure:'meters' as const,value:400},
+    {kind:'rest',measure:'seconds' as const,value:50},
+    {kind:'cooldown',measure:'manual' as const,value:null}];
+  const laps = activity.laps.map(lap => lap.index===1
+    ? {...lap,distanceMeters:17.25,timerSeconds:8.125} : lap);
+  const original = structuredClone(laps);
+  assert.deepEqual(proposeLapMapping(steps,laps),[[0],[1],[2],[3]]);
+  assert.deepEqual(laps,original);
+  // Mismo número de vueltas sin identidad no permite adivinar una serie corta.
+  assert.deepEqual(proposeLapMapping(steps,laps.map(lap=>({...lap,workoutStepIndex:null}))),[null,null,null,null]);
+  assert.deepEqual(proposeLapMapping(steps,laps.map(lap=>lap.index===1?{...lap,intensity:'rest'}:lap)),[null,null,null,null]);
+});
+
+test('Auto Lap y series recortadas conservan todos los segmentos del mismo paso', () => {
+  const activity=garminFitActivity(syntheticFit(),metadata);
+  const laps=[{...activity.laps[0],timerSeconds:30,distanceMeters:50},
+    {...activity.laps[0],index:1,timerSeconds:30,distanceMeters:50},
+    ...activity.laps.slice(1).map(lap=>({...lap,index:lap.index+1,distanceMeters:lap.index===1?2.25:lap.distanceMeters}))];
+  const steps=[{kind:'warmup',measure:'manual' as const,value:null},
+    {kind:'run',measure:'meters' as const,value:400},
+    {kind:'rest',measure:'seconds' as const,value:50},
+    {kind:'cooldown',measure:'manual' as const,value:null}];
+  assert.deepEqual(proposeLapMapping(steps,laps),[[0,1],[2],[3],[4]]);
+  assert.deepEqual(proposeLapMapping(steps,laps.map(lap=>lap.index===2?{...lap,workoutStepIndex:99}:lap)),[null,null,null,null]);
+});

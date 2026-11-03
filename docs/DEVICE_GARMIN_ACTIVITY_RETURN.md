@@ -1,5 +1,40 @@
 # Retorno de carrera Garmin · INT-012 · 23/10/2026
 
+## Series recortadas con identidad · 03/11/2026
+
+Javier contrasta el cierre de una carrera anterior con una nueva que queda
+recibida sin completar. La nueva observación conserva índice de paso, tipo y
+mediciones para todas las fases, incluidas varias series muy recortadas. La
+función `proposeLapMapping` exigía además proximidad a la distancia pautada y,
+al fallar una serie, descartaba todo el mapa. No faltaban esas mediciones.
+
+Se separa identidad y cumplimiento: si los grupos de vueltas tienen los índices
+nativos continuos de la secuencia expandida y tipos compatibles, se acepta la
+correspondencia aunque la distancia sea menor o mayor. Auto Lap conserva sus
+segmentos y no se reparte un total entre pasos. Sin esa identidad se mantiene
+la candidatura conservadora; no se relajan receta exacta, ambigüedad entre
+citas, versión vigente, permisos, ventana de siete días, cobertura de vueltas
+ni revisión de una grabación sin desplazamiento. No se cambia fuerza o Apple.
+
+La ejecución conserva distancia/tiempo real frente a la pauta original. Una
+serie registrada puede estar completada administrativamente y no haber cumplido
+la distancia objetivo: el resultado profesional y su filtro de diferencias
+conservan esa discrepancia. RPE sigue ausente hasta una valoración real. Los
+datos sin correspondencia segura no se inventan para forzar un cierre.
+
+Corrección exclusiva del servidor: no cambia el contrato SQL ni el binario iOS.
+La validación de la carrera real usa la observación ya recibida, no un nuevo FIT
+ni una nueva grabación. Los identificadores y mediciones privadas quedan fuera
+de Git. La reconciliación de esa recepción previa se registra separada de la
+ingesta automática de actividades futuras.
+
+Pasan 268 pruebas de servidor y tipos estrictos. El contrato SQL de cierre
+automático usa una serie sintética recortada frente a 400 m y verifica lectura
+por el preparador, mediciones decimales, RPE ausente e idempotencia. También
+pasan los contratos de retorno Garmin y lectura Apple/Garmin con ROLLBACK.
+La simulación transaccional de la carrera real conserva todas sus vueltas y
+mediciones y permite un cierre idempotente; se revierte antes del despliegue.
+
 ## Pauta identificada en la bandeja · 03/11/2026
 
 La bandeja propia de Trainer devolvía todas las actividades sin confirmación

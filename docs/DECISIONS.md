@@ -1,5 +1,17 @@
 # Registro de decisiones vigentes
 
+**INT-012 · Registrar lo realizado aunque se recorten series · 03/11/2026:**
+Javier confirma que una sesión identificada debe completarse con las mediciones
+reales aunque el alumno termine series antes; el preparador necesita conocer
+esa diferencia. Se separa identidad de paso y cumplimiento de distancia:
+índices nativos continuos más tipo compatible permiten conservar la serie
+recortada sin convertirla en la dosis pautada. Sin identidad suficiente,
+conflictos de receta o vueltas sin correspondencia sigue la revisión. Se
+mantienen pauta, mediciones originales y RPE pendiente; completar no equivale
+a cumplir todos los objetivos. Este criterio amplía la decisión anterior de
+recibido/vinculado sin completar para las discrepancias de dosis identificables.
+[Contrato](DEVICE_GARMIN_ACTIVITY_RETURN.md#series-recortadas-con-identidad--03112026).
+
 **INT-012 · Pauta identificada y revisión en la bandeja · 03/11/2026:** Javier
 pregunta cómo asociar una carrera que Trainer presenta pendiente de asociar,
 aunque el retorno ya tiene un vínculo inequívoco. La bandeja propia distingue

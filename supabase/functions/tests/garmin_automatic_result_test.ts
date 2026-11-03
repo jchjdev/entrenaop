@@ -74,7 +74,7 @@ test('un bucle FIT conserva la misma referencia que los pasos expandidos anterio
 const job:ActivityJob={id:'job',owner:'owner',generation:1,lease:'lease',callback:'callback',metadata:{},tokens:'tokens',
   providerUserId:'provider',accessExpiresAt:'2026-11-02T00:00:00Z',refreshExpiresAt:'2026-11-03T00:00:00Z'};
 const grant:AccessGrant={accessToken:'access',refreshToken:'refresh',expiresInSeconds:3600,refreshExpiresInSeconds:86400,scope:''};
-function fixture(options:{duplicate?:boolean;stale?:boolean;extra?:boolean;failComplete?:boolean;stationary?:boolean}={}){
+function fixture(options:{duplicate?:boolean;stale?:boolean;extra?:boolean;failComplete?:boolean;stationary?:boolean;shortened?:boolean}={}){
   const actions:{action:string;input:Record<string,unknown>}[]=[];
   const activity:ObservedRunningActivity={schemaVersion:1,externalId:'123',name:'Prueba',startedAt:'2026-11-01T10:00:00Z',offsetSeconds:3600,
     timerSeconds:120,elapsedSeconds:120,distanceMeters:400,averageHeartRate:null,maxHeartRate:null,prescriptionReference:'reference',
@@ -82,7 +82,13 @@ function fixture(options:{duplicate?:boolean;stale?:boolean;extra?:boolean;failC
   if(options.extra){activity.timerSeconds=240;activity.elapsedSeconds=240;activity.distanceMeters=800;
     activity.laps.push({...activity.laps[0],index:1,startedAt:'2026-11-01T10:02:00Z',workoutStepIndex:1});}
   if(options.stationary){activity.distanceMeters=0;activity.laps=activity.laps.map(lap=>({...lap,distanceMeters:0}));}
-  const candidates=[{scheduled_id:'one',revision:'revision',snapshot:source(),current:!options.stale}];
+  const snapshot=source();
+  if(options.shortened){
+    Object.assign(snapshot.blocks[0].items[0].sets[0],{target_duration_seconds:null,target_distance_meters:400});
+    activity.timerSeconds=8.125;activity.elapsedSeconds=8.125;activity.distanceMeters=3.5;
+    Object.assign(activity.laps[0],{timerSeconds:8.125,elapsedSeconds:8.125,distanceMeters:3.5});
+  }
+  const candidates=[{scheduled_id:'one',revision:'revision',snapshot,current:!options.stale}];
   if(options.duplicate)candidates.push({...candidates[0],scheduled_id:'two',current:false});
   const service=new ActivityReturnService({command:async(action,_owner,_session,input)=>{
     actions.push({action,input});
@@ -101,6 +107,16 @@ test('cierra únicamente una coincidencia completa y conserva el mapa observado'
   const request=f.actions.find(a=>a.action==='automatic.complete')!.input;
   assert.deepEqual(request.mapping,[{block_order:0,item_order:0,set_order:0,lap_indices:[0],recovery_lap_indices:[],skipped:false}]);
   assert.equal(request.scheduled_id,'one');assert.equal(request.rpe,undefined);
+});
+
+test('una serie recortada identificada cierra con la evidencia real, sin convertirla en 400 metros',async()=>{
+  const f=fixture({shortened:true});await f.service.process(job);
+  assert.deepEqual(f.actions.map(a=>a.action),['downloading','save','automatic.context','automatic.complete','release']);
+  const observed=f.actions.find(a=>a.action==='save')!.input.activity as ObservedRunningActivity;
+  assert.equal(observed.laps[0].distanceMeters,3.5);
+  assert.equal(observed.laps[0].timerSeconds,8.125);
+  assert.deepEqual(f.actions.find(a=>a.action==='automatic.complete')!.input.mapping,
+    [{block_order:0,item_order:0,set_order:0,lap_indices:[0],recovery_lap_indices:[],skipped:false}]);
 });
 test('otra cita idéntica, versión retirada o intervalos sobrantes exigen revisión',async()=>{
   for(const [options,code] of [[{duplicate:true},'ambiguous_prescription'],[{stale:true},'stale_prescription'],

@@ -20,7 +20,7 @@ begin
  recipe:=jsonb_build_object('name','Retorno sintético','blocks',jsonb_build_array(jsonb_build_object(
   'name','Carrera','format','running','rounds',1,'rest_after_seconds',0,'exercises',jsonb_build_array(jsonb_build_object(
    'exercise_id','20000000-0000-4000-8000-000000000004','sets',jsonb_build_array(jsonb_build_object(
-    'target_duration_seconds',120,'rest_after_seconds',0,'recovery_type','walking','recovery_duration_seconds',30)))))));
+    'target_distance_meters',400,'rest_after_seconds',0,'recovery_type','walking','recovery_duration_seconds',30)))))));
  template:=trainer_private.save_trainer_workout(gen_random_uuid(),recipe);
  perform trainer_private.assign_trainer_workout(scheduled,relation,template,current_date,null);
  if has_table_privilege('authenticated','device_private.activity_observations','SELECT')
@@ -51,10 +51,10 @@ begin
  if claim->>'tokens'<>'fixture-encrypted' then raise exception 'No devuelve concesión al adaptador'; end if;
  observation:=jsonb_build_object('schemaVersion',1,'externalId','123456','name','Fixture',
   'startedAt',to_char(now()-interval '1 hour','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),
-  'offsetSeconds',7200,'elapsedSeconds',151.5,'timerSeconds',151.5,'distanceMeters',405.5,'averageHeartRate',121,'maxHeartRate',145,
+  'offsetSeconds',7200,'elapsedSeconds',151.5,'timerSeconds',151.5,'distanceMeters',12.5,'averageHeartRate',121,'maxHeartRate',145,
   'laps',jsonb_build_array(
-   jsonb_build_object('index',0,'timerSeconds',60.125,'elapsedSeconds',60.125,'distanceMeters',200.125),
-   jsonb_build_object('index',1,'timerSeconds',61.125,'elapsedSeconds',61.125,'distanceMeters',200.125),
+   jsonb_build_object('index',0,'timerSeconds',60.125,'elapsedSeconds',60.125,'distanceMeters',4.125),
+   jsonb_build_object('index',1,'timerSeconds',61.125,'elapsedSeconds',61.125,'distanceMeters',3.125),
    jsonb_build_object('index',2,'timerSeconds',30.25,'elapsedSeconds',30.25,'distanceMeters',5.25)));
  observation:=observation||jsonb_build_object('prescriptionReference','fixture-complete-reference');
  receipt:=public.garmin_activity_command('save',null,null,jsonb_build_object('id',jid,'lease_id',lease,'activity',observation));
@@ -146,11 +146,21 @@ begin
  if auth.uid() is not null or auth.jwt()->>'role'<>'service_role' then raise exception 'Filtra identidad al trabajador';end if;
  if (select status from public.scheduled_workouts where id=scheduled)<>'completed' or
   not exists(select 1 from public.workout_executions where id=e and final_rpe is null and result_source='device'
-   and observed_timer_seconds=151.5 and observed_distance_meters=405.5) then raise exception 'Pierde datos o inventa esfuerzo';end if;
+   and observed_timer_seconds=151.5 and observed_distance_meters=12.5) then raise exception 'Pierde datos o inventa esfuerzo';end if;
+ -- La pauta sigue siendo 400 m; haber registrado menos no altera la receta
+ -- ni convierte una serie recortada en la dosis completa.
+ if not exists(select 1 from public.workout_execution_sets where execution_id=e
+  and target_distance_meters=400 and actual_distance_meters=7.25 and status='completed') then
+  raise exception 'La serie recortada no conserva lo pautado frente a lo realizado';end if;
  if (select observed_duration_seconds from public.workout_execution_sets where execution_id=e)<>121.25 then raise exception 'Redondea evidencia original';end if;
  if (public.garmin_activity_command('automatic.complete',pupil,null,input)->>'execution_id')::uuid<>e then raise exception 'No es idempotente';end if;
  if (select count(*) from device_private.activity_confirmations where owner_id=pupil)<>1 then raise exception 'Duplica cierre';end if;
  perform public.garmin_activity_command('release',pupil,null,jsonb_build_object('id',jid,'lease_id',lease));
+ perform set_config('request.jwt.claim.sub',trainer::text,true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',trainer,'session_id',ts,'role','authenticated','aal','aal2')::text,true);
+ preview:=public.get_trainer_assignment_result(scheduled);
+ if preview->>'status'<>'completed' or preview->>'observed_distance_meters'<>'12.5' then
+  raise exception 'El preparador no recibe la sesión recortada completada';end if;
  if has_function_privilege('authenticated','device_private.garmin_automatic_result(text,uuid,jsonb)','EXECUTE') or
   has_function_privilege('anon','public.garmin_activity_command(text,uuid,uuid,jsonb)','EXECUTE') then raise exception 'Privilegios excesivos';end if;
 end $$;
