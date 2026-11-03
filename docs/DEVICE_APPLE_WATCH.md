@@ -316,6 +316,11 @@ calendario local ausente, contenido/fecha modificados, cancelación con derecho
 vencido, límite del catálogo, completadas, denegación, receta incompatible,
 desactivación, concurrencia y cambio de cuenta. Versión `1.3.0+6`.
 
+La [CI de `35e35533`](https://github.com/jchjdev/entrenaop/actions/runs/41602603873)
+finaliza correctamente en servidor, consumidor y compilación iOS Release sin
+firma. Falta instalar y comprobar en el reloj la nueva conciliación automática;
+la programación manual del material inicial no acredita ese recorrido.
+
 El envío parte del iPhone emparejado y requiere ejecutar EntrenaOP:
 **no implementa sincronización automática desde la nube ni mientras la app está
 cerrada**. Los recibos preparados sin ACK se conservan como pendientes, nunca como
