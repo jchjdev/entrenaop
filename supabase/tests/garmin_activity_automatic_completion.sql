@@ -84,6 +84,26 @@ begin
  input:=input||jsonb_build_object('activity_id',original_context->>'activity_id','activity_revision',original_context->>'activity_revision',
   'scheduled_id',scheduled,'delivery_revision',src->>'revision','mapping',jsonb_build_array(jsonb_build_object(
   'block_order',0,'item_order',0,'set_order',0,'lap_indices',jsonb_build_array(0,1),'recovery_lap_indices',jsonb_build_array(2),'skipped',false)));
+ -- La recepción inequívoca debe verse incluso antes de completar intervalos.
+ perform public.garmin_activity_command('automatic.review',pupil,null,input||'{"code":"intervals_require_review"}');
+ if (select matched_schedule_id from device_private.activity_return_jobs where id=jid) is distinct from scheduled
+   or exists(select 1 from public.workout_executions where user_id=pupil) then
+  raise exception 'Recibir y vincular no debe completar';end if;
+ insert into auth.sessions(id,user_id,aal) values(ps,pupil,'aal1');
+ perform set_config('request.jwt.claim.sub',pupil::text,true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',pupil,'session_id',ps,'role','authenticated','aal','aal1')::text,true);
+ preview:=public.my_scheduled_device_results(pupil,array[scheduled]);
+ if jsonb_array_length(preview->scheduled::text)<>1 or preview->scheduled::text->0->>'provider'<>'garmin'
+  or preview->scheduled::text->0->>'state'<>'review' then raise exception 'No muestra recepción: %',preview;end if;
+ begin
+  perform public.my_scheduled_device_results(stranger,array[scheduled]);
+  raise exception 'Lee agenda ajena';exception when insufficient_privilege then null;end;
+ if has_table_privilege('authenticated','device_private.activity_return_jobs','SELECT') or
+  has_function_privilege('anon','public.my_scheduled_device_results(uuid,uuid[])','EXECUTE') then
+   raise exception 'Expone evidencia privada';end if;
+ delete from auth.sessions where id=ps;
+ perform set_config('request.jwt.claim.sub','',true);
+ perform set_config('request.jwt.claims','{"role":"service_role"}',true);
  begin
   perform public.garmin_activity_command('automatic.complete',pupil,null,input||jsonb_build_object('delivery_revision',repeat('f',64)));
   raise exception 'Acepta versión distinta';

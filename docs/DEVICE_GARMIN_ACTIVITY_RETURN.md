@@ -1,5 +1,47 @@
 # Retorno de carrera Garmin · INT-012 · 23/10/2026
 
+## Recibido y vinculado sin completar · 03/11/2026
+
+Una actividad válida puede estar importada y corresponder a su receta, pero
+necesitar revisión porque se avanzaron fases antes de cumplirlas. El trabajador
+conserva esa asociación en su recibo privado, únicamente tras identificar una
+receta vigente inequívoca, comprobar propietario, versión y ventana temporal,
+con los mismos permisos y lease de la recepción. No crea una ejecución ni cambia
+los resultados para hacerlos coincidir con los objetivos.
+
+`my_scheduled_device_results` reúne los resúmenes Apple y Garmin de las citas
+propias solicitadas (máximo 200), con sesión viva y sin acceso directo a tablas
+privadas. Garmin puede aparecer como `review` aunque la pauta continúe pendiente.
+Mi semana utiliza una lista común de resultados y ofrece acceso a revisar Garmin.
+Las ambigüedades sin vínculo fiable siguen fuera de la pauta, en actividades
+recibidas; no se asocian por nombre o fecha. Un resultado confirmado en otra cita
+no se muestra en una segunda por un enlace pendiente anterior.
+
+Los bucles FIT de repeticiones fijas se expanden de forma acotada para calcular
+la referencia deportiva. Se conservan unidades, objetivos y orden; no se aceptan
+bucles condicionales, anidados, índices inválidos o expansiones de más de 100
+pasos. El compilador de referencia de entrega usa dosis plana y reconoce tanto
+el envío anterior como el formato repetido. Las mediciones no se expanden ni
+se inventan a partir de ese contrato.
+
+La carrera de prueba ya recibida se vincula administrativamente después de
+contrastar con el compilador la referencia exacta de su snapshot y su ventana;
+conserva revisión pendiente y no se completa. Sus identificadores y mediciones
+no se incorporan al repositorio. Se crea aparte una autoasignación técnica de
+3 × (10 s libres + 5 s de descanso), con calentamiento/enfriamiento manuales,
+marcada PRUEBA. Garmin confirma su calendario; la programación y comprobación
+física Apple quedan pendientes del iPhone actualizado.
+
+Migración `20261103110209` aplicada únicamente en Dev y cotejada con el historial.
+Pruebas SQL Garmin y Apple con ROLLBACK correctas, incluida consulta propia,
+rechazo de otra identidad y ausencia de cierre por vincular. Análisis sin
+incidencias; 1.737 pruebas de raíz correctas y una omisión anterior, 115 focales y
+263 de servidor. Los tipos TypeScript y el FIT generado por el SDK oficial
+comprueban equivalencia de referencias antes/después de repetir. Versión móvil
+`1.4.1+8`. La aceptación física de los relojes sigue pendiente.
+
+## Contexto del recorrido inicial
+
 Este documento conserva el bloque de carrera aceptado. INT-013 amplía después
 el mismo servicio a series convencionales de fuerza mediante observación V2,
 sin alterar la evidencia V1 ni la aceptación física de carrera.

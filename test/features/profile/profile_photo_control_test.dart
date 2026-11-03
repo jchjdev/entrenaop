@@ -17,9 +17,16 @@ class _Photos implements ProfilePhotoRepository {
   ProfilePhotoState state = const ProfilePhotoState(path: null, revision: 0);
   int writes = 0;
   bool failBefore = false, failAfter = false;
+  bool failRead = false;
+  int reads = 0;
   final uploads = <String>[], discarded = <String>[];
   @override
-  Future<ProfilePhotoState> own() async => state;
+  Future<ProfilePhotoState> own() async {
+    reads++;
+    if (failRead) throw StateError('Fallo de lectura');
+    return state;
+  }
+
   @override
   Future<ProfilePhotoState> save(String? path, {required int revision}) async {
     writes++;
@@ -48,6 +55,54 @@ class _Photos implements ProfilePhotoRepository {
 }
 
 void main() {
+  testWidgets('un fallo al leer la foto no muestra un aviso global de subida', (
+    tester,
+  ) async {
+    final photos = _Photos()..failRead = true;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: ProfilePhotoControl(repository: photos, name: 'Ana'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(SnackBar), findsNothing);
+    expect(find.textContaining('Conservamos la selección'), findsNothing);
+    final retry = find.byTooltip(
+      'No se pudo actualizar la foto. Toca para reintentar.',
+    );
+    expect(retry, findsOneWidget);
+    photos.failRead = false;
+    await tester.tap(retry);
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Cambiar foto de perfil'), findsOneWidget);
+    expect(photos.uploads, isEmpty);
+  });
+  testWidgets(
+    'Perfil oculto no vuelve a consultar su control de foto al reanudar',
+    (tester) async {
+      final photos = _Photos();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: TickerMode(
+              enabled: false,
+              child: ProfilePhotoControl(repository: photos, name: 'Ana'),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final before = photos.reads;
+      photos.failRead = true;
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(photos.reads, before);
+      expect(find.byType(SnackBar), findsNothing);
+    },
+  );
   testWidgets('un cambio de otra sesión se conserva al descartar el intento', (
     tester,
   ) async {

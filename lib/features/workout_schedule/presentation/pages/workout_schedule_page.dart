@@ -620,8 +620,15 @@ class _ScheduledWorkoutCard extends StatelessWidget {
                   ),
                 ],
               ),
-              for (final result in item.appleResults)
+              for (final result in item.deviceResults) ...[
                 DeviceActivitySummaryCard(result: result),
+                if (result.provider == 'garmin' && result.state == 'review')
+                  TextButton.icon(
+                    onPressed: () => context.push('/profile/garmin-activities'),
+                    icon: const Icon(Icons.fact_check_outlined),
+                    label: const Text('Revisar datos de Garmin'),
+                  ),
+              ],
               if (item.status == ScheduledWorkoutStatus.planned ||
                   item.status == ScheduledWorkoutStatus.inProgress) ...[
                 const SizedBox(height: 16),

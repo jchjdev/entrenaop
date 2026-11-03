@@ -52,6 +52,25 @@ test('la referencia de fuerza distingue variante y peso prescrito',()=>{
   assert.notEqual(nativeGarminPrescriptionReference(w,[{...s,exerciseName:2}]),first);
 });
 
+test('un bucle FIT conserva la misma referencia que los pasos expandidos anteriores',()=>{
+ const snapshot=source();snapshot.blocks[0].items[0].sets=Array.from({length:3},(_,order_index)=>({...snapshot.blocks[0].items[0].sets[0],order_index}));
+ const repeat={messageIndex:1,durationType:'repeatUntilStepsCmplt',durationValue:0,targetValue:3};
+ const grouped=[steps[0],repeat];
+ const expected=deliveredGarminPrescriptionReference(snapshot);
+ assert.ok(expected);
+ assert.equal(nativeGarminPrescriptionReference([{sport:'running',numValidSteps:2}],grouped),expected);
+ assert.equal(nativeGarminPrescriptionReference([{sport:'running',numValidSteps:3}],Array.from({length:3},(_,messageIndex)=>({...steps[0],messageIndex}))),expected);
+ for(const invalid of [{...repeat,targetValue:101},{...repeat,durationValue:1},{...repeat,durationType:'repeatUntilTime'}])
+  assert.equal(nativeGarminPrescriptionReference([{sport:'running',numValidSteps:2}],[steps[0],invalid]),null);
+ const encoder=new Encoder(),start=new Date('2026-11-03T09:00:00Z');
+ encoder.onMesg(Profile.MesgNum.FILE_ID,{type:'activity',manufacturer:'garmin',timeCreated:start});
+ encoder.onMesg(Profile.MesgNum.WORKOUT,{sport:'running',numValidSteps:2});
+ for(const step of grouped)encoder.onMesg(Profile.MesgNum.WORKOUT_STEP,step);
+ encoder.onMesg(Profile.MesgNum.SESSION,{sport:'running',startTime:start,totalTimerTime:360,totalElapsedTime:360,totalDistance:1200});
+ const activity=garminFitObservation(encoder.close(),{activityId:'1001',activityName:'Prueba'});
+ assert.equal(activity.prescriptionReference,expected);
+});
+
 const job:ActivityJob={id:'job',owner:'owner',generation:1,lease:'lease',callback:'callback',metadata:{},tokens:'tokens',
   providerUserId:'provider',accessExpiresAt:'2026-11-02T00:00:00Z',refreshExpiresAt:'2026-11-03T00:00:00Z'};
 const grant:AccessGrant={accessToken:'access',refreshToken:'refresh',expiresInSeconds:3600,refreshExpiresInSeconds:86400,scope:''};

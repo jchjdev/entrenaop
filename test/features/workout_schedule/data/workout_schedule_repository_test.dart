@@ -4,6 +4,42 @@ import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_wo
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('una pauta pendiente conserva a la vez resultados Garmin y Apple sin completarse', () async {
+    final remote = _FakeRemoteDataSource(
+      rows: [
+        {
+          'id': 's',
+          'template_id': 't',
+          'template_name': 'Series',
+          'template_version': 1,
+          'scheduled_date': '2026-11-03',
+          'source': 'coach',
+          'status': 'planned',
+          'device_results': [
+            for (final provider in ['apple', 'garmin'])
+              {
+                'id': provider,
+                'scheduled_id': 's',
+                'provider': provider,
+                'name': 'Series',
+                'started_at': '2026-11-03T08:00:00Z',
+                'timer_seconds': 1900,
+                'distance_meters': 5400,
+                'state': 'review',
+              },
+          ],
+        },
+      ],
+    );
+    final rows = await WorkoutScheduleRepositoryImpl(remoteDataSource: remote)
+        .getRange(DateTime(2026, 11, 2), DateTime(2026, 11, 8));
+    expect(rows.single.deviceResults.map((r) => r.provider), [
+      'apple',
+      'garmin',
+    ]);
+    expect(rows.single.status, ScheduledWorkoutStatus.planned);
+    expect(rows.single.executionId, isNull);
+  });
   test(
     'convierte la instantánea programada sin depender de la plantilla',
     () async {

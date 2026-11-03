@@ -1,5 +1,27 @@
 # Registro de decisiones vigentes
 
+**Pruebas iOS · mantener Xcode · 03/11/2026:** Javier descarta TestFlight para
+este recorrido. Se mantiene instalación con Xcode y el iPhone conectado o
+accesible por una conexión de desarrollo configurada; un Mac encendido a
+distancia no acredita acceso al teléfono. Las aceptaciones Apple que requieren
+una app nueva quedan pendientes hasta instalarla. [Guía](IOS_DEVELOPMENT.md).
+
+**INT-012 · Recibido y vinculado antes de completar · 03/11/2026:** Javier
+confirma avances manuales de los últimos intervalos y pide ver igualmente los
+datos Garmin recibidos junto a Apple en su semana. La asociación inequívoca de
+receta se conserva aunque los intervalos necesiten revisión; recibir/vincular
+no acredita cumplir la dosis ni completa la pauta. La consulta propia devuelve
+ambos proveedores con sus datos originales y estado independiente. Los bloques
+FIT repetidos y los pasos planos comparten la misma referencia expandida.
+[Contrato](DEVICE_GARMIN_ACTIVITY_RETURN.md#recibido-y-vinculado-sin-completar--03112026).
+
+**Foto de Perfil · avisos acotados · 03/11/2026:** Javier informa de un aviso
+repetido de cambio de foto en otras pantallas. Un fallo al leer la foto no debe
+anunciar una subida fallida ni una selección pendiente inexistente. El control
+oculto deja de recargarse al reanudar; la lectura fallida se indica localmente
+y se reintenta desde el avatar. Los cambios reales mantienen confirmación,
+identificador de subida y reintento. No cambian permisos o almacenamiento.
+
 **INT-009/INT-023 · Repeticiones nativas en relojes · 03/11/2026:** Javier
 detecta que en una pauta de series sucesivas no ve el contador de vuelta. Se
 contrasta la receta enviada: sus diez trabajos y recuperaciones estaban

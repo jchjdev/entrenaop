@@ -32,8 +32,9 @@ abstract final class ScheduledWorkoutModel {
       coachNote: (json['trainer_assignments'] as Map?)?['note'] as String?,
       coachName: json['trainer_name'] as String?,
       isSelfAssigned: json['is_self'] == true && json['source'] == 'coach',
-      appleResults: [
-        for (final row in json['apple_results'] as List? ?? [])
+      deviceResults: [
+        for (final row
+            in (json['device_results'] ?? json['apple_results']) as List? ?? [])
           DeviceActivitySummary.fromJson(Map<String, dynamic>.from(row as Map)),
       ],
     );

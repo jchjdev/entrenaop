@@ -1,5 +1,14 @@
 # Roadmap de EntrenaOP
 
+**Recepción Garmin/Apple en Mi semana y avisos de foto · 03/11/2026:** se
+conserva el enlace inequívoco recibido aunque los intervalos necesiten revisión;
+la semana muestra ambos proveedores sin completar una pauta por el mero enlace.
+También se acotan al avatar los fallos de lectura de foto y se conserva la subida
+con reintento. Hay una prueba técnica corta enviada a Garmin; Apple y la pantalla
+actualizada esperan instalación física. **Único siguiente recorrido:** instalar
+`1.4.1+8`, comprobar ambos resultados en la semana y realizar la aceptación del
+contador corto en cada reloj. [Contrato](DEVICE_GARMIN_ACTIVITY_RETURN.md#recibido-y-vinculado-sin-completar--03112026).
+
 **Carrera · repeticiones nativas en relojes · 03/11/2026:** se corrige la
 traducción de series idénticas a bloques repetidos de Garmin y Apple, conservando
 editor, snapshots, secuencia de resultados y retorno de pautas Apple antiguas.

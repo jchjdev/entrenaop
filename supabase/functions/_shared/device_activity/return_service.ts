@@ -80,21 +80,22 @@ export class ActivityReturnService {
     if(schedules.size!==1){await command('automatic.review',{code:schedules.size?'ambiguous_prescription':'prescription_not_identified'});return;}
     const current=matched.find(c=>c.current===true);
     if(!current){await command('automatic.review',{code:'stale_prescription'});return;}
+    const linked={scheduled_id:current.scheduled_id,delivery_revision:current.revision};
     const review=activityReview({snapshot:current.snapshot,activity});
     const rows=review.rows as Json[];
     if(!rows.length||rows.some(r=>!(r.lap_indices as number[])?.length||r.requires_recovery&&!(r.recovery_lap_indices as number[])?.length)){
-      await command('automatic.review',{code:'intervals_require_review'});return;
+      await command('automatic.review',{code:'intervals_require_review',...linked});return;
     }
     const covered=new Set(rows.flatMap(r=>[...(r.lap_indices as number[]),...((r.recovery_lap_indices as number[])??[])]));
     const expected=isStrengthActivity(activity)?activity.sets.filter(s=>s.kind==='active').map(s=>s.index):activity.laps.map(l=>l.index);
-    if(expected.some(i=>!covered.has(i))){await command('automatic.review',{code:'intervals_require_review'});return;}
+    if(expected.some(i=>!covered.has(i))){await command('automatic.review',{code:'intervals_require_review',...linked});return;}
     if(isStrengthActivity(activity)){
       const work=strengthPrescription(current.snapshot).steps.filter(s=>s.kind==='strength');
       if(work.some((s,i)=>{
         const actual=activity.sets.find(a=>a.index===(rows[i].lap_indices as number[])[0]);
         return !actual||s.measure==='reps'&&actual.repetitions===null||s.loadKg!==null&&actual.loadKg===null;
       })){
-        await command('automatic.review',{code:'intervals_require_review'});return;
+        await command('automatic.review',{code:'intervals_require_review',...linked});return;
       }
     }
     await command('automatic.complete',{activity_id:context.activity_id,activity_revision:context.activity_revision,

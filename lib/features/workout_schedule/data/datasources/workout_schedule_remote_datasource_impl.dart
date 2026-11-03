@@ -65,20 +65,20 @@ class WorkoutScheduleRemoteDataSourceImpl
         if (item['is_self'] == true) selfAssigned.add(item['id'] as String);
       }
     }
-    final apple = <String, dynamic>{};
+    final deviceResults = <String, dynamic>{};
     if (AppConfig.environment == AppEnvironment.development) {
       final allIds = rows.map((r) => r['id'] as String).toList();
       for (var i = 0; i < allIds.length; i += 200) {
         final value = await authenticatedTrainerRpc(
           supabaseClient,
           userId,
-          'my_apple_workout_results',
+          'my_scheduled_device_results',
           params: {
             'p_owner': userId,
             'p_ids': allIds.sublist(i, (i + 200).clamp(0, allIds.length)),
           },
         );
-        apple.addAll(Map<String, dynamic>.from(value as Map));
+        deviceResults.addAll(Map<String, dynamic>.from(value as Map));
       }
     }
     if (supabaseClient.auth.currentUser?.id != userId) {
@@ -90,7 +90,7 @@ class WorkoutScheduleRemoteDataSourceImpl
             ...r,
             'trainer_name': ?names[r['id']],
             'is_self': selfAssigned.contains(r['id']),
-            'apple_results': apple[r['id']] ?? const [],
+            'device_results': deviceResults[r['id']] ?? const [],
           },
         )
         .toList();

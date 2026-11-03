@@ -27,6 +27,7 @@ class _ProfilePhotoControlState extends State<ProfilePhotoControl>
   ProfilePhotoState? _state;
   bool _busy = true, _pending = false;
   String? _id, _target;
+  bool _loadFailed = false;
   Uint8List? _bytes;
   int _revision = 0, _refresh = 0;
   @override
@@ -44,7 +45,10 @@ class _ProfilePhotoControlState extends State<ProfilePhotoControl>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && !_busy && !_pending) {
+    if (state == AppLifecycleState.resumed &&
+        !_busy &&
+        !_pending &&
+        TickerMode.valuesOf(context).enabled) {
       setState(() => _busy = true);
       _load();
     }
@@ -71,11 +75,14 @@ class _ProfilePhotoControlState extends State<ProfilePhotoControl>
       if (mounted) {
         setState(() {
           _state = state;
+          _loadFailed = false;
           _refresh++;
         });
       }
-    } catch (error) {
-      _notice(profilePhotoError(error));
+    } catch (_) {
+      // Perfil puede seguir montado detrás de Mi semana. Un fallo de lectura
+      // se muestra en el avatar; no es un cambio de foto ni un aviso global.
+      if (mounted) setState(() => _loadFailed = true);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -151,7 +158,7 @@ class _ProfilePhotoControlState extends State<ProfilePhotoControl>
 
   Future<void> _choose() async {
     if (_busy) return;
-    if (_state == null) {
+    if (_state == null || _loadFailed) {
       setState(() => _busy = true);
       await _load();
       return;
@@ -247,7 +254,11 @@ class _ProfilePhotoControlState extends State<ProfilePhotoControl>
         _id = const Uuid().v4();
         _target = '${widget.repository.ownerId}/$_id.jpg';
       } catch (error) {
-        _notice(profilePhotoError(error));
+        _notice(
+          error is ProfilePhotoFailure || error is FormatException
+              ? profilePhotoError(error)
+              : 'No se pudo abrir o preparar la foto. Vuelve a elegirla desde Perfil.',
+        );
         return;
       } finally {
         if (mounted) setState(() => _busy = false);
@@ -283,7 +294,11 @@ class _ProfilePhotoControlState extends State<ProfilePhotoControl>
 
   @override
   Widget build(BuildContext context) => Tooltip(
-    message: _pending ? 'Cambio de foto pendiente' : 'Cambiar foto de perfil',
+    message: _pending
+        ? 'Cambio de foto pendiente'
+        : _loadFailed
+        ? 'No se pudo actualizar la foto. Toca para reintentar.'
+        : 'Cambiar foto de perfil',
     child: Semantics(
       button: true,
       label: 'Cambiar foto de perfil',
@@ -313,7 +328,7 @@ class _ProfilePhotoControlState extends State<ProfilePhotoControl>
                 child: CircleAvatar(
                   radius: 13,
                   child: Icon(
-                    _pending
+                    _pending || _loadFailed
                         ? Icons.error_outline
                         : Icons.photo_camera_outlined,
                     size: 16,

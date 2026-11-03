@@ -45,12 +45,32 @@ export function nativeGarminPrescriptionReference(workouts:Row[],steps:Row[]):st
   if(workouts.length!==1||Number(workouts[0].numValidSteps)!==steps.length)return null;
   const w=workouts[0];
   const sport=w.sport==='running'?'running':w.sport==='training'&&w.subSport==='strengthTraining'?'strength':null;
-  return sport===null?null:signature(sport,steps,true);
+  if(sport===null||steps.some((s,index)=>s.messageIndex!==index))return null;
+  const expanded:Row[]=[];
+  for(const [index,step] of steps.entries()){
+    if(step.durationType==='repeatUntilStepsCmplt'){
+      const start=step.durationStep??step.durationValue;
+      const count=step.repeatSteps??step.targetValue;
+      if(typeof start!=='number'||!Number.isInteger(start)||start<0||start>=index||
+        typeof count!=='number'||!Number.isInteger(count)||count<2||count>100)return null;
+      const pattern=steps.slice(start,index);
+      // Los exportadores no crean bucles anidados ni condicionales. No se
+      // adivinan sus límites ni se admite una expansión sin cota.
+      if(pattern.some(s=>String(s.durationType).startsWith('repeat'))||
+        expanded.length+pattern.length*(count-1)>100)return null;
+      for(let round=1;round<count;round++)expanded.push(...pattern);
+    }else expanded.push(step);
+    if(expanded.length>100)return null;
+  }
+  return signature(sport,expanded.map((step,index)=>({...step,messageIndex:index})),true);
 }
 export function deliveredGarminPrescriptionReference(snapshot:unknown):string|null {
   try {
     const strength=(snapshot as Row)?.sport==='strength';
-    const workout=strength?garminStrengthWorkout(strengthPrescription(snapshot)):garminRunningWorkout(runningPrescription(snapshot));
+    // La identidad deportiva se calcula sobre la dosis expandida, tanto para
+    // entregas anteriores como para la nueva representación con bucles.
+    const running=strength?null:runningPrescription(snapshot);
+    const workout=strength?garminStrengthWorkout(strengthPrescription(snapshot)):garminRunningWorkout({...running!,repeatBlocks:[]});
     if(workout.segments.length!==1)return null;
     return signature(strength?'strength':'running',workout.segments[0].steps as unknown as Row[],false);
   } catch { return null; }

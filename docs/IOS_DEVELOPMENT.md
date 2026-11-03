@@ -1,5 +1,14 @@
 # Desarrollo iOS en macOS
 
+## Distribución de pruebas · 03/11/2026
+
+Javier descarta TestFlight para este recorrido. Se conserva el flujo de GitHub
+Desktop sobre `main`, preparación y ejecución con Xcode en el iPhone. El Mac
+encendido y controlable a distancia no basta para instalar: Xcode debe tener
+acceso al dispositivo por cable o por una conexión de desarrollo configurada.
+No se presenta la app web como sustituto de HealthKit/WorkoutKit. Las nuevas
+aceptaciones Apple se aplazan hasta instalar la compilación correspondiente.
+
 ## Recuperar la firma del Mac mini · 03/11/2026
 
 Xcode rechaza la instalación en Iphone-JVR con «The executable is ad-hoc
