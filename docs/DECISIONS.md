@@ -1,5 +1,15 @@
 # Registro de decisiones vigentes
 
+**INT-023 · Validar Apple con la carrera ya registrada · 03/11/2026:** Javier
+recuerda que la carrera se grabó con ambos relojes y pide aprovechar esa evidencia.
+Se comprueban recepción Apple y vínculo a la pauta. El desglose tiene fases y
+distancias incompletas para el mapa automático actual; no se inventan datos ni
+se crea otra ejecución de la cita ya completada con Garmin. La comprobación de
+segundo plano queda separada: el observador ya existe en el código, pero recibir
+la carrera no acredita el estado de ejecución del iPhone. Fuerza Apple no está
+implementada ni se da por aceptada a partir de Garmin.
+[Comprobación](DEVICE_APPLE_WATCH.md#comprobación-con-la-grabación-existente--03112026).
+
 **TRN-033 · Resultados propios de pautas externas en Para mí · 03/11/2026:**
 Javier muestra una pauta realizada de su preparador cuyo inspector solo ofrece
 la receta. Se conecta «Ver resultados» con el lector deportivo ya existente,

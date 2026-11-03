@@ -1,5 +1,29 @@
 # Apple Watch · WorkoutKit · INT-023
 
+## Comprobación con la grabación existente · 03/11/2026
+
+Javier recuerda que la carrera usada para validar Garmin se grabó también con
+Apple Watch y pide aprovecharla. Se consulta la observación Apple existente:
+recepción posterior a su finalización, referencia a la pauta correcta, recogida
+activada y datos de tiempo, distancia total, pulso e intervalos conservados. No
+se exige repetir la carrera ni se modifica la ejecución ya cerrada con Garmin.
+
+La observación Apple contiene una fase menos de las que espera la receta y
+varios intervalos cortos sin distancia. `apple_automatic_mapping` devuelve NULL
+ante ese número distinto de fases. Esta comprobación acredita recepción y
+vinculación, pero no cierre autónomo Apple ni correspondencia individual segura
+de todas sus fases. No se distribuye la distancia total para llenar ausencias ni
+se interpretan distancias ausentes como cero. Se solicita una relectura desde el
+iPhone para contrastar posibles mediciones tardías de Salud; los datos originales
+y los resultados Garmin permanecen protegidos.
+
+Estado del código contrastado: el observador de Salud en segundo plano sí está
+implementado, conectado al arranque, al plugin y al coordinador, con entitlement
+nativo. La pantalla informa si esa instalación lo ha podido activar. La hora de
+recepción por sí sola no acredita que el teléfono estuviera en segundo plano.
+Los apartados históricos de primer plano describen etapas anteriores. Fuerza
+Apple sigue sin implementar: exportador y lector actuales solo admiten carrera.
+
 **Repeticiones nativas · 03/11/2026:** `repeatBlocks` es una proyección opcional
 del compilador común. El canal conserva todos los pasos y construye bloques
 WorkoutKit con sus vueltas, en vez de un único bloque con una vuelta. Al leer
