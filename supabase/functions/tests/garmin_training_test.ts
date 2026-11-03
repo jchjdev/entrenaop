@@ -9,6 +9,12 @@ import {handleGarminTraining} from "../_shared/garmin/training_http.ts";
 const owner="10000000-0000-4000-8000-000000000001",session="20000000-0000-4000-8000-000000000001";
 const scheduled="30000000-0000-4000-8000-000000000001",revision="a".repeat(64);
 const who:DeliveryActor={actor:owner,owner,session};
+function expandGarminSteps(steps:any[]):any[] {
+ return steps.flatMap(step=>step.type==='WorkoutRepeatStep'
+  ? Array.from({length:step.repeatValue},(_,round)=>
+      expandGarminSteps(step.steps).slice(0,step.skipLastRestStep&&round===step.repeatValue-1?-1:undefined)).flat()
+  : [step]);
+}
 function source(){return {name:"Carrera prescrita",date:"2026-10-27",source:"coach",blocks:[{order_index:0,name:"Carrera",format:"running",rounds:1,rest_after_seconds:0,time_cap_seconds:null,
   items:[{order_index:0,exercise_id:"20000000-0000-4000-8000-000000000004",notes:"Ritmo cómodo",sets:[{order_index:0,target_duration_seconds:null,target_distance_meters:1000,
     target_pace_min_seconds_per_km:300,target_pace_max_seconds_per_km:360,rest_after_seconds:0,recovery_type:"walking",recovery_duration_seconds:30,recovery_distance_meters:null}]}]}]};}
@@ -36,7 +42,10 @@ test("fartlek conserva el ritmo suave y solo omite la recuperación ausente en l
   }
   rows.push(open('cooldown'));
   raw.blocks[0].items[0].sets=rows.map((s,i)=>({...s,order_index:i}));
-  const out=garminRunningWorkout(runningPrescription(raw)).segments[0].steps;
+  const native=garminRunningWorkout(runningPrescription(raw)).segments[0].steps;
+  const out=expandGarminSteps(native);
+  const repeat=native.find(step=>step.type==='WorkoutRepeatStep');
+  assert.equal(repeat?.repeatValue,3);assert.equal(repeat?.skipLastRestStep,omit);
   assert.equal(out.length,omit?7:8);
   assert.equal(out[2].intensity,'RECOVERY');assert.equal(out[2].durationValue,180);
   assert.equal(out[2].targetType,'PACE');
@@ -204,7 +213,10 @@ test('V2 conserva Lap, cinco series con recuperación final y enfriamiento en Ga
   running_step:{schema_version:2,kind:'run',completion:'distance'}};
  const open=(kind:string,order:number)=>({order_index:order,rest_after_seconds:0,running_step:{schema_version:2,kind,completion:'manual'}});
  raw.blocks[0].items[0].sets=[open('warmup',0),...Array.from({length:5},(_,i)=>({...work,order_index:i+1})),open('cooldown',6)];
- const before=JSON.stringify(raw),p=runningPrescription(raw),out=garminRunningWorkout(p),steps=out.segments[0].steps;
+ const before=JSON.stringify(raw),p=runningPrescription(raw),out=garminRunningWorkout(p),steps=expandGarminSteps(out.segments[0].steps);
+ assert.equal(out.segments[0].steps.length,3);
+ assert.equal(out.segments[0].steps[1].type,'WorkoutRepeatStep');
+ assert.equal((out.segments[0].steps[1] as any).repeatValue,5);
  assert.equal(JSON.stringify(raw),before); assert.equal(out.sport,'RUNNING'); assert.equal(steps.length,12);
  assert.equal(steps[0].intensity,'WARMUP'); assert.equal(steps.at(-1)!.intensity,'COOLDOWN');
  for(const step of [steps[0],steps.at(-1)!]) {assert.equal(step.durationType,'OPEN');assert.equal(Object.hasOwn(step,'durationValue'),false);}

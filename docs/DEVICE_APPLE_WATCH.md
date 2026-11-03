@@ -1,5 +1,14 @@
 # Apple Watch · WorkoutKit · INT-023
 
+**Repeticiones nativas · 03/11/2026:** `repeatBlocks` es una proyección opcional
+del compilador común. El canal conserva todos los pasos y construye bloques
+WorkoutKit con sus vueltas, en vez de un único bloque con una vuelta. Al leer
+resultados se compara exactamente con composición nueva y anterior para
+conservar las pautas ya enviadas. Sin metadatos se mantiene el formato anterior.
+Omitir la recuperación final necesita separar el último trabajo en Apple;
+no se añade una recuperación ficticia. La aceptación visual del contador sigue
+pendiente. [Contrato](RUNNING_STEPS_V2.md#repeticiones-nativas-al-exportar--03112026).
+
 Javier autoriza el 28/10/2026 comenzar Apple Watch después de acreditar el
 recorrido Garmin. Garmin conserva sus funciones, evidencias y límites. No se
 reabre el editor ni se convierte la receta común en un contrato de fabricante.

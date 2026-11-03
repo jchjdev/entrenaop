@@ -19,6 +19,19 @@ test('Una pauta incompatible no produce una traducción parcial',async()=>{
  const response=await handleAppleTraining(request({owner:'owner',action:'preview'}),config,async()=>Response.json({snapshot:{...source,blocks:[]},revision:'a'.repeat(64)}));
  assert.equal(response.status,409);assert.equal((await response.json()).code,'unsupported_prescription');
 });
+
+test('programación y retorno entregan el mismo bloque de diez vueltas sin cambiar la revisión',async()=>{
+ const raw=structuredClone(source);
+ raw.blocks[0].items[0].sets=Array.from({length:10},(_,order_index)=>({...raw.blocks[0].items[0].sets[0],order_index}));
+ for(const action of ['preview','results.catalog']){
+  const response=await handleAppleTraining(request({owner:'owner',action}),config,async()=>Response.json(action==='preview'
+   ?{snapshot:raw,revision:'a'.repeat(64)}
+   :{enabled:true,results:[],plans:[{snapshot:raw,revision:'a'.repeat(64),plan_id:'plan'}]}));
+  const body=await response.json();const plan=action==='preview'?body:body.plans[0];
+  assert.equal(plan.revision,'a'.repeat(64));assert.equal(plan.prescription.steps.length,20);
+  assert.deepEqual(plan.prescription.repeatBlocks,[{start:0,stepCount:2,iterations:10,omitLastRecovery:false}]);
+ }
+});
 test('La respuesta no filtra detalles SQL ni credenciales de infraestructura',async()=>{
  const response=await handleAppleTraining(request({owner:'owner',action:'list'}),config,async()=>Response.json({message:'DETAIL: private table SECRET'},{status:500}));
  assert.deepEqual(await response.json(),{code:'apple_unavailable'});

@@ -1,5 +1,10 @@
 # Envío común de carrera · INT-007 · 22/10/2026
 
+**Repeticiones nativas · 03/11/2026:** la traducción de carrera añade
+`WorkoutRepeatStep` para patrones idénticos, conservando la pauta expandida de
+resultados y la omisión final exacta. No requiere cambiar el editor ni reenvía
+lo ya realizado. [Contrato actualizado y aceptación pendiente](RUNNING_STEPS_V2.md#repeticiones-nativas-al-exportar--03112026).
+
 Esta página conserva la primera fase manual y su aceptación. INT-010 amplía
 ahora el ciclo con publicación automática, cambios y retirada de citas futuras,
 solo en Dev: [contrato y estado actual](DEVICE_GARMIN_AUTOMATIC_SYNC.md).

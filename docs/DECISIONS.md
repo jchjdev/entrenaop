@@ -1,5 +1,18 @@
 # Registro de decisiones vigentes
 
+**INT-009/INT-023 · Repeticiones nativas en relojes · 03/11/2026:** Javier
+detecta que en una pauta de series sucesivas no ve el contador de vuelta. Se
+contrasta la receta enviada: sus diez trabajos y recuperaciones estaban
+conservados, pero exportados como pasos sueltos. La traducción añade grupos
+derivados de repeticiones idénticas dentro de cada elemento, sin cambiar editor,
+persistencia, versión de pauta ni la secuencia expandida para resultados.
+Garmin recibe `WorkoutRepeatStep`; Apple, bloques `IntervalBlock` con sus vueltas.
+Solo se agrupan secuencias cuya expansión es idéntica, con ritmos, notas, medidas
+y recuperación final conservados. El lector Apple admite la composición anterior
+y la nueva, mediante comparación exacta. La indicación concreta del contador en
+cada reloj requiere aceptación física. No se reenvía la carrera ya realizada.
+[Contrato y límites](RUNNING_STEPS_V2.md#repeticiones-nativas-al-exportar--03112026).
+
 **INT-023 · Agenda automática Apple desde el iPhone · 03/11/2026:** Javier
 detecta que una carrera de hoy solo aparece al programarla manualmente; el vídeo
 la muestra como candidata sin recibo previo. La programación anterior era manual,

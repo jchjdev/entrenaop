@@ -1,8 +1,11 @@
+import {findRunningRepeats} from './running_repeats.ts';
+import type {RunningRepeatBlock} from './running_repeats.ts';
+import {TrainingError} from './training_error.ts';
+export {TrainingError} from './training_error.ts';
 // Contrato de carrera independiente de Garmin, Flutter y la persistencia.
 export type RunningStep={kind:"run"|"warmup"|"cooldown"|"rest"|"walk"|"jog"|"recovery";
   measure:"seconds"|"meters"|"manual";value:number|null;description:string;pace?:{fast:number;slow:number}};
-export type RunningPrescription={name:string;description:string;date:string;source:"algorithm"|"coach";steps:RunningStep[]};
-export class TrainingError extends Error {constructor(code:string){super(code);this.name="TrainingError";}}
+export type RunningPrescription={name:string;description:string;date:string;source:"algorithm"|"coach";steps:RunningStep[];repeatBlocks?:RunningRepeatBlock[]};
 type Json=Record<string,unknown>;
 const setFields=new Set(['order_index','target_reps','target_duration_seconds','target_distance_meters','target_load_kg','target_rpe','target_rir',
   'target_pace_min_seconds_per_km','target_pace_max_seconds_per_km','recovery_type','recovery_duration_seconds','recovery_distance_meters',
@@ -39,6 +42,7 @@ export function runningPrescription(value:unknown):RunningPrescription {
   const description=input.description==null||input.description===""?"":text(input.description,1024);
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||new Date(date+"T00:00:00Z").toISOString().slice(0,10)!==date) throw new TrainingError("invalid_prescription");
   const steps:RunningStep[]=[];
+  const ranges:[number,number][]=[];
   for(const block of list(input.blocks,100)) {
     if(!["running","warm_up","cool_down"].includes(String(block.format))||block.rounds!==1||block.rest_after_seconds!==0||block.time_cap_seconds!=null) {
       throw new TrainingError("unsupported_prescription");
@@ -47,6 +51,7 @@ export function runningPrescription(value:unknown):RunningPrescription {
     for(const item of list(block.items,100)) {
       if(item.exercise_id!=="20000000-0000-4000-8000-000000000004") throw new TrainingError("unsupported_prescription");
       const note=item.notes==null?"":text(item.notes,400);
+      const start=steps.length;
       for(const set of list(item.sets,100)) {
         // Una ampliación futura de objetivos no puede degradarse a libre en un adaptador antiguo.
         if(Object.entries(set).some(([key,value])=>!setFields.has(key)&&value!=null)) throw new TrainingError('unsupported_prescription');
@@ -91,7 +96,9 @@ export function runningPrescription(value:unknown):RunningPrescription {
         }else if(set.recovery_duration_seconds!=null||set.recovery_distance_meters!=null) throw new TrainingError("invalid_prescription");
         if(steps.length>100) throw new TrainingError("unsupported_prescription");
       }
+      ranges.push([start,steps.length]);
     }
   }
-  return {name,description,date,source:input.source,steps};
+  const repeatBlocks=findRunningRepeats(steps,ranges);
+  return {name,description,date,source:input.source,steps,...(repeatBlocks.length?{repeatBlocks}:{})};
 }

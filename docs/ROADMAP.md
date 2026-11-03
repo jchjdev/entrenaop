@@ -1,5 +1,13 @@
 # Roadmap de EntrenaOP
 
+**Carrera · repeticiones nativas en relojes · 03/11/2026:** se corrige la
+traducción de series idénticas a bloques repetidos de Garmin y Apple, conservando
+editor, snapshots, secuencia de resultados y retorno de pautas Apple antiguas.
+**Único siguiente recorrido de este tramo:** enviar una pauta nueva de series,
+comprobar el contador de vuelta en el fēnix y Apple, y revisar su retorno. No se
+reenvía la carrera ya realizada ni se da por acreditada la pantalla del reloj
+con pruebas o compilación. [Límites](RUNNING_STEPS_V2.md#repeticiones-nativas-al-exportar--03112026).
+
 **Apple Watch · agenda automática desde el iPhone · 03/11/2026:** se amplía el
 envío manual con conciliación por cuenta, bajo activación explícita: altas,
 revisiones, fechas y cancelaciones, al abrir/volver a la app y cada minuto de uso.

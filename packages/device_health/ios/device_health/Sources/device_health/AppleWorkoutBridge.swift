@@ -91,11 +91,12 @@ final class AppleWorkoutBridge {
     guard let value = calendar.date(from: result), calendar.component(.month, from: value) == parts[1], calendar.component(.day, from: value) == parts[2] else { throw BridgeError.invalid }
     return result
   }
-  func plan(_ recipe: [String: Any], id: UUID) throws -> WorkoutPlan {
+  func plan(_ recipe: [String: Any], id: UUID, useRepeats: Bool = true) throws -> WorkoutPlan {
     guard let name = recipe["name"] as? String, !name.isEmpty, name.count <= 255,
       let rows = recipe["steps"] as? [[String: Any]], !rows.isEmpty, rows.count <= 100 else { throw BridgeError.invalid }
     var warmup: WorkoutStep?, cooldown: WorkoutStep?
     var intervals: [IntervalStep] = []
+    var intervalsByRow: [Int: IntervalStep] = [:]
     for (index, row) in rows.enumerated() {
       guard let kind = row["kind"] as? String, let measure = row["measure"] as? String,
         let description = row["description"] as? String, description.count <= 512 else { throw BridgeError.invalid }
@@ -122,14 +123,59 @@ final class AppleWorkoutBridge {
       switch kind {
       case "warmup": guard index == 0 else { throw BridgeError.invalid }; warmup = step
       case "cooldown": guard index == rows.count - 1 else { throw BridgeError.invalid }; cooldown = step
-      case "run": intervals.append(IntervalStep(.work, step: step))
-      case "rest", "recovery", "walk", "jog": intervals.append(IntervalStep(.recovery, step: step))
+      case "run":
+        let interval = IntervalStep(.work, step: step)
+        intervals.append(interval); intervalsByRow[index] = interval
+      case "rest", "recovery", "walk", "jog":
+        let interval = IntervalStep(.recovery, step: step)
+        intervals.append(interval); intervalsByRow[index] = interval
       default: throw BridgeError.invalid
       }
     }
     guard !intervals.isEmpty else { throw BridgeError.invalid }
+    var blocks = [IntervalBlock(steps: intervals, iterations: 1)]
+    if useRepeats, let rawGroups = recipe["repeat_blocks"] {
+      guard let groups = rawGroups as? [[String: Any]], groups.count <= 100 else { throw BridgeError.invalid }
+      var repeats: [Int: (length: Int, iterations: Int, omit: Bool)] = [:]
+      var previousEnd = 0
+      for group in groups {
+        guard let start = group["start"] as? Int, let length = group["step_count"] as? Int,
+          let count = group["iterations"] as? Int, let omit = group["omit_last_recovery"] as? Bool,
+          start >= previousEnd, start >= 0, start < rows.count,
+          length > 0, length <= rows.count, count >= 2, count <= 100 else { throw BridgeError.invalid }
+        let end = start + length * count - (omit ? 1 : 0)
+        guard end <= rows.count, start + length <= rows.count,
+          (start..<end).allSatisfy({ index in
+            intervalsByRow[index] != nil &&
+            NSDictionary(dictionary: rows[index]).isEqual(to: rows[start + (index-start) % length])
+          }), rows[start..<start+length].contains(where: { $0["kind"] as? String == "run" }) else { throw BridgeError.invalid }
+        if omit {
+          guard length > 1, let kind = rows[start+length-1]["kind"] as? String,
+            ["rest", "recovery", "walk", "jog"].contains(kind) else { throw BridgeError.invalid }
+        }
+        repeats[start] = (length, count, omit); previousEnd = end
+      }
+      blocks = []
+      var singleSteps: [IntervalStep] = []
+      var index = 0
+      while index < rows.count {
+        if let group = repeats[index] {
+          if !singleSteps.isEmpty { blocks.append(IntervalBlock(steps: singleSteps, iterations: 1)); singleSteps = [] }
+          let pattern = (index..<index+group.length).compactMap { intervalsByRow[$0] }
+          // WorkoutKit no ofrece skipLastRestStep: conservar la dosis exacta,
+          // aunque la última vuelta deba aparecer como un bloque separado.
+          blocks.append(IntervalBlock(steps: pattern, iterations: group.iterations - (group.omit ? 1 : 0)))
+          if group.omit { blocks.append(IntervalBlock(steps: Array(pattern.dropLast()), iterations: 1)) }
+          index += group.length * group.iterations - (group.omit ? 1 : 0)
+        } else {
+          if let step = intervalsByRow[index] { singleSteps.append(step) }
+          index += 1
+        }
+      }
+      if !singleSteps.isEmpty { blocks.append(IntervalBlock(steps: singleSteps, iterations: 1)) }
+    }
     let workout = CustomWorkout(activity: .running, location: .outdoor, displayName: name, warmup: warmup,
-      blocks: [IntervalBlock(steps: intervals, iterations: 1)], cooldown: cooldown)
+      blocks: blocks, cooldown: cooldown)
     return WorkoutPlan(.custom(workout), id: id)
   }
 }
@@ -173,14 +219,16 @@ final class AppleActivityReader {
         let rawPlans = args["plans"] as? [[String: Any]], rawPlans.count <= 200 else {
         result(FlutterError(code: "invalid_prescription", message: nil, details: nil)); return
       }
-      var plans: [UUID: (WorkoutPlan, String)] = [:]
+      var plans: [UUID: (WorkoutPlan, WorkoutPlan, String)] = [:]
       do {
         let compiler = AppleWorkoutBridge()
         for raw in rawPlans {
           guard let key = raw["plan_id"] as? String, let id = UUID(uuidString: key),
             let revision = raw["revision"] as? String, revision.count == 64,
             let recipe = raw["prescription"] as? [String: Any] else { throw ReadError.invalid }
-          plans[id] = (try compiler.plan(recipe, id: id), revision)
+          // Las pautas enviadas antes de añadir repeticiones nativas conservan
+          // su comparación exacta y su retorno; nunca se vinculan por el nombre.
+          plans[id] = (try compiler.plan(recipe, id: id), try compiler.plan(recipe, id: id, useRepeats: false), revision)
         }
         let workouts = try await self.workouts()
         var observations: [[String: Any]] = []
@@ -198,7 +246,7 @@ final class AppleActivityReader {
             guard let plan = storedPlan, let expected = plans[plan.id] else { continue }
             var row: [String: Any] = [
               "workout_id": workout.uuid.uuidString.lowercased(), "plan_id": plan.id.uuidString.lowercased(),
-              "revision": expected.1, "matches_prescription": plan.workout == expected.0.workout,
+              "revision": expected.2, "matches_prescription": plan.workout == expected.0.workout || plan.workout == expected.1.workout,
               "started_at": ISO8601DateFormatter().string(from: workout.startDate),
               "ended_at": ISO8601DateFormatter().string(from: workout.endDate), "timer_seconds": workout.duration,
             ]

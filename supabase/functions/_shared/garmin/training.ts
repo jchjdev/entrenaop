@@ -1,6 +1,7 @@
 import {runningTrainingCompatibility} from "../device_training/capabilities.ts";
 import {TrainingError} from "../device_training/prescription.ts";
 import type {RunningPrescription} from "../device_training/prescription.ts";
+import {validatedRunningRepeats} from '../device_training/running_repeats.ts';
 import {isStrength} from '../device_training/strength.ts';
 import type {TrainingPrescription} from '../device_training/strength.ts';
 import {garminStrengthWorkout,supportsGarminStrength} from './strength.ts';
@@ -12,17 +13,31 @@ export const garminRunningCapabilities={canSend:true,maxSteps:100,
   completions:['seconds','meters','manual'],pace:true} as const;
 export function garminRunningWorkout(p:RunningPrescription) {
   if(runningTrainingCompatibility(p,garminRunningCapabilities).length) throw new TrainingError('unsupported_prescription');
+  const groups=new Map(validatedRunningRepeats(p).map(group=>[group.start,group]));
+  let order=0;
+  const single=(step:RunningPrescription['steps'][number])=>({
+    type:'WorkoutStep' as const,stepOrder:++order,description:step.description,
+    intensity:({run:'ACTIVE',warmup:'WARMUP',cooldown:'COOLDOWN',rest:'REST',walk:'RECOVERY',jog:'RECOVERY',recovery:'RECOVERY'} as const)[step.kind],
+    durationType:step.measure==='manual'?'OPEN':step.measure==='seconds'?'TIME':'DISTANCE',
+    ...(step.measure==='manual'?{}:{durationValue:step.value}),
+    targetType:step.pace?'PACE':'OPEN',
+    // Ritmo s/km a velocidad m/s, conservando ambos extremos.
+    targetValueLow:step.pace?1000/step.pace.slow:null,targetValueHigh:step.pace?1000/step.pace.fast:null,
+  });
+  type NativeStep=ReturnType<typeof single>;
+  type NativeRepeat={type:'WorkoutRepeatStep';stepOrder:number;repeatType:string;repeatValue:number;skipLastRestStep:boolean;steps:NativeStep[]};
+  const steps:(NativeStep|NativeRepeat)[]=[];
+  for(let index=0;index<p.steps.length;) {
+    const group=groups.get(index);
+    if(!group) {steps.push(single(p.steps[index++]));continue;}
+    const stepOrder=++order;
+    steps.push({type:'WorkoutRepeatStep',stepOrder,repeatType:'REPEAT_UNTIL_STEPS_CMPLT',
+      repeatValue:group.iterations,skipLastRestStep:group.omitLastRecovery,
+      steps:p.steps.slice(index,index+group.stepCount).map(single)});
+    index+=group.stepCount*group.iterations-(group.omitLastRecovery?1:0);
+  }
   return {workoutName:p.name,description:p.description||"Sesión de carrera prescrita en EntrenaOP.",sport:"RUNNING",
-    workoutProvider:"EntrenaOP",workoutSourceId:"EntrenaOP",segments:[{segmentOrder:1,sport:"RUNNING",steps:p.steps.map((step,index)=>({
-      type:"WorkoutStep",stepOrder:index+1,description:step.description,
-      intensity:({run:"ACTIVE",warmup:"WARMUP",cooldown:"COOLDOWN",rest:"REST",walk:"RECOVERY",jog:"RECOVERY",recovery:"RECOVERY"} as const)[step.kind],
-      durationType:step.measure==="manual"?"OPEN":step.measure==="seconds"?"TIME":"DISTANCE",
-      ...(step.measure==="manual"?{}:{durationValue:step.value}),
-      // TIME usa segundos y DISTANCE metros; durationValueType solo modifica HR/POWER.
-      targetType:step.pace?"PACE":"OPEN",
-      // Garmin espera velocidad m/s: el extremo lento corresponde al mínimo.
-      targetValueLow:step.pace?1000/step.pace.slow:null,targetValueHigh:step.pace?1000/step.pace.fast:null,
-    }))}]};
+    workoutProvider:"EntrenaOP",workoutSourceId:"EntrenaOP",segments:[{segmentOrder:1,sport:"RUNNING",steps}]};
 }
 function id(value:unknown):number {
   if(typeof value!=="number"||!Number.isSafeInteger(value)||value<=0) throw new DeliveryFailure("invalid_provider_response",true);return value;

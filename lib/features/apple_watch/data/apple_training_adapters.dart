@@ -93,17 +93,30 @@ class SupabaseAppleTrainingRepository implements AppleTrainingRepository {
   ApplePlan _plan(Map<String, dynamic> d) {
     final p = d['prescription'] as Map;
     return ApplePlan(
-      ApplePrescription(p['name'] as String, p['date'] as String, [
-        for (final s in p['steps'] as List)
-          AppleStep(
-            s['kind'] as String,
-            s['measure'] as String,
-            s['value'] as num?,
-            s['description'] as String,
-            (s['pace'] as Map?)?['fast'] as num?,
-            (s['pace'] as Map?)?['slow'] as num?,
-          ),
-      ]),
+      ApplePrescription(
+        p['name'] as String,
+        p['date'] as String,
+        [
+          for (final s in p['steps'] as List)
+            AppleStep(
+              s['kind'] as String,
+              s['measure'] as String,
+              s['value'] as num?,
+              s['description'] as String,
+              (s['pace'] as Map?)?['fast'] as num?,
+              (s['pace'] as Map?)?['slow'] as num?,
+            ),
+        ],
+        repeatBlocks: [
+          for (final group in p['repeatBlocks'] as List? ?? [])
+            AppleRepeatBlock(
+              group['start'] as int,
+              group['stepCount'] as int,
+              group['iterations'] as int,
+              group['omitLastRecovery'] == true,
+            ),
+        ],
+      ),
       d['revision'] as String,
       d['plan_id'] as String?,
       d['attempt_id'] as String?,
@@ -318,6 +331,16 @@ Map<String, Object?> _applePrescription(ApplePrescription p) => {
           'pace': {'fast': s.fast, 'slow': s.slow},
       },
   ],
+  if (p.repeatBlocks.isNotEmpty)
+    'repeat_blocks': [
+      for (final group in p.repeatBlocks)
+        {
+          'start': group.start,
+          'step_count': group.stepCount,
+          'iterations': group.iterations,
+          'omit_last_recovery': group.omitLastRecovery,
+        },
+    ],
 };
 
 class NativeAppleWorkoutScheduler implements AppleWorkoutScheduler {
@@ -366,21 +389,7 @@ class NativeAppleWorkoutScheduler implements AppleWorkoutScheduler {
     final result = await _call('schedule', {
       'owner': _scope(owner),
       'plan_id': plan.planId,
-      'prescription': {
-        'name': p.name,
-        'date': p.date,
-        'steps': [
-          for (final s in p.steps)
-            {
-              'kind': s.kind,
-              'measure': s.measure,
-              'value': s.value,
-              'description': s.description,
-              if (s.fast != null && s.slow != null)
-                'pace': {'fast': s.fast, 'slow': s.slow},
-            },
-        ],
-      },
+      'prescription': _applePrescription(p),
     });
     if (result['submitted'] != true) {
       throw const AppleTrainingFailure('delivery_uncertain');

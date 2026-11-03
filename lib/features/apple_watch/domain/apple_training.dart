@@ -25,10 +25,27 @@ class AppleStep {
 }
 
 class ApplePrescription {
-  ApplePrescription(this.name, this.date, List<AppleStep> steps)
-    : steps = List.unmodifiable(steps);
+  ApplePrescription(
+    this.name,
+    this.date,
+    List<AppleStep> steps, {
+    List<AppleRepeatBlock> repeatBlocks = const [],
+  }) : steps = List.unmodifiable(steps),
+       repeatBlocks = List.unmodifiable(repeatBlocks);
   final String name, date;
   final List<AppleStep> steps;
+  final List<AppleRepeatBlock> repeatBlocks;
+}
+
+class AppleRepeatBlock {
+  const AppleRepeatBlock(
+    this.start,
+    this.stepCount,
+    this.iterations,
+    this.omitLastRecovery,
+  );
+  final int start, stepCount, iterations;
+  final bool omitLastRecovery;
 }
 
 class AppleCandidate {

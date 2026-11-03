@@ -17,9 +17,55 @@ siguen pendientes y no se muestran como capacidades disponibles.
 Las repeticiones mantienen el orden y la recuperación final. La referencia es:
 calentamiento hasta avance manual → cinco repeticiones de 400 m con ritmo y
 90 s de recuperación → enfriamiento hasta avance manual. Se guardan siete
-tramos con cinco recuperaciones asociadas; Garmin recibe doce pasos ordenados.
-No se prometen grupos nativos `WorkoutRepeatStep`: la expansión actual conserva
-la pauta completa y el límite de cien pasos, incluyendo recuperaciones.
+tramos con cinco recuperaciones asociadas; se conservan doce pasos expandidos
+para resultados. Desde el 03/11 la exportación puede representar sus repeticiones
+idénticas mediante `WorkoutRepeatStep`, sin cambiar esa secuencia ni el límite de
+cien pasos incluyendo recuperaciones.
+
+## Repeticiones nativas al exportar · 03/11/2026
+
+El compilador común añade `repeatBlocks` opcional: inicio sobre los pasos
+expandidos, tamaño del patrón, vueltas y omisión de la recuperación final. Se
+deriva dentro de cada elemento original; no cruza elementos o bloques, ni agrupa
+objetivos, notas, fases, ritmos o medidas distintos. La validación comprueba que
+expandir el grupo reproduce exactamente la pauta. No se guarda un árbol nuevo,
+ni se cambia el editor compartido o el hash de sus snapshots.
+
+- Garmin usa `WorkoutRepeatStep`, `REPEAT_UNTIL_STEPS_CMPLT`, `repeatValue` y
+  `skipLastRestStep` del contrato oficial Training API V2. Los órdenes siguen
+  siendo únicos incluyendo el contenedor. Una pauta de diez parejas idénticas
+  pasa como diez vueltas, conservando su recuperación final real.
+- Apple usa los mismos metadatos para `IntervalBlock(steps:iterations:)`. Sin
+  omisión, diez parejas son un bloque con diez vueltas. Cuando se omite la última
+  recuperación, se exportan nueve vueltas completas y el trabajo final separado:
+  WorkoutKit no ofrece el mismo interruptor de Garmin y no se inventa un descanso
+  de cero segundos para forzar el contador. La presentación exacta es de Apple.
+- Los resultados mantienen pasos expandidos y mediciones originales. El lector
+  Apple compara exactamente tanto con la composición nueva como con la anterior;
+  no convierte una falta de referencia en una asociación por nombre o fecha.
+- Las nuevas entregas Garmin y los cambios de pauta usan esta traducción. No se
+  fuerza el reenvío de recetas ya ejecutadas ni se modifica el recibo para fingir
+  una actualización física. Una pauta Garmin previamente enviada sin cambios
+  conserva su representación hasta su siguiente entrega/actualización real.
+- La agenda automática Apple puede detectar el contenido local anterior y
+  actualizar pautas pendientes con el mismo UUID; respeta las ya completadas.
+
+La revisión de la pauta de prueba acredita diez trabajos de 400 m y diez
+recuperaciones de 45 s; el formato plano explica la falta de contador observada.
+No se usa esa carrera como fixture público ni se cambia su pauta o historial.
+La prueba física pendiente es comprobar el contador en el fēnix y en Entreno de
+Apple, y después el retorno de todas las vueltas. La compilación no acredita por
+sí sola esa presentación.
+
+Validación de esta entrega: análisis Flutter sin incidencias, 1.734 pruebas de
+raíz correctas y una omisión previa; 262 de servidor, incluida equivalencia de
+150 secuencias variadas, y tipos TypeScript estrictos. El canal Apple comprueba
+que programación, inspección y lectura reciben el mismo patrón y que una receta
+antigua no exige metadatos nuevos. No se cambia SQL ni permisos. En Dev quedan
+ACTIVE `garmin-training` v20, `garmin-training-sync` v15 y `apple-training` v8,
+con fuentes contrastadas y rechazo 401 sin autorización; Apple conserva JWT
+obligatorio y Garmin su autenticación propia. Versión móvil `1.4.0+7`;
+compilación iOS y aceptación física se acreditan aparte.
 
 En la aceptación del creador, Javier confirma que la sesión muestra sus fases y
 series con recuperaciones. Los selectores compartidos pasan a decir «Tiempo»;
