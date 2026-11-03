@@ -882,6 +882,7 @@ class _TrainerAppState extends State<TrainerApp> {
                 ),
                 clientId: state.pathParameters['id']!,
                 scheduledId: state.pathParameters['scheduled']!,
+                isSelf: state.pathParameters['id'] == identity,
               ),
             ),
             GoRoute(

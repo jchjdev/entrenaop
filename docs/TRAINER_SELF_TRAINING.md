@@ -1,5 +1,32 @@
 # Planificación propia y nombre de perfil · 26/10/2026
 
+## Resultados propios de pautas externas · 03/11/2026
+
+La pauta recibida de otro preparador ya figura realizada en «Para mí», pero su
+inspector omitía el acceso al resultado. Se ofrece «Ver resultados» únicamente
+cuando `has_result` lo acredita en el calendario del servidor. Navega mediante
+`go_router` al detalle deportivo en solo lectura existente, con el cliente y
+la cita seleccionados; conserva la pauta y las restricciones de edición.
+
+El lector `shared_workout_result` y la disponibilidad de calendario distinguen
+consulta propia y compartida. El titular no necesita compartirse consigo mismo:
+la excepción solo aplica cuando propietario esperado y deportista coinciden,
+tras validar identidad, acceso y sesión profesional MFA viva. No activa ni
+cambia preferencias de consentimiento. Para los demás preparadores siguen
+aplicándose sus permisos y consentimiento. La lista positiva excluye notas,
+conversaciones y revisiones privadas del autor también en este recorrido.
+
+El detalle propio se presenta como «Tu resultado». La consulta no permite marcar
+revisado como otro entrenador, cambiar receta ni completar otra vez la sesión.
+La migración `20261103171819` conserva fachadas y grants. Las regresiones cubren
+el botón y su ruta, el rótulo propio, lectura sin consentimiento a terceros,
+aislamiento de cuentas, sesión revocada/aal1 y la lectura compartida anterior.
+
+Migración aplicada y cotejada solo en Dev. El contrato SQL pasa antes y después
+del despliegue con ROLLBACK; asesores sin cambios respecto a los avisos previos.
+Análisis Trainer limpio y sus 448 pruebas completas correctas. Publicación web
+de `0.2.3+5` pendiente de comprobar.
+
 ## Decisión acordada
 
 Javier pide «Para mí»: usar la misma cuenta profesional y de deportista para

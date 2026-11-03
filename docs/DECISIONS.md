@@ -1,5 +1,15 @@
 # Registro de decisiones vigentes
 
+**TRN-033 · Resultados propios de pautas externas en Para mí · 03/11/2026:**
+Javier muestra una pauta realizada de su preparador cuyo inspector solo ofrece
+la receta. Se conecta «Ver resultados» con el lector deportivo ya existente,
+cuando el calendario autorizado acredita resultado. Consultar como titular no
+exige conceder consentimiento a terceros ni permite editar la pauta o revisar
+como su autor. La excepción se limita a identidad esperada igual al titular;
+sesión profesional MFA viva, aislamiento y lista positiva siguen vigentes.
+Otros preparadores conservan vínculo y consentimiento cuando corresponda.
+[Contrato](TRAINER_SELF_TRAINING.md#resultados-propios-de-pautas-externas--03112026).
+
 **INT-012 · Registrar lo realizado aunque se recorten series · 03/11/2026:**
 Javier confirma que una sesión identificada debe completarse con las mediciones
 reales aunque el alumno termine series antes; el preparador necesita conocer

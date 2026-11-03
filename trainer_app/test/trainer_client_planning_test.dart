@@ -9,6 +9,7 @@ import 'package:entrenaop_trainer/trainer_workout_pages.dart';
 import 'package:entrenaop_trainer/trainer_workout_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:trainer_access/trainer_calendar.dart';
 import 'package:workout_core/professional_opposition_goal.dart';
 import 'package:workout_core/device_activity_inbox.dart';
@@ -135,6 +136,7 @@ class SelfWorkspace extends WorkspaceFixture {
 }
 
 class FutureCoachCalendar extends CalendarFixture {
+  bool resultAvailable = false;
   final weeks = <DateTime>[];
   @override
   Future<SharedCalendarPage> calendar(
@@ -157,7 +159,8 @@ class FutureCoachCalendar extends CalendarFixture {
             'scheduled_date': '2026-11-03',
             'template_name': 'Carrera pautada por Ervigio',
             'source': 'coach',
-            'status': 'planned',
+            'status': resultAvailable ? 'completed' : 'planned',
+            'has_result': resultAvailable,
             'trainer_name': 'Ervigio Jorge',
             'is_own': false,
             'relation_active': true,
@@ -279,7 +282,62 @@ void main() {
     );
     expect(find.text('Adaptar solo esta pauta'), findsNothing);
     expect(find.text('Mover fecha'), findsNothing);
+    expect(find.text('Ver resultados'), findsNothing);
   });
+
+  testWidgets(
+    'Para mí abre el resultado autorizado de su pauta externa en solo lectura',
+    (t) async {
+      t.view.physicalSize = const Size(1600, 1200);
+      t.view.devicePixelRatio = 1;
+      addTearDown(t.view.reset);
+      final shared = FutureCoachCalendar()..resultAvailable = true;
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (_, _) => ProfessionalWorkspaceScope(
+              desktop: true,
+              child: TrainerClientPlanningPage(
+                clientId: 'self',
+                workspace: SelfWorkspace(),
+                access: FakeTrainerRepository(),
+                planning: PlanningFixture(),
+                sharedCalendar: shared,
+                workouts: WorkoutFixture(),
+                programs: ProgramFixture(),
+                operations: OperationsFixture(),
+                initialDate: DateTime(2026, 11, 2),
+              ),
+            ),
+          ),
+          GoRoute(
+            path: '/clients/:client/calendar/:scheduled/result',
+            builder: (_, state) => Scaffold(
+              body: Text(
+                'Resultado ${state.pathParameters['client']}/${state.pathParameters['scheduled']}',
+              ),
+            ),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+      await t.pumpWidget(
+        MaterialApp.router(theme: EntrenaTheme.dark, routerConfig: router),
+      );
+      await t.pumpAndSettle();
+      final card = find.byKey(const ValueKey('client-planning-entry-ervigio'));
+      await t.ensureVisible(card);
+      await t.tap(card);
+      await t.pumpAndSettle();
+      expect(find.text('Ver resultados'), findsOneWidget);
+      expect(find.text('Adaptar solo esta pauta'), findsNothing);
+      expect(find.text('Mover fecha'), findsNothing);
+      await t.tap(find.text('Ver resultados'));
+      await t.pumpAndSettle();
+      expect(find.text('Resultado self/ervigio'), findsOneWidget);
+    },
+  );
 
   testWidgets(
     'las semanas siguen accesibles tras desplazar objetivos y agenda',

@@ -1,5 +1,14 @@
 # Roadmap de EntrenaOP
 
+**Trainer · resultado de la pauta externa en Para mí · 03/11/2026:** se conecta
+el resultado autorizado desde el inspector de la pauta realizada. El titular
+consulta sus datos sin tener que compartirlos consigo mismo; se mantienen MFA
+vivo, lista positiva, aislamiento y restricciones de edición. No se cambian
+resultados deportivos ni la autorización de otros preparadores. Contrato SQL
+transaccional correcto antes y después de aplicar SQL Dev; análisis Trainer y
+448 pruebas correctos. Publicación web Dev en curso.
+[Contrato](TRAINER_SELF_TRAINING.md#resultados-propios-de-pautas-externas--03112026).
+
 **Garmin · completar con series recortadas identificadas · 03/11/2026:**
 se separa identidad de intervalo y cumplimiento de la distancia. Los índices
 nativos continuos y tipos compatibles permiten guardar lo realizado frente a

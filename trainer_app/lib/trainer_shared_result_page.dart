@@ -9,9 +9,11 @@ class TrainerSharedResultPage extends StatefulWidget {
     required this.repository,
     required this.clientId,
     required this.scheduledId,
+    this.isSelf = false,
   });
   final TrainerSharedWorkoutResultRepository repository;
   final String clientId, scheduledId;
+  final bool isSelf;
 
   @override
   State<TrainerSharedResultPage> createState() =>
@@ -83,7 +85,7 @@ class _TrainerSharedResultPageState extends State<TrainerSharedResultPage>
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
-      title: const Text('Resultado compartido'),
+      title: Text(widget.isSelf ? 'Tu resultado' : 'Resultado compartido'),
       actions: [
         IconButton(
           tooltip: 'Actualizar resultado',
@@ -97,8 +99,10 @@ class _TrainerSharedResultPageState extends State<TrainerSharedResultPage>
         : _result != null
         ? TrainerWorkoutResultContent(
             result: _result!,
-            header: const Text(
-              'Solo lectura · Resultados deportivos autorizados por el alumno. Las notas y conversaciones siguen siendo privadas.',
+            header: Text(
+              widget.isSelf
+                  ? 'Solo lectura · Tus resultados deportivos. La pauta original se conserva.'
+                  : 'Solo lectura · Resultados deportivos autorizados por el alumno. Las notas y conversaciones siguen siendo privadas.',
             ),
           )
         : Center(

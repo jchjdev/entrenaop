@@ -163,5 +163,41 @@ do $$declare owner uuid:=current_setting('fixture.owner')::uuid; relation_b uuid
   or has_function_privilege('authenticated','trainer_private.sport_fields(jsonb,text[])','EXECUTE')
   or has_table_privilege('authenticated','trainer_private.calendar_sharing','UPDATE') then raise exception 'Privilegios excesivos';end if;
 end $$;
-select 'Resultados compartidos: opt-in, dos preparadores, MFA vivo, revocación y exclusión de notas/medios verificados' as result;
+reset role;
+do $$declare
+ owner uuid:=current_setting('fixture.owner')::uuid; sid uuid:=current_setting('fixture.scheduled')::uuid;
+ self_session uuid:=gen_random_uuid(); result jsonb; calendar jsonb; prefs jsonb;
+begin
+ -- El mismo deportista también es preparador: su pauta externa sigue siendo
+ -- propia como resultado, sin concederse consentimiento a terceros.
+ insert into public.trainer_access(trainer_id,enabled,client_limit,last_reason) values(owner,true,5,'Fixture de consulta propia');
+ insert into auth.sessions(id,user_id,aal) values(self_session,owner,'aal2');
+ insert into auth.mfa_factors(id,user_id,factor_type,status,created_at,updated_at)
+  values(gen_random_uuid(),owner,'totp','verified',now(),now());
+ perform pg_temp.result_identity(owner,self_session);
+ execute 'set local role authenticated';
+ perform public.ensure_trainer_self_client(owner);
+ prefs:=public.get_my_trainer_calendar_sharing(owner);
+ if (prefs->>'enabled')::boolean or (prefs->>'results_enabled')::boolean then raise exception 'Fixture con consentimiento activo';end if;
+ result:=public.get_trainer_shared_workout_result(owner,owner,sid);
+ if result->>'id'<>current_setting('fixture.execution') or result::text like '%PRIVATE_%' then
+  raise exception 'El titular no puede consultar su resultado deportivo sin notas privadas';end if;
+ calendar:=public.get_trainer_shared_calendar(owner,owner,current_date,current_date+6);
+ if not exists(select 1 from jsonb_array_elements(calendar->'items') x where x->>'id'=sid::text and (x->>'has_result')::boolean) then
+  raise exception 'Para mí no ofrece el resultado de la pauta externa';end if;
+ if public.get_my_trainer_calendar_sharing(owner)<>prefs then raise exception 'Consultar activa el consentimiento';end if;
+ begin
+  perform public.get_trainer_shared_workout_result(owner,current_setting('fixture.trainer_a')::uuid,sid);
+  raise exception 'La consulta propia lee a otra cuenta';exception when insufficient_privilege then null;end;
+ perform pg_temp.result_identity(owner,current_setting('fixture.session')::uuid);
+ begin
+  perform public.get_trainer_shared_workout_result(owner,owner,sid);
+  raise exception 'La consulta propia acepta sesión aal1 con claim elevado';exception when insufficient_privilege then null;end;
+ perform pg_temp.result_identity(owner,gen_random_uuid());
+ begin
+  perform public.get_trainer_shared_workout_result(owner,owner,sid);
+  raise exception 'La consulta propia acepta sesión revocada';exception when insufficient_privilege then null;end;
+ execute 'reset role';
+end $$;
+select 'Resultados compartidos y propios: opt-in, titular, dos preparadores, MFA vivo y privacidad verificados' as result;
 rollback;

@@ -53,6 +53,26 @@ class ResultFixture implements TrainerSharedWorkoutResultRepository {
 
 void main() {
   testWidgets(
+    'el titular consulta sus datos sin presentarlos como consentimiento a terceros',
+    (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: TrainerSharedResultPage(
+            repository: ResultFixture('Sesión propia'),
+            clientId: 'self',
+            scheduledId: 'scheduled',
+            isSelf: true,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Tu resultado'), findsOneWidget);
+      expect(find.text('Sesión propia'), findsOneWidget);
+      expect(find.textContaining('Tus resultados deportivos'), findsOneWidget);
+      expect(find.textContaining('autorizados por el alumno'), findsNothing);
+    },
+  );
+  testWidgets(
     'muestra resultado deportivo plegable y retira datos al revocar',
     (tester) async {
       final repository = ResultFixture('Sesión autorizada');

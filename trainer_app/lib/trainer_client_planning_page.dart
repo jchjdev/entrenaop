@@ -748,6 +748,16 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
                 'Solo lectura. Puedes consultar la pauta para coordinarte.',
               ),
             ),
+          if (own == null && entry.shared?.hasResult == true)
+            FilledButton.icon(
+              onPressed: _busy || _mutation
+                  ? null
+                  : () => _openRoute(
+                      '/clients/${widget.clientId}/calendar/${entry.id}/result',
+                    ),
+              icon: const Icon(Icons.insights),
+              label: const Text('Ver resultados'),
+            ),
           if (own != null) ...[
             if (entry.deviceTraining case final progress?)
               DeviceTrainingProgressTile(progress: progress, showName: false),
