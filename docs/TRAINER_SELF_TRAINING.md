@@ -24,8 +24,15 @@ aislamiento de cuentas, sesión revocada/aal1 y la lectura compartida anterior.
 
 Migración aplicada y cotejada solo en Dev. El contrato SQL pasa antes y después
 del despliegue con ROLLBACK; asesores sin cambios respecto a los avisos previos.
-Análisis Trainer limpio y sus 448 pruebas completas correctas. Publicación web
-de `0.2.3+5` pendiente de comprobar.
+Análisis Trainer limpio y sus 448 pruebas completas correctas. Trainer Dev
+publica `0.2.3+5`, revisión `b1d99a11`: workflow correcto y manifiesto HTTPS,
+versión del paquete y proyecto de desarrollo contrastados.
+Con SQL Dev aplicado se abre la ruta existente del resultado con la sesión real
+del titular en Chrome: se comprueban estado completado, totales y series reales,
+incluidas las recortadas. No se suplanta la identidad del preparador autor.
+Tras publicar se contrasta el recorrido desde «Para mí»: seleccionar la pauta
+realizada → «Ver resultados» → «Tu resultado». El botón está visible en el
+inspector, abre la cita correcta y el detalle conserva las mediciones del reloj.
 
 ## Decisión acordada
 

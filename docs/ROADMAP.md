@@ -6,7 +6,8 @@ consulta sus datos sin tener que compartirlos consigo mismo; se mantienen MFA
 vivo, lista positiva, aislamiento y restricciones de edición. No se cambian
 resultados deportivos ni la autorización de otros preparadores. Contrato SQL
 transaccional correcto antes y después de aplicar SQL Dev; análisis Trainer y
-448 pruebas correctos. Publicación web Dev en curso.
+448 pruebas correctos. Trainer Dev `0.2.3+5` (`b1d99a11`) publicado y cotejado por
+HTTPS, exclusivamente con el proyecto Dev.
 [Contrato](TRAINER_SELF_TRAINING.md#resultados-propios-de-pautas-externas--03112026).
 
 **Garmin · completar con series recortadas identificadas · 03/11/2026:**
