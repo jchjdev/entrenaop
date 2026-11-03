@@ -5,8 +5,13 @@ import 'package:entrenaop/core/presentation/dismiss_keyboard.dart';
 
 import '../widgets/program_phase_section.dart';
 import '../widgets/preparation_goal_review_panel.dart';
+import '../preparation_context_navigation.dart';
 
 import 'dart:convert';
+import 'dart:async';
+
+import '../../../../core/presentation/app_dates.dart';
+import '../../domain/repositories/preparation_setup_progress_store.dart';
 
 import 'package:entrenaop/features/training_plan/presentation/widgets/training_context_fields.dart';
 
@@ -26,6 +31,8 @@ class PreparationTrainingPage extends StatefulWidget {
     required this.repository,
     this.initialWeek,
     this.runningStepBuilder,
+    this.editOnOpen = false,
+    this.progressStore,
     super.key,
   });
   final Widget Function(BuildContext, VoidCallback, VoidCallback)?
@@ -33,6 +40,8 @@ class PreparationTrainingPage extends StatefulWidget {
   final String goalId;
   final PreparationTrainingRepository repository;
   final DateTime? initialWeek;
+  final bool editOnOpen;
+  final PreparationSetupProgressStore? progressStore;
   @override
   State<PreparationTrainingPage> createState() =>
       _PreparationTrainingPageState();
@@ -60,7 +69,11 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
   ]);
   Map<String, dynamic>? _plan;
   bool _busy = false, _pain = false, _confirmed = false;
+  int _loadVersion = 0;
+  DialogRoute<PerformanceReferenceInput>? _referenceRoute;
   int _step = 0;
+  final _targetFormKey = GlobalKey<FormState>();
+  final _targetAnchors = <String, GlobalKey>{};
   bool _editing = false;
   bool _reviewOnly = false;
   bool get _started => _data?.programState['auto_advance'] == true;
@@ -75,7 +88,7 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
   DateTime? _targetDate;
   final _targets = <String, dynamic>{};
   List<String> get _steps => [
-    'Tu programa',
+    'Tu preparación',
     'Disponibilidad',
     if (_data != null && _hasRunning) 'Carrera',
     if (_data != null && _hasPerformance) 'Movimientos',
@@ -90,7 +103,67 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
   int get _previewStep => _steps.length - 1;
   void _goStep(int step) {
     dismissKeyboard();
-    setState(() => _step = step);
+    setState(() {
+      _step = step;
+      _error = null;
+    });
+    unawaited(_rememberStep());
+  }
+
+  PreparationSetupStep get _stepId => switch (_steps[_step]) {
+    'Disponibilidad' => PreparationSetupStep.availability,
+    'Carrera' => PreparationSetupStep.running,
+    'Movimientos' => PreparationSetupStep.movements,
+    'Propuesta' => PreparationSetupStep.proposal,
+    _ => PreparationSetupStep.program,
+  };
+
+  int _indexFor(PreparationSetupStep step) => switch (step) {
+    PreparationSetupStep.program => 0,
+    PreparationSetupStep.availability => 1,
+    PreparationSetupStep.running => _hasRunning ? _steps.indexOf('Carrera') : 1,
+    PreparationSetupStep.movements => _hasPerformance ? _movementStep : 1,
+    PreparationSetupStep.proposal => _previewStep,
+  };
+
+  int _resumeIndex(PreparationSetupStep step) {
+    final index = _indexFor(step);
+    if (_targetDate == null) return 0;
+    if (index > 1 &&
+        (!_confirmed || !_availability.values.any((minutes) => minutes > 0))) {
+      return 1;
+    }
+    return index;
+  }
+
+  Future<void> _rememberStep() async {
+    if (!mounted ||
+        _data == null ||
+        _started ||
+        _paused ||
+        _data!.programState['status'] == 'complete') {
+      return;
+    }
+    try {
+      await widget.progressStore?.write(widget.goalId, _stepId);
+    } catch (_) {
+      // La posición de la pantalla no condiciona el guardado de datos reales.
+    }
+  }
+
+  void _back() {
+    if (_busy) return;
+    final configuring =
+        _data != null &&
+        (_editing ||
+            (!_started &&
+                !_paused &&
+                _data!.programState['status'] != 'complete'));
+    if (configuring && _step > 0) {
+      _goStep(_step - 1);
+    } else {
+      context.pop();
+    }
   }
 
   int _issueStep(Map<String, dynamic> issue) {
@@ -163,17 +236,51 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
     final today = DateTime(n.year, n.month, n.day);
     final requested = widget.initialWeek;
     _week = requested == null
-        ? today.add(Duration(days: n.weekday == 1 ? 0 : 8 - n.weekday))
-        : DateUtils.dateOnly(requested)
-              .subtract(Duration(days: requested.weekday - 1));
+        ? DateTime(
+            today.year,
+            today.month,
+            today.day + (n.weekday == 1 ? 0 : 8 - n.weekday),
+          )
+        : DateTime(
+            requested.year,
+            requested.month,
+            requested.day - requested.weekday + 1,
+          );
     _load();
   }
 
+  @override
+  void dispose() {
+    final route = _referenceRoute;
+    _referenceRoute = null;
+    if (route != null) {
+      // Un cambio de titular/objetivo desmonta la página, pero su diálogo vive
+      // en el Navigator raíz. Retirar solo esa ruta evita conservar sus datos
+      // sobre la nueva cuenta o cerrar una pantalla distinta que esté encima.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        route.navigator?.removeRoute(route);
+      });
+    }
+    super.dispose();
+  }
+
   Future<void> _load({bool initialize = true}) async {
+    final version = ++_loadVersion;
     try {
       if (initialize) await widget.repository.advance(widget.goalId);
       final d = await widget.repository.load(widget.goalId);
-      if (!mounted) return;
+      PreparationSetupStep? savedStep;
+      if (initialize &&
+          d.programState['auto_advance'] != true &&
+          d.programState['status'] != 'paused' &&
+          d.programState['status'] != 'complete') {
+        try {
+          savedStep = await widget.progressStore?.read(widget.goalId);
+        } catch (_) {
+          // Se puede configurar el plan aunque la preferencia local no se lea.
+        }
+      }
+      if (!mounted || version != _loadVersion) return;
       setState(() {
         _data = d;
         if (initialize) {
@@ -210,6 +317,14 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
           _confirmed = d.context?['capacity_confirmed'] as bool? ?? false;
           _savedContextStamp = _contextStamp;
           _savedProgramStamp = _programStamp;
+          if (widget.editOnOpen && _started) _editing = true;
+          if (!_started &&
+              !_paused &&
+              d.programState['status'] != 'complete' &&
+              savedStep != null) {
+            _step = _resumeIndex(savedStep);
+            _notice = 'Continuamos desde tus datos guardados. Puedes volver a los pasos anteriores para revisarlos.';
+          }
         }
       });
       if (initialize &&
@@ -221,10 +336,14 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
           widget.goalId,
           _week,
         );
-        if (mounted) setState(() => _plan = published);
+        if (mounted && version == _loadVersion) {
+          setState(() => _plan = published);
+        }
       }
     } catch (e) {
-      if (mounted) setState(() => _error = _message(e));
+      if (mounted && version == _loadVersion) {
+        setState(() => _error = _message(e));
+      }
     }
   }
 
@@ -238,7 +357,10 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
     } catch (e) {
       if (mounted) setState(() => _error = _message(e));
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (mounted) {
+        setState(() => _busy = false);
+        await _rememberStep();
+      }
     }
   }
 
@@ -270,12 +392,7 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
     for (final entry in _targets.entries) {
       final value = (entry.value as Map)['value'] as num?;
       final mode = (entry.value as Map)['measurement'];
-      if (value == null ||
-          !value.isFinite ||
-          value <= 0 ||
-          value > 100000 ||
-          (const ['REPS', 'REPS_IN_TIME'].contains(mode) &&
-              value != value.truncate())) {
+      if (_targetError(value, mode) != null) {
         final name =
             _data!.objectives
                 .where((o) => o['objective_key'] == entry.key)
@@ -301,22 +418,34 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
     String? initialWorkCode,
     String? initialMeasurement,
   }) async {
-    final input = await showDialog<PerformanceReferenceInput>(
+    if (_referenceRoute != null) return;
+    final data = _data!;
+    final navigator = Navigator.of(context, rootNavigator: true);
+    final route = DialogRoute<PerformanceReferenceInput>(
       context: context,
+      themes: InheritedTheme.capture(from: context, to: navigator.context),
       barrierDismissible: false,
+      barrierColor: DialogTheme.of(context).barrierColor ?? Colors.black54,
+      traversalEdgeBehavior: TraversalEdgeBehavior.closedLoop,
       builder: (_) => PerformanceReferenceDialog(
-        data: _data!,
+        data: data,
         objective: objective,
         existing: existing,
         initialWorkCode: initialWorkCode,
         initialMeasurement: initialMeasurement,
-        onSave: (input) => widget.repository.saveReference(
-          widget.goalId,
-          input.reference,
-          testId: input.testId,
-        ),
+        onSave: (input) async {
+          if (!mounted) throw StateError('La preparación ya no está abierta.');
+          await widget.repository.saveReference(
+            widget.goalId,
+            input.reference,
+            testId: input.testId,
+          );
+        },
       ),
     );
+    _referenceRoute = route;
+    final input = await navigator.push(route);
+    if (identical(_referenceRoute, route)) _referenceRoute = null;
     if (input == null || !mounted) return;
     await _run(() async {
       _equipment.addAll(input.equipment);
@@ -349,21 +478,40 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
       });
     }
   });
-  Future<void> _publish() async => _run(() async {
-    final p = _plan!['revision'] != null
-        ? await widget.repository.publish(widget.goalId, _week, _plan!)
-        : await widget.repository.activate(widget.goalId, _week, _plan!);
-    await _load(initialize: false);
-    if (mounted) {
-      setState(() {
-        _plan = p;
-        _editing = false;
-        _notice = p['revision'] != null
-            ? 'Las sesiones pendientes ya usan tus datos actuales. El programa continúa automáticamente.'
-            : null;
-      });
+  Future<void> _publish() async {
+    var accepted = false;
+    await _run(() async {
+      final p = _plan!['revision'] != null
+          ? await widget.repository.publish(widget.goalId, _week, _plan!)
+          : await widget.repository.activate(widget.goalId, _week, _plan!);
+      accepted = true;
+      await _load(initialize: false);
+      if (mounted) {
+        setState(() {
+          _plan = p;
+          _editing = false;
+          _notice = p['revision'] != null
+              ? 'Las sesiones pendientes ya usan tus datos actuales. El plan continúa automáticamente.'
+              : null;
+        });
+      }
+    });
+    if (!accepted || !mounted) return;
+    try {
+      await widget.progressStore?.clear(widget.goalId);
+    } catch (_) {
+      // Un fallo de la preferencia local no revierte una activación aceptada.
     }
-  });
+    if (!mounted || GoRouter.maybeOf(context) == null) return;
+    // La operación ya terminó: liberar busy antes de atravesar la guardia de
+    // salida y mostrar la consulta canónica sin apilar otro panel de gestión.
+    showPreparationContext(
+      context,
+      goalId: widget.goalId,
+      week: _week,
+      plan: true,
+    );
+  }
 
   Future<void> _reviewPending() async => _run(() async {
     final week = DateTime.parse(_data!.updateOptions['week_start'] as String);
@@ -396,8 +544,10 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
       _reviewOnly = false;
       _plan = null;
       _notice = 'Conservamos tu progreso. Revisa tu situación actual; los próximos entrenamientos se adaptarán al calendario de ahora.';
-      _week = today.add(
-        Duration(days: today.weekday == 1 ? 0 : 8 - today.weekday),
+      _week = DateTime(
+        today.year,
+        today.month,
+        today.day + (today.weekday == 1 ? 0 : 8 - today.weekday),
       );
       _step = review ? 1 : 0;
     });
@@ -407,7 +557,7 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Pausar mi programa'),
+        title: const Text('Pausar mi plan'),
         content: const Text(
           'Conservaremos tu progreso, marcas y resultados. Retiraremos de la agenda las sesiones automáticas que no has empezado. Podrás retomar el programa cuando quieras.',
         ),
@@ -418,7 +568,7 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Pausar programa'),
+            child: const Text('Pausar plan'),
           ),
         ],
       ),
@@ -448,8 +598,10 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
       final today = DateUtils.dateOnly(DateTime.now());
       setState(() {
         _data = null;
-        _week = today.add(
-          Duration(days: today.weekday == 1 ? 0 : 8 - today.weekday),
+        _week = DateTime(
+          today.year,
+          today.month,
+          today.day + (today.weekday == 1 ? 0 : 8 - today.weekday),
         );
         _plan = null;
         _editing = false;
@@ -503,10 +655,25 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
 
   Widget _buildContent(BuildContext context) => Scaffold(
     appBar: AppBar(
+      leading: IconButton(
+        tooltip: 'Volver',
+        onPressed: _busy ? null : _back,
+        icon: const Icon(Icons.arrow_back_rounded),
+      ),
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Mi programa'),
+          Text(
+            _data != null &&
+                    (_started ||
+                        _paused ||
+                        _data!.programState['status'] == 'complete') &&
+                    !_editing
+                ? 'Mi plan adaptativo'
+                : _editing
+                ? 'Cambiar configuración'
+                : 'Configurar mi plan',
+          ),
           if (_data?.programName != null)
             Text(
               _data!.programName!,
@@ -627,7 +794,7 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       Text(
-        'Preparar mi programa',
+        'Configura tu plan',
         style: Theme.of(context).textTheme.headlineSmall,
       ),
       const SizedBox(height: 8),
@@ -744,10 +911,10 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
     children: [
       Text(
         _paused
-            ? 'Retomar mi programa con mis datos actuales'
+            ? 'Retomar mi plan con mis datos actuales'
             : _started
-            ? 'Guardar los cambios de mi programa'
-            : 'Tu programa, listo para revisar',
+            ? 'Guardar los cambios de mi plan'
+            : 'Tu plan, listo para revisar',
         style: Theme.of(context).textTheme.headlineSmall,
       ),
       const SizedBox(height: 16),
@@ -816,8 +983,10 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
                 }
                 if (_scopeChanged) {
                   final today = DateUtils.dateOnly(DateTime.now());
-                  _week = today.add(
-                    Duration(days: today.weekday == 1 ? 0 : 8 - today.weekday),
+                  _week = DateTime(
+                    today.year,
+                    today.month,
+                    today.day + (today.weekday == 1 ? 0 : 8 - today.weekday),
                   );
                 }
                 final proposal = await widget.repository.calculate(
@@ -866,6 +1035,7 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
         (ref['reference_kind'] == null ||
             ref['reference_kind'] == 'legacy_work');
     return Card(
+      key: key == null ? null : _targetAnchors.putIfAbsent(key, GlobalKey.new),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -882,11 +1052,12 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
                   ? 'Falta tu punto de partida'
                   : ambiguous
                   ? 'Revisa qué representa esta referencia antigua'
-                  : 'Referencia: ${ref['observed_on']} · $count ${count == 1 ? 'serie' : 'series'}',
+                  : 'Referencia: ${_referenceDate(ref['observed_on'])} · $count ${count == 1 ? 'serie' : 'series'}',
             ),
             if (key != null && measurement != 'PASS_FAIL') ...[
               const SizedBox(height: 12),
               TextFormField(
+                enabled: !_busy,
                 key: ValueKey('target-$key'),
                 initialValue: targetValue == null
                     ? ''
@@ -907,19 +1078,30 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
                       '${timed ? 'Min:seg. ' : ''}Deja vacío para mejorar sin fijar una marca.',
                 ),
                 onChanged: (text) {
-                  _plan = null;
-                  final value = timed
-                      ? parsePerformanceTime(text)
-                      : num.tryParse(text.trim().replaceAll(',', '.'));
-                  if (text.trim().isEmpty) {
-                    _targets.remove(key);
-                  } else {
-                    _targets[key] = {
-                      'measurement': measurement,
-                      'value': value,
-                    };
-                  }
+                  setState(() {
+                    _plan = null;
+                    final parsed = timed
+                        ? parsePerformanceTime(text)
+                        : num.tryParse(text.trim().replaceAll(',', '.'));
+                    // Los valores no finitos tampoco pueden entrar en el sello
+                    // JSON del borrador; el campo sigue mostrando su error.
+                    final value = parsed?.isFinite == true ? parsed : null;
+                    if (text.trim().isEmpty) {
+                      _targets.remove(key);
+                    } else {
+                      _targets[key] = {
+                        'measurement': measurement,
+                        'value': value,
+                      };
+                    }
+                  });
                 },
+                validator: (text) => text == null || text.trim().isEmpty
+                    ? null
+                    : _targetError(
+                        (_targets[key] as Map?)?['value'] as num?,
+                        measurement,
+                      ),
               ),
             ],
             const SizedBox(height: 8),
@@ -1032,57 +1214,109 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
               : 'Continuar con el programa',
         ),
       ),
-    ],
-  );
-  Widget _movements() => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      Text(
-        'Lo que necesitas preparar',
-        style: Theme.of(context).textTheme.headlineSmall,
-      ),
-      const SizedBox(height: 8),
-      const Text(
-        'Cada movimiento conserva su propia referencia. La app selecciona trabajo específico y apoyos compatibles con tu material; dos personas pueden necesitar dosis y variantes distintas.',
-      ),
-      const SizedBox(height: 16),
-      for (final objective in _data!.objectives)
-        _movementCard(
-          objective,
-          _data!.references
-              .where((r) => r['objective_key'] == objective['objective_key'])
-              .firstOrNull,
-        ),
-      for (final row in _data!.references.where(
-        (r) => !_data!.objectives.any(
-          (o) => o['objective_key'] == r['objective_key'],
-        ),
-      ))
-        _movementCard(null, row),
-      OutlinedButton.icon(
-        onPressed: _busy ? null : () => _reference(),
-        icon: const Icon(Icons.add),
-        label: const Text('Añadir objetivo de mejora'),
-      ),
-      const SizedBox(height: 12),
-      const SizedBox(height: 20),
-      Wrap(
-        alignment: WrapAlignment.spaceBetween,
-        spacing: 12,
-        runSpacing: 8,
-        children: [
-          TextButton(
-            onPressed: _busy ? null : () => _goStep(_movementStep - 1),
-            child: const Text('Atrás'),
-          ),
-          FilledButton(
-            onPressed: _busy ? null : () => _goStep(_previewStep),
-            child: const Text('Revisar mi programa'),
-          ),
-        ],
+      TextButton(
+        onPressed: _busy ? null : () => _goStep(0),
+        child: const Text('Atrás'),
       ),
     ],
   );
+  Widget _movements() => Form(
+    key: _targetFormKey,
+    autovalidateMode: AutovalidateMode.onUserInteraction,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          'Lo que necesitas preparar',
+          style: Theme.of(context).textTheme.headlineSmall,
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Cada movimiento conserva su propia referencia. La app selecciona trabajo específico y apoyos compatibles con tu material; dos personas pueden necesitar dosis y variantes distintas.',
+        ),
+        const SizedBox(height: 16),
+        for (final objective in _data!.objectives)
+          _movementCard(
+            objective,
+            _data!.references
+                .where((r) => r['objective_key'] == objective['objective_key'])
+                .firstOrNull,
+          ),
+        for (final row in _data!.references.where(
+          (r) => !_data!.objectives.any(
+            (o) => o['objective_key'] == r['objective_key'],
+          ),
+        ))
+          _movementCard(null, row),
+        OutlinedButton.icon(
+          onPressed: _busy ? null : () => _reference(),
+          icon: const Icon(Icons.add),
+          label: const Text('Añadir objetivo de mejora'),
+        ),
+        const SizedBox(height: 12),
+        const SizedBox(height: 20),
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          spacing: 12,
+          runSpacing: 8,
+          children: [
+            TextButton(
+              onPressed: _busy ? null : () => _goStep(_movementStep - 1),
+              child: const Text('Atrás'),
+            ),
+            FilledButton(
+              onPressed: _busy ? null : _reviewMovements,
+              child: const Text('Revisar mi plan'),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+
+  String? _targetError(num? value, Object? measurement) {
+    if (value == null || !value.isFinite || value <= 0 || value > 100000) {
+      return 'Introduce una marca mayor que cero o deja el campo vacío.';
+    }
+    if (const ['REPS', 'REPS_IN_TIME'].contains(measurement) &&
+        value != value.truncate()) {
+      return 'Introduce un número entero de repeticiones.';
+    }
+    return null;
+  }
+
+  void _reviewMovements() {
+    if (_targetFormKey.currentState?.validate() != false) {
+      _goStep(_previewStep);
+      return;
+    }
+    final invalid = _targets.entries.where((entry) {
+      final target = entry.value as Map;
+      return _targetError(target['value'] as num?, target['measurement']) !=
+          null;
+    }).firstOrNull;
+    setState(
+      () => _error =
+          'Revisa la marca objetivo indicada. También puedes dejarla vacía.',
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final anchor = _targetAnchors[invalid?.key]?.currentContext;
+      if (mounted && anchor != null) {
+        unawaited(
+          Scrollable.ensureVisible(
+            anchor,
+            duration: const Duration(milliseconds: 200),
+          ),
+        );
+      }
+    });
+  }
+
+  String _referenceDate(Object? value) {
+    final date = DateTime.tryParse(value?.toString() ?? '');
+    return date == null ? 'Fecha no indicada' : formatAppDate(date);
+  }
+
   Widget _dashboard() {
     final state = _data!.programState;
     final activeScope = TrainingScope.parse(
@@ -1118,8 +1352,8 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
                     complete
                         ? 'Preparación finalizada'
                         : _paused
-                        ? 'Tu programa está pausado'
-                        : 'Tu programa está en marcha',
+                        ? 'Tu plan está pausado'
+                        : 'Tu plan está en marcha',
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   if (_targetDate != null)
@@ -1151,7 +1385,10 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            state['message'] as String? ?? 'Entrena y registra tus resultados. EntrenaOP prepara la continuación.',
+                            state['message'] as String? ??
+                                (complete
+                                    ? 'Conservamos tu última pauta y tus resultados.'
+                                    : 'Entrena y registra tus resultados. EntrenaOP prepara la continuación.'),
                           ),
                         ],
                       ),
@@ -1168,14 +1405,14 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
                           ),
                     icon: const Icon(Icons.play_arrow_rounded),
                     label: Text(
-                      _paused
-                          ? 'Retomar mi programa'
-                          : 'Ver mis entrenamientos',
+                      _paused ? 'Retomar mi plan' : 'Ver mis entrenamientos',
                     ),
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    _paused
+                    complete
+                        ? 'Puedes consultar los entrenamientos y resultados de esta preparación.'
+                        : _paused
                         ? 'Al retomar, revisaremos los datos que sigan siendo válidos y adaptaremos los próximos entrenamientos a tu situación actual.'
                         : 'Al terminar las sesiones previstas, adaptamos lo siguiente con lo que has realizado, tu esfuerzo y las incidencias registradas. No tienes que calcular otra semana.',
                   ),
@@ -1279,14 +1516,16 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
                           ? 'Revisar el dato pendiente'
                           : _paused
                           ? 'Revisar mi punto de partida'
-                          : 'Cambiar datos de mi programa',
+                          : complete
+                          ? 'Revisar configuración'
+                          : 'Cambiar configuración',
                     ),
                   ),
                   if (_started)
                     TextButton.icon(
                       onPressed: _busy ? null : _pause,
                       icon: const Icon(Icons.pause_circle_outline),
-                      label: const Text('Pausar mi programa'),
+                      label: const Text('Pausar mi plan'),
                     ),
                   if (!_paused &&
                       _data!.updateOptions['can_replace_pending'] == true)
@@ -1555,10 +1794,10 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
                 p['revision'] != null
                     ? 'Sustituir las sesiones pendientes'
                     : _paused
-                    ? 'Retomar mi programa'
+                    ? 'Retomar mi plan'
                     : _scopeChanged
                     ? 'Aplicar selección de entrenamiento'
-                    : 'Activar mi programa',
+                    : 'Activar mi plan',
               ),
             ),
           if (p['revision'] != null && !published)

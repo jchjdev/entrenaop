@@ -24,10 +24,11 @@ class PreparationDetailState extends Equatable {
     PreparationDetail? detail,
     String? errorMessage,
     bool clearError = false,
+    bool clearDetail = false,
   }) => PreparationDetailState(
     status: status ?? this.status,
     weekStart: weekStart ?? this.weekStart,
-    detail: detail ?? this.detail,
+    detail: clearDetail ? null : detail ?? this.detail,
     errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
   );
 

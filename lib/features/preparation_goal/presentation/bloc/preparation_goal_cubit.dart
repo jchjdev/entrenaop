@@ -10,23 +10,42 @@ class PreparationGoalCubit extends Cubit<PreparationGoalState> {
       super(const PreparationGoalState());
 
   final PreparationGoalRepository _repository;
+  int _loadVersion = 0;
+  bool _mutationBusy = false;
 
   Future<void> load() async {
-    emit(const PreparationGoalState(status: PreparationGoalStatus.loading));
+    if (isClosed || _mutationBusy) return;
+    final version = ++_loadVersion;
+    final previous = state;
+    emit(
+      PreparationGoalState(
+        status: PreparationGoalStatus.loading,
+        goals: previous.goals,
+        programs: previous.programs,
+      ),
+    );
     try {
-      final goalsFuture = _repository.getActiveGoals();
-      final programsFuture = _repository.getAvailablePrograms();
+      // Ambas respuestas se observan también si una falla. No debe quedar
+      // un error asíncrono sin recoger al cerrar o recargar el catálogo.
+      final result = await Future.wait<Object>([
+        _repository.getActiveGoals(),
+        _repository.getAvailablePrograms(),
+      ], eagerError: true);
+      if (isClosed || version != _loadVersion) return;
       emit(
         PreparationGoalState(
           status: PreparationGoalStatus.ready,
-          goals: await goalsFuture,
-          programs: await programsFuture,
+          goals: result[0] as List<PreparationGoal>,
+          programs: result[1] as List<PreparationProgram>,
         ),
       );
     } catch (_) {
+      if (isClosed || version != _loadVersion) return;
       emit(
-        const PreparationGoalState(
+        PreparationGoalState(
           status: PreparationGoalStatus.failure,
+          goals: previous.goals,
+          programs: previous.programs,
           errorMessage: 'No hemos podido cargar tu objetivo.',
         ),
       );
@@ -34,6 +53,7 @@ class PreparationGoalCubit extends Cubit<PreparationGoalState> {
   }
 
   Future<void> add(PreparationProgram program) async {
+    if (isClosed || _mutationBusy) return;
     if (state.goals.any((goal) => goal.programId == program.id)) return;
     await _save(PreparationGoal(program: program));
   }
@@ -49,66 +69,86 @@ class PreparationGoalCubit extends Cubit<PreparationGoalState> {
 
   Future<void> archive(PreparationGoal goal) async {
     final goalId = goal.id;
-    if (goalId == null) return;
+    if (goalId == null || isClosed || _mutationBusy) return;
+    _mutationBusy = true;
+    final version = ++_loadVersion;
+    final previous = state;
     emit(
       PreparationGoalState(
         status: PreparationGoalStatus.saving,
-        goals: state.goals,
-        programs: state.programs,
+        goals: previous.goals,
+        programs: previous.programs,
       ),
     );
     try {
       await _repository.archive(goalId);
+      if (isClosed || version != _loadVersion) return;
       emit(
         PreparationGoalState(
           status: PreparationGoalStatus.saved,
-          goals: state.goals.where((item) => item.id != goalId).toList(),
-          programs: state.programs,
+          goals: previous.goals.where((item) => item.id != goalId).toList(),
+          programs: previous.programs,
         ),
       );
     } catch (_) {
+      if (isClosed || version != _loadVersion) return;
       emit(
         PreparationGoalState(
           status: PreparationGoalStatus.failure,
-          goals: state.goals,
-          programs: state.programs,
+          goals: previous.goals,
+          programs: previous.programs,
           errorMessage: 'No hemos podido guardar tu objetivo.',
         ),
       );
+    } finally {
+      _mutationBusy = false;
     }
   }
 
   Future<void> _save(PreparationGoal goal) async {
+    if (isClosed || _mutationBusy) return;
+    _mutationBusy = true;
+    final version = ++_loadVersion;
+    final previous = state;
     emit(
       PreparationGoalState(
         status: PreparationGoalStatus.saving,
-        goals: state.goals,
-        programs: state.programs,
+        goals: previous.goals,
+        programs: previous.programs,
       ),
     );
     try {
       final savedGoal = await _repository.save(goal);
+      if (isClosed || version != _loadVersion) return;
+      // Editar fecha no cambia el orden de las preparaciones guardadas. La
+      // portada no debe saltar a otra al recibir el resultado de esta edición.
       final updated = [
-        for (final current in state.goals)
-          if (current.programId != savedGoal.programId) current,
-        savedGoal,
+        for (final current in previous.goals)
+          current.programId == savedGoal.programId ? savedGoal : current,
+        if (!previous.goals.any(
+          (current) => current.programId == savedGoal.programId,
+        ))
+          savedGoal,
       ];
       emit(
         PreparationGoalState(
           status: PreparationGoalStatus.saved,
           goals: updated,
-          programs: state.programs,
+          programs: previous.programs,
         ),
       );
     } catch (_) {
+      if (isClosed || version != _loadVersion) return;
       emit(
         PreparationGoalState(
           status: PreparationGoalStatus.failure,
-          goals: state.goals,
-          programs: state.programs,
+          goals: previous.goals,
+          programs: previous.programs,
           errorMessage: 'No hemos podido guardar tu preparación.',
         ),
       );
+    } finally {
+      _mutationBusy = false;
     }
   }
 }

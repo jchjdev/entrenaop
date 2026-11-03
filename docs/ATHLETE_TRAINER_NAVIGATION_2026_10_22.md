@@ -1,5 +1,63 @@
 # Navegación del alumno y preparador · TRN-025 · 22/10/2026
 
+## Preparación, configuración y consulta · 03/11/2026
+
+Implementación UI-067, autorizada tras la [revisión del vídeo y sus fronteras](audits/preparation-flow-review-2026-11-03.md).
+Se conservan las pestañas, cards, colores y componentes de la app; no se cambia
+el modelo deportivo ni el generador para estabilizar la presentación.
+
+- La portada mantiene la prioridad de revisión/actividad/pausa existente. Si no
+  hay ninguna, muestra primero una preparación pendiente y después una finalizada.
+  Editar su fecha conserva el orden guardado; consultar otra no activa nada.
+- Ficha y plan publicado son consultas de la misma preparación. Alternar no
+  acumula copias y conserva la semana, la entrada desde Inicio/Entrenar/Gestionar
+  y el retorno. Las respuestas tardías no sustituyen la semana reciente.
+- Una única card conduce al plan. Sus acciones distinguen Configurar, Continuar
+  configuración, Revisar, Retomar y Cambiar configuración según el estado.
+  Pro se comprueba al acceder a la operación existente, sin sustituir su nombre
+  por una invitación genérica ni impedir consultar las semanas publicadas.
+- Configurar abre una tarea propia; Cambiar configuración entra directamente en
+  su editor. No se envía la semana histórica de consulta a `/training`: el flujo
+  existente decide la semana de trabajo actual. Aceptar la propuesta vuelve al
+  lector canónico del plan cuando hay router, sin añadir otro panel activo.
+- Los borradores recuperan el paso visitado por cuenta y objetivo, mediante un
+  puerto pequeño y SharedPreferences ya disponible. Solo se guarda la posición;
+  los datos reales siguen en sus repositorios. Si faltan fecha o disponibilidad
+  confirmada se vuelve al paso correspondiente. Si cambian los pasos disponibles,
+  el identificador estable evita confundir Carrera con Movimientos. Una falla de
+  preferencias no bloquea configurar. Se limpia la posición al aceptar; activos,
+  pausados y finalizados no reabren una posición de borrador antigua.
+- Disponibilidad tiene Atrás; la flecha de cabecera retrocede un paso durante la
+  configuración. Las guardas existentes siguen protegiendo cambios sin guardar.
+- Las marcas objetivo se validan en Movimientos antes de llegar a Propuesta,
+  usando las restricciones existentes, con foco visual en el campo incorrecto.
+  La referencia por series valida el descanso de 30–600 segundos antes de salir
+  de ese paso. Cambiar temporalmente entre una serie y varias conserva el borrador
+  de las series; al guardar se envía únicamente el tipo seleccionado.
+- Cancelar, cerrar o volver desde una referencia modificada pide decidir sobre
+  el borrador. Las operaciones tardías cierran únicamente su propio diálogo.
+  Cambiar de cuenta/objetivo retira el diálogo de la página desmontada, incluso
+  si existe otra ruta encima, y no conserva sus datos en el nuevo titular.
+- Cuenta, objetivo y semana delimitan los controladores. Renovar la misma sesión
+  conserva estado; cambiar titular reconstruye la ficha. Catálogo y detalle
+  descartan respuestas obsoletas o posteriores a su cierre. Las fechas visibles
+  de referencias usan `dd-MM-yyyy`; las rutas y datos conservan ISO.
+
+La continuación automática al refrescar se conserva. No se modifica la prioridad
+del generador a partir de combinaciones sintéticas no acreditadas en servidor,
+ni se cambia cálculo, dosis, fases, publicación, permisos o límites comerciales.
+Esta entrega no constituye una auditoría de eficacia del algoritmo. La aceptación
+física requiere compilar e instalar **1.7.0+15** en el iPhone.
+
+Verificación de cierre: `flutter analyze --no-pub` sin incidencias y batería
+completa raíz con **1.833 correctas y una omisión previa**. Setenta regresiones
+nuevas cubren los fallos y sus fronteras; las pruebas de rutas conservan también
+el contrato que impide calcular a partir de una fecha histórica de agenda.
+Formato comprobado en los 24 archivos Dart afectados. Capturas de widgets reales
+con el tema de la app revisadas a 390 px/texto normal y 320 px/texto doble, sin
+desbordamientos; la cabecera larga se abrevia visualmente. Las comprobaciones
+Flutter no equivalen a una instalación ni a aceptación física en iPhone.
+
 ## Favoritos, herramientas y presentación · 02/11/2026
 
 El editor de Inicio amplía las opciones existentes y agrupa los destinos en

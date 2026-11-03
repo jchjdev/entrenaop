@@ -1,5 +1,18 @@
 # Registro de decisiones vigentes
 
+**UI-067 · Preparación coherente y configuración recuperable · 03/11/2026:**
+Javier autoriza corregir los fallos reproducidos en la revisión de preparaciones,
+conservando estética, procesos y reglas del algoritmo. Ficha y plan publicado
+comparten contexto y semana sin crear un ciclo de páginas; configurar sigue
+siendo una tarea distinta, sin utilizar una semana histórica como orden de
+cálculo. El borrador recupera localmente su último paso por titular y objetivo,
+supeditado a los datos guardados; esto no activa ni concede derechos. Se valida
+junto al campo y se protege la salida de referencias sin guardar. Se mantiene
+la prioridad de los estados activos y, a falta de ellos, una preparación pendiente
+precede a una finalizada. Visitar otra preparación no elige un nuevo generador.
+No cambian SQL, progresión, prescripción, continuación automática ni Pro.
+[Implementación y límites](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#preparación-configuración-y-consulta--03112026).
+
 **PRG-010 · Terminar sin registrar todo · 03/11/2026:** Javier confirma que el
 deportista puede terminar una rutina repetible sin registrar todas sus series.
 Se distingue haber terminado de entrenar de haber declarado resultados: cierre

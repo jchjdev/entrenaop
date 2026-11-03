@@ -23,16 +23,7 @@ class TrainingPreparationOverview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final program =
-        overview.activeProgram ??
-        (overview.goals.isEmpty
-            ? overview.programs.where((p) => p.status == 'complete').firstOrNull
-            : overview.programs
-                  .where((p) => p.goalId == overview.goals.first.id)
-                  .firstOrNull);
-    final goal = program == null
-        ? overview.goals.firstOrNull
-        : overview.goals.where((g) => g.id == program.goalId).firstOrNull;
+    final (:goal, :program) = overview.featuredPreparation;
     final goalId = program?.goalId ?? goal?.id;
     final workouts =
         overview.weeklyWorkouts

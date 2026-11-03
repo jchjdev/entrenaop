@@ -791,6 +791,34 @@ void main() {
     await show(tester, 'plans', find.text('Configurar mi plan'));
     expect(find.text('Configurar mi plan').hitTestable(), findsOneWidget);
   });
+
+  testWidgets(
+    'un borrador nuevo se muestra aunque el objetivo antiguo finalizado siga guardado',
+    (tester) async {
+      const oldGoal = PreparationGoal(
+        id: 'old-goal',
+        program: PreparationProgram(
+          id: 'old-program',
+          name: 'Preparación antigua terminada',
+          kind: PreparationProgramKind.internalAssessment,
+        ),
+      );
+      await mount(
+        tester,
+        _overview(
+          goals: [oldGoal, _goal],
+          programs: [
+            _program('complete', id: oldGoal.id!, name: oldGoal.program.name),
+            _program('draft'),
+          ],
+        ),
+      );
+      expect(find.text('Preparación actual'), findsOneWidget);
+      expect(find.text('Preparación antigua terminada'), findsNothing);
+      await show(tester, 'plans', find.text('Configurar mi plan'));
+      expect(find.text('Configurar mi plan').hitTestable(), findsOneWidget);
+    },
+  );
 }
 
 class _Overview implements GetPreparationOverviewUseCase {

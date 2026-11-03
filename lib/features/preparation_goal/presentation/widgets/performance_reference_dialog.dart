@@ -1,5 +1,10 @@
 import 'preparation_select_field.dart';
 
+import 'dart:convert';
+
+import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
+import 'package:entrenaop/core/presentation/app_dates.dart';
+
 import 'package:workout_editor_ui/workout_effort_field.dart';
 import 'package:workout_core/performance_set.dart';
 
@@ -52,7 +57,11 @@ class _PerformanceReferenceDialogState
   final _window = TextEditingController();
   final _distance = TextEditingController();
   final _series = <TextEditingController>[];
+  final _retainedRepeatedSeries = <TextEditingController>[];
   final _removedSeries = <TextEditingController>[];
+  final _exitController = WorkflowExitController();
+  late final String _initialStamp;
+  bool _leaving = false, _checkingExit = false;
   late StrengthExerciseDefinition _goal, _work;
   late StrengthMeasurement _goalMode, _mode;
   late StrengthLoadMode _loadMode;
@@ -63,6 +72,43 @@ class _PerformanceReferenceDialogState
   String? _kind;
   int _step = 0;
   bool _saving = false;
+  List<TextEditingController> get _fields => [
+    _setup,
+    _rir,
+    _rpe,
+    _rest,
+    _load,
+    _mass,
+    _increment,
+    _window,
+    _distance,
+  ];
+  String get _stamp => jsonEncode([
+    _goal.code,
+    _goalMode.code,
+    _work.code,
+    _mode.code,
+    _loadMode.code,
+    _kind,
+    formatAppDate(_date),
+    _frequency,
+    _confirmed,
+    _material,
+    for (final field in _fields) field.text,
+    _series.map((field) => field.text).toList(),
+    _retainedRepeatedSeries
+        .map((field) => field.text)
+        .where((text) => text.trim().isNotEmpty)
+        .toList(),
+  ]);
+  bool get _dirty => _stamp != _initialStamp;
+
+  void _draftChanged() {
+    if (mounted) setState(() {});
+  }
+
+  TextEditingController _newSeries([String text = '']) =>
+      TextEditingController(text: text)..addListener(_draftChanged);
   bool get _maximum => _kind == 'capacity_test' || _kind == 'official_test';
 
   bool get _practice =>
@@ -179,13 +225,17 @@ class _PerformanceReferenceDialogState
     _frequency = old?['frequency'] as int? ?? 1;
     for (final value in old?['targets'] as List? ?? ['']) {
       _series.add(
-        TextEditingController(
-          text: _isTimeMeasurement && value is num
+        _newSeries(
+          _isTimeMeasurement && value is num
               ? formatDurationSeconds(value)
               : value.toString(),
         ),
       );
     }
+    for (final field in _fields) {
+      field.addListener(_draftChanged);
+    }
+    _initialStamp = _stamp;
   }
 
   @override
@@ -201,8 +251,10 @@ class _PerformanceReferenceDialogState
       _window,
       _distance,
       ..._series,
+      ..._retainedRepeatedSeries,
       ..._removedSeries,
     ]) {
+      c.removeListener(_draftChanged);
       c.dispose();
     }
     super.dispose();
@@ -225,6 +277,7 @@ class _PerformanceReferenceDialogState
     bool time = false,
     bool allowZero = false,
     String? helperText,
+    String? Function(String?)? validator,
   }) => Padding(
     padding: EdgeInsets.zero,
     child: TextFormField(
@@ -248,18 +301,105 @@ class _PerformanceReferenceDialogState
               )
             : null,
       ),
-      validator: (_) {
-        if (!required && c.text.trim().isEmpty) return null;
-        final v = _n(c);
-        return v == null ||
-                !v.isFinite ||
-                (allowZero ? v < 0 : v <= 0) ||
-                (!time && c.text.contains(':')) ||
-                v > 3600 ||
-                (integer && v % 1 != 0)
-            ? 'Introduce una cantidad positiva${integer ? ' entera' : ''}.'
-            : null;
-      },
+      validator:
+          validator ??
+          (_) {
+            if (!required && c.text.trim().isEmpty) return null;
+            final v = _n(c);
+            return v == null ||
+                    !v.isFinite ||
+                    (allowZero ? v < 0 : v <= 0) ||
+                    (!time && c.text.contains(':')) ||
+                    v > 3600 ||
+                    (integer && v % 1 != 0)
+                ? 'Introduce una cantidad positiva${integer ? ' entera' : ''}.'
+                : null;
+          },
+    ),
+  );
+
+  String? _validateRest(String? _) {
+    if (_series.length < 2) return null;
+    final rest = _n(_rest);
+    return rest == null ||
+            !rest.isFinite ||
+            rest % 1 != 0 ||
+            rest < 30 ||
+            rest > 600
+        ? 'Indica un descanso entre 00:30 y 10:00.'
+        : null;
+  }
+
+  void _changeKind(String? kind) => setState(() {
+    if (kind != _kind) _confirmed = false;
+    _kind = kind;
+    if (kind == 'repeated_work' && _series.length == 1) {
+      if (_retainedRepeatedSeries.isEmpty) {
+        _series.add(_newSeries());
+      } else {
+        _series.addAll(_retainedRepeatedSeries);
+        _retainedRepeatedSeries.clear();
+      }
+    }
+    if (kind != 'repeated_work' && _series.length > 1) {
+      _retainedRepeatedSeries.addAll(_series.skip(1));
+      _series.removeRange(1, _series.length);
+    }
+    if (kind == 'official_test' &&
+        _specific &&
+        _workOptions.any((option) => option.mode == _goalMode)) {
+      _mode = _goalMode;
+    }
+  });
+
+  Future<void> _requestExit() async {
+    if (_saving || _leaving || _checkingExit) return;
+    _checkingExit = true;
+    try {
+      final allowed =
+          await (_exitController.onExit?.call() ?? Future.value(!_dirty));
+      if (allowed && mounted) _leave();
+    } finally {
+      _checkingExit = false;
+    }
+  }
+
+  void _leave([PerformanceReferenceInput? value]) {
+    if (!mounted || _leaving) return;
+    setState(() {
+      _saving = false;
+      _leaving = true;
+    });
+    final route = ModalRoute.of(context);
+    // Primero se reconstruye PopScope. Si hay otra pantalla encima, se retira
+    // solo este diálogo ya resuelto, sin cerrar la ruta nueva con un pop ciego.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || route?.navigator == null) return;
+      if (route!.isCurrent) {
+        route.navigator!.pop(value);
+      } else {
+        route.navigator!.removeRoute(route, value);
+      }
+    });
+  }
+
+  Widget _guard(Widget child) => PopScope<PerformanceReferenceInput>(
+    canPop: _leaving || (!_saving && !_dirty),
+    onPopInvokedWithResult: (didPop, _) {
+      if (!didPop) _requestExit();
+    },
+    child: WorkflowExitScope(
+      controller: _exitController,
+      child: WorkflowDraftGuard(
+        hasUnsavedChanges: () => _dirty,
+        isBusy: () => _saving,
+        title: '¿Salir sin guardar la referencia?',
+        message: 'Los cambios de esta referencia se perderán. Las referencias que ya has guardado se conservan.',
+        child: ExcludeFocus(
+          excluding: _saving,
+          child: AbsorbPointer(absorbing: _saving, child: child),
+        ),
+      ),
     ),
   );
   void _changeWork(StrengthExerciseDefinition work) {
@@ -284,14 +424,14 @@ class _PerformanceReferenceDialogState
       _rir.clear();
       _rpe.clear();
       _rest.clear();
-      for (final s in _series) {
+      for (final s in [..._series, ..._retainedRepeatedSeries]) {
         s.clear();
       }
     });
   }
 
   Future<void> _save() async {
-    if (_saving) return;
+    if (_saving || _leaving) return;
     FocusScope.of(context).unfocus();
     if (!_form.currentState!.validate()) return;
     if (!_confirmed || (!_material && _work.requiredEquipment.isNotEmpty)) {
@@ -316,11 +456,15 @@ class _PerformanceReferenceDialogState
       return;
     }
     // Una serie no tiene intervalo entre series: no inventamos un descanso.
-    final rest = _series.length == 1 ? 0.0 : _n(_rest)!;
-    if (_series.length > 1 && (rest < 30 || rest > 600)) {
-      setState(() => _error = 'Registra un descanso de 30–600 segundos.');
+    final restError = _validateRest(_rest.text);
+    if (restError != null) {
+      setState(() {
+        _step = 1;
+        _error = restError;
+      });
       return;
     }
+    final rest = _series.length == 1 ? 0.0 : _n(_rest)!;
     final targets = _series
         .map((s) => _mode == StrengthMeasurement.passFail ? 1 : _n(s)!)
         .toList();
@@ -393,11 +537,13 @@ class _PerformanceReferenceDialogState
     });
     try {
       await widget.onSave?.call(input);
-      if (mounted) Navigator.of(context).pop(input);
-    } catch (_) {
+      if (mounted) _leave(input);
+    } catch (error) {
       if (mounted) {
         setState(
-          () => _error = 'No se ha podido guardar. Tus datos siguen aquí; revisa la conexión e inténtalo de nuevo.',
+          () => _error = error is PreparationTrainingException
+              ? '${error.message} Tus datos siguen aquí.'
+              : 'No se ha podido guardar. Tus datos siguen aquí; revisa la conexión e inténtalo de nuevo.',
         );
       }
     } finally {
@@ -459,24 +605,7 @@ class _PerformanceReferenceDialogState
                       ],
                       validator: (v) =>
                           v == null ? 'Elige qué representa el dato.' : null,
-                      onChanged: (v) => setState(() {
-                        _kind = v;
-                        if (v == 'repeated_work' && _series.length == 1) {
-                          _series.add(TextEditingController());
-                        }
-                        if (v == 'official_test' &&
-                            _specific &&
-                            _workOptions.any(
-                              (option) => option.mode == _goalMode,
-                            )) {
-                          _mode = _goalMode;
-                        }
-                        if (v != 'repeated_work') {
-                          while (_series.length > 1) {
-                            _removedSeries.add(_series.removeLast());
-                          }
-                        }
-                      }),
+                      onChanged: _changeKind,
                     ),
 
                     if (widget.objective != null)
@@ -575,7 +704,10 @@ class _PerformanceReferenceDialogState
                               .firstWhere((m) => m.mode == _mode)
                               .loadModes
                               .first;
-                          for (final c in _series) {
+                          for (final c in [
+                            ..._series,
+                            ..._retainedRepeatedSeries,
+                          ]) {
                             c.clear();
                           }
                           _rir.clear();
@@ -702,9 +834,8 @@ class _PerformanceReferenceDialogState
                       ),
                     if (_kind == 'repeated_work' && _series.length < 6)
                       TextButton.icon(
-                        onPressed: () => setState(
-                          () => _series.add(TextEditingController()),
-                        ),
+                        onPressed: () =>
+                            setState(() => _series.add(_newSeries())),
                         icon: const Icon(Icons.add),
                         label: const Text('Añadir serie realizada'),
                       ),
@@ -714,6 +845,8 @@ class _PerformanceReferenceDialogState
                         'Descanso entre series',
                         time: true,
                         integer: true,
+                        helperText: 'Entre 00:30 y 10:00 (30–600 segundos).',
+                        validator: _validateRest,
                       ),
                     if (_rirRelevant) ...[
                       const Text(
@@ -802,13 +935,11 @@ class _PerformanceReferenceDialogState
                             ),
                           ),
                       ],
-                      onChanged: (v) => _frequency = v!,
+                      onChanged: (v) => setState(() => _frequency = v!),
                     ),
                     TextButton.icon(
                       icon: const Icon(Icons.calendar_today),
-                      label: Text(
-                        'Realizado el ${_date.day}/${_date.month}/${_date.year}',
-                      ),
+                      label: Text('Realizado el ${formatAppDate(_date)}'),
                       onPressed: () async {
                         final d = await showDatePicker(
                           context: context,
@@ -861,7 +992,7 @@ class _PerformanceReferenceDialogState
       ),
       actions: [
         TextButton(
-          onPressed: _saving ? null : () => Navigator.of(context).pop(),
+          onPressed: _saving ? null : _requestExit,
           child: const Text('Cancelar'),
         ),
         if (_step > 0)
@@ -899,11 +1030,10 @@ class _PerformanceReferenceDialogState
       ],
     );
     if (MediaQuery.sizeOf(context).width >= 600) {
-      return PopScope(canPop: !_saving, child: dialog);
+      return _guard(dialog);
     }
-    return PopScope(
-      canPop: !_saving,
-      child: Dialog.fullscreen(
+    return _guard(
+      Dialog.fullscreen(
         child: Scaffold(
           appBar: AppBar(
             title: dialog.title,
@@ -911,7 +1041,7 @@ class _PerformanceReferenceDialogState
             actions: [
               IconButton(
                 tooltip: 'Cancelar',
-                onPressed: _saving ? null : () => Navigator.of(context).pop(),
+                onPressed: _saving ? null : _requestExit,
                 icon: const Icon(Icons.close),
               ),
             ],

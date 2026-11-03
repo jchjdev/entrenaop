@@ -146,6 +146,7 @@ import 'package:entrenaop/features/workouts/presentation/pages/workout_preview_p
 import 'package:entrenaop/features/workouts/domain/usecases/get_starter_workout_usecase.dart';
 import 'package:flutter/material.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/pages/preparation_training_page.dart';
+import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_setup_progress_store.dart';
 import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_training_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -618,45 +619,65 @@ class AppRouter {
                     ),
                     materialAppRoute(
                       path: 'goal',
-                      builder: (context, state) => BlocProvider(
-                        create: (_) => sl<PreparationGoalCubit>(),
-                        child: PreparationGoalPage(
-                          trainingWeek: DateTime.tryParse(
-                            state.uri.queryParameters['week'] ?? '',
+                      builder: (context, state) =>
+                          BlocBuilder<AuthCubit, AuthState>(
+                            bloc: authCubit,
+                            builder: (_, auth) => auth is! AuthAuthenticated
+                                ? const SizedBox.shrink()
+                                : BlocProvider(
+                                    key: ValueKey(
+                                      'preparation-catalog-${auth.user.id}',
+                                    ),
+                                    create: (_) => sl<PreparationGoalCubit>(),
+                                    child: PreparationGoalPage(
+                                      trainingWeek: DateTime.tryParse(
+                                        state.uri.queryParameters['week'] ?? '',
+                                      ),
+                                    ),
+                                  ),
                           ),
-                        ),
-                      ),
                       routes: [
                         materialAppRoute(
                           path: ':goalId',
-                          builder: (context, state) => BlocProvider(
-                            // Una ruta parametrizada puede reutilizar su página.
-                            // El controlador debe pertenecer a la preparación abierta.
-                            key: ValueKey(
-                              'detail-${state.pathParameters['goalId']}',
-                            ),
-                            create: (_) => sl<PreparationDetailCubit>(
-                              param1: state.pathParameters['goalId']!,
-                            ),
-                            child: PreparationDetailPage(
-                              loadProAccess: sl<ProAccessRepository>().load,
-                              hasRunningContext: (goalId, programId) async =>
-                                  await sl<RunningIntakeContextRepository>()
-                                      .get(
-                                        goalId: goalId,
-                                        programId: programId,
-                                      ) !=
-                                  null,
-                              saveTargetDate: (goal, date) async {
-                                await sl<PreparationGoalRepository>().save(
-                                  PreparationGoal(
-                                    id: goal.id,
-                                    program: goal.program,
-                                    targetDate: date,
+                          builder: (context, state) => BlocBuilder<AuthCubit, AuthState>(
+                            bloc: authCubit,
+                            builder: (_, auth) => auth is! AuthAuthenticated
+                                ? const SizedBox.shrink()
+                                : BlocProvider(
+                                    // Una ruta parametrizada puede reutilizar su página.
+                                    // El controlador debe pertenecer a la preparación abierta.
+                                    key: ValueKey(
+                                      'detail-${auth.user.id}-${state.pathParameters['goalId']}-${state.uri.queryParameters['week'] ?? ''}',
+                                    ),
+                                    create: (_) => sl<PreparationDetailCubit>(
+                                      param1: state.pathParameters['goalId']!,
+                                      param2: DateTime.tryParse(
+                                        state.uri.queryParameters['week'] ?? '',
+                                      ),
+                                    ),
+                                    child: PreparationDetailPage(
+                                      hasRunningContext:
+                                          (goalId, programId) async =>
+                                              await sl<
+                                                    RunningIntakeContextRepository
+                                                  >()
+                                                  .get(
+                                                    goalId: goalId,
+                                                    programId: programId,
+                                                  ) !=
+                                              null,
+                                      saveTargetDate: (goal, date) async {
+                                        await sl<PreparationGoalRepository>()
+                                            .save(
+                                              PreparationGoal(
+                                                id: goal.id,
+                                                program: goal.program,
+                                                targetDate: date,
+                                              ),
+                                            );
+                                      },
+                                    ),
                                   ),
-                                );
-                              },
-                            ),
                           ),
                           routes: [
                             materialAppRoute(
@@ -693,6 +714,15 @@ class AppRouter {
                                         child: AdaptivePlanPage(
                                           loadProAccess:
                                               sl<ProAccessRepository>().load,
+                                          progressStore:
+                                              sl
+                                                  .isRegistered<
+                                                    PreparationSetupProgressStore
+                                                  >()
+                                              ? sl<
+                                                  PreparationSetupProgressStore
+                                                >(param1: auth.user.id)
+                                              : null,
                                         ),
                                       ),
                               ),
@@ -710,6 +740,9 @@ class AppRouter {
                                         offerContext: ProOfferContext(
                                           goalId:
                                               state.pathParameters['goalId'],
+                                          preparationName: state
+                                              .uri
+                                              .queryParameters['preparation'],
                                         ),
                                         child: PreparationTrainingPage(
                                           key: ValueKey(
@@ -756,6 +789,20 @@ class AppRouter {
                                             state.uri.queryParameters['week'] ??
                                                 '',
                                           ),
+                                          editOnOpen:
+                                              state
+                                                  .uri
+                                                  .queryParameters['edit'] ==
+                                              'true',
+                                          progressStore:
+                                              sl
+                                                  .isRegistered<
+                                                    PreparationSetupProgressStore
+                                                  >()
+                                              ? sl<
+                                                  PreparationSetupProgressStore
+                                                >(param1: auth.user.id)
+                                              : null,
                                         ),
                                       ),
                               ),

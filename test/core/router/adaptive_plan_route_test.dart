@@ -20,6 +20,8 @@ import 'package:entrenaop/features/preparation_goal/presentation/bloc/adaptive_p
 import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparation_detail_cubit.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparation_goal_cubit.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/pages/adaptive_plan_page.dart';
+import 'package:entrenaop/features/preparation_goal/presentation/pages/preparation_detail_page.dart';
+import 'package:entrenaop/features/preparation_goal/presentation/pages/preparation_goal_page.dart';
 import 'package:entrenaop/features/pro/domain/pro_access.dart';
 import 'package:entrenaop/features/pro/presentation/widgets/pro_access_widgets.dart';
 import 'package:entrenaop/features/training_plan/presentation/pages/training_hub_page.dart';
@@ -58,6 +60,7 @@ void main() {
       AppRouter router,
       _Auth auth,
       _Training training,
+      _Detail detail,
       List<DashboardCubit> dashboards,
     })
   >
@@ -77,8 +80,12 @@ void main() {
     sl.registerFactory<PreparationGoalCubit>(
       () => PreparationGoalCubit(repository: goals)..load(),
     );
-    sl.registerFactoryParam<PreparationDetailCubit, String, void>(
-      (id, _) => PreparationDetailCubit(goalId: id, getDetail: detail)..load(),
+    sl.registerFactoryParam<PreparationDetailCubit, String, DateTime?>(
+      (id, week) => PreparationDetailCubit(
+        goalId: id,
+        getDetail: detail,
+        initialWeek: week,
+      )..load(),
     );
     sl.registerFactory<DashboardCubit>(() {
       final cubit = DashboardCubit(getOverview: _Overview(owner()))..load();
@@ -96,9 +103,199 @@ void main() {
       router: router,
       auth: auth,
       training: training,
+      detail: detail,
       dashboards: dashboards,
     );
   }
+
+  testWidgets(
+    'la ficha recrea su estado al cambiar cuenta y descarta la respuesta anterior',
+    (tester) async {
+      final result = await mount(tester, '/plan/goal/g?week=2026-10-26');
+      final original = tester
+          .element(find.byType(PreparationDetailPage))
+          .read<PreparationDetailCubit>();
+      result.auth.setUser('A', email: 'renewed@example.test');
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .element(find.byType(PreparationDetailPage))
+            .read<PreparationDetailCubit>(),
+        same(original),
+      );
+      expect(original.state.weekStart, DateTime(2026, 10, 26));
+      final slow = Completer<PreparationDetail>();
+      result.detail.next = slow.future;
+      final oldLoad = original.load();
+      await tester.pump();
+      result.auth.setUser('B');
+      await tester.pumpAndSettle();
+      final current = tester
+          .element(find.byType(PreparationDetailPage))
+          .read<PreparationDetailCubit>();
+      expect(current, isNot(same(original)));
+      expect(original.isClosed, isTrue);
+      expect(find.text('Preparación A'), findsNothing);
+      expect(find.text('Preparación B'), findsOneWidget);
+      slow.complete(
+        PreparationDetail(
+          goal: _goal('A'),
+          weekStart: _week,
+          weekEnd: _week.add(const Duration(days: 6)),
+          weeklyWorkouts: const [],
+        ),
+      );
+      await oldLoad;
+      await tester.pumpAndSettle();
+      expect(find.text('Preparación B'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'el catálogo conserva renovación y recrea datos al cambiar cuenta',
+    (tester) async {
+      final result = await mount(tester, '/plan/goal');
+      final original = tester
+          .element(find.byType(PreparationGoalPage))
+          .read<PreparationGoalCubit>();
+      expect(original.state.goals.single.program.name, 'Preparación A');
+      result.auth.setUser('A', email: 'renewed@example.test');
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .element(find.byType(PreparationGoalPage))
+            .read<PreparationGoalCubit>(),
+        same(original),
+      );
+      result.auth.setUser('B');
+      await tester.pumpAndSettle();
+      final current = tester
+          .element(find.byType(PreparationGoalPage))
+          .read<PreparationGoalCubit>();
+      expect(current, isNot(same(original)));
+      expect(original.isClosed, isTrue);
+      expect(current.state.goals.single.program.name, 'Preparación B');
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'ficha y plan reutilizan contexto sin acumular ciclos y conservan semana',
+    (tester) async {
+      final result = await mount(tester, '/plan/goal/g/plan?week=2026-10-26');
+      for (var i = 0; i < 3; i++) {
+        await tester.ensureVisible(find.text('Ver preparación y marcas'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Ver preparación y marcas'));
+        await tester.pumpAndSettle();
+        expect(result.router.config.state.uri.path, '/plan/goal/g');
+        expect(
+          result.router.config.state.uri.queryParameters['week'],
+          '2026-10-26',
+        );
+        final detail = tester
+            .element(find.byType(PreparationDetailPage))
+            .read<PreparationDetailCubit>();
+        expect(detail.state.weekStart, DateTime(2026, 10, 26));
+        await tester.ensureVisible(find.text('Ver mi plan'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Ver mi plan'));
+        await tester.pumpAndSettle();
+        expect(result.router.config.state.uri.path, '/plan/goal/g/plan');
+      }
+      await tester.ensureVisible(find.text('Ver preparación y marcas'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Ver preparación y marcas'));
+      await tester.pumpAndSettle();
+      result.router.config.pop();
+      await tester.pumpAndSettle();
+      expect(result.router.config.state.uri.path, '/plan/goal');
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  for (final origin in ['/plan', '/plan/preparations']) {
+    testWidgets(
+      'plan y ficha conservan origen $origin sin añadir una segunda ficha',
+      (tester) async {
+        final result = await mount(tester, origin);
+        result.router.config.push('/plan/goal/g/plan?week=2026-10-26');
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.text('Ver preparación y marcas'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Ver preparación y marcas'));
+        await tester.pumpAndSettle();
+        expect(result.router.config.state.uri.path, '/plan/goal/g');
+        result.router.config.pop();
+        await tester.pumpAndSettle();
+        expect(result.router.config.state.uri.path, origin);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
+  testWidgets('volver a ficha conserva la semana elegida dentro del plan', (
+    tester,
+  ) async {
+    final result = await mount(tester, '/plan/goal/g/plan?week=2026-10-26');
+    final plan = tester
+        .element(find.byType(AdaptivePlanPage))
+        .read<AdaptivePlanCubit>();
+    await plan.load(week: _week);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Ver preparación y marcas'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ver preparación y marcas'));
+    await tester.pumpAndSettle();
+    expect(
+      result.router.config.state.uri.queryParameters['week'],
+      '2026-11-02',
+    );
+    expect(
+      tester
+          .element(find.byType(PreparationDetailPage))
+          .read<PreparationDetailCubit>()
+          .state
+          .weekStart,
+      _week,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'volver desde plan reutiliza la ficha abierta desde gestión y su semana',
+    (tester) async {
+      final result = await mount(tester, '/plan/preparations');
+      result.router.config.push('/plan/goal/g?week=2026-10-26');
+      await tester.pumpAndSettle();
+      final original = tester
+          .element(find.byType(PreparationDetailPage))
+          .read<PreparationDetailCubit>();
+      await tester.ensureVisible(find.text('Ver mi plan'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Ver mi plan'));
+      await tester.pumpAndSettle();
+      await tester
+          .element(find.byType(AdaptivePlanPage))
+          .read<AdaptivePlanCubit>()
+          .load(week: _week);
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Ver preparación y marcas'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Ver preparación y marcas'));
+      await tester.pumpAndSettle();
+      final restored = tester
+          .element(find.byType(PreparationDetailPage))
+          .read<PreparationDetailCubit>();
+      expect(restored, same(original));
+      expect(restored.state.weekStart, _week);
+      result.router.config.pop();
+      await tester.pumpAndSettle();
+      expect(result.router.config.state.uri.path, '/plan/preparations');
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets(
     'Free consulta directamente el plan real sin gate Pro ni cargar Entrenar',
@@ -219,17 +416,25 @@ class _Training implements PreparationTrainingRepository {
 class _Detail implements GetPreparationDetailUseCase {
   _Detail(this.owner);
   final String Function() owner;
+  Future<PreparationDetail>? next;
   @override
   Future<PreparationDetail> call(
     String goal,
     DateTime start,
     DateTime end,
-  ) async => PreparationDetail(
-    goal: _goal(owner()),
-    weekStart: start,
-    weekEnd: end,
-    weeklyWorkouts: const [],
-  );
+  ) async {
+    final pending = next;
+    next = null;
+    return pending == null
+        ? PreparationDetail(
+            goal: _goal(owner()),
+            weekStart: start,
+            weekEnd: end,
+            weeklyWorkouts: const [],
+          )
+        : await pending;
+  }
+
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

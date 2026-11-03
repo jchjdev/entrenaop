@@ -1,5 +1,17 @@
 # Arquitectura de EntrenaOP
 
+**Fronteras de preparación · 03/11/2026:** `PreparationOverview` concentra la
+elección de presentación sin cambiar `activeProgram`. Detalle y catálogo protegen
+cargas por versión y cierre; el router delimita cuenta/objetivo/semana. Un helper
+de presentación reutiliza o sustituye la consulta ficha/plan con APIs públicas de
+go_router y devuelve la semana al padre, conservando el origen. La configuración
+no hereda fechas históricas de esa consulta. `PreparationSetupProgressStore`
+guarda únicamente un paso estable por titular/objetivo con el adaptador existente
+de SharedPreferences; nunca valida, activa ni concede acceso. El formulario
+reutiliza restricciones previas y las guardas de borrador. Los diálogos tienen
+propietario y se retiran al desmontarlo sin cerrar rutas ajenas. Sin paquetes,
+SQL, contratos remotos ni cambios de algoritmo. [UI-067](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#preparación-configuración-y-consulta--03112026).
+
 **Cierre manual sin registro completo · 03/11/2026:** intención explícita con
 repositorio/caso de uso, cola por propietario y RPC idempotente propia. La marca
 de cierre declarado vive en la ejecución; las series sin resultados no cambian.

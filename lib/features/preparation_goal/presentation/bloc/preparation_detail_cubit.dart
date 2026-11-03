@@ -6,55 +6,62 @@ class PreparationDetailCubit extends Cubit<PreparationDetailState> {
   PreparationDetailCubit({
     required this.goalId,
     required GetPreparationDetailUseCase getDetail,
+    DateTime? initialWeek,
     DateTime Function()? now,
   }) : _getDetail = getDetail,
        super(
-         PreparationDetailState(weekStart: _weekStart((now ?? DateTime.now)())),
+         PreparationDetailState(
+           weekStart: _weekStart(initialWeek ?? (now ?? DateTime.now)()),
+         ),
        );
 
   final String goalId;
   final GetPreparationDetailUseCase _getDetail;
+  int _loadVersion = 0;
 
-  Future<void> load() async {
-    if (isClosed) return;
-    emit(
-      state.copyWith(status: PreparationDetailStatus.loading, clearError: true),
-    );
-    try {
-      final detail = await _getDetail(goalId, state.weekStart, state.weekEnd);
-      // Al cambiar de preparación se cierra este controlador, aunque la
-      // consulta anterior todavía esté pendiente de respuesta.
-      if (isClosed) return;
-      emit(
-        state.copyWith(status: PreparationDetailStatus.ready, detail: detail),
-      );
-    } catch (_) {
-      if (isClosed) return;
-      emit(
-        state.copyWith(
-          status: PreparationDetailStatus.failure,
-          errorMessage: 'No hemos podido abrir esta preparación.',
-        ),
-      );
-    }
-  }
+  Future<void> load() => _loadWeek(
+    state.weekStart,
+    errorMessage: 'No hemos podido abrir esta preparación.',
+  );
 
-  Future<void> changeWeek(int offset) async {
+  Future<void> changeWeek(int offset) => _loadWeek(
+    // Se desplaza la fecha civil, no 168 horas: los cambios de horario no
+    // deben convertir un lunes a medianoche en el domingo a las 23:00.
+    DateTime(
+      state.weekStart.year,
+      state.weekStart.month,
+      state.weekStart.day + offset * 7,
+    ),
+    errorMessage: 'No hemos podido actualizar esta preparación.',
+  );
+
+  Future<void> selectWeek(DateTime week) => _loadWeek(
+    _weekStart(week),
+    errorMessage: 'No hemos podido actualizar esta preparación.',
+  );
+
+  Future<void> _loadWeek(
+    DateTime weekStart, {
+    required String errorMessage,
+  }) async {
     if (isClosed) return;
+    final version = ++_loadVersion;
+    // La respuesta solo pertenece a este intervalo. Una petición previa no
+    // puede sustituir la semana que el deportista acaba de consultar.
+    final weekEnd = weekStart.add(const Duration(days: 6));
     emit(
       state.copyWith(
-        weekStart: state.weekStart.add(Duration(days: offset * 7)),
+        weekStart: weekStart,
         status: PreparationDetailStatus.loading,
         clearError: true,
+        // Un refresco conserva la misma consulta; otro intervalo debe esperar
+        // sus propios datos, también cuando la respuesta termine en error.
+        clearDetail: state.detail?.weekStart != weekStart,
       ),
     );
-    await _reloadDetail();
-  }
-
-  Future<void> _reloadDetail() async {
     try {
-      final detail = await _getDetail(goalId, state.weekStart, state.weekEnd);
-      if (isClosed) return;
+      final detail = await _getDetail(goalId, weekStart, weekEnd);
+      if (isClosed || version != _loadVersion) return;
       emit(
         state.copyWith(
           status: PreparationDetailStatus.ready,
@@ -63,11 +70,11 @@ class PreparationDetailCubit extends Cubit<PreparationDetailState> {
         ),
       );
     } catch (_) {
-      if (isClosed) return;
+      if (isClosed || version != _loadVersion) return;
       emit(
         state.copyWith(
           status: PreparationDetailStatus.failure,
-          errorMessage: 'No hemos podido actualizar esta preparación.',
+          errorMessage: errorMessage,
         ),
       );
     }

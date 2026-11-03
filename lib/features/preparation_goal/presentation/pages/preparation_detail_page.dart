@@ -5,28 +5,25 @@ import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparatio
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
 import 'package:flutter/material.dart';
-import 'package:entrenaop/features/pro/domain/pro_offer.dart';
-import 'package:entrenaop/features/pro/presentation/widgets/pro_discovery_card.dart';
-import 'package:entrenaop/features/pro/presentation/widgets/pro_access_widgets.dart';
 import 'package:entrenaop/core/presentation/images/editorial_cover_provider.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../preparation_context_navigation.dart';
+
 class PreparationDetailPage extends StatelessWidget {
   const PreparationDetailPage({
     super.key,
     this.hasRunningContext,
     this.saveTargetDate,
-    this.loadProAccess,
   });
 
   final Future<bool> Function(String goalId, String programId)?
   hasRunningContext;
   final Future<void> Function(PreparationGoal goal, DateTime date)?
   saveTargetDate;
-  final LoadProAccess? loadProAccess;
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +60,6 @@ class PreparationDetailPage extends StatelessWidget {
             state: state,
             hasRunningContext: hasRunningContext,
             saveTargetDate: saveTargetDate,
-            loadProAccess: loadProAccess,
           );
         },
       ),
@@ -76,11 +72,9 @@ class _Content extends StatelessWidget {
     required this.state,
     required this.hasRunningContext,
     required this.saveTargetDate,
-    this.loadProAccess,
   });
 
   final PreparationDetailState state;
-  final LoadProAccess? loadProAccess;
   final Future<bool> Function(String goalId, String programId)?
   hasRunningContext;
   final Future<void> Function(PreparationGoal goal, DateTime date)?
@@ -90,6 +84,16 @@ class _Content extends StatelessWidget {
   Widget build(BuildContext context) {
     final detail = state.detail!;
     final goal = detail.goal;
+    Future<void> openPlan() async {
+      final cubit = context.read<PreparationDetailCubit>();
+      final selectedWeek = await context.push<DateTime>(
+        preparationContextLocation(goal.id!, week: state.weekStart, plan: true),
+      );
+      if (context.mounted) {
+        await cubit.selectWeek(selectedWeek ?? cubit.state.weekStart);
+      }
+    }
+
     return RefreshIndicator(
       onRefresh: context.read<PreparationDetailCubit>().load,
       child: ListView(
@@ -104,24 +108,6 @@ class _Content extends StatelessWidget {
                 children: [
                   if (state.status == PreparationDetailStatus.loading)
                     const LinearProgressIndicator(minHeight: 2),
-                  if (goal.id != null)
-                    Card(
-                      child: ListTile(
-                        leading: const Icon(Icons.fitness_center),
-                        title: const Text('Mi plan adaptativo'),
-                        subtitle: const Text(
-                          'Consulta tu plan, sus entrenamientos y el recorrido de tu preparación.',
-                        ),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () async {
-                          await context.push('/plan/goal/${goal.id}/plan');
-                          if (context.mounted) {
-                            context.read<PreparationDetailCubit>().load();
-                          }
-                        },
-                      ),
-                    ),
-                  const SizedBox(height: 12),
                   EntrenaCard(
                     coverImage: editorialCoverProvider(
                       goal.program.cover?.headerUrl,
@@ -167,16 +153,29 @@ class _Content extends StatelessWidget {
                       'Objetivo a largo plazo: la fecha se conserva, pero el plan de carrera se revisa semana a semana con tus datos actuales.',
                     ),
                   const SizedBox(height: 22),
-                  if (goal.id != null &&
-                      (goal.programId ==
-                              PreparationProgramIds.armedForcesTroopEntry ||
-                          goal.programId ==
-                              PreparationProgramIds.fasPeriodicAssessment)) ...[
-                    ProDiscoveryCard(
-                      loadAccess: loadProAccess,
-                      offerContext: ProOfferContext(
-                        goalId: goal.id,
-                        preparationName: goal.program.name,
+                  if (goal.id != null) ...[
+                    EntrenaCard(
+                      tone: EntrenaCardTone.accent,
+                      onTap: openPlan,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            'Mi plan adaptativo',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          const SizedBox(height: 10),
+                          const Text(
+                            'Tu entrenamiento, configuración y evolución en un mismo lugar.',
+                          ),
+                          const SizedBox(height: 16),
+                          FilledButton.icon(
+                            onPressed: openPlan,
+                            icon: const Icon(Icons.arrow_forward_rounded),
+                            iconAlignment: IconAlignment.end,
+                            label: const Text('Ver mi plan'),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 22),

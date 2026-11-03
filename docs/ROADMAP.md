@@ -1,14 +1,21 @@
 # Roadmap de EntrenaOP
 
-**Preparaciones · revisión de recorridos · 03/11/2026:** auditados el vídeo y las
-fronteras de estado, navegación, formularios, cuenta y asincronía con tres agentes
-y pruebas focales. Se reproducen ciclos ficha/plan, respuestas fuera de orden,
-retención de ficha ante cambio directo de cuenta, selección finalizado/borrador,
-validación tardía y pérdidas de borradores; se distinguen de comportamientos
-correctos y estados sintéticos no acreditados en servidor. No se ha cambiado la
-app ni la selección de preparación. El único siguiente bloque recomendado es
-corregir esos casos y consolidar el interior alrededor de una ficha coherente,
-con propuesta visual antes de cambiar su organización. [Evidencia, límites y propuesta](audits/preparation-flow-review-2026-11-03.md).
+**Preparaciones · corrección de recorridos · 03/11/2026:** cerrados los fallos
+reproducidos en la revisión con tres agentes: ciclo ficha/plan, semana de consulta,
+respuestas obsoletas, frontera de cuenta, finalizado que oculta borrador y
+validación tardía. Configurar recupera su paso guardado por cuenta/objetivo,
+Disponibilidad permite volver y las referencias protegen sus cambios y series.
+Se elimina la card repetida y se distinguen consulta, configuración y activación.
+El diálogo se retira con su propietario sin cerrar rutas ajenas. Análisis raíz
+limpio, **1.833 pruebas correctas y una omisión previa**, formato de los 24 Dart
+afectados correcto y capturas reales revisadas a 390 px y 320 px con texto doble.
+App **1.7.0+15**. Sin cambios SQL, permisos, algoritmo o continuación automática.
+Límite: falta instalar y aceptar estos recorridos en iPhone; no se acredita la
+eficacia deportiva del algoritmo mediante esta corrección. **Único siguiente
+bloque recomendado:** contrastar en el iPhone el recorrido del vídeo con esta
+compilación antes de abrir la revisión deportiva del motor.
+[Implementación UI-067](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#preparación-configuración-y-consulta--03112026)
+y [auditoría anterior](audits/preparation-flow-review-2026-11-03.md).
 
 **PRG-010 · Terminar sin registrar todo · 03/11/2026:** recorrido técnico cerrado
 en app y Supabase Dev para rutinas repetibles y sesiones sueltas oficiales o

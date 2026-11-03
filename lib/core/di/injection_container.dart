@@ -1,4 +1,6 @@
 import '../../features/workouts/data/repositories/workout_effort_repository.dart';
+import '../../features/preparation_goal/domain/repositories/preparation_setup_progress_store.dart';
+import '../../features/preparation_goal/data/repositories/shared_preferences_preparation_setup_progress_store.dart';
 import '../../features/workouts/domain/usecases/record_workout_effort.dart';
 
 import 'package:entrenaop/features/workouts/domain/usecases/workout_result_review_usecase.dart';
@@ -144,6 +146,12 @@ Future<void> initDependencies() async {
     () => SupabaseProAccessRepository(sl()),
   );
   final sharedPreferences = await SharedPreferences.getInstance();
+  sl.registerFactoryParam<PreparationSetupProgressStore, String, void>(
+    (ownerId, _) => SharedPreferencesPreparationSetupProgressStore(
+      sharedPreferences,
+      ownerId: ownerId,
+    ),
+  );
   sl.registerLazySingleton<HomeFavoritesRepository>(
     () => SharedPreferencesHomeFavoritesRepository(sharedPreferences),
   );
@@ -493,9 +501,12 @@ Future<void> initDependencies() async {
       initialDate: initialDate,
     )..load(),
   );
-  sl.registerFactoryParam<PreparationDetailCubit, String, void>(
-    (goalId, _) =>
-        PreparationDetailCubit(goalId: goalId, getDetail: sl())..load(),
+  sl.registerFactoryParam<PreparationDetailCubit, String, DateTime?>(
+    (goalId, week) => PreparationDetailCubit(
+      goalId: goalId,
+      getDetail: sl(),
+      initialWeek: week,
+    )..load(),
   );
 
   // --- Dashboard ---

@@ -6,6 +6,7 @@ import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_program.dart';
 import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_training_repository.dart';
+import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_setup_progress_store.dart';
 import 'package:entrenaop/features/preparation_goal/domain/repositories/published_adaptive_week_repository.dart';
 import 'package:entrenaop/features/preparation_goal/domain/usecases/get_preparation_detail_usecase.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/bloc/adaptive_plan_cubit.dart';
@@ -74,6 +75,7 @@ void main() {
     String status = 'training',
     List<ScheduledWorkout>? workouts,
     LoadProAccess? loadAccess,
+    PreparationSetupProgressStore? progressStore,
     double width = 390,
     double textScale = 1,
   }) async {
@@ -102,6 +104,7 @@ void main() {
             value: cubit,
             child: AdaptivePlanPage(
               loadProAccess: loadAccess ?? ProAccessFixture().load,
+              progressStore: progressStore,
             ),
           ),
         ),
@@ -208,6 +211,73 @@ void main() {
     expect(find.text('Retomar mi plan · Pro'), findsNothing);
     expect(find.text('Configurar mi plan · Pro').hitTestable(), findsOneWidget);
   });
+
+  testWidgets(
+    'Pro con borrador ofrece configurar sin presentar una semana vacía como plan',
+    (tester) async {
+      final result = await mount(
+        tester,
+        status: 'draft',
+        proRequired: false,
+        workouts: const [],
+        loadAccess: ProAccessFixture(isPro: true).load,
+      );
+      expect(find.text('PREPARA TU PLAN'), findsOneWidget);
+      expect(find.byType(DropdownButtonFormField<DateTime>), findsNothing);
+      expect(
+        find.text(
+          'No hay entrenamientos adaptativos conservados en esta semana.',
+        ),
+        findsNothing,
+      );
+      await show(tester, find.text('Configurar mi plan'));
+      expect(find.text('Gestionar mi plan'), findsNothing);
+      expect(result.repository.forbiddenCalls, isEmpty);
+    },
+  );
+
+  testWidgets(
+    'un borrador continúa la configuración guardada sin activar ni recalcular',
+    (tester) async {
+      final progress = _Progress();
+      final result = await mount(
+        tester,
+        status: 'draft',
+        proRequired: false,
+        workouts: const [],
+        loadAccess: ProAccessFixture(isPro: true).load,
+        progressStore: progress,
+      );
+      await show(tester, find.text('Continuar configuración'));
+      expect(find.text('Configurar mi plan'), findsNothing);
+      expect(progress.reads, ['goal']);
+      await tester.tap(find.text('Continuar configuración'));
+      await tester.pumpAndSettle();
+      expect(result.router.state.uri.path, '/plan/goal/goal/training');
+      expect(result.router.state.uri.queryParameters['week'], isNull);
+      expect(result.router.state.uri.queryParameters['edit'], isNull);
+      expect(result.repository.forbiddenCalls, isEmpty);
+      expect(progress.writes, isEmpty);
+    },
+  );
+
+  testWidgets(
+    'la configuración abre el editor sin convertir la semana consultada en pauta',
+    (tester) async {
+      final result = await mount(
+        tester,
+        proRequired: false,
+        loadAccess: ProAccessFixture(isPro: true).load,
+      );
+      await show(tester, find.text('Cambiar configuración'));
+      await tester.tap(find.text('Cambiar configuración'));
+      await tester.pumpAndSettle();
+      expect(result.router.state.uri.path, '/plan/goal/goal/training');
+      expect(result.router.state.uri.queryParameters['edit'], 'true');
+      expect(result.router.state.uri.queryParameters['week'], isNull);
+      expect(result.repository.forbiddenCalls, isEmpty);
+    },
+  );
 
   testWidgets('una pausa voluntaria Pro conserva su motivo independiente', (
     tester,
@@ -317,6 +387,26 @@ void main() {
         }
       },
     );
+  }
+}
+
+class _Progress implements PreparationSetupProgressStore {
+  final reads = <String>[];
+  final writes = <String>[];
+  @override
+  Future<PreparationSetupStep?> read(String goalId) async {
+    reads.add(goalId);
+    return PreparationSetupStep.movements;
+  }
+
+  @override
+  Future<void> write(String goalId, PreparationSetupStep step) async {
+    writes.add(goalId);
+  }
+
+  @override
+  Future<void> clear(String goalId) async {
+    writes.add(goalId);
   }
 }
 

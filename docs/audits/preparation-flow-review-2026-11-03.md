@@ -1,5 +1,15 @@
 # Revisión de preparación, configuración y consulta · 03/11/2026
 
+**Corrección posterior autorizada · UI-067:** los hallazgos de esta instantánea
+se corrigen en la app **1.7.0+15**. Se añaden regresiones de selección, asincronía,
+identidad, navegación, Pro, formularios y recuperación del paso. Se mantiene el
+algoritmo y se descartan cambios basados solo en estados sintéticos. El texto
+inferior documenta el estado anterior, no el resultado de la corrección.
+Validación posterior: análisis sin incidencias, 1.833 pruebas raíz correctas
+(una omisión previa), incluidas setenta regresiones nuevas y capturas de la
+configuración con el tema real. Aceptación física en iPhone pendiente.
+[Recorrido implementado y límites](../ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#preparación-configuración-y-consulta--03112026).
+
 Revisión sobre `dcc20495cdcfd9987a45eb4e52c170b025b0c241` (app 1.6.0+14).
 Javier pide revisar minuciosamente el vídeo y las combinaciones de estado antes
 de retocar este recorrido. Esta auditoría **no cambia la aplicación ni acuerda

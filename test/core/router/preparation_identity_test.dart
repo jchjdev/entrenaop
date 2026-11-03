@@ -94,27 +94,37 @@ void main() {
   });
   tearDown(() async => sl.reset());
 
-  testWidgets('Pro abre desde la preparación y vuelve a su ficha real', (
-    t,
-  ) async {
-    (sl<ProAccessRepository>() as ProAccessFixture).isPro = false;
-    final router = AppRouter(_Auth());
-    addTearDown(router.dispose);
-    router.config.go('/plan/goal/troop');
-    await t.pumpWidget(MaterialApp.router(routerConfig: router.config));
-    await t.pumpAndSettle();
-    await t.ensureVisible(find.text('Crear mi plan · Pro'));
-    await t.tap(find.text('Crear mi plan · Pro'));
-    await t.pumpAndSettle();
-    expect(router.config.state.uri.path, '/pro');
-    expect(router.config.state.uri.queryParameters['goal'], 'troop');
-    expect(find.text('Para tu preparación: Ingreso · Tropa.'), findsOneWidget);
-    await t.tap(find.byTooltip('Cerrar'));
-    await t.pumpAndSettle();
-    expect(router.config.state.uri.path, '/plan/goal/troop');
-    expect(find.text('Mi plan adaptativo'), findsOneWidget);
-    expect(t.takeException(), isNull);
-  });
+  testWidgets(
+    'Free consulta primero el plan y la oferta vuelve al mismo contexto',
+    (t) async {
+      (sl<ProAccessRepository>() as ProAccessFixture).isPro = false;
+      final router = AppRouter(_Auth());
+      addTearDown(router.dispose);
+      router.config.go('/plan/goal/troop');
+      await t.pumpWidget(MaterialApp.router(routerConfig: router.config));
+      await t.pumpAndSettle();
+      await t.ensureVisible(find.text('Ver mi plan'));
+      await t.tap(find.text('Ver mi plan'));
+      await t.pumpAndSettle();
+      expect(router.config.state.uri.path, '/plan/goal/troop/plan');
+      await t.ensureVisible(find.text('Configurar mi plan · Pro'));
+      await t.tap(find.text('Configurar mi plan · Pro'));
+      await t.pumpAndSettle();
+      expect(router.config.state.uri.path, '/plan/goal/troop/training');
+      expect(
+        find.text('Para tu preparación: Ingreso · Tropa.'),
+        findsOneWidget,
+      );
+      await t.tap(find.byTooltip('Cerrar'));
+      await t.pumpAndSettle();
+      expect(router.config.state.uri.path, '/plan/goal/troop/plan');
+      router.config.pop();
+      await t.pumpAndSettle();
+      expect(router.config.state.uri.path, '/plan/goal/troop');
+      expect(find.text('Mi plan adaptativo'), findsOneWidget);
+      expect(t.takeException(), isNull);
+    },
+  );
 
   testWidgets(
     'preparación consulta su plan, configura y vuelve al mismo detalle',
@@ -129,11 +139,11 @@ void main() {
       await t.pumpAndSettle();
       expect(router.config.state.uri.path, '/plan/goal/troop/plan');
       expect(find.text('Mi plan adaptativo'), findsOneWidget);
-      await t.ensureVisible(find.text('Gestionar mi plan'));
-      await t.tap(find.text('Gestionar mi plan'));
+      await t.ensureVisible(find.text('Configurar mi plan'));
+      await t.tap(find.text('Configurar mi plan'));
       await t.pumpAndSettle();
       expect(router.config.state.uri.path, '/plan/goal/troop/training');
-      expect(find.text('Paso 1 de 4 · Tu programa'), findsOneWidget);
+      expect(find.text('Paso 1 de 4 · Tu preparación'), findsOneWidget);
       router.config.pop();
       await t.pumpAndSettle();
       expect(router.config.state.uri.path, '/plan/goal/troop/plan');
@@ -161,7 +171,7 @@ void main() {
       await t.pumpWidget(MaterialApp.router(routerConfig: router.config));
       await t.pumpAndSettle();
       if (suffix == '/training') {
-        expect(find.text('Paso 1 de 4 · Tu programa'), findsOneWidget);
+        expect(find.text('Paso 1 de 4 · Tu preparación'), findsOneWidget);
       } else if (suffix.startsWith('/running-context')) {
         expect(
           (sl<RunningIntakeContextRepository>() as _Context)
@@ -176,8 +186,8 @@ void main() {
       router.config.go('/plan/goal/fas$suffix');
       await t.pumpAndSettle();
       if (suffix == '/training') {
-        expect(find.text('Paso 1 de 5 · Tu programa'), findsOneWidget);
-        expect(find.text('Paso 1 de 4 · Tu programa'), findsNothing);
+        expect(find.text('Paso 1 de 5 · Tu preparación'), findsOneWidget);
+        expect(find.text('Paso 1 de 4 · Tu preparación'), findsNothing);
       } else if (suffix.startsWith('/running-context')) {
         expect(
           (sl<RunningIntakeContextRepository>() as _Context)

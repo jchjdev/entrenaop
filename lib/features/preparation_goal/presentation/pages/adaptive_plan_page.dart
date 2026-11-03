@@ -12,10 +12,13 @@ import '../../../pro/presentation/widgets/pro_access_widgets.dart';
 import '../../../workout_schedule/domain/entities/scheduled_workout.dart';
 import '../bloc/adaptive_plan_cubit.dart';
 import '../widgets/program_phase_section.dart';
+import '../preparation_context_navigation.dart';
+import '../../domain/repositories/preparation_setup_progress_store.dart';
 
 class AdaptivePlanPage extends StatelessWidget {
-  const AdaptivePlanPage({this.loadProAccess, super.key});
+  const AdaptivePlanPage({this.loadProAccess, this.progressStore, super.key});
   final LoadProAccess? loadProAccess;
+  final PreparationSetupProgressStore? progressStore;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -24,6 +27,10 @@ class AdaptivePlanPage extends StatelessWidget {
       builder: (context, state) {
         final cubit = context.read<AdaptivePlanCubit>();
         final detail = state.detail;
+        final needsSetup =
+            state.setup != null &&
+            (state.setup!.programState['status'] == null ||
+                state.setup!.programState['status'] == 'draft');
         final publishedSessions = _publishedSessions(state);
         final proRequired = state.setup?.proRequired == true;
         final visibleWorkouts = state.paused && !proRequired
@@ -70,7 +77,9 @@ class AdaptivePlanPage extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               Text(
-                                setup.proRequired
+                                needsSetup
+                                    ? 'PREPARA TU PLAN'
+                                    : setup.proRequired
                                     ? 'Tu plan guardado'
                                     : state.paused
                                     ? 'PLAN ADAPTATIVO · PAUSADO'
@@ -98,7 +107,9 @@ class AdaptivePlanPage extends StatelessWidget {
                               ],
                               const SizedBox(height: 12),
                               Text(
-                                setup.proRequired
+                                needsSetup
+                                    ? 'Tu preparación está guardada. Completa tus datos y revisa los primeros entrenamientos antes de activar tu plan.'
+                                    : setup.proRequired
                                     ? 'Puedes consultar tus entrenamientos y resultados. Activa Pro para empezar nuevas sesiones del plan.'
                                     : state.paused
                                     ? 'Conservamos tu preparación y tus resultados. Puedes consultar lo pautado; retomarlo requiere revisar la propuesta.'
@@ -110,86 +121,99 @@ class AdaptivePlanPage extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 20),
-                        DropdownButtonFormField<DateTime>(
-                          key: ValueKey('plan-week-${state.week}'),
-                          initialValue: state.week,
-                          isExpanded: true,
-                          itemHeight:
-                              (MediaQuery.textScalerOf(context).scale(18) + 24)
-                                  .clamp(48, 160)
-                                  .toDouble(),
-                          decoration: InputDecoration(
-                            labelText: setup.proRequired
-                                ? 'Semanas del plan'
-                                : state.paused
-                                ? 'Pauta anterior'
-                                : 'Semana del plan',
-                          ),
-                          items: [
-                            for (final week in state.weeks)
-                              DropdownMenuItem(
-                                value: week,
-                                child: Text(
-                                  'Semana del ${DateFormat('dd-MM-yyyy').format(week)}',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                        if (!needsSetup ||
+                            setup.publishedWeeks.isNotEmpty ||
+                            visibleWorkouts.isNotEmpty ||
+                            publishedSessions.isNotEmpty) ...[
+                          DropdownButtonFormField<DateTime>(
+                            key: ValueKey('plan-week-${state.week}'),
+                            initialValue: state.week,
+                            isExpanded: true,
+                            itemHeight:
+                                (MediaQuery.textScalerOf(context).scale(18) +
+                                        24)
+                                    .clamp(48, 160)
+                                    .toDouble(),
+                            decoration: InputDecoration(
+                              labelText: setup.proRequired
+                                  ? 'Semanas del plan'
+                                  : state.paused
+                                  ? 'Pauta anterior'
+                                  : 'Semana del plan',
+                            ),
+                            items: [
+                              for (final week in state.weeks)
+                                DropdownMenuItem(
+                                  value: week,
+                                  child: Text(
+                                    'Semana del ${DateFormat('dd-MM-yyyy').format(week)}',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
+                            ],
+                            onChanged:
+                                state.status == AdaptivePlanStatus.loading
+                                ? null
+                                : (week) {
+                                    if (week != null) cubit.load(week: week);
+                                  },
+                          ),
+                          const SizedBox(height: 16),
+                          if (state.paused || visibleWorkouts.isEmpty)
+                            for (final session in publishedSessions) ...[
+                              _PublishedSessionCard(
+                                session: session,
+                                paused: state.paused,
+                                proRequired: setup.proRequired,
                               ),
-                          ],
-                          onChanged: state.status == AdaptivePlanStatus.loading
-                              ? null
-                              : (week) {
-                                  if (week != null) cubit.load(week: week);
-                                },
-                        ),
-                        const SizedBox(height: 16),
-                        if (state.paused || visibleWorkouts.isEmpty)
-                          for (final session in publishedSessions) ...[
-                            _PublishedSessionCard(
-                              session: session,
-                              paused: state.paused,
-                              proRequired: setup.proRequired,
+                              const SizedBox(height: 12),
+                            ],
+                          if (detail != null &&
+                              visibleWorkouts.isEmpty &&
+                              publishedSessions.isEmpty)
+                            const EntrenaCard(
+                              child: Text(
+                                'No hay entrenamientos adaptativos conservados en esta semana.',
+                              ),
+                            ),
+                          if (state.paused && visibleWorkouts.isNotEmpty) ...[
+                            Text(
+                              'Resultados conservados',
+                              style: Theme.of(context).textTheme.titleLarge,
                             ),
                             const SizedBox(height: 12),
                           ],
-                        if (detail != null &&
-                            visibleWorkouts.isEmpty &&
-                            publishedSessions.isEmpty)
-                          const EntrenaCard(
-                            child: Text(
-                              'No hay entrenamientos adaptativos conservados en esta semana.',
+                          for (final workout in visibleWorkouts) ...[
+                            _SessionCard(
+                              workout: workout,
+                              paused: state.paused,
+                              proRequired: setup.proRequired,
+                              onReturn: cubit.load,
                             ),
-                          ),
-                        if (state.paused && visibleWorkouts.isNotEmpty) ...[
-                          Text(
-                            'Resultados conservados',
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                          const SizedBox(height: 12),
-                        ],
-                        for (final workout in visibleWorkouts) ...[
-                          _SessionCard(
-                            workout: workout,
-                            paused: state.paused,
-                            proRequired: setup.proRequired,
-                            onReturn: cubit.load,
-                          ),
-                          const SizedBox(height: 12),
-                        ],
-                        if (!setup.programPath.isEmpty) ...[
-                          const SizedBox(height: 12),
-                          Text(
-                            'Estado actual de tu preparación',
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                          ProgramPhaseSection(path: setup.programPath),
+                            const SizedBox(height: 12),
+                          ],
+                          if (!setup.programPath.isEmpty) ...[
+                            const SizedBox(height: 12),
+                            Text(
+                              'Estado actual de tu preparación',
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            ProgramPhaseSection(path: setup.programPath),
+                          ],
                         ],
                         const SizedBox(height: 20),
-                        _PlanAction(state: state, loadProAccess: loadProAccess),
+                        _PlanAction(
+                          state: state,
+                          loadProAccess: loadProAccess,
+                          progressStore: progressStore,
+                        ),
                         const SizedBox(height: 12),
                         OutlinedButton.icon(
-                          onPressed: () => context.push(
-                            '/plan/goal/${Uri.encodeComponent(cubit.goalId)}',
+                          onPressed: () => showPreparationContext(
+                            context,
+                            goalId: cubit.goalId,
+                            week: state.week,
                           ),
                           icon: const Icon(Icons.flag_outlined),
                           label: const Text('Ver preparación y marcas'),
@@ -207,43 +231,110 @@ class AdaptivePlanPage extends StatelessWidget {
   );
 }
 
-class _PlanAction extends StatelessWidget {
-  const _PlanAction({required this.state, required this.loadProAccess});
+class _PlanAction extends StatefulWidget {
+  const _PlanAction({
+    required this.state,
+    required this.loadProAccess,
+    required this.progressStore,
+  });
   final AdaptivePlanState state;
   final LoadProAccess? loadProAccess;
+  final PreparationSetupProgressStore? progressStore;
+
+  @override
+  State<_PlanAction> createState() => _PlanActionState();
+}
+
+class _PlanActionState extends State<_PlanAction> {
+  Future<PreparationSetupStep?>? _progress;
+  AdaptivePlanState get state => widget.state;
+  bool get _needsSetup =>
+      state.setup?.programState['status'] == null ||
+      state.setup?.programState['status'] == 'draft';
+
+  @override
+  void initState() {
+    super.initState();
+    _readProgress();
+  }
+
+  @override
+  void didUpdateWidget(covariant _PlanAction oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.progressStore != widget.progressStore ||
+        oldWidget.state.status != state.status &&
+            state.status == AdaptivePlanStatus.ready) {
+      _readProgress();
+    }
+  }
+
+  void _readProgress() {
+    final store = widget.progressStore;
+    _progress = store == null || !_needsSetup
+        ? null
+        : Future<PreparationSetupStep?>.sync(
+            () => store.read(context.read<AdaptivePlanCubit>().goalId),
+          ).catchError((Object _) => null);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final needsSetup =
-        state.setup?.proRequired == true &&
-        (state.setup?.programState['status'] == null ||
-            state.setup?.programState['status'] == 'draft');
-    Widget action(bool? isPro) => FilledButton.icon(
+    final needsSetup = _needsSetup;
+    final editOnOpen =
+        !needsSetup &&
+        !state.paused &&
+        !state.needsReview &&
+        !state.complete &&
+        state.setup?.proRequired != true;
+    Widget action(bool? isPro, {bool resume = false}) => FilledButton.icon(
       onPressed: () async {
         final cubit = context.read<AdaptivePlanCubit>();
-        await context.push(
-          '/plan/goal/${Uri.encodeComponent(cubit.goalId)}/training',
+        final selectedWeek = await context.push<DateTime>(
+          Uri(
+            pathSegments: ['', 'plan', 'goal', cubit.goalId, 'training'],
+            queryParameters: {
+              if (editOnOpen) 'edit': 'true',
+              'preparation':
+                  ?(state.detail?.goal.program.name ??
+                  state.setup?.programName),
+            },
+          ).toString(),
         );
-        if (context.mounted) cubit.load();
+        if (context.mounted) cubit.load(week: selectedWeek);
       },
       icon: Icon(state.paused ? Icons.play_arrow_rounded : Icons.tune_rounded),
       label: Text(
         '${needsSetup
-            ? 'Configurar mi plan'
+            ? resume
+                  ? 'Continuar configuración'
+                  : 'Configurar mi plan'
             : state.paused || state.setup?.proRequired == true
             ? 'Retomar mi plan'
             : state.needsReview
             ? 'Revisar mi plan'
+            : editOnOpen
+            ? 'Cambiar configuración'
             : 'Gestionar mi plan'}${isPro == false || state.setup?.proRequired == true ? ' · Pro' : ''}',
       ),
     );
+    Widget withProgress(bool? isPro) => _progress == null
+        ? action(isPro)
+        : FutureBuilder<PreparationSetupStep?>(
+            future: _progress,
+            builder: (_, snapshot) => action(
+              isPro,
+              resume:
+                  snapshot.data != null &&
+                  snapshot.data != PreparationSetupStep.program,
+            ),
+          );
     // Un fallo al comprobar derechos sólo afecta a la acción comercial: la
     // consulta del plan y sus resultados permanece accesible.
-    return loadProAccess == null
-        ? action(null)
+    return widget.loadProAccess == null
+        ? withProgress(null)
         : ProAccessBuilder(
-            load: loadProAccess!,
-            builder: (_, access) => action(access.isPro),
+            load: widget.loadProAccess!,
+            builder: (_, access) => withProgress(access.isPro),
           );
   }
 }

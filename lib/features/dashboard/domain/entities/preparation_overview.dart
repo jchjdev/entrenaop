@@ -42,6 +42,33 @@ class PreparationOverview extends Equatable {
           .firstOrNull ??
       programs.where((p) => p.isPaused).firstOrNull;
 
+  /// Foco de presentación, independiente de activar o cambiar el generador.
+  /// Un objetivo pendiente no debe quedar detrás de un plan ya finalizado.
+  ({PreparationGoal? goal, AdaptiveProgramProgress? program})
+  get featuredPreparation {
+    final active = activeProgram;
+    if (active != null) {
+      return (
+        goal: goals.where((goal) => goal.id == active.goalId).firstOrNull,
+        program: active,
+      );
+    }
+    final goal =
+        goals
+            .where(
+              (goal) => !programs.any(
+                (program) =>
+                    program.goalId == goal.id && program.status == 'complete',
+              ),
+            )
+            .firstOrNull ??
+        goals.firstOrNull;
+    final program = goal == null
+        ? programs.where((program) => program.status == 'complete').firstOrNull
+        : programs.where((program) => program.goalId == goal.id).firstOrNull;
+    return (goal: goal, program: program);
+  }
+
   PhysicalAssessmentHistoryEntry? get latestAssessment =>
       goals.any(
             (goal) =>

@@ -1,5 +1,12 @@
 # Producto EntrenaOP
 
+**Preparaciones sin ciclos de consulta · 03/11/2026:** ficha y plan publicado
+conservan la semana y el retorno sin acumular pantallas. Configurar es una tarea
+propia que recupera el paso del borrador y valida marcas antes de la propuesta.
+La portada prioriza preparaciones pendientes frente a finalizadas cuando no hay
+un estado activo. Consultar no elige ni activa otro plan; se conservan activación
+explícita, continuación automática y Pro. [Recorrido UI-067](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#preparación-configuración-y-consulta--03112026).
+
 **Terminar sin registrar todo · 03/11/2026:** las rutinas repetibles y las sesiones
 sueltas oficiales/personales permiten declarar el entrenamiento terminado sin
 rellenar todas las series. Se conservan los resultados introducidos y se indica

@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_setup_progress_store.dart';
 
 import 'dart:convert';
 import 'dart:io';
@@ -33,6 +34,10 @@ class _Repository implements PreparationTrainingRepository {
   int lookups = 0;
 
   bool paused = false;
+  bool complete = false;
+  bool hasTargetDate = true;
+  bool confirmedContext = true;
+  String? programName;
   int pauses = 0;
   bool? calculatedActivation;
   TrainingScope savedScope = TrainingScope.full;
@@ -60,6 +65,8 @@ class _Repository implements PreparationTrainingRepository {
   bool canReplacePending = false, canResetTrial = false;
   int resets = 0;
   DateTime? savedTargetDate;
+  List<Map<String, dynamic>> objectives = const [];
+  List<Map<String, dynamic>> references = const [];
   final initialTargetDate = DateTime.now().add(const Duration(days: 90));
   DateTime get _nextMonday {
     final today = DateUtils.dateOnly(DateTime.now());
@@ -76,6 +83,7 @@ class _Repository implements PreparationTrainingRepository {
   }
 
   PreparationTrainingData get data => PreparationTrainingData(
+    programName: programName,
     availableRunning: hasRunning,
     trainingScope: savedScope,
     canResetTrial: canResetTrial,
@@ -84,7 +92,9 @@ class _Repository implements PreparationTrainingRepository {
       'week_start': _nextMonday.toIso8601String().split('T').first,
       'reason': 'Esta semana ya tiene sesiones realizadas. Conservamos sus registros.',
     },
-    programState: paused
+    programState: complete
+        ? {'auto_advance': false, 'status': 'complete'}
+        : paused
         ? {
             'auto_advance': false,
             'status': 'paused',
@@ -100,21 +110,21 @@ class _Repository implements PreparationTrainingRepository {
           }
         : {},
     hasRunning: hasRunning && savedScope.includesRunning,
-    targetDate: savedTargetDate ?? initialTargetDate,
+    targetDate: hasTargetDate ? savedTargetDate ?? initialTargetDate : null,
     catalog: StrengthExerciseCatalogCodec.decode(
       jsonDecode(
         File('supabase/catalogs/strength_exercises_v1.json').readAsStringSync(),
       ),
     ).exercises,
-    context: const {
+    context: {
       'availability': {'1': 60, '4': 60},
       'equipment': [],
       'reports_pain': false,
-      'capacity_confirmed': true,
+      'capacity_confirmed': confirmedContext,
     },
     runningContext: null,
-    references: const [],
-    objectives: const [],
+    references: references,
+    objectives: objectives,
     relations: const [],
     publishedWeeks: published
         ? [
@@ -244,12 +254,371 @@ Future<void> _tap(WidgetTester t, String label) async {
 Future<void> _prepare(WidgetTester t) async {
   await _tap(t, 'Continuar con mi disponibilidad');
   await _tap(t, 'Continuar con los movimientos');
-  await _tap(t, 'Revisar mi programa');
+  await _tap(t, 'Revisar mi plan');
   await _tap(t, 'Ver mis primeros entrenamientos');
 }
 
 void main() {
   setUpAll(loadReviewFont);
+
+  for (final anotherRoute in [false, true]) {
+    testWidgets(
+      'el cambio de propietario retira solo su referencia abierta: encima=$anotherRoute',
+      (t) async {
+        final owner = ValueNotifier('A');
+        addTearDown(owner.dispose);
+        final navigator = GlobalKey<NavigatorState>();
+        final repositories = {
+          'A': _Repository()..programName = 'Preparación A',
+          'B': _Repository()..programName = 'Preparación B',
+        };
+        await t.pumpWidget(
+          MaterialApp(
+            navigatorKey: navigator,
+            home: ValueListenableBuilder<String>(
+              valueListenable: owner,
+              builder: (_, id, _) => PreparationTrainingPage(
+                key: ValueKey(id),
+                goalId: 'goal-$id',
+                repository: repositories[id]!,
+              ),
+            ),
+          ),
+        );
+        await t.pumpAndSettle();
+        await _tap(t, 'Continuar con mi disponibilidad');
+        await _tap(t, 'Continuar con los movimientos');
+        await _tap(t, 'Añadir objetivo de mejora');
+        expect(find.byType(PerformanceReferenceDialog), findsOneWidget);
+        if (anotherRoute) {
+          navigator.currentState!.push(
+            MaterialPageRoute<void>(
+              builder: (_) => const Scaffold(body: Text('Pantalla nueva')),
+            ),
+          );
+          await t.pumpAndSettle();
+        }
+        owner.value = 'B';
+        await t.pumpAndSettle();
+        expect(
+          find.byType(PerformanceReferenceDialog, skipOffstage: false),
+          findsNothing,
+        );
+        if (anotherRoute) {
+          expect(find.text('Pantalla nueva'), findsOneWidget);
+          navigator.currentState!.pop();
+          await t.pumpAndSettle();
+        }
+        expect(find.text('Preparación B'), findsOneWidget);
+        expect(find.text('Preparación A'), findsNothing);
+        expect(t.takeException(), isNull);
+      },
+    );
+  }
+
+  for (final screen in [(390.0, 1.0), (320.0, 2.0)]) {
+    testWidgets(
+      'configuración reanudada accesible a ${screen.$1} px y texto ${screen.$2}',
+      (t) async {
+        t.view.physicalSize = Size(screen.$1, 844);
+        t.view.devicePixelRatio = 1;
+        addTearDown(t.view.reset);
+        final repo = _Repository()
+          ..programName = 'Evaluación periódica FAS · 2027 (PAFAS/PAEF)'
+          ..objectives = const [
+            {
+              'objective_key': 'test',
+              'name': 'Plancha abdominal',
+              'measurement': 'DURATION',
+            },
+          ];
+        final store = _SetupProgress()
+          ..steps['goal'] = PreparationSetupStep.movements;
+        await t.pumpWidget(
+          MaterialApp(
+            theme: EntrenaTheme.dark,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: TextScaler.linear(screen.$2)),
+              child: child!,
+            ),
+            home: RepaintBoundary(
+              key: const ValueKey('review-boundary'),
+              child: PreparationTrainingPage(
+                goalId: 'goal',
+                repository: repo,
+                progressStore: store,
+              ),
+            ),
+          ),
+        );
+        await t.pumpAndSettle();
+        expect(find.text('Paso 3 de 4 · Movimientos'), findsOneWidget);
+        expect(t.takeException(), isNull);
+        await capturePerformanceWidget(
+          t,
+          'configuracion-continuar-${screen.$1.toInt()}',
+        );
+        await _tap(t, 'Atrás');
+        expect(find.text('Paso 2 de 4 · Disponibilidad'), findsOneWidget);
+        expect(t.takeException(), isNull);
+      },
+    );
+  }
+
+  testWidgets('reanudar no salta datos requeridos que ya no están guardados', (
+    t,
+  ) async {
+    final store = _SetupProgress()
+      ..steps['goal'] = PreparationSetupStep.proposal;
+    final repo = _Repository()..hasTargetDate = false;
+    Widget page() => MaterialApp(
+      home: PreparationTrainingPage(
+        goalId: 'goal',
+        repository: repo,
+        progressStore: store,
+      ),
+    );
+    await t.pumpWidget(page());
+    await t.pumpAndSettle();
+    expect(find.textContaining('Paso 1 de'), findsOneWidget);
+    await t.pumpWidget(const SizedBox.shrink());
+    repo.hasTargetDate = true;
+    repo.confirmedContext = false;
+    await t.pumpWidget(page());
+    await t.pumpAndSettle();
+    expect(find.text('Paso 2 de 4 · Disponibilidad'), findsOneWidget);
+    expect(repo.calculatedWeek, isNull);
+    expect(repo.publications, 0);
+  });
+
+  testWidgets(
+    'la consulta finalizada conserva resultados sin prometer otra semana',
+    (t) async {
+      final repo = _Repository()..complete = true;
+      await t.pumpWidget(
+        MaterialApp(
+          home: PreparationTrainingPage(goalId: 'goal', repository: repo),
+        ),
+      );
+      await t.pumpAndSettle();
+      expect(find.text('Preparación finalizada'), findsOneWidget);
+      expect(
+        find.textContaining('Al terminar las sesiones previstas'),
+        findsNothing,
+      );
+      expect(find.text('Revisar configuración'), findsOneWidget);
+      expect(repo.publications, 0);
+      expect(repo.calculatedWeek, isNull);
+    },
+  );
+
+  testWidgets(
+    'continúa el paso guardado sin activar ni calcular otra preparación',
+    (t) async {
+      final repo = _Repository();
+      final store = _SetupProgress();
+      Widget page() => MaterialApp(
+        theme: EntrenaTheme.dark,
+        home: PreparationTrainingPage(
+          goalId: 'goal',
+          repository: repo,
+          progressStore: store,
+        ),
+      );
+      await t.pumpWidget(page());
+      await t.pumpAndSettle();
+      await _tap(t, 'Continuar con mi disponibilidad');
+      await _tap(t, 'Continuar con los movimientos');
+      expect(await store.read('goal'), PreparationSetupStep.movements);
+      await t.pumpWidget(const SizedBox.shrink());
+      await t.pumpWidget(page());
+      await t.pumpAndSettle();
+      expect(find.text('Paso 3 de 4 · Movimientos'), findsOneWidget);
+      expect(
+        find.textContaining('Continuamos desde tus datos guardados'),
+        findsOneWidget,
+      );
+      expect(repo.calculatedWeek, isNull);
+      expect(repo.publications, 0);
+      expect(repo.advances, 2);
+    },
+  );
+
+  testWidgets(
+    'la posición recordada se adapta al alcance y no desplaza un plan activo',
+    (t) async {
+      final store = _SetupProgress()
+        ..steps['goal'] = PreparationSetupStep.running;
+      final repo = _Repository();
+      await t.pumpWidget(
+        MaterialApp(
+          home: PreparationTrainingPage(
+            goalId: 'goal',
+            repository: repo,
+            progressStore: store,
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+      expect(find.text('Paso 2 de 4 · Disponibilidad'), findsOneWidget);
+      await t.pumpWidget(const SizedBox.shrink());
+      repo.published = true;
+      store.steps['goal'] = PreparationSetupStep.proposal;
+      await t.pumpWidget(
+        MaterialApp(
+          home: PreparationTrainingPage(
+            goalId: 'goal',
+            repository: repo,
+            progressStore: store,
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+      expect(find.textContaining('Paso 4 de'), findsNothing);
+      expect(find.text('Mi plan adaptativo'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'cambiar configuración abre el asistente del plan activo directamente',
+    (t) async {
+      final repo = _Repository()..published = true;
+      await t.pumpWidget(
+        MaterialApp(
+          home: PreparationTrainingPage(
+            goalId: 'goal',
+            repository: repo,
+            editOnOpen: true,
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+      expect(find.text('Cambiar configuración'), findsOneWidget);
+      expect(find.textContaining('Paso 1 de'), findsOneWidget);
+      expect(repo.publications, 0);
+    },
+  );
+
+  testWidgets(
+    'la flecha de disponibilidad vuelve al paso previo y conserva el objetivo',
+    (t) async {
+      final repo = _Repository();
+      await t.pumpWidget(
+        MaterialApp(
+          home: PreparationTrainingPage(goalId: 'goal', repository: repo),
+        ),
+      );
+      await t.pumpAndSettle();
+      await _tap(t, 'Continuar con mi disponibilidad');
+      await t.tap(find.byTooltip('Volver'));
+      await t.pumpAndSettle();
+      expect(find.textContaining('Paso 1 de'), findsOneWidget);
+      expect(repo.savedTargetDate, repo.initialTargetDate);
+      expect(repo.publications, 0);
+      expect(t.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'una meta cero se corrige en Movimientos y dejarla vacía permite continuar',
+    (t) async {
+      final repo = _Repository()
+        ..objectives = const [
+          {
+            'objective_key': 'test',
+            'name': 'Movimiento',
+            'measurement': 'REPS',
+          },
+        ];
+      await t.pumpWidget(
+        MaterialApp(
+          home: PreparationTrainingPage(goalId: 'goal', repository: repo),
+        ),
+      );
+      await t.pumpAndSettle();
+      await _tap(t, 'Continuar con mi disponibilidad');
+      await _tap(t, 'Continuar con los movimientos');
+      final target = find.byKey(const ValueKey('target-test'));
+      await t.enterText(target, '0');
+      await _tap(t, 'Revisar mi plan');
+      expect(find.text('Paso 3 de 4 · Movimientos'), findsOneWidget);
+      expect(find.textContaining('mayor que cero'), findsOneWidget);
+      expect(repo.calculatedWeek, isNull);
+      await t.enterText(target, 'NaN');
+      await _tap(t, 'Revisar mi plan');
+      expect(find.text('Paso 3 de 4 · Movimientos'), findsOneWidget);
+      expect(t.takeException(), isNull);
+      await t.enterText(target, '');
+      await _tap(t, 'Revisar mi plan');
+      expect(find.text('Paso 4 de 4 · Propuesta'), findsOneWidget);
+    },
+  );
+
+  testWidgets('las referencias usan la fecha visible común', (t) async {
+    final repo = _Repository()
+      ..references = const [
+        {
+          'id': 'r',
+          'reference': {
+            'observed_on': '2026-11-03',
+            'reference_kind': 'work_set',
+            'targets': [{}],
+          },
+        },
+      ];
+    await t.pumpWidget(
+      MaterialApp(
+        home: PreparationTrainingPage(goalId: 'goal', repository: repo),
+      ),
+    );
+    await t.pumpAndSettle();
+    await _tap(t, 'Continuar con mi disponibilidad');
+    await _tap(t, 'Continuar con los movimientos');
+    expect(find.text('Referencia: 03-11-2026 · 1 serie'), findsOneWidget);
+    expect(find.textContaining('2026-11-03'), findsNothing);
+  });
+
+  testWidgets(
+    'activar termina en la consulta canónica y limpia la posición guardada',
+    (t) async {
+      final repo = _Repository();
+      final store = _SetupProgress();
+      final router = GoRouter(
+        initialLocation: '/',
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (_, _) => const Scaffold(body: Text('Origen')),
+          ),
+          GoRoute(
+            path: '/setup',
+            builder: (_, _) => PreparationTrainingPage(
+              goalId: 'goal',
+              repository: repo,
+              progressStore: store,
+            ),
+          ),
+          GoRoute(
+            path: '/plan/goal/goal/plan',
+            builder: (_, _) => const Scaffold(body: Text('Consulta canónica')),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+      await t.pumpWidget(MaterialApp.router(routerConfig: router));
+      router.push('/setup');
+      await t.pumpAndSettle();
+      await _prepare(t);
+      await _tap(t, 'Activar mi plan');
+      expect(find.text('Consulta canónica'), findsOneWidget);
+      expect(repo.publications, 1);
+      expect(await store.read('goal'), isNull);
+      router.pop();
+      await t.pumpAndSettle();
+      expect(find.text('Origen'), findsOneWidget);
+    },
+  );
   for (final scope in [TrainingScope.running, TrainingScope.performance]) {
     testWidgets('selección $scope solo pregunta por lo elegido', (t) async {
       t.view.physicalSize = const Size(390, 844);
@@ -291,11 +660,11 @@ void main() {
       if (scope == TrainingScope.running) {
         await _tap(t, 'Continuar con carrera');
         await _tap(t, 'Continuar con el programa');
-        expect(find.text('Revisar mi programa'), findsNothing);
+        expect(find.text('Revisar mi plan'), findsNothing);
       } else {
         await _tap(t, 'Continuar con los movimientos');
         expect(find.text('Datos específicos de carrera'), findsNothing);
-        await _tap(t, 'Revisar mi programa');
+        await _tap(t, 'Revisar mi plan');
       }
       expect(find.text('Paso 4 de 4 · Propuesta'), findsOneWidget);
       await _tap(t, 'Ver mis primeros entrenamientos');
@@ -315,17 +684,17 @@ void main() {
       ),
     );
     await t.pumpAndSettle();
-    await _tap(t, 'Pausar mi programa');
+    await _tap(t, 'Pausar mi plan');
     expect(repo.pauses, 0);
     await _tap(t, 'Cancelar');
     expect(repo.pauses, 0);
-    await _tap(t, 'Pausar mi programa');
-    await _tap(t, 'Pausar programa');
+    await _tap(t, 'Pausar mi plan');
+    await _tap(t, 'Pausar plan');
     expect(repo.pauses, 1);
-    expect(find.text('Tu programa está pausado'), findsOneWidget);
-    expect(find.text('Retomar mi programa'), findsOneWidget);
+    expect(find.text('Tu plan está pausado'), findsOneWidget);
+    expect(find.text('Retomar mi plan'), findsOneWidget);
     expect(find.text('Revisar mi punto de partida'), findsOneWidget);
-    expect(find.text('Tu programa está en marcha'), findsNothing);
+    expect(find.text('Tu plan está en marcha'), findsNothing);
     expect(t.takeException(), isNull);
   });
 
@@ -355,19 +724,19 @@ void main() {
       await t.pumpAndSettle();
       expect(repo.calculatedWeek, isNull);
       await capturePerformanceWidget(t, 'programa-pausado');
-      await _tap(t, 'Retomar mi programa');
+      await _tap(t, 'Retomar mi plan');
       await _tap(t, 'Continuar con mi disponibilidad');
       await _tap(t, 'Continuar con los movimientos');
-      await _tap(t, 'Revisar mi programa');
+      await _tap(t, 'Revisar mi plan');
       await _tap(t, 'Revisar mis próximos entrenamientos');
       expect(repo.calculatedWeek, repo._nextMonday);
       expect(repo.calculatedActivation, isTrue);
       expect(find.textContaining('se pausará: Tropa'), findsOneWidget);
       expect(repo.publications, 0);
       await capturePerformanceWidget(t, 'aceptacion-de-cambio');
-      await _tap(t, 'Retomar mi programa');
+      await _tap(t, 'Retomar mi plan');
       expect(repo.publications, 1);
-      expect(find.text('Tu programa está en marcha'), findsOneWidget);
+      expect(find.text('Tu plan está en marcha'), findsOneWidget);
       expect(t.takeException(), isNull);
     },
   );
@@ -396,7 +765,7 @@ void main() {
       ),
     );
     await t.pumpAndSettle();
-    await _tap(t, 'Cambiar datos de mi programa');
+    await _tap(t, 'Cambiar configuración');
     await _tap(t, 'Solo carrera');
     await _tap(t, 'Continuar con mi disponibilidad');
     await _tap(t, 'Continuar con carrera');
@@ -410,7 +779,7 @@ void main() {
     await _tap(t, 'Aplicar selección de entrenamiento');
     expect(repo.activeScope, TrainingScope.running);
     expect(repo.publications, 1);
-    expect(find.text('Tu programa está en marcha'), findsOneWidget);
+    expect(find.text('Tu plan está en marcha'), findsOneWidget);
     expect(t.takeException(), isNull);
   });
 
@@ -430,7 +799,7 @@ void main() {
     await t.pumpAndSettle();
     expect(repo.calculatedActivation, isFalse);
     expect(find.text('Preparación completa'), findsOneWidget);
-    expect(find.text('Tu programa está en marcha'), findsOneWidget);
+    expect(find.text('Tu plan está en marcha'), findsOneWidget);
     expect(t.takeException(), isNull);
   });
   testWidgets(
@@ -463,14 +832,14 @@ void main() {
         ),
       );
       await t.pumpAndSettle();
-      expect(find.text('Paso 1 de 5 · Tu programa'), findsOneWidget);
+      expect(find.text('Paso 1 de 5 · Tu preparación'), findsOneWidget);
       await capturePerformanceWidget(t, 'programa-inicio');
       await _tap(t, 'Continuar con mi disponibilidad');
       await _tap(t, 'Continuar con carrera');
       expect(find.text('Paso 3 de 5 · Carrera'), findsOneWidget);
       expect(find.text('Datos específicos de carrera'), findsOneWidget);
       await _tap(t, 'Continuar con el programa');
-      await _tap(t, 'Revisar mi programa');
+      await _tap(t, 'Revisar mi plan');
       expect(find.text('Ver mis primeros entrenamientos'), findsOneWidget);
       expect(repo.calculatedWeek, isNull);
       expect(repo.publications, 0);
@@ -521,7 +890,7 @@ void main() {
         ),
       );
       await t.pumpAndSettle();
-      expect(find.text('Tu programa está en marcha'), findsOneWidget);
+      expect(find.text('Tu plan está en marcha'), findsOneWidget);
       expect(find.textContaining('Paso 1 de'), findsNothing);
       expect(find.text('Activar continuidad automática'), findsNothing);
       expect(find.text('Recalcular con mis datos actuales'), findsNothing);
@@ -592,7 +961,7 @@ void main() {
             t
                 .widget<FilledButton>(
                   find.ancestor(
-                    of: find.text('Activar mi programa'),
+                    of: find.text('Activar mi plan'),
                     matching: find.byType(FilledButton),
                   ),
                 )
@@ -600,7 +969,7 @@ void main() {
             isNull,
           );
         } else {
-          await _tap(t, 'Activar mi programa');
+          await _tap(t, 'Activar mi plan');
           expect(repo.publications, 1);
           expect(repo.reviewed?['status'], 'ready');
         }
@@ -651,7 +1020,7 @@ void main() {
       await _tap(t, 'Plancha sin hueco');
       expect(find.text('Tiempo para la sesión completa'), findsOneWidget);
       await _tap(t, 'Continuar con los movimientos');
-      await _tap(t, 'Revisar mi programa');
+      await _tap(t, 'Revisar mi plan');
       await _tap(t, 'Ver mis primeros entrenamientos');
       await _tap(t, 'Cobertura de carrera');
       expect(find.text('Tiempo para la sesión completa'), findsOneWidget);
@@ -692,7 +1061,7 @@ void main() {
     await _tap(t, 'Continuar con mi disponibilidad');
     await _tap(t, 'Continuar con carrera');
     await _tap(t, 'Continuar con el programa');
-    await _tap(t, 'Revisar mi programa');
+    await _tap(t, 'Revisar mi plan');
     await _tap(t, 'Ver mis primeros entrenamientos');
     await _tap(t, 'Carrera pendiente');
     expect(find.text('Cuestionario de carrera'), findsOneWidget);
@@ -710,10 +1079,10 @@ void main() {
         ),
       );
       await t.pumpAndSettle();
-      await _tap(t, 'Cambiar datos de mi programa');
+      await _tap(t, 'Cambiar configuración');
       await _tap(t, 'Continuar con mi disponibilidad');
       await _tap(t, 'Continuar con los movimientos');
-      await _tap(t, 'Revisar mi programa');
+      await _tap(t, 'Revisar mi plan');
       await _tap(t, 'Guardar cambios');
       expect(repo.revisions, 1);
       expect(repo.publications, 0);
@@ -721,7 +1090,7 @@ void main() {
       await _tap(t, 'Sustituir las sesiones pendientes');
       expect(repo.publications, 1);
       expect(repo.reviewed?['revision'], isNotNull);
-      expect(find.text('Tu programa está en marcha'), findsOneWidget);
+      expect(find.text('Tu plan está en marcha'), findsOneWidget);
       expect(t.takeException(), isNull);
     },
   );
@@ -735,10 +1104,10 @@ void main() {
         ),
       );
       await t.pumpAndSettle();
-      await _tap(t, 'Cambiar datos de mi programa');
+      await _tap(t, 'Cambiar configuración');
       await _tap(t, 'Continuar con mi disponibilidad');
       await _tap(t, 'Continuar con los movimientos');
-      await _tap(t, 'Revisar mi programa');
+      await _tap(t, 'Revisar mi plan');
       await _tap(t, 'Guardar cambios');
       expect(repo.savedTargetDate, isNotNull);
       expect(repo.revisions, 0);
@@ -816,7 +1185,7 @@ void main() {
       expect(repo.publications, 0);
       expect(repo.data.context?['availability'], {'1': 60, '4': 60});
       expect(repo.data.targetDate!.difference(originalDate!).inSeconds, 0);
-      expect(find.text('Activar mi programa'), findsOneWidget);
+      expect(find.text('Activar mi plan'), findsOneWidget);
       expect(find.textContaining('Ensayos reiniciados.'), findsOneWidget);
       await _tap(t, 'Volver a los movimientos');
       expect(find.text('Lo que necesitas preparar'), findsOneWidget);
@@ -969,7 +1338,7 @@ void main() {
         expect(repo.savedContexts, 1);
         expect(repo.savedTargetDate, repo.initialTargetDate);
         final activate = t.widget<FilledButton>(
-          find.widgetWithText(FilledButton, 'Activar mi programa'),
+          find.widgetWithText(FilledButton, 'Activar mi plan'),
         );
         expect(
           activate.onPressed,
@@ -979,4 +1348,15 @@ void main() {
       },
     );
   }
+}
+
+class _SetupProgress implements PreparationSetupProgressStore {
+  final steps = <String, PreparationSetupStep>{};
+  @override
+  Future<PreparationSetupStep?> read(String goalId) async => steps[goalId];
+  @override
+  Future<void> write(String goalId, PreparationSetupStep step) async =>
+      steps[goalId] = step;
+  @override
+  Future<void> clear(String goalId) async => steps.remove(goalId);
 }
