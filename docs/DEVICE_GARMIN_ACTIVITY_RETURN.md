@@ -11,10 +11,27 @@ y no es una pauta de entrenamiento físico.
 La conciliación automática Dev crea la entrega y Garmin confirma entrenamiento
 y calendario del día, con trabajo terminado y sin errores. No se cambia la
 preferencia de sincronización ni se reenvía la prueba anterior. La recepción se
-comprobará después de que Javier guarde y sincronice, usando exclusivamente el
-aviso y el trabajador normales; no se importarán archivos ni se reparará a mano
-la evidencia de esta segunda prueba. La confirmación de calendario no acredita
-por sí sola aparición física ni retorno a Trainer.
+comprueba después de que Javier termine: aviso nuevo, trabajo `done/stored`,
+sin error ni metadatos de recuperación manual. Se usa exclusivamente el trabajador
+normal, sin exportar archivos, solicitar reenvío ni reparar evidencia. La receta
+queda vinculada y en revisión; no se crea ejecución ni se completa la cita.
+
+La observación conserva las tres series y descansos temporizados exactos, además
+de una vuelta posterior al enfriamiento sin índice de receta. No se recorta esa
+grabación adicional para ajustar el total a la pauta. Trainer Dev muestra la
+actividad nueva y sus nueve vueltas en la bandeja propia, contrastado en el
+navegador. Los identificadores, mediciones privadas y captura quedan fuera de
+Git. La nueva grabación tiene distancia medida positiva: acredita recepción
+automática, pero no sustituye una aceptación específica de cero metros.
+
+Javier informa de que encuentra la prueba en la biblioteca del fēnix pero no
+como entrenamiento del día. Se contrasta el calendario de Connect: la receta
+está en el día correcto y el recibo de programación conserva esa misma fecha.
+La presentación física del calendario queda pendiente de diagnosticar. No se
+confunde este límite con falta de recepción de la actividad. Durante la revisión
+no se fuerza la sincronización reloj–Connect; la aceptación observada comprende
+el aviso desde Connect, la ingesta y su consulta en Trainer, sin garantizar
+sincronización instantánea o disponibilidad permanente del enlace del teléfono.
 
 ## Grabaciones sin desplazamiento · 03/11/2026
 

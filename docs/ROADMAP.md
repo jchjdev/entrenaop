@@ -1,5 +1,16 @@
 # Roadmap de EntrenaOP
 
+**Garmin · segunda prueba recibida automáticamente · 03/11/2026:** se comprueba
+la nueva actividad del fēnix desde el aviso normal de Connect hasta `done/stored`
+y su lectura visual en Trainer Dev. Sin exportación, reenvío o mantenimiento de
+datos. Se conservan todas las vueltas, incluido el tramo grabado después de la
+pauta; queda revisión pendiente y no se completa la cita. El calendario de
+Connect tiene el día correcto, pero Javier solo encuentra la prueba en la
+biblioteca del reloj. **Único siguiente recorrido:** diagnosticar la presentación
+del calendario del fēnix; no se da por aceptada por el recibo del servidor.
+El contador de fuerza y el de Apple siguen fuera de esta aceptación.
+[Evidencia](DEVICE_GARMIN_ACTIVITY_RETURN.md#segunda-prueba-de-recepción-automática--03112026).
+
 **Garmin · recepción de grabaciones sin desplazamiento · 03/11/2026:** corregido
 y desplegado en Dev el rechazo de cero metros. Se conservan mediciones, revisión
 y vínculo inequívoco sin completar automáticamente la pauta. Pasan 265 pruebas
@@ -9,7 +20,8 @@ descargado por Javier, con validación y auditoría administrativas; se comprueb
 visible y desplegada en la bandeja propia de Trainer. Conserva revisión y no
 completa la pauta. **Único siguiente recorrido:** comprobar con una actividad
 posterior normal la recepción automática tras la corrección. La recuperación
-manual del original no sustituye esa aceptación. El contador Apple sigue
+manual del original no sustituye esa aceptación; la segunda prueba automática
+se contrasta posteriormente en la entrada superior. El contador Apple sigue
 pendiente de comprobación física.
 [Contrato](DEVICE_GARMIN_ACTIVITY_RETURN.md#grabaciones-sin-desplazamiento--03112026).
 
