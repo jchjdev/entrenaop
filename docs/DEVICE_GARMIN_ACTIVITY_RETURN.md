@@ -1,5 +1,23 @@
 # Retorno de carrera Garmin · INT-012 · 23/10/2026
 
+## Lectura profesional antes del cierre · 03/11/2026
+
+Se contrasta la consulta de Javier sobre la carrera de pista. La relación con
+su preparador autor sigue activa y este conserva acceso profesional. El resultado
+Apple está asociado a la cita; `training_progress` incluye sus datos mediante
+`apple_results_for_schedule`, que autoriza al titular y al preparador autor con
+relación vigente. Esta lectura no acredita que la cita esté completada.
+
+La actividad Garmin está recibida y vinculada de forma inequívoca, pero exige
+revisión de intervalos y no tiene confirmación ni ejecución. La nueva consulta
+`my_scheduled_device_results` cubre solo al titular; la bandeja Garmin sin
+confirmar también es propia. La proyección profesional anterior sigue añadiendo
+solo `apple_results` y `get_trainer_assignment_result` devuelve NULL sin ejecución.
+Por tanto no se presenta como comprobado que ese Garmin pendiente de revisión
+ya sea visible al preparador. Unificar esa lectura profesional, con el mismo
+alcance de pauta y permisos, sigue pendiente; no se concede acceso al historial
+privado completo para resolverlo.
+
 ## Segunda prueba de recepción automática · 03/11/2026
 
 A petición de Javier se crea una nueva autoasignación técnica privada de carrera,

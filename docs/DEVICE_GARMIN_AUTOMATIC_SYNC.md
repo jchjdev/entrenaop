@@ -5,6 +5,26 @@ entrenador y del algoritmo, exclusivamente en desarrollo. Se reutiliza la
 prescripción independiente del proveedor y la conexión vinculada a la cuenta.
 No se modifican los RPC, pantallas o contratos de publicación de Trainer.
 
+## Refresco de representación de una entrega futura · 03/11/2026
+
+Actualizar el compilador no cambia la revisión de una receta ya enviada. El
+escaneo actual compara la fuente y su estado, sin una versión independiente de
+representación; por eso no convierte por sí solo todas las entregas antiguas
+pendientes en bloques de series nativos.
+
+Ante la consulta de Javier se contrasta una carrera futura sin ejecución. El
+compilador vigente agrupa su patrón sin alterar la secuencia expandida. Se
+reactiva exclusivamente su trabajo existente, conservando receta, revisión y
+destino. El trabajador normal actualiza el entrenamiento y el calendario;
+Garmin confirma `sent`, trabajo `done`, sin errores y con los mismos dos
+identificadores. No se crea otra copia ni se modifica la prescripción del
+preparador. La presentación nueva en el reloj conserva aceptación física
+pendiente. No se interviene sobre entregas realizadas o históricas.
+
+Es un refresco puntual de una entrega mediante el trabajador vigente, no una
+migración automática general de versiones de exportador. Los detalles privados
+de la pauta y los recibos quedan fuera de Git.
+
 ## Revisión operativa · 25/10/2026
 
 **Actualización contrastada el 27/10:** la cuenta de ensayo ya tiene la preferencia
