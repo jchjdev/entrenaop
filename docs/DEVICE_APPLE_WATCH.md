@@ -49,6 +49,14 @@ en `1.5.0+11`, guardado en GitHub; su instalación física no se sustituye por l
 publicación web. Esto no acredita fuerza Apple ni una nueva prueba física de
 segundo plano o del contador nativo.
 
+CI de la revisión de cliente publicada: servidor y consumidor correctos,
+compilación iOS Release Dev sin firma correcta, y ensayo de Salud Android e
+iOS con la app del deportista correctos. GitHub canceló inicialmente los dos
+trabajos Mac antes de adquirir servidor por falta de capacidad; se reintentaron
+solo esos trabajos y terminaron correctamente, sin retirar comprobaciones.
+[Verificación de integración](https://github.com/jchjdev/entrenaop/actions/runs/41691587175),
+[ensayo de Salud](https://github.com/jchjdev/entrenaop/actions/runs/41691587171).
+
 ## Comprobación con la grabación existente · 03/11/2026
 
 Javier recuerda que la carrera usada para validar Garmin se grabó también con
