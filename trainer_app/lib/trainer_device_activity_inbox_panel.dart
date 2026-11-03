@@ -32,14 +32,14 @@ class _InboxState extends State<TrainerDeviceActivityInboxPanel> {
       key: const PageStorageKey('my-received-device-activities'),
       leading: const Icon(Icons.watch_outlined),
       title: const Text('Mis actividades recibidas'),
-      subtitle: const Text('Garmin · Pendientes de asociar a una pauta'),
+      subtitle: const Text('Garmin · Pendientes de incorporar al historial'),
       onExpansionChanged: (open) {
         if (open && _results == null) _load();
       },
       childrenPadding: const EdgeInsets.all(12),
       children: [
         const Text(
-          'Últimas 30 actividades de tu cuenta pendientes de asociar. No completan la semana por sí solas.',
+          'Últimas 30 actividades de tu cuenta sin confirmar. Algunas ya tienen la pauta identificada y necesitan revisión; otras requieren elegir una sesión. Puedes revisarlas en la app del deportista, en Garmin → Actividades recibidas.',
         ),
         Align(
           alignment: Alignment.centerLeft,
@@ -66,7 +66,7 @@ class _InboxState extends State<TrainerDeviceActivityInboxPanel> {
               final rows = snapshot.data ?? const [];
               if (rows.isEmpty) {
                 return const Text(
-                  'No hay actividades recibidas pendientes de asociar.',
+                  'No hay actividades recibidas pendientes de incorporar.',
                 );
               }
               return Column(

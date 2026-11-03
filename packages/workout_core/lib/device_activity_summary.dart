@@ -15,6 +15,7 @@ class DeviceActivitySummary {
     this.intervalCount = 0,
     this.effortScore,
     this.provider = 'apple',
+    this.scheduledName,
   });
 
   factory DeviceActivitySummary.fromJson(Map<String, dynamic> json) {
@@ -52,11 +53,13 @@ class DeviceActivitySummary {
       intervalCount: json['interval_count'] as int? ?? 0,
       effortScore: (json['effort_score'] as num?)?.toDouble(),
       provider: provider as String,
+      scheduledName: json['scheduled_name'] as String?,
     );
   }
 
   final String id, name, state, provider;
   final String? scheduledId;
+  final String? scheduledName;
   final DateTime startedAt;
   final double seconds;
   final double? meters;

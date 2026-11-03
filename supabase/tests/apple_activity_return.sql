@@ -74,6 +74,7 @@ reset role;
 do $$declare owner uuid:=current_setting('fixture.owner')::uuid; sid uuid:=current_setting('fixture.scheduled')::uuid;
  coach uuid; stranger uuid:=gen_random_uuid(); projection jsonb; agenda jsonb; observation jsonb;
  garmin uuid:=gen_random_uuid(); other_session uuid:=gen_random_uuid(); coach_session uuid;
+ inbox jsonb; alternate_schedule uuid; alternate_job uuid:=gen_random_uuid();
 begin
  select trainer_id into coach from public.trainer_assignments where scheduled_id=sid;
  select id into coach_session from auth.sessions where user_id=coach and aal='aal2' limit 1;
@@ -98,6 +99,28 @@ begin
   'session_id',current_setting('fixture.session'))::text,true);
  if jsonb_array_length(public.my_scheduled_device_results(owner,array[sid])->sid::text)<>2 then
   raise exception 'El titular no ve ambos proveedores';end if;
+ inbox:=public.my_unassigned_device_activities(owner);
+ if not exists(select 1 from jsonb_array_elements(inbox) r where r->>'id'=garmin::text
+  and r->>'state'='review' and r->>'scheduled_id'=sid::text
+  and r->>'scheduled_name'=(select template_name from public.scheduled_workouts where id=sid)) then
+  raise exception 'La bandeja presenta como no asociada una pauta identificada';end if;
+ if not exists(select 1 from jsonb_array_elements(inbox) r where r->>'id'<>garmin::text
+  and r->>'state'='unassigned' and r->>'scheduled_id' is null and r->>'scheduled_name' is null) then
+  raise exception 'La bandeja inventa pauta para una actividad sin vínculo';end if;
+ -- Un trabajo no finalizado no acredita vínculo; dos pautas distintas exigen elegir.
+ select id into strict alternate_schedule from public.scheduled_workouts where user_id=owner and id<>sid;
+ insert into device_private.activity_return_jobs(owner_id,id,event_key,generation,metadata,status,phase,
+  matched_schedule_id,matched_delivery_revision)
+ values(owner,alternate_job,repeat('c',64),1,'{"activityId":"10001"}',
+  'pending','pending',alternate_schedule,repeat('d',64));
+ if not exists(select 1 from jsonb_array_elements(public.my_unassigned_device_activities(owner)) r
+  where r->>'id'=garmin::text and r->>'state'='review' and r->>'scheduled_id'=sid::text) then
+  raise exception 'Un trabajo pendiente altera la pauta identificada';end if;
+ update device_private.activity_return_jobs set status='done',phase='stored' where id=alternate_job;
+ if not exists(select 1 from jsonb_array_elements(public.my_unassigned_device_activities(owner)) r
+  where r->>'id'=garmin::text and r->>'state'='unassigned' and r->>'scheduled_id' is null) then
+  raise exception 'La bandeja escoge entre pautas ambiguas';end if;
+ update device_private.activity_return_jobs set status='pending',phase='pending' where id=alternate_job;
  perform set_config('request.jwt.claim.sub',coach::text,true);
  perform set_config('request.jwt.claims',jsonb_build_object('sub',coach,'role','authenticated','aal','aal2',
   'session_id',coach_session)::text,true);

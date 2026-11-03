@@ -5,8 +5,11 @@ se corrige la diferencia Apple/Garmin antes de completar una pauta. Titular y
 preparador autor usan el mismo lector por cita y tarjetas compartidas; se exige
 sesión profesional MFA viva y relación vigente, sin abrir el historial privado.
 No cambia el cierre ni los permisos de otros preparadores. SQL Dev contrastado,
-tres análisis y baterías raíz/ADMIN/Trainer correctos; publicación web pendiente
-de comprobar. Este arreglo no acredita el calendario físico del fēnix ni los
+tres análisis y baterías raíz/ADMIN/Trainer correctos. Los publicadores Dev de
+Trainer y ADMIN terminan correctamente para `fbe393ab`; verificación HTTPS de
+versión y ajuste de la bandeja en curso. Esta distingue pauta identificada en
+revisión de una actividad sin vínculo, sin completar por ello la cita. Este
+arreglo no acredita el calendario físico del fēnix ni los
 contadores de fuerza o Apple.
 [Contrato](DEVICE_GARMIN_ACTIVITY_RETURN.md#lectura-profesional-antes-del-cierre--03112026).
 

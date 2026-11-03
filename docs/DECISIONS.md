@@ -1,5 +1,14 @@
 # Registro de decisiones vigentes
 
+**INT-012 · Pauta identificada y revisión en la bandeja · 03/11/2026:** Javier
+pregunta cómo asociar una carrera que Trainer presenta pendiente de asociar,
+aunque el retorno ya tiene un vínculo inequívoco. La bandeja propia distingue
+ese vínculo pendiente de revisión de una actividad sin pauta. Reutiliza la
+coincidencia persistida por el trabajador, sin inferir por nombre/fecha ni cerrar
+la sesión. Muestra la pauta identificada; una coincidencia ambigua conserva el
+estado sin asociar. La revisión y confirmación siguen en la app del deportista.
+[Contrato](DEVICE_GARMIN_ACTIVITY_RETURN.md#pauta-identificada-en-la-bandeja--03112026).
+
 **INT-012/INT-023 · Lectura profesional común antes de completar · 03/11/2026:**
 Javier señala la incoherencia de mostrar al preparador el retorno Apple mientras
 el Garmin recibido quedaba limitado al titular. Ambos se proyectan por pauta

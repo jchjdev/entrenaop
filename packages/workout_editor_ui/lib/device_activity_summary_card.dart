@@ -44,6 +44,8 @@ class DeviceActivitySummaryCard extends StatelessWidget {
         expandedCrossAxisAlignment: CrossAxisAlignment.start,
         childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         children: [
+          if (r.scheduledName case final name? when name.isNotEmpty)
+            Text('Pauta identificada: $name'),
           Text(
             '${date.day}/${date.month}/${date.year} · ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}',
           ),

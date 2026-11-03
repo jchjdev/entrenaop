@@ -1,5 +1,35 @@
 # Retorno de carrera Garmin · INT-012 · 23/10/2026
 
+## Pauta identificada en la bandeja · 03/11/2026
+
+La bandeja propia de Trainer devolvía todas las actividades sin confirmación
+como `unassigned`, incluso si el trabajador ya había guardado la pauta
+coincidente. Esto confundía falta de asociación y revisión de intervalos.
+`my_unassigned_device_activities` conserva su nombre por compatibilidad, pero
+publica `review`, `scheduled_id` y el nombre de la pauta cuando los trabajos
+terminados identifican una única cita del titular. Sin vínculo o con varias
+citas distintas mantiene `unassigned`; un trabajo pendiente no acredita vínculo.
+No se buscan similitudes de nombre/fecha ni se modifican actividades o citas.
+
+La tarjeta compartida identifica el estado y permite desplegar la pauta. La
+bandeja explica dónde continuar: app del deportista → Garmin → Actividades
+recibidas → Sesión de tu semana → Revisar datos y sesión. Confirmar requiere
+revisar/asignar vueltas y aceptar «Completar sesión con estos datos». La tarjeta
+de consulta profesional no equivale a esa confirmación. Un retorno recibido y
+vinculado puede consultarse por el preparador autor sin completar la semana.
+
+La migración `20261103130118` mantiene las fachadas y permisos propios. Las
+pruebas SQL cubren pauta identificada, actividad sin vínculo, trabajo pendiente,
+ambigüedad entre citas, aislamiento de cuentas y exclusión tras confirmar,
+siempre con ROLLBACK. La prueba de interfaz distingue ambos estados, muestra
+el nombre de la pauta al desplegar y no anuncia un cierre inexistente.
+
+Migración aplicada y cotejada solo en Dev. Los dos contratos SQL pasan de nuevo
+contra el despliegue con ROLLBACK; los asesores de seguridad conservan los mismos
+avisos previos. Pasan los tres análisis, 1.740 pruebas raíz (una omisión previa),
+370 ADMIN (dos omisiones previas), 446 Trainer y las cuatro pruebas focales de
+tarjetas compartidas. La publicación web se verifica por separado.
+
 ## Lectura profesional antes del cierre · 03/11/2026
 
 Se contrasta la consulta de Javier sobre la carrera de pista. La relación con

@@ -35,6 +35,53 @@ DeviceActivitySummary activity(String name) => DeviceActivitySummary(
 
 void main() {
   testWidgets(
+    'distingue pauta identificada de actividad sin asociar, sin inventar cierre',
+    (tester) async {
+      final repo = InboxFixture();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: TrainerDeviceActivityInboxPanel(repository: repo),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Mis actividades recibidas'));
+      await tester.pump(const Duration(milliseconds: 350));
+      repo.pending.complete([
+        DeviceActivitySummary.fromJson({
+          'id': 'linked',
+          'scheduled_id': 'appointment',
+          'scheduled_name': 'Series sintéticas',
+          'provider': 'garmin',
+          'state': 'review',
+          'name': 'Carrera identificada',
+          'started_at': '2026-10-20T08:00:00Z',
+          'timer_seconds': 120,
+        }),
+        activity('Carrera sin pauta'),
+      ]);
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('Garmin · Pendiente de revisión'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('Garmin · Pendiente de asociar'),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Carrera identificada'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Pauta identificada: Series sintéticas'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Todavía no está asociada'), findsNothing);
+      expect(find.text('Resultados incorporados a la sesión'), findsNothing);
+    },
+  );
+  testWidgets(
     'una respuesta tardía de otra cuenta no reaparece en la bandeja',
     (tester) async {
       final first = InboxFixture(), second = InboxFixture();
