@@ -1,7 +1,7 @@
 begin;
 set local statement_timeout='30s';
 do $$
-declare snapshot jsonb;observation jsonb;answer jsonb;original jsonb;
+declare snapshot jsonb;observation jsonb;answer jsonb;original jsonb;mapping jsonb;
 begin
  snapshot:='{"blocks":[{"format":"running","items":[{"sets":[
   {"running_step":{"kind":"warmup"},"target_duration_seconds":100},
@@ -47,7 +47,24 @@ begin
  observation:='{"intervals":[{"timer_seconds":30,"distance_meters":100},{"timer_seconds":30,"distance_meters":1}]}';
  answer:=device_private.apple_recorded_phases(observation,snapshot);
  if answer->0->>'pace_relevant'<>'true' or answer->1->>'pace_relevant'<>'false' then raise exception 'Confunde recuperación pautada y descanso';end if;
+ -- Una revisión puede asociar fases en otro orden o varias vueltas a un paso.
+ -- El recibo es prioritario; la inferencia no etiqueta lo que dejó sin asignar.
+ snapshot:='{"blocks":[{"order_index":0,"format":"running","items":[{"order_index":0,"sets":[
+  {"order_index":0,"target_distance_meters":400,"recovery_type":"passive","recovery_duration_seconds":30}
+ ]}]}]}';
+ observation:='{"intervals":[{"timer_seconds":20,"distance_meters":1},{"timer_seconds":10,"distance_meters":100},{"timer_seconds":10,"distance_meters":100},{"timer_seconds":2}]}';
+ mapping:='[{"block_order":0,"item_order":0,"set_order":0,"lap_indices":[1,2],"recovery_lap_indices":[0]}]';
+ answer:=device_private.apple_recorded_phases(observation,snapshot,mapping);
+ if answer->0->>'phase_kind'<>'recovery' or answer->1->>'phase_kind'<>'run' or answer->2->>'phase_kind'<>'run'
+  or answer->3?'phase_kind' then raise exception 'Ignora el mapa confirmado o inventa fase';end if;
+ if device_private.apple_recorded_phases(observation,snapshot,null) is distinct from device_private.apple_recorded_phases(observation,snapshot)
+  then raise exception 'Cambia el fallback sin recibo';end if;
+ mapping:=jsonb_set(mapping,'{0,lap_indices}','[0]');
+ answer:=device_private.apple_recorded_phases(observation,snapshot,mapping);
+ if exists(select 1 from jsonb_array_elements(answer) x where x?'phase_kind') then raise exception 'Etiqueta un mapa contradictorio';end if;
  if has_function_privilege('authenticated','device_private.apple_recorded_phases(jsonb,jsonb)','execute')
-  or has_function_privilege('anon','device_private.apple_recorded_phases(jsonb,jsonb)','execute') then raise exception 'Abre helper privado';end if;
+  or has_function_privilege('anon','device_private.apple_recorded_phases(jsonb,jsonb)','execute')
+  or has_function_privilege('authenticated','device_private.apple_recorded_phases(jsonb,jsonb,jsonb)','execute')
+  or has_function_privilege('anon','device_private.apple_recorded_phases(jsonb,jsonb,jsonb)','execute') then raise exception 'Abre helper privado';end if;
 end $$;
 rollback;

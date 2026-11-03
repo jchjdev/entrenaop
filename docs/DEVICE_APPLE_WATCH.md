@@ -7,9 +7,11 @@ intervalos de carrera. La proyección privada añade el tipo **según la pauta**
 sin afirmar que Apple haya enviado una etiqueta de descanso. HealthKit utiliza
 el mismo deporte para trabajo y recuperación; no se leen claves privadas.
 
-Es una ayuda de presentación, separada del mapa confirmado de series y del
-cierre automático. Solo admite igual número de fases o una única omisión, con
-un máximo de cien. Enumera las correspondencias en orden y conserva un tipo
+Es una ayuda de presentación que no modifica el mapa de series ni el cierre
+automático. Si existe un mapa confirmado, se respeta: permite varias vueltas por
+fase y un orden revisado, sin etiquetar las vueltas que dejó sin asociar. Sin
+mapa confirmado, la interpretación solo admite igual número de fases o una
+única omisión, con un máximo de cien. Enumera las correspondencias en orden y conserva un tipo
 únicamente si todas las compatibles coinciden. Una fase pautada por tiempo no
 puede contener un temporizador mayor que el objetivo más dos segundos de
 frontera; adelantar con Lap es válido. No compara velocidad, distancia objetivo

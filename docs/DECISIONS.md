@@ -3,7 +3,8 @@
 **INT-023 · Tipos de fase y ritmo de recuperación · 03/11/2026:** Javier señala
 que una recuperación Apple no debe presentarse como carrera con ritmo absurdo.
 Garmin ya entrega intensidad e índice FIT; se conserva su correspondencia.
-Para Apple se muestra el tipo según la pauta solo por consenso de alineaciones
+En Apple prevalece el mapa confirmado, incluidas vueltas agrupadas u orden
+revisado. Sin él se muestra el tipo según la pauta solo por consenso de alineaciones
 en orden, con cero o una omisión y tolerancia superior de dos segundos en fases
 por tiempo. No se usa velocidad ni distancia pautada para decidir el tipo. Las
 fases dudosas quedan sin identificar. Es una proyección de presentación: no
