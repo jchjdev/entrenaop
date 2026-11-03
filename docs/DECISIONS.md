@@ -7,8 +7,11 @@ positiva. Cero medido se conserva como cero; no se sustituye por ausencia ni se
 calcula ritmo. Se admite en la observación y los totales históricos, manteniendo
 límites y permisos. El conciliador conserva el vínculo inequívoco, pero exige
 revisión y no completa automáticamente una carrera sin desplazamiento. Corrección
-desplegada y probada en Dev; la grabación rechazada antes requiere original o
-reenvío oficial para acreditar su recepción completa. No se fabrica evidencia.
+desplegada y probada en Dev. La grabación rechazada se recupera desde el FIT
+original exportado por Javier, validando integridad y receta y auditando la
+recuperación administrativa. Se comprueba visible en la bandeja propia de
+Trainer. No se fabrica evidencia ni se presenta esta recuperación manual como
+un reenvío oficial o una nueva aceptación de recepción automática.
 [Contrato](DEVICE_GARMIN_ACTIVITY_RETURN.md#grabaciones-sin-desplazamiento--03112026).
 
 **INT-009/INT-012 · Aceptación física parcial Garmin · 03/11/2026:** Javier

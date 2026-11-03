@@ -21,13 +21,27 @@ tipos estrictos y contratos SQL transaccionales de cero metros, retorno Garmin,
 cierre automático y retorno Apple, todos con ROLLBACK. Las nuevas fixtures son
 sintéticas y no reproducen mediciones o identificadores de la grabación real.
 
-La exportación original desde el navegador no genera archivo durante esta
-comprobación. El FIT adjunto corresponde a una actividad anterior, no a la prueba
-corta. El trabajo rechazado antes del despliegue sigue sin observación guardada:
-necesita el FIT correcto o un reenvío oficial; no se reutiliza su callback
-consumido ni se reconstruyen vueltas a partir de la tabla de Connect. No se
-acredita todavía su aparición en Trainer. El portal oficial de desarrollo pide
-iniciar sesión; queda abierto para que Javier lo haga antes de intentar el reenvío.
+La exportación automática del navegador no genera archivo. El primer FIT adjunto
+pertenece a otra actividad; después Javier descarga el original correcto. El
+lector corregido valida su integridad, sus nueve vueltas y la referencia exacta
+de la pauta enviada. El archivo original y sus mediciones quedan fuera de Git.
+
+Se recupera únicamente esa evidencia mediante mantenimiento administrativo en
+Dev, en una transacción: se comprueban propietario, conexión y generación
+vigentes, permiso de lectura, revisión enviada, cita pendiente y ventana de
+asociación. Se guarda la observación original con su hash canónico, se conserva
+el enlace de receta y se deja revisión pendiente, sin ejecución ni confirmación.
+`metadata.recovery` conserva método `user_exported_original_fit`, huella SHA-256
+del FIT, revisión del lector, error anterior y momento de recuperación. No se
+simula una concesión, sesión de usuario, lease del trabajador o nuevo callback.
+
+Trainer Dev se verifica en el navegador con la cuenta titular: «Para mí» →
+«Mi planificación» → «Mis actividades recibidas» muestra la prueba Garmin,
+distancia cero, duración, pulso y nueve vueltas disponibles. La bandeja conserva
+su estado pendiente de asociar/confirmar; recibir no cierra la semana. Esta
+recuperación manual acredita el original y su lectura en Trainer. No equivale
+a un reenvío oficial ni acredita una recepción automática nueva después de la
+corrección. El siguiente contraste será con una actividad posterior normal.
 
 ## Prueba del contador en el reloj · 03/11/2026
 
