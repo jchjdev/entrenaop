@@ -1,5 +1,12 @@
 # Apple Watch · WorkoutKit · INT-023
 
+**Ritmo en las grabaciones · 03/11/2026:** el resumen del reloj y cada intervalo
+con tiempo y distancia observados positivos muestran el ritmo calculado en
+minutos y segundos por kilómetro. Se usa el temporizador original sin redondear
+y la distancia medida, nunca la pauta o el tiempo con pausas. Sin metros o con
+distancia cero no se muestra ritmo. El redondeo del resultado conserva el cambio
+de minuto. La tarjeta común sirve al deportista y a los paneles profesionales.
+
 ## Resultado parcial y grabaciones por dispositivo · 03/11/2026
 
 La relectura de la grabación existente no añade las medidas ausentes. La

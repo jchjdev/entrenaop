@@ -79,6 +79,7 @@ class DeviceActivitySummary {
   final double? effortScore;
   final List<DeviceActivityInterval> intervals;
   final bool detailsIncomplete;
+  double? get paceSecondsPerKm => _recordedPace(seconds, meters);
 }
 
 /// Intervalo medido por el dispositivo. Su orden no acredita una serie pautada.
@@ -113,4 +114,19 @@ class DeviceActivityInterval {
   final double seconds;
   final double? meters;
   final int? averageHeartRate;
+  double? get paceSecondsPerKm => _recordedPace(seconds, meters);
+}
+
+// Usamos el temporizador original y los metros medidos, nunca la distancia
+// pautada ni el tiempo transcurrido que incluye las pausas del reloj.
+double? _recordedPace(double seconds, double? meters) {
+  if (!seconds.isFinite ||
+      seconds <= 0 ||
+      meters == null ||
+      !meters.isFinite ||
+      meters <= 0) {
+    return null;
+  }
+  final pace = seconds / meters * 1000;
+  return pace.isFinite && pace > 0 ? pace : null;
 }

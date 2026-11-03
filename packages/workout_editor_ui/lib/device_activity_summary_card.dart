@@ -50,6 +50,8 @@ class DeviceActivitySummaryCard extends StatelessWidget {
           Text(
             '${date.day}/${date.month}/${date.year} · ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}',
           ),
+          if (r.paceSecondsPerKm case final pace?)
+            Text('Ritmo medio calculado: ${_paceLabel(pace)}'),
           if (r.averageHeartRate case final value?)
             Text('FC media: $value ppm'),
           if (r.maxHeartRate case final value?) Text('FC máxima: $value ppm'),
@@ -78,6 +80,8 @@ class DeviceActivitySummaryCard extends StatelessWidget {
                         formatPerformanceTime(part.seconds),
                         if (part.meters != null)
                           '${part.meters!.toStringAsFixed(1)} m',
+                        if (part.paceSecondsPerKm case final pace?)
+                          'Ritmo ${_paceLabel(pace)}',
                         if (part.averageHeartRate != null)
                           '${part.averageHeartRate} lpm',
                       ].join(' · '),
@@ -98,5 +102,10 @@ class DeviceActivitySummaryCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  static String _paceLabel(double pace) {
+    final seconds = pace.round();
+    return '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}/km';
   }
 }
