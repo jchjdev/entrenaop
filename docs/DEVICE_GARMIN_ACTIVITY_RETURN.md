@@ -28,7 +28,14 @@ Migración aplicada y cotejada solo en Dev. Los dos contratos SQL pasan de nuevo
 contra el despliegue con ROLLBACK; los asesores de seguridad conservan los mismos
 avisos previos. Pasan los tres análisis, 1.740 pruebas raíz (una omisión previa),
 370 ADMIN (dos omisiones previas), 446 Trainer y las cuatro pruebas focales de
-tarjetas compartidas. La publicación web se verifica por separado.
+tarjetas compartidas. Trainer y ADMIN Dev sirven por HTTPS la revisión `1fce79ee`,
+versión `0.2.2+4`; se cotejan manifiesto, versión del paquete y proyecto Dev.
+Los cuatro workflows de este commit terminan correctamente. La comprobación
+visual en la cuenta propia muestra la carrera vinculada con «Pendiente de
+revisión» y «Pauta identificada», mientras el rodaje sin vínculo sigue pendiente
+de asociar. No se confirma ninguna de las actividades durante la consulta.
+La app del deportista queda en GitHub como `1.4.3+10`; no se acredita instalada
+en el iPhone por publicar la web.
 
 ## Lectura profesional antes del cierre · 03/11/2026
 
@@ -68,8 +75,8 @@ de tarjetas compartidas. Los contratos SQL Apple/Garmin, cierre automático y
 retorno Garmin terminan con ROLLBACK. Cubren la agenda profesional real con los
 dos proveedores, otro preparador vigente, sesión revocada, relación retirada,
 actividad privada sin pauta y ausencia de cierre o filtración de metadatos.
-La publicación web del cliente se verifica aparte; desplegar SQL no acredita
-por sí solo que Trainer haya actualizado sus fuentes.
+La publicación de esta lectura y del ajuste posterior de la bandeja se contrasta
+por separado en Trainer y ADMIN Dev (`1fce79ee`, `0.2.2+4`), sin tocar producción.
 
 ## Segunda prueba de recepción automática · 03/11/2026
 
