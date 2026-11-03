@@ -51,6 +51,9 @@ una sola confirmación y una sola observación Garmin. La asignación conserva a
 preparador autor vigente y genera una nueva revisión de resultado pendiente de
 su lectura profesional. La prueba SQL acredita ese lector con datos recortados;
 no se suplanta la sesión real del preparador ni se da por hecha su aceptación.
+GitHub Actions del commit `abe1ed26` termina correctamente: servidor, consumidor
+Flutter y compilación iOS Release sin firma. No se instala ni publica una app
+nativa por ese ensayo.
 
 ## Pauta identificada en la bandeja · 03/11/2026
 
