@@ -1,5 +1,15 @@
 # Registro de decisiones vigentes
 
+**INT-009/INT-012 · Aceptación física parcial Garmin · 03/11/2026:** Javier
+localiza la prueba corta en el fēnix y confirma la vista «repetir ×3» y el avance
+1/3, 2/3 y 3/3. La pauta anterior del preparador conserva su entrega plana,
+anterior al cambio de exportador; no se atribuye al editor o a su autoría. Tras
+guardar la prueba llega el aviso automático Garmin, pero el importador rechaza
+el archivo con `invalid_activity` antes de persistir la observación. El contador
+queda aceptado; el retorno completo y su consulta en Trainer siguen pendientes
+del diagnóstico del FIT original. No se infiere la causa ni se inventan datos.
+[Evidencia y límites](DEVICE_GARMIN_ACTIVITY_RETURN.md#prueba-del-contador-en-el-reloj--03112026).
+
 **Pruebas iOS · mantener Xcode · 03/11/2026:** Javier descarta TestFlight para
 este recorrido. Se mantiene instalación con Xcode y el iPhone conectado o
 accesible por una conexión de desarrollo configurada; un Mac encendido a

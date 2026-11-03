@@ -1,5 +1,23 @@
 # Retorno de carrera Garmin · INT-012 · 23/10/2026
 
+## Prueba del contador en el reloj · 03/11/2026
+
+Javier encuentra la prueba corta en el fēnix y confirma que la vista previa
+agrupa «repetir ×3» y la ejecución muestra 1/3, 2/3 y 3/3. La entrega de la
+pauta anterior del preparador precede al exportador con repeticiones nativas;
+su presentación plana no acredita un fallo del creador o de la prescripción.
+
+Tras finalizar y guardar, el receptor Dev recibe automáticamente el aviso de la
+prueba. El trabajo termina en revisión con `invalid_activity` durante la lectura
+y validación, sin observación deportiva persistida. Esto acredita el contador
+y la llegada del aviso, no la importación de resultados ni el cierre de la cita.
+Se necesita contrastar el FIT original para identificar la condición exacta;
+no se deduce del código genérico si fallan distancia, tiempos, pulso o vueltas.
+El control del navegador no está disponible por un fallo del componente nativo
+de Windows, reproducido tras reintento y reinicio del intérprete. No se han
+reprocesado callbacks consumidos ni cambiado mediciones o estados para simular
+recepción. La comprobación Apple del contador continúa pendiente.
+
 ## Recibido y vinculado sin completar · 03/11/2026
 
 Una actividad válida puede estar importada y corresponder a su receta, pero

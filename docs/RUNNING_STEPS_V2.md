@@ -53,9 +53,12 @@ ni se cambia el editor compartido o el hash de sus snapshots.
 La revisión de la pauta de prueba acredita diez trabajos de 400 m y diez
 recuperaciones de 45 s; el formato plano explica la falta de contador observada.
 No se usa esa carrera como fixture público ni se cambia su pauta o historial.
-La prueba física pendiente es comprobar el contador en el fēnix y en Entreno de
-Apple, y después el retorno de todas las vueltas. La compilación no acredita por
-sí sola esa presentación.
+Javier confirma físicamente en el fēnix la prueba corta: «repetir ×3» en la vista
+previa y 1/3, 2/3 y 3/3 durante la ejecución. El contador Garmin queda aceptado;
+el de Entreno de Apple sigue pendiente. Tras guardar, llega el aviso automático
+Garmin, pero el importador rechaza el archivo con `invalid_activity` antes de
+guardar sus datos. El retorno de todas las vueltas sigue pendiente de contrastar
+el original; la aceptación del contador no acredita la importación.
 
 Validación de esta entrega: análisis Flutter sin incidencias, 1.734 pruebas de
 raíz correctas y una omisión previa; 262 de servidor, incluida equivalencia de

@@ -1,5 +1,13 @@
 # Roadmap de EntrenaOP
 
+**Garmin · contador aceptado y retorno corto pendiente · 03/11/2026:** Javier
+confirma «repetir ×3» y 1/3, 2/3 y 3/3 en el fēnix. Tras guardar llega el aviso
+automático, pero el importador rechaza el archivo con `invalid_activity` antes
+de persistir resultados. **Único siguiente recorrido:** obtener el FIT original,
+identificar la condición rechazada y verificar el retorno hasta Trainer. Apple
+continúa pendiente; no se da por cerrado el recorrido de resultados.
+[Evidencia](DEVICE_GARMIN_ACTIVITY_RETURN.md#prueba-del-contador-en-el-reloj--03112026).
+
 **Recepción Garmin/Apple en Mi semana y avisos de foto · 03/11/2026:** se
 conserva el enlace inequívoco recibido aunque los intervalos necesiten revisión;
 la semana muestra ambos proveedores sin completar una pauta por el mero enlace.
