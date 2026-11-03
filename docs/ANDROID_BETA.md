@@ -1,5 +1,20 @@
 # Beta Android privada
 
+**Actualización del 03/11/2026 · 1.7.0-beta.1+15 preparada para Ervi:** Javier
+solicita otra APK para compartir las mejoras actuales. Se compila release desde
+`107b4018`, con fuentes sin modificar, firma beta estable y Supabase/Firebase Dev.
+El verificador existente comprueba certificado, paquete, versión, compilación,
+ausencia de debuggable, permisos Internet/notificaciones y recursos Firebase.
+No cambia el código, los derechos ni la versión base `1.7.0+15` de iOS.
+
+Archivo local ignorado:
+`build/android-beta/ervi-1.7.0-15-20261103/EntrenaOP-1.7.0-beta.1-15.apk`
+(82.437.278 bytes), acompañado de manifiesto de procedencia y huellas.
+SHA-256: `4a48ec03dc854d89320e093e35f5fb400f8b70644da338a1fc60b9c429041adb`.
+Preparada para que Javier la envíe como documento; no enviada, instalada ni
+aceptada físicamente en el teléfono de Ervi desde este entorno. La configuración
+de notificaciones no acredita su recepción en ese dispositivo.
+
 **Actualización del 30/10/2026 · beta.5+3 instalada:** tras la petición expresa
 de Javier durante sus pruebas, se actualiza el mismo Samsung A13 con el acceso
 directo a retirada de sesiones desde el menú de la agenda (`c1c538b6`). Variante
