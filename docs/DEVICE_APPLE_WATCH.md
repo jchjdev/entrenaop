@@ -7,6 +7,14 @@ y la distancia medida, nunca la pauta o el tiempo con pausas. Sin metros o con
 distancia cero no se muestra ritmo. El redondeo del resultado conserva el cambio
 de minuto. La tarjeta común sirve al deportista y a los paneles profesionales.
 
+Corrección `8854e6a6` publicada y cotejada por HTTPS, versión y SHA-256 en
+Trainer Dev `0.3.1+7` y ADMIN Dev `0.3.1+6`. Se contrasta visualmente el ritmo
+medio y el de los intervalos de la grabación existente, con el campo oculto
+cuando falta distancia. Raíz `1.5.1+12` guardada para la siguiente instalación
+del iPhone. Análisis de las tres apps y baterías completas correctos
+(1745/449/370; omisiones existentes 1/0/2); también CI de servidor, consumidores,
+iOS Release y ensayo de Salud Android/iOS. No cambian las medidas ni la pauta.
+
 ## Resultado parcial y grabaciones por dispositivo · 03/11/2026
 
 La relectura de la grabación existente no añade las medidas ausentes. La
