@@ -41,6 +41,29 @@ baterías completas raíz/Trainer/ADMIN, 1747/449/370 correctas (omisiones previ
 exclusivamente en Dev y asesores de seguridad sin avisos nuevos. Las versiones
 de esta corrección son deportista `1.5.2+13`, Trainer `0.3.2+8` y ADMIN `0.3.2+7`.
 
+**Publicación y aceptación:** revisión `728bec0d` servida por Trainer Dev y
+ADMIN Dev, con versión, proyecto Dev, árbol de origen limpio y SHA-256 del
+JavaScript comprobados por HTTPS. [Trainer](https://github.com/jchjdev/entrenaop/actions/runs/41708914171)
+y [ADMIN](https://github.com/jchjdev/entrenaop/actions/runs/41708918637) terminan
+correctamente, incluida la retención de ADMIN. La primera publicación de
+`f5802eac` se detuvo porque main avanzó con el ajuste SQL posterior; se volvió
+a validar la última revisión, sin saltar la protección del publicador.
+
+En el resultado propio de la carrera existente se despliegan las fases Apple:
+la segunda muestra recuperación, tiempo, metros y pulso, sin ritmo; la carrera
+siguiente conserva su ritmo. Las fases ambiguas conservan NULL de tipo en la
+proyección comprobada; la prueba de widget acredita su rótulo sin ritmo. El
+arreglo está en GitHub para la siguiente instalación del iPhone; publicar las
+webs no actualiza una instalación nativa. Las CI de Garmin/iOS Release y Salud
+Android/iOS de `f5802eac` también son correctas; ese cliente no cambia en el
+ajuste SQL posterior. La recogida física en segundo plano sigue siendo una
+aceptación distinta de esta corrección de presentación.
+
+Un cruce con la migración concurrente de cierre manual se cotejó con su chat
+responsable y se reconcilió su historial de Dev. Después vuelven a pasar los
+contratos transaccionales de cierre Apple parcial y Garmin automático. Los
+archivos de ese bloque no forman parte de los commits de esta corrección.
+
 **Ritmo en las grabaciones · 03/11/2026:** el resumen del reloj y cada intervalo
 identificado donde el ritmo es pertinente, con tiempo y distancia observados
 positivos, muestran el ritmo calculado en
