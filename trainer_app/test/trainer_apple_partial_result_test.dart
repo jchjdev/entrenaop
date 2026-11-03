@@ -78,11 +78,11 @@ void main() {
       await t.pumpAndSettle();
       await t.tap(find.text('Resultados incorporados de Apple Watch'));
       await t.pumpAndSettle();
-      await t.ensureVisible(find.text('2 intervalos registrados'));
+      await t.ensureVisible(find.text('2 fases registradas'));
       await t.pumpAndSettle();
-      await t.tap(find.text('2 intervalos registrados'));
+      await t.tap(find.text('2 fases registradas'));
       await t.pumpAndSettle();
-      expect(find.text('Intervalo 2'), findsOneWidget);
+      expect(find.text('2. Fase sin identificar'), findsOneWidget);
       expect(t.takeException(), isNull);
     },
   );

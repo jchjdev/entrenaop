@@ -1,5 +1,17 @@
 # Registro de decisiones vigentes
 
+**INT-023 · Tipos de fase y ritmo de recuperación · 03/11/2026:** Javier señala
+que una recuperación Apple no debe presentarse como carrera con ritmo absurdo.
+Garmin ya entrega intensidad e índice FIT; se conserva su correspondencia.
+Para Apple se muestra el tipo según la pauta solo por consenso de alineaciones
+en orden, con cero o una omisión y tolerancia superior de dos segundos en fases
+por tiempo. No se usa velocidad ni distancia pautada para decidir el tipo. Las
+fases dudosas quedan sin identificar. Es una proyección de presentación: no
+cambia medidas, mapa de series, cierre ni ejecución canónica. Descanso y
+recuperación libre no muestran ritmo; una recuperación con objetivo de ritmo
+sí puede mostrarlo, preservando el fartlek. La tarjeta es común al deportista,
+Trainer y ADMIN. [Contrato y límites](DEVICE_APPLE_WATCH.md#tipos-de-fase-y-ritmo-pertinente--03112026).
+
 **INT-023 · Cierre Apple con desglose parcial y grabaciones consultables · 03/11/2026:**
 Javier pide resolver el bloqueo usando su carrera ya registrada. Una referencia
 WorkoutKit exacta, validada para su titular, pauta vigente y ventana acordada,

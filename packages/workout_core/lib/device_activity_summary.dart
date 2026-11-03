@@ -1,3 +1,5 @@
+import 'running_step.dart';
+
 /// Evidencia del reloj, asociada a una pauta o pendiente de asociación.
 /// Recibirla no acredita por sí solo sus series ni RPE.
 class DeviceActivitySummary {
@@ -89,6 +91,9 @@ class DeviceActivityInterval {
     required this.seconds,
     this.meters,
     this.averageHeartRate,
+    this.phaseKind,
+    this.phaseFromPrescription = false,
+    this.paceRelevant = false,
   });
   factory DeviceActivityInterval.fromJson(Map<String, dynamic> json) {
     final index = json['index'];
@@ -108,13 +113,32 @@ class DeviceActivityInterval {
       seconds: seconds.toDouble(),
       meters: (meters as num?)?.toDouble(),
       averageHeartRate: (json['average_heart_rate'] as num?)?.round(),
+      phaseKind: _phaseKind(json['phase_kind']),
+      phaseFromPrescription: json['phase_source'] == 'prescription',
+      paceRelevant: json['pace_relevant'] == true,
     );
   }
   final int index;
   final double seconds;
   final double? meters;
   final int? averageHeartRate;
-  double? get paceSecondsPerKm => _recordedPace(seconds, meters);
+  final RunningStepKind? phaseKind;
+  final bool phaseFromPrescription;
+  final bool paceRelevant;
+
+  // Una fase sin identificar no se valora como carrera por tener pocos metros.
+  // El ritmo sí es pertinente en una recuperación con objetivo explícito.
+  double? get paceSecondsPerKm =>
+      phaseKind != null && phaseKind != RunningStepKind.rest && paceRelevant
+      ? _recordedPace(seconds, meters)
+      : null;
+}
+
+RunningStepKind? _phaseKind(dynamic value) {
+  for (final kind in RunningStepKind.values) {
+    if (kind.name == value) return kind;
+  }
+  return null;
 }
 
 // Usamos el temporizador original y los metros medidos, nunca la distancia

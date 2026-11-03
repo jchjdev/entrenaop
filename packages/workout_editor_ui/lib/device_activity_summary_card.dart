@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:workout_core/device_activity_summary.dart';
 import 'package:workout_core/performance_time.dart';
+import 'package:workout_core/running_step.dart';
 
 class DeviceActivitySummaryCard extends StatelessWidget {
   const DeviceActivitySummaryCard({
@@ -64,17 +65,41 @@ class DeviceActivitySummaryCard extends StatelessWidget {
           const SizedBox(height: 8),
           if (r.detailsIncomplete)
             const Text(
-              'Desglose parcial: los intervalos se conservan en el orden del reloj. No se asignan a series ni se estiman las distancias ausentes.',
+              'Desglose parcial: las fases conservan el orden del reloj. No se asignan a series ni se estiman las distancias ausentes.',
+            ),
+          if (r.intervals.any((part) => part.phaseFromPrescription))
+            const Text(
+              'Tipos de fase interpretados según la pauta. Las fases dudosas quedan sin identificar.',
             ),
           if (r.intervals.isNotEmpty)
             ExpansionTile(
               key: PageStorageKey('recorded-intervals-${r.provider}-${r.id}'),
-              title: Text('${r.intervals.length} intervalos registrados'),
+              title: Text(
+                r.intervals.length == 1
+                    ? '1 fase registrada'
+                    : '${r.intervals.length} fases registradas',
+              ),
               children: [
                 for (final part in r.intervals)
                   ListTile(
                     dense: true,
-                    title: Text('Intervalo ${part.index}'),
+                    leading: Icon(
+                      switch (part.phaseKind) {
+                        RunningStepKind.rest ||
+                        RunningStepKind.recovery => Icons.pause_circle_outline,
+                        null => Icons.help_outline,
+                        _ => Icons.directions_run,
+                      },
+                      color: switch (part.phaseKind) {
+                        RunningStepKind.warmup => Colors.redAccent,
+                        RunningStepKind.cooldown => Colors.green,
+                        RunningStepKind.run => Colors.blueAccent,
+                        _ => Theme.of(context).colorScheme.onSurfaceVariant,
+                      },
+                    ),
+                    title: Text(
+                      '${part.index}. ${part.phaseKind?.label ?? 'Fase sin identificar'}',
+                    ),
                     subtitle: Text(
                       [
                         formatPerformanceTime(part.seconds),

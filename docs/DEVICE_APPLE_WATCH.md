@@ -1,7 +1,47 @@
 # Apple Watch · WorkoutKit · INT-023
 
+## Tipos de fase y ritmo pertinente · 03/11/2026
+
+La lista recibida de Salud deja de tratar todas las actividades nativas como
+intervalos de carrera. La proyección privada añade el tipo **según la pauta**,
+sin afirmar que Apple haya enviado una etiqueta de descanso. HealthKit utiliza
+el mismo deporte para trabajo y recuperación; no se leen claves privadas.
+
+Es una ayuda de presentación, separada del mapa confirmado de series y del
+cierre automático. Solo admite igual número de fases o una única omisión, con
+un máximo de cien. Enumera las correspondencias en orden y conserva un tipo
+únicamente si todas las compatibles coinciden. Una fase pautada por tiempo no
+puede contener un temporizador mayor que el objetivo más dos segundos de
+frontera; adelantar con Lap es válido. No compara velocidad, distancia objetivo
+ni rendimiento. Una actividad global, varias omisiones, un conflicto o tipos
+ambiguos quedan sin identificar. No cambia los datos registrados, no atribuye
+series ni inventa medidas ausentes.
+
+La tarjeta común usa «fases registradas», nombre e icono por tipo y color en
+calentamiento/carrera/enfriamiento. Descanso, recuperación libre y fase dudosa
+omiten ritmo; una recuperación con objetivo de ritmo explícito sí lo conserva.
+El ritmo global sigue siendo el cociente de los totales del reloj. Garmin ya
+aporta intensidad e índice FIT y su resultado distingue recuperación y trabajo;
+este cambio no sustituye esa correspondencia nativa por una inferencia Apple.
+
+La grabación existente se consulta dentro de una transacción con ROLLBACK:
+identifica calentamiento, primeras carreras/recuperaciones y enfriamiento;
+conserva sin tipo las fases finales ambiguas. La recuperación de pocos metros
+ya no ofrece ritmo. No se modifica la observación ni la ejecución Garmin que
+ya cerró esa pauta. `apple_recorded_phase_labels.sql` cubre coincidencia,
+omisión, ambigüedad, fronteras, ritmo de fartlek y aislamiento del helper.
+
+Referencia: [actividades de HealthKit](https://developer.apple.com/documentation/healthkit/dividing-a-healthkit-workout-into-activities).
+
+Validación previa a publicar la vista: análisis de las tres apps sin incidencias;
+baterías completas raíz/Trainer/ADMIN, 1747/449/370 correctas (omisiones previas
+1/0/2), y ocho contratos SQL transaccionales con ROLLBACK. Migración aplicada
+exclusivamente en Dev y asesores de seguridad sin avisos nuevos. Las versiones
+de esta corrección son deportista `1.5.2+13`, Trainer `0.3.2+8` y ADMIN `0.3.2+7`.
+
 **Ritmo en las grabaciones · 03/11/2026:** el resumen del reloj y cada intervalo
-con tiempo y distancia observados positivos muestran el ritmo calculado en
+identificado donde el ritmo es pertinente, con tiempo y distancia observados
+positivos, muestran el ritmo calculado en
 minutos y segundos por kilómetro. Se usa el temporizador original sin redondear
 y la distancia medida, nunca la pauta o el tiempo con pausas. Sin metros o con
 distancia cero no se muestra ritmo. El redondeo del resultado conserva el cambio
