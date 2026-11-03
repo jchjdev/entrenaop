@@ -266,14 +266,57 @@ archivo profesional. La comprobación se coordina con Arquitectura; se mantienen
 
 ## Recorrido y límites
 
-Perfil → Dispositivos y conexiones → Apple Watch → Autorizar → revisar carrera →
-Programar. El permiso del sistema y el derecho comercial son independientes.
-Para un cambio se revisa y programa de nuevo la misma cita. Para retirarla se usa
-su tarjeta en «Programadas desde EntrenaOP», también después de vencer el servicio.
+Perfil → Dispositivos y conexiones → Apple Watch → «Sincronizar agenda
+automáticamente». Se autoriza una vez por cuenta/instalación y se comprueba al
+abrir/volver a EntrenaOP y cada minuto en primer plano. Se conserva revisar carrera
+→ Programar para el envío puntual. El permiso del sistema y el derecho comercial
+son independientes. Las actualizaciones automáticas usan la misma referencia.
+La retirada manual desactiva el envío automático para que no se reponga la cita;
+las cancelaciones de agenda se retiran sin apagarlo, incluso tras vencer el servicio.
 El permiso puede revisarse en Ajustes; esta primera entrega no revoca permisos del
 sistema desde Flutter.
 
-El envío parte del iPhone emparejado y requiere abrir y revisar:
+## Agenda automática desde el iPhone · 03/11/2026
+
+El material aportado muestra una carrera de hoy pendiente de programación, mientras
+otras tienen recibos anteriores. Tras pulsar «Programar» aparece en Entreno del
+reloj. Acredita la carencia del disparador automático anterior; no demuestra un
+fallo de transporte de Apple ni permite medir el retraso de su transferencia.
+
+- `SyncAppleTraining` concilia el catálogo autenticado existente con la fecha,
+  receta y referencia locales de WorkoutKit; el adaptador no concede derechos.
+- `AppleTrainingCoordinator` vive durante la sesión autenticada, fuera de la
+  pantalla Apple, y separa autorización de envío y recogida de resultados.
+- Preferencia local independiente por propietario e instalación, inicialmente
+  apagada. Abrir una pantalla no solicita permisos ni activa envíos. El permiso
+  de WorkoutKit del teléfono no se hereda como consentimiento de otra cuenta.
+- Nuevas pautas, revisiones y reprogramaciones mantienen el UUID de la cita. Un
+  recibo `submitted` sin pauta en este iPhone se reconcilia de nuevo; un calendario
+  local idéntico no se reescribe. Lo ya completado en Apple o iniciado en EntrenaOP
+  no vuelve a programarse.
+- Las retiradas explícitas se procesan antes de altas; una ausencia en la lista
+  limitada no basta para cancelar. Se confirma cada origen individualmente y se
+  retira su antigua referencia si ha dejado de estar disponible o entra fuera de
+  la ventana de programación. El historial de actividades no se borra.
+- Una receta incompatible no impide el resto. Los fallos quedan pendientes y
+  visibles; ningún fallo nativo se registra como envío confirmado. Cambiar de
+  cuenta, desactivar o suspender primer plano corta la siguiente escritura/ACK.
+- Sin push de agenda ni tarea de envío en segundo plano: si el iPhone no vuelve
+  a ejecutar EntrenaOP no se descarga la nueva pauta del servidor. La transferencia
+  final de WorkoutKit a Entreno depende de Apple y conectividad del reloj.
+
+No hay migraciones, endpoints ni cambios de editor/proveedor Garmin. El cambio
+incluye versión visible de la app. La compilación iOS se acredita por separado
+en CI; ni las pruebas ni un ACK sustituyen la aceptación física de esta entrega.
+
+Validación local: análisis global sin incidencias, batería de raíz de 1.731
+pruebas correctas con una omisión anterior; 43 pruebas focales de Apple tras
+añadir la prueba del interruptor, y 16 del paquete de Salud. Se cubren nueva cita,
+calendario local ausente, contenido/fecha modificados, cancelación con derecho
+vencido, límite del catálogo, completadas, denegación, receta incompatible,
+desactivación, concurrencia y cambio de cuenta. Versión `1.3.0+6`.
+
+El envío parte del iPhone emparejado y requiere ejecutar EntrenaOP:
 **no implementa sincronización automática desde la nube ni mientras la app está
 cerrada**. Los recibos preparados sin ACK se conservan como pendientes, nunca como
 éxito; ante una operación incierta se revisa antes de repetir. La fuerza y las

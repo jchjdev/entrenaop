@@ -44,9 +44,11 @@ class AppleReceipt {
     this.revision,
     this.status,
     this.needsRemoval,
-    this.started,
-  );
+    this.started, {
+    this.planId,
+  });
   final String id, name, date, revision, status;
+  final String? planId;
   final bool needsRemoval, started;
 }
 
@@ -90,7 +92,10 @@ abstract interface class AppleWorkoutScheduler {
   Future<AppleAuthorization> authorize();
   Future<void> schedule(String owner, ApplePlan plan);
   Future<void> remove(String owner, String planId);
+  Future<AppleScheduledState> inspect(String owner, ApplePlan plan);
 }
+
+enum AppleScheduledState { missing, matching, changed, completed }
 
 // Orquestación común: ninguna pantalla decide permisos ni traduce para Apple.
 class AppleTrainingService {
@@ -104,24 +109,37 @@ class AppleTrainingService {
     }
   }
 
-  Future<void> send(String id, ApplePlan preview) => _run(() async {
+  Future<void> send(
+    String id,
+    ApplePlan preview, {
+    bool Function()? canContinue,
+  }) => _run(() async {
     if (await scheduler.status() != AppleAuthorization.authorized) {
       throw const AppleTrainingFailure('permission_required');
     }
-    _check();
+    _checkContinuation(canContinue);
     final plan = await repository.prepare(id, preview.revision);
-    _check();
+    _checkContinuation(canContinue);
     await scheduler.schedule(repository.ownerId, plan);
-    _check();
+    _checkContinuation(canContinue);
     await repository.record(id, plan);
   });
-  Future<void> withdraw(String id) => _run(() async {
-    final removal = await repository.removal(id);
+  Future<void> withdraw(String id, {bool Function()? canContinue}) =>
+      _run(() async {
+        _checkContinuation(canContinue);
+        final removal = await repository.removal(id);
+        _checkContinuation(canContinue);
+        await scheduler.remove(repository.ownerId, removal.planId);
+        _checkContinuation(canContinue);
+        await repository.removed(id, removal);
+      });
+  void _checkContinuation(bool Function()? canContinue) {
     _check();
-    await scheduler.remove(repository.ownerId, removal.planId);
-    _check();
-    await repository.removed(id, removal);
-  });
+    if (canContinue != null && !canContinue()) {
+      throw const AppleTrainingFailure('sync_cancelled');
+    }
+  }
+
   Future<void> _run(Future<void> Function() action) async {
     _check();
     if (_busy) throw const AppleTrainingFailure('connection_busy');

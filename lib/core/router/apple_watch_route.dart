@@ -6,6 +6,7 @@ import '../../features/apple_watch/data/apple_training_adapters.dart';
 import '../../features/apple_watch/domain/apple_training.dart';
 import '../../features/apple_watch/presentation/apple_watch_page.dart';
 import '../../features/apple_watch/presentation/apple_results_coordinator.dart';
+import '../../features/apple_watch/presentation/apple_training_coordinator.dart';
 
 class AppleWatchRoute extends StatefulWidget {
   const AppleWatchRoute({
@@ -13,10 +14,12 @@ class AppleWatchRoute extends StatefulWidget {
     required this.ownerId,
     required this.client,
     this.results,
+    this.training,
   });
   final String ownerId;
   final SupabaseClient client;
   final AppleResultsCoordinator? results;
+  final AppleTrainingCoordinator? training;
   @override
   State<AppleWatchRoute> createState() => _AppleWatchRouteState();
 }
@@ -24,10 +27,12 @@ class AppleWatchRoute extends StatefulWidget {
 class _AppleWatchRouteState extends State<AppleWatchRoute> {
   late AppleTrainingService _service;
   void _compose() {
-    _service = AppleTrainingService(
-      SupabaseAppleTrainingRepository(widget.client, widget.ownerId),
-      const NativeAppleWorkoutScheduler(),
-    );
+    _service =
+        widget.training?.service ??
+        AppleTrainingService(
+          SupabaseAppleTrainingRepository(widget.client, widget.ownerId),
+          const NativeAppleWorkoutScheduler(),
+        );
   }
 
   @override
@@ -50,6 +55,7 @@ class _AppleWatchRouteState extends State<AppleWatchRoute> {
     key: ObjectKey(_service),
     service: _service,
     results: widget.results,
+    training: widget.training,
     onOpenHealth: () => context.push('/profile/activities'),
     onReviewResult: (id, scheduled) async {
       await context.push(

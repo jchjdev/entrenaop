@@ -1,5 +1,15 @@
 # Roadmap de EntrenaOP
 
+**Apple Watch · agenda automática desde el iPhone · 03/11/2026:** se amplía el
+envío manual con conciliación por cuenta, bajo activación explícita: altas,
+revisiones, fechas y cancelaciones, al abrir/volver a la app y cada minuto de uso.
+Se verifica el calendario local, con UUID estable y sin reprogramar completadas.
+No implementa push ni entrega desde nube con la app cerrada.
+**Único siguiente recorrido de este tramo:** instalar la actualización, activar
+la agenda automática una vez y acreditar una carrera nueva, su cambio y retirada
+en el reloj, sin pulsar «Programar». La aceptación física sigue pendiente.
+[Contrato y límites](DEVICE_APPLE_WATCH.md#agenda-automática-desde-el-iphone--03112026).
+
 **Directorio · ubicación de entrenadores · 02/11/2026:** preparados provincia,
 isla opcional y localidad opcional en la ficha, y búsqueda libre por esos datos.
 Se conserva la ubicación antigua sin inferencias y los permisos actuales.

@@ -84,6 +84,7 @@ class SupabaseAppleTrainingRepository implements AppleTrainingRepository {
             v['status'] as String,
             v['needs_removal'] == true,
             v['started'] == true,
+            planId: v['plan_id'] as String?,
           ),
       ],
     );
@@ -326,6 +327,7 @@ class NativeAppleWorkoutScheduler implements AppleWorkoutScheduler {
       !kIsWeb &&
       defaultTargetPlatform == TargetPlatform.iOS &&
       AppConfig.environment == AppEnvironment.development;
+  bool get supported => _supported;
   Future<Map<Object?, Object?>> _call(
     String method, [
     Map<String, Object?>? args,
@@ -394,5 +396,18 @@ class NativeAppleWorkoutScheduler implements AppleWorkoutScheduler {
     if (result['removed'] != true) {
       throw const AppleTrainingFailure('delivery_uncertain');
     }
+  }
+
+  @override
+  Future<AppleScheduledState> inspect(String owner, ApplePlan plan) async {
+    final result = await _call('inspect', {
+      'owner': _scope(owner),
+      'plan_id': plan.planId,
+      'prescription': _applePrescription(plan.prescription),
+    });
+    return AppleScheduledState.values.firstWhere(
+      (state) => state.name == result['state'],
+      orElse: () => throw const AppleTrainingFailure('delivery_uncertain'),
+    );
   }
 }

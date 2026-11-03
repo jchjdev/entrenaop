@@ -4,6 +4,7 @@ import '../../features/apple_watch/data/apple_activity_result_repository.dart';
 import '../../features/apple_watch/data/apple_training_adapters.dart';
 import '../../features/device_activity_results/presentation/activity_result_page.dart';
 import '../../features/apple_watch/presentation/apple_results_coordinator.dart';
+import '../../features/apple_watch/presentation/apple_training_coordinator.dart';
 import '../../features/trainers/presentation/trainer_invitation_entry.dart';
 import '../../features/trainers/presentation/trainer_invitation_page.dart';
 import 'coach_workspace_routes.dart';
@@ -179,6 +180,7 @@ class AppRouter {
     AuthCubit authCubit, {
     TrainerInvitationEntry? invitationEntry,
     AppleResultsCoordinator? appleResults,
+    AppleTrainingCoordinator? appleTraining,
   }) : _notifier = RouterNotifier(authCubit) {
     // Hace que `push` actualice también la URL web. Sin esta opción la pantalla
     // cambiaba, pero el navegador seguía mostrando /home.
@@ -1283,6 +1285,7 @@ class AppRouter {
                             ? const SizedBox.shrink()
                             : AppleWatchRoute(
                                 results: appleResults,
+                                training: appleTraining,
                                 key: ValueKey('apple-${auth.user.id}'),
                                 ownerId: auth.user.id,
                                 client: sl<SupabaseClient>(),

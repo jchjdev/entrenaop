@@ -27,6 +27,9 @@ import 'features/notifications/push_notifications_scope.dart';
 import 'features/apple_watch/data/apple_training_adapters.dart';
 import 'features/apple_watch/data/native_apple_results_wakeup.dart';
 import 'features/apple_watch/presentation/apple_results_coordinator.dart';
+import 'features/apple_watch/presentation/apple_training_coordinator.dart';
+import 'features/apple_watch/domain/apple_training.dart';
+import 'features/apple_watch/data/apple_training_sync_preference.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -61,6 +64,14 @@ Future<void> main() async {
     EntrenaOpApp(
       authCubit: authCubit,
       invitations: invitationEntry,
+      appleTraining: AppleTrainingCoordinator(
+        (owner) => AppleTrainingService(
+          SupabaseAppleTrainingRepository(Supabase.instance.client, owner),
+          const NativeAppleWorkoutScheduler(),
+        ),
+        LocalAppleTrainingSyncPreference(),
+        supported: const NativeAppleWorkoutScheduler().supported,
+      ),
       appleResults: AppleResultsCoordinator(
         (owner) =>
             SupabaseAppleResultsRepository(Supabase.instance.client, owner),
@@ -82,6 +93,7 @@ class EntrenaOpApp extends StatefulWidget {
   final PushNotificationCoordinator? push;
   final TrainerInvitationEntry? invitations;
   final AppleResultsCoordinator? appleResults;
+  final AppleTrainingCoordinator? appleTraining;
 
   const EntrenaOpApp({
     super.key,
@@ -89,6 +101,7 @@ class EntrenaOpApp extends StatefulWidget {
     this.push,
     this.invitations,
     this.appleResults,
+    this.appleTraining,
   });
 
   @override
@@ -108,11 +121,15 @@ class _EntrenaOpAppState extends State<EntrenaOpApp>
       widget.authCubit,
       invitationEntry: widget.invitations,
       appleResults: widget.appleResults,
+      appleTraining: widget.appleTraining,
     );
     widget.invitations?.addListener(_openInvitation);
     WidgetsBinding.instance.addObserver(this);
     _pushOpens = widget.push?.opens.listen((_) => unawaited(_openPush()));
     _pushAuth = widget.authCubit.stream.listen(_syncPush);
+    widget.appleTraining?.foreground(
+      WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed,
+    );
     _syncPush(widget.authCubit.state);
   }
 
@@ -142,8 +159,10 @@ class _EntrenaOpAppState extends State<EntrenaOpApp>
     // Auth. Solo una identidad resuelta o una salida real cambia la cuenta.
     if (state is AuthAuthenticated) {
       widget.appleResults?.setAccount(state.user.id);
+      widget.appleTraining?.setAccount(state.user.id);
     } else if (state is AuthUnauthenticated || state is AuthPasswordRecovery) {
       widget.appleResults?.setAccount(null);
+      widget.appleTraining?.setAccount(null);
     }
     if (state is AuthAuthenticated) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _openInvitation());
@@ -165,6 +184,7 @@ class _EntrenaOpAppState extends State<EntrenaOpApp>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     widget.appleResults?.foreground(state == AppLifecycleState.resumed);
+    widget.appleTraining?.foreground(state == AppLifecycleState.resumed);
     if (state == AppLifecycleState.resumed && widget.push != null) {
       unawaited(widget.push!.refresh());
     }
@@ -180,6 +200,7 @@ class _EntrenaOpAppState extends State<EntrenaOpApp>
     unawaited(_pushOpens?.cancel());
     widget.push?.dispose();
     widget.appleResults?.dispose();
+    widget.appleTraining?.dispose();
     unawaited(widget.authCubit.close());
     super.dispose();
   }

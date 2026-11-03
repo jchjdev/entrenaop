@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../domain/apple_training.dart';
 import 'apple_results_coordinator.dart';
+import 'apple_training_coordinator.dart';
 
 import 'package:workout_editor_ui/device_activity_summary_card.dart';
 
@@ -11,12 +12,14 @@ class AppleWatchPage extends StatefulWidget {
     required this.service,
     required this.onOpenHealth,
     this.results,
+    this.training,
     this.onReviewResult,
     this.onOpenExecution,
   });
   final AppleTrainingService service;
   final VoidCallback onOpenHealth;
   final AppleResultsCoordinator? results;
+  final AppleTrainingCoordinator? training;
   final void Function(String id, String scheduledId)? onReviewResult;
   final void Function(String executionId)? onOpenExecution;
   @override
@@ -33,10 +36,28 @@ class _AppleWatchPageState extends State<AppleWatchPage> {
   void initState() {
     super.initState();
     _service = widget.service;
+    widget.training?.addListener(_trainingChanged);
     _run(_load);
   }
 
+  void _trainingChanged() {
+    if (!mounted) return;
+    setState(() {
+      if (widget.training?.catalog case final catalog?) _catalog = catalog;
+      if (widget.training?.enabled == true) {
+        _authorization = AppleAuthorization.authorized;
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    widget.training?.removeListener(_trainingChanged);
+    super.dispose();
+  }
+
   Future<void> _load() async {
+    await widget.training?.refresh();
     final authorization = await _service.scheduler.status();
     if (mounted) setState(() => _authorization = authorization);
     final catalog = await _service.repository.load();
@@ -149,6 +170,30 @@ class _AppleWatchPageState extends State<AppleWatchPage> {
               'Usa el iPhone emparejado con tu Apple Watch. Requiere iOS 18 y watchOS 11 o posteriores; un Series 2 no es compatible.',
             ),
             const SizedBox(height: 12),
+            if (widget.training case final training?) ...[
+              SwitchListTile.adaptive(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Sincronizar agenda automáticamente'),
+                subtitle: const Text(
+                  'Envía las carreras de tu preparador y del plan automático, con sus cambios y cancelaciones. Se comprueba al abrir EntrenaOP y mientras la usas en el iPhone emparejado.',
+                ),
+                value: training.enabled,
+                onChanged: training.supported && !training.configuring
+                    ? training.enable
+                    : null,
+              ),
+              if (training.busy) const LinearProgressIndicator(),
+              if (training.error case final error?) Text(error),
+              if (training.lastChecked case final date?)
+                Text(
+                  'Agenda comprobada: ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}',
+                ),
+              if (training.enabled)
+                const Text(
+                  'No necesitas programar cada carrera a mano. La llegada al reloj depende de la conexión entre Apple Watch y este iPhone.',
+                ),
+              const Divider(),
+            ],
             if (widget.results case final results?)
               ListenableBuilder(
                 listenable: results,
@@ -295,6 +340,7 @@ class _AppleWatchPageState extends State<AppleWatchPage> {
                   trailing: const Icon(Icons.chevron_right),
                   onTap:
                       _busy ||
+                          widget.training?.busy == true ||
                           _catalog?.allowed != true ||
                           _authorization != AppleAuthorization.authorized
                       ? null
@@ -318,7 +364,7 @@ class _AppleWatchPageState extends State<AppleWatchPage> {
                   title: Text(receipt.name),
                   subtitle: Text(
                     '${receipt.date} · ${receipt.status == 'submitted'
-                        ? 'Programada en Apple'
+                        ? 'Programada en este iPhone'
                         : receipt.status == 'removed'
                         ? 'Retirada'
                         : 'Pendiente de confirmar'}',
@@ -341,15 +387,23 @@ class _AppleWatchPageState extends State<AppleWatchPage> {
                             TextButton.icon(
                               onPressed:
                                   _busy ||
+                                      widget.training?.busy == true ||
                                       _authorization !=
                                           AppleAuthorization.authorized
                                   ? null
                                   : () => _run(() async {
+                                      // Una retirada manual no debe deshacerse
+                                      // en la siguiente conciliación automática.
+                                      await widget.training?.enable(false);
                                       await _service.withdraw(receipt.id);
                                       await _load();
                                     }),
                               icon: const Icon(Icons.event_busy_outlined),
-                              label: const Text('Retirar de Apple Watch'),
+                              label: Text(
+                                widget.training?.enabled == true
+                                    ? 'Retirar y desactivar envío automático'
+                                    : 'Retirar de Apple Watch',
+                              ),
                             ),
                         ],
                       ),
@@ -359,7 +413,7 @@ class _AppleWatchPageState extends State<AppleWatchPage> {
               ),
             const SizedBox(height: 16),
             const Text(
-              'En esta primera entrega, revisa y programa las carreras desde aquí. Los cambios usan la misma referencia. Aún no hay envío automático desde la nube ni cierre automático de la sesión semanal.',
+              'Activa la sincronización de agenda para programar las carreras desde este iPhone. También puedes revisar y programar una sesión concreta. El envío y la recogida de resultados se autorizan por separado.',
             ),
             TextButton.icon(
               onPressed: widget.onOpenHealth,

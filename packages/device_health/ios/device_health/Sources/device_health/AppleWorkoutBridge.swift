@@ -37,11 +37,22 @@ final class AppleWorkoutBridge {
           self.owners.removeValue(forKey: key)
           result(["removed": true]); return
         }
-        guard call.method == "apple.schedule", let recipe = args["prescription"] as? [String: Any],
+        guard call.method == "apple.schedule" || call.method == "apple.inspect",
+          let recipe = args["prescription"] as? [String: Any],
           let rawDate = recipe["date"] as? String else { throw BridgeError.invalid }
-        guard !existing.contains(where: { $0.complete }) else { throw BridgeError.completed }
         let date = try self.date(rawDate)
         let plan = try self.plan(recipe, id: id)
+        if call.method == "apple.inspect" {
+          // Consulta local sin escribir ni apropiarse de planes de otra cuenta.
+          if existing.contains(where: { $0.complete }) { result(["state": "completed"]); return }
+          guard !existing.isEmpty else { result(["state": "missing"]); return }
+          let matching = existing.count == 1 && existing.allSatisfy {
+            $0.plan.workout == plan.workout && $0.date.year == date.year &&
+            $0.date.month == date.month && $0.date.day == date.day
+          }
+          result(["state": matching ? "matching" : "changed"]); return
+        }
+        guard !existing.contains(where: { $0.complete }) else { throw BridgeError.completed }
         let all = await scheduler.scheduledWorkouts
         guard !existing.isEmpty || all.count < WorkoutScheduler.maxAllowedScheduledWorkoutCount else { throw BridgeError.capacity }
         // Validar el plan entero antes de retirar su revisión anterior.

@@ -68,6 +68,10 @@ class Native implements AppleWorkoutScheduler {
   Future<void> remove(String owner, String id) async {
     calls.add('remove:$owner:$id');
   }
+
+  @override
+  Future<AppleScheduledState> inspect(String owner, ApplePlan plan) async =>
+      AppleScheduledState.missing;
 }
 
 void main() {

@@ -1,5 +1,17 @@
 # Registro de decisiones vigentes
 
+**INT-023 · Agenda automática Apple desde el iPhone · 03/11/2026:** Javier
+detecta que una carrera de hoy solo aparece al programarla manualmente; el vídeo
+la muestra como candidata sin recibo previo. La programación anterior era manual,
+independiente de la recogida automática de resultados. Se amplía el recorrido
+con activación explícita por cuenta e instalación: conciliar nuevas carreras de
+entrenador/algoritmo, revisiones, fechas y retiradas al abrir/volver a la app y
+cada minuto en primer plano. Se comprueba el calendario local de WorkoutKit,
+sin confundir el ACK del servidor con recepción física, ni reprogramar pautas
+ya realizadas. Se mantienen contrato deportivo, derechos del servidor y permisos
+de resultados separados. No promete entrega desde nube con el iPhone cerrado.
+[Implementación y límites](DEVICE_APPLE_WATCH.md#agenda-automática-desde-el-iphone--03112026).
+
 **Ubicación del preparador y búsqueda flexible · 02/11/2026:** Javier aclara
 que provincia y localidad pertenecen a la ficha del entrenador. Provincia se
 elige del catálogo español (50 provincias y Ceuta/Melilla), con isla opcional en
