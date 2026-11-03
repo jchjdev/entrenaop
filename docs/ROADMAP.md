@@ -10,6 +10,8 @@ El diálogo se retira con su propietario sin cerrar rutas ajenas. Análisis raí
 limpio, **1.833 pruebas correctas y una omisión previa**, formato de los 24 Dart
 afectados correcto y capturas reales revisadas a 390 px y 320 px con texto doble.
 App **1.7.0+15**. Sin cambios SQL, permisos, algoritmo o continuación automática.
+CI de `78fa10b4` correcto: consumidores, compilaciones Android/iOS sin firma y
+ambos paneles Dev publicados, con versión, revisión y hash contrastados por HTTPS.
 Límite: falta instalar y aceptar estos recorridos en iPhone; no se acredita la
 eficacia deportiva del algoritmo mediante esta corrección. **Único siguiente
 bloque recomendado:** contrastar en el iPhone el recorrido del vídeo con esta

@@ -58,6 +58,14 @@ con el tema de la app revisadas a 390 px/texto normal y 320 px/texto doble, sin
 desbordamientos; la cabecera larga se abrevia visualmente. Las comprobaciones
 Flutter no equivalen a una instalación ni a aceptación física en iPhone.
 
+Comprobación automática de `78fa10b4`: validaciones completas de Trainer y ADMIN
+correctas en GitHub, incluidos sus consumidores. El ensayo de Salud compila
+Android y la app iOS sin firma correctamente. Ambos paneles Dev publicados y
+contrastados por HTTPS: Trainer `0.3.2+8` y ADMIN `0.3.2+7`, con revisión exacta,
+SHA-256 del JavaScript e identidad del proyecto `sxbxfjqgoddzhtcyhalw` comprobados.
+Estas publicaciones conservan sus versiones: el cambio funcional es del
+deportista. No se ha consultado ni modificado producción.
+
 ## Favoritos, herramientas y presentación · 02/11/2026
 
 El editor de Inicio amplía las opciones existentes y agrupa los destinos en
