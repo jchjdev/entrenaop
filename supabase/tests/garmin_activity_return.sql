@@ -102,6 +102,15 @@ begin
    and observed_timer_seconds=151.5 and observed_elapsed_seconds=151.5 and observed_distance_meters=405.5) then
   raise exception 'Cierre sin valoración o reloj'; end if;
  if (select a.observation->'laps'->0->>'timerSeconds' from device_private.activity_observations a where a.id=aid)<>'60.125' then raise exception 'Pierde precisión de evidencia'; end if;
+ -- Un cero observado sigue siendo cero, sin permitir distancias negativas.
+ update public.workout_executions set observed_distance_meters=0 where id=e;
+ if not exists(select 1 from public.workout_executions where id=e and observed_distance_meters=0) then
+  raise exception 'Pierde el cero medido'; end if;
+ begin
+  update public.workout_executions set observed_distance_meters=-1 where id=e;
+  raise exception 'Permite distancia observada negativa';
+ exception when check_violation then null; end;
+ update public.workout_executions set observed_distance_meters=405.5 where id=e;
  if not exists(select 1 from public.workout_execution_sets where execution_id=e and observed_duration_seconds=121.25
    and observed_recovery_duration_seconds=30.25) then raise exception 'Ritmo pierde precisión original'; end if;
  if not(public.garmin_activity_command('confirm',pupil,ps,input)->>'replayed')::boolean then raise exception 'No recupera respuesta perdida'; end if;

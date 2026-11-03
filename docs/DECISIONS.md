@@ -1,5 +1,16 @@
 # Registro de decisiones vigentes
 
+**INT-012 · Conservar grabaciones Garmin sin desplazamiento · 03/11/2026:**
+Javier aclara que la prueba del contador se realizó parado en la oficina. Connect
+muestra distancia cero y el dominio la rechazaba por exigir una distancia
+positiva. Cero medido se conserva como cero; no se sustituye por ausencia ni se
+calcula ritmo. Se admite en la observación y los totales históricos, manteniendo
+límites y permisos. El conciliador conserva el vínculo inequívoco, pero exige
+revisión y no completa automáticamente una carrera sin desplazamiento. Corrección
+desplegada y probada en Dev; la grabación rechazada antes requiere original o
+reenvío oficial para acreditar su recepción completa. No se fabrica evidencia.
+[Contrato](DEVICE_GARMIN_ACTIVITY_RETURN.md#grabaciones-sin-desplazamiento--03112026).
+
 **INT-009/INT-012 · Aceptación física parcial Garmin · 03/11/2026:** Javier
 localiza la prueba corta en el fēnix y confirma la vista «repetir ×3» y el avance
 1/3, 2/3 y 3/3. La pauta anterior del preparador conserva su entrega plana,

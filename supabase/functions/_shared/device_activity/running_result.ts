@@ -32,7 +32,9 @@ export function validateRunningObservation(value: ObservedRunningActivity): void
       typeof value.name !== 'string' || value.name.length > 256 || !timestamp(value.startedAt) ||
       !positive(value.elapsedSeconds) || !positive(value.timerSeconds) ||
       value.timerSeconds > value.elapsedSeconds + .01 || value.elapsedSeconds > 172800 ||
-      !positive(value.distanceMeters) || value.distanceMeters > 1000000 ||
+      // Cero es una medición válida en una grabación sin desplazamiento; no
+      // equivale a distancia ausente ni acredita haber realizado la pauta.
+      !positive(value.distanceMeters, true) || value.distanceMeters > 1000000 ||
       value.offsetSeconds !== null && (!Number.isInteger(value.offsetSeconds) || Math.abs(value.offsetSeconds) > 86400) ||
       !Array.isArray(value.laps) || value.laps.length > 2000) throw new ActivityReturnError('invalid_activity');
   for (const hr of [value.averageHeartRate, value.maxHeartRate]) {

@@ -4,7 +4,7 @@ import {Encoder, Profile} from '@garmin/fitsdk';
 import {garminFitActivity, garminActivityCallback, downloadGarminFit} from '../_shared/garmin/activity_fit.ts';
 import {historicalSeconds, proposeLapMapping, validateRunningObservation} from '../_shared/device_activity/running_result.ts';
 
-function syntheticFit(sport = 'running', lapStartOffsets: readonly number[] = []) {
+function syntheticFit(sport = 'running', lapStartOffsets: readonly number[] = [], distanceScale = 1) {
   const encoder = new Encoder(), start = new Date('2026-10-20T08:00:00Z');
   encoder.onMesg(Profile.MesgNum.FILE_ID, {type: 'activity', manufacturer: 'garmin', product: 1, timeCreated: start});
   const parts = [
@@ -16,11 +16,11 @@ function syntheticFit(sport = 'running', lapStartOffsets: readonly number[] = []
   let elapsed = 0;
   parts.forEach((p, index) => {
     encoder.onMesg(Profile.MesgNum.LAP, {messageIndex: index, startTime: new Date(start.getTime() + (elapsed + (lapStartOffsets[index] ?? 0)) * 1000),
-      totalElapsedTime: p.time, totalTimerTime: p.time, totalDistance: p.distance, intensity: p.intensity, wktStepIndex: index});
+      totalElapsedTime: p.time, totalTimerTime: p.time, totalDistance: p.distance * distanceScale, intensity: p.intensity, wktStepIndex: index});
     elapsed += p.time;
   });
   encoder.onMesg(Profile.MesgNum.SESSION, {sport, startTime: start, totalElapsedTime: elapsed, totalTimerTime: elapsed,
-    totalDistance: 712.5, avgHeartRate: 130, maxHeartRate: 170});
+    totalDistance: 712.5 * distanceScale, avgHeartRate: 130, maxHeartRate: 170});
   encoder.onMesg(Profile.MesgNum.ACTIVITY, {timestamp: new Date(start.getTime() + elapsed * 1000),
     localTimestamp: Math.floor((start.getTime() + elapsed * 1000 + 7200000 - 631065600000) / 1000)});
   return encoder.close();
@@ -39,6 +39,19 @@ test('CRC corrupto y otro deporte no se convierten en carrera válida', () => {
   const file = syntheticFit(); file[file.length - 1] ^= 1;
   assert.throws(() => garminFitActivity(file, metadata), /invalid_activity_file/);
   assert.throws(() => garminFitActivity(syntheticFit('cycling'), metadata), /unsupported_activity/);
+});
+
+test('una grabación FIT sin desplazamiento conserva cero, tiempos y vueltas sin inventar distancia', () => {
+  const value = garminFitActivity(syntheticFit('running', [], 0), metadata);
+  assert.equal(value.distanceMeters, 0);
+  assert.equal(value.timerSeconds, 297.3);
+  assert.equal(value.averageHeartRate, 130);
+  assert.deepEqual(value.laps.map(lap => lap.distanceMeters), [0, 0, 0, 0]);
+  for (const distanceMeters of [-1, NaN, Infinity, -Infinity, 1000001, null]) {
+    assert.throws(() => validateRunningObservation({...value, distanceMeters: distanceMeters as number}), /invalid_activity/);
+  }
+  assert.throws(() => validateRunningObservation({...value, laps: value.laps.map((lap, index) =>
+    index === 0 ? {...lap, distanceMeters: -1} : lap)}), /invalid_activity/);
 });
 test('solo propone una correspondencia completa y compatible; nunca reparte el total', () => {
   const value = garminFitActivity(syntheticFit(), metadata);

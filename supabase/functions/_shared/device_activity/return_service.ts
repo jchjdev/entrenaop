@@ -81,6 +81,11 @@ export class ActivityReturnService {
     const current=matched.find(c=>c.current===true);
     if(!current){await command('automatic.review',{code:'stale_prescription'});return;}
     const linked={scheduled_id:current.scheduled_id,delivery_revision:current.revision};
+    // Conservar una grabación sin desplazamiento, sin completar por sus
+    // tiempos una pauta de carrera que el reloj no acredita haber realizado.
+    if(!isStrengthActivity(activity)&&activity.distanceMeters===0){
+      await command('automatic.review',{code:'intervals_require_review',...linked});return;
+    }
     const review=activityReview({snapshot:current.snapshot,activity});
     const rows=review.rows as Json[];
     if(!rows.length||rows.some(r=>!(r.lap_indices as number[])?.length||r.requires_recovery&&!(r.recovery_lap_indices as number[])?.length)){

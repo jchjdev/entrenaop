@@ -74,13 +74,14 @@ test('un bucle FIT conserva la misma referencia que los pasos expandidos anterio
 const job:ActivityJob={id:'job',owner:'owner',generation:1,lease:'lease',callback:'callback',metadata:{},tokens:'tokens',
   providerUserId:'provider',accessExpiresAt:'2026-11-02T00:00:00Z',refreshExpiresAt:'2026-11-03T00:00:00Z'};
 const grant:AccessGrant={accessToken:'access',refreshToken:'refresh',expiresInSeconds:3600,refreshExpiresInSeconds:86400,scope:''};
-function fixture(options:{duplicate?:boolean;stale?:boolean;extra?:boolean;failComplete?:boolean}={}){
+function fixture(options:{duplicate?:boolean;stale?:boolean;extra?:boolean;failComplete?:boolean;stationary?:boolean}={}){
   const actions:{action:string;input:Record<string,unknown>}[]=[];
   const activity:ObservedRunningActivity={schemaVersion:1,externalId:'123',name:'Prueba',startedAt:'2026-11-01T10:00:00Z',offsetSeconds:3600,
     timerSeconds:120,elapsedSeconds:120,distanceMeters:400,averageHeartRate:null,maxHeartRate:null,prescriptionReference:'reference',
     laps:[{index:0,startedAt:'2026-11-01T10:00:00Z',timerSeconds:120,elapsedSeconds:120,distanceMeters:400,intensity:'active',workoutStepIndex:0}]};
   if(options.extra){activity.timerSeconds=240;activity.elapsedSeconds=240;activity.distanceMeters=800;
     activity.laps.push({...activity.laps[0],index:1,startedAt:'2026-11-01T10:02:00Z',workoutStepIndex:1});}
+  if(options.stationary){activity.distanceMeters=0;activity.laps=activity.laps.map(lap=>({...lap,distanceMeters:0}));}
   const candidates=[{scheduled_id:'one',revision:'revision',snapshot:source(),current:!options.stale}];
   if(options.duplicate)candidates.push({...candidates[0],scheduled_id:'two',current:false});
   const service=new ActivityReturnService({command:async(action,_owner,_session,input)=>{
@@ -115,4 +116,17 @@ test('un cierre fallido no invalida la importación ni vuelve a consumir el FIT'
   assert.ok(!f.actions.some(a=>a.action==='failed'));
   assert.equal(f.actions.find(a=>a.action==='automatic.review')?.input.code,'review_required');
   assert.equal(f.actions.at(-1)?.action,'release');
+});
+
+test('recibe una grabación sin desplazamiento, conserva la pauta y pide revisión sin completarla',async()=>{
+  const f=fixture({stationary:true});await f.service.process(job);
+  assert.deepEqual(f.actions.map(a=>a.action),['downloading','save','automatic.context','automatic.review','release']);
+  const received=f.actions.find(a=>a.action==='save')!.input.activity as ObservedRunningActivity;
+  assert.equal(received.distanceMeters,0);
+  assert.equal(received.laps[0].distanceMeters,0);
+  assert.equal(received.timerSeconds,120);
+  const review=f.actions.find(a=>a.action==='automatic.review')!.input;
+  assert.equal(review.code,'intervals_require_review');
+  assert.equal(review.scheduled_id,'one');
+  assert.equal(review.delivery_revision,'revision');
 });

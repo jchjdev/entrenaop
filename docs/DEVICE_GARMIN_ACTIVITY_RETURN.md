@@ -1,5 +1,34 @@
 # Retorno de carrera Garmin · INT-012 · 23/10/2026
 
+## Grabaciones sin desplazamiento · 03/11/2026
+
+Tras actualizar la app de escritorio vuelve a estar disponible el acceso al
+navegador. Se contrasta en Connect la prueba sin desplazamiento y Javier confirma
+que la hizo parado en la oficina. La validación anterior exigía distancia
+positiva; un FIT sintético de distancia cero reproduce ese rechazo.
+
+El dominio y los dos checks de persistencia admiten cero medido, manteniendo
+rechazo de negativos, ausencia en carrera, magnitudes excesivas y las restantes
+reglas de tiempos, vueltas y pulso. No se calcula un ritmo de cero metros. El
+conciliador guarda la actividad antes de revisar y conserva la asociación de
+receta si es inequívoca; una carrera sin desplazamiento no cierra automáticamente
+la pauta, aunque sus tiempos coincidan. No cambia el editor ni el binario iOS.
+
+Migración `20261103115055` aplicada y cotejada solo en Dev. Receptores
+`garmin-activity-ingest` v20 y `garmin-activities` v21 activos, con los dos archivos
+modificados contrastados frente al despliegue. Pasan 265 pruebas de servidor,
+tipos estrictos y contratos SQL transaccionales de cero metros, retorno Garmin,
+cierre automático y retorno Apple, todos con ROLLBACK. Las nuevas fixtures son
+sintéticas y no reproducen mediciones o identificadores de la grabación real.
+
+La exportación original desde el navegador no genera archivo durante esta
+comprobación. El FIT adjunto corresponde a una actividad anterior, no a la prueba
+corta. El trabajo rechazado antes del despliegue sigue sin observación guardada:
+necesita el FIT correcto o un reenvío oficial; no se reutiliza su callback
+consumido ni se reconstruyen vueltas a partir de la tabla de Connect. No se
+acredita todavía su aparición en Trainer. El portal oficial de desarrollo pide
+iniciar sesión; queda abierto para que Javier lo haga antes de intentar el reenvío.
+
 ## Prueba del contador en el reloj · 03/11/2026
 
 Javier encuentra la prueba corta en el fēnix y confirma que la vista previa
@@ -13,8 +42,8 @@ y validación, sin observación deportiva persistida. Esto acredita el contador
 y la llegada del aviso, no la importación de resultados ni el cierre de la cita.
 Se necesita contrastar el FIT original para identificar la condición exacta;
 no se deduce del código genérico si fallan distancia, tiempos, pulso o vueltas.
-El control del navegador no está disponible por un fallo del componente nativo
-de Windows, reproducido tras reintento y reinicio del intérprete. No se han
+En la primera revisión el control del navegador no estaba disponible por un fallo
+del componente nativo de Windows, reproducido tras reintento y reinicio del intérprete. No se han
 reprocesado callbacks consumidos ni cambiado mediciones o estados para simular
 recepción. La comprobación Apple del contador continúa pendiente.
 

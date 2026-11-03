@@ -1,5 +1,15 @@
 # Roadmap de EntrenaOP
 
+**Garmin · recepción de grabaciones sin desplazamiento · 03/11/2026:** corregido
+y desplegado en Dev el rechazo de cero metros. Se conservan mediciones, revisión
+y vínculo inequívoco sin completar automáticamente la pauta. Pasan 265 pruebas
+de servidor, tipos estrictos y cuatro contratos SQL con ROLLBACK. No requiere
+actualizar el iPhone. **Único siguiente recorrido:** recuperar el FIT correcto o
+un reenvío oficial de la prueba rechazada antes de esta corrección y comprobar
+su recepción hasta Trainer. El FIT adjunto pertenece a otra actividad; no se
+reconstruye la prueba ni se da por recibida.
+[Contrato](DEVICE_GARMIN_ACTIVITY_RETURN.md#grabaciones-sin-desplazamiento--03112026).
+
 **Garmin · contador aceptado y retorno corto pendiente · 03/11/2026:** Javier
 confirma «repetir ×3» y 1/3, 2/3 y 3/3 en el fēnix. Tras guardar llega el aviso
 automático, pero el importador rechaza el archivo con `invalid_activity` antes
