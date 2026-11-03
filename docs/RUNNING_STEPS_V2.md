@@ -67,6 +67,13 @@ con fuentes contrastadas y rechazo 401 sin autorización; Apple conserva JWT
 obligatorio y Garmin su autenticación propia. Versión móvil `1.4.0+7`;
 compilación iOS y aceptación física se acreditan aparte.
 
+La [CI de `f2da2dec`](https://github.com/jchjdev/entrenaop/actions/runs/41611318159)
+finaliza correctamente en servidor, consumidor e iOS Release sin firma.
+También pasan las 16 pruebas del paquete de Salud. La comprobación sintética de
+retorno mantiene las diez parejas aun cuando se repiten índices nativos de paso;
+las vueltas partidas o la presentación física requieren su evidencia del reloj.
+Sigue pendiente la aceptación del contador y del retorno de una pauta nueva.
+
 En la aceptación del creador, Javier confirma que la sesión muestra sus fases y
 series con recuperaciones. Los selectores compartidos pasan a decir «Tiempo»;
 los valores y unidades conservan el contrato anterior. Javier confirma dos
