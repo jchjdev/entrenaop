@@ -9,14 +9,37 @@ Apple está asociado a la cita; `training_progress` incluye sus datos mediante
 relación vigente. Esta lectura no acredita que la cita esté completada.
 
 La actividad Garmin está recibida y vinculada de forma inequívoca, pero exige
-revisión de intervalos y no tiene confirmación ni ejecución. La nueva consulta
-`my_scheduled_device_results` cubre solo al titular; la bandeja Garmin sin
-confirmar también es propia. La proyección profesional anterior sigue añadiendo
-solo `apple_results` y `get_trainer_assignment_result` devuelve NULL sin ejecución.
-Por tanto no se presenta como comprobado que ese Garmin pendiente de revisión
-ya sea visible al preparador. Unificar esa lectura profesional, con el mismo
-alcance de pauta y permisos, sigue pendiente; no se concede acceso al historial
-privado completo para resolverlo.
+revisión de intervalos y no tiene confirmación ni ejecución. Se corrige la
+proyección que antes solo añadía `apple_results` a la planificación profesional:
+`device_private.results_for_schedule` reúne Apple y Garmin, y lo usan tanto
+`my_scheduled_device_results` como `training_progress`. Este último publica el
+campo común `device_results` y conserva `apple_results` filtrado para clientes
+anteriores. Ambos campos proceden de una sola lectura con los mismos permisos.
+
+El preparador autor necesita identidad concordante, acceso profesional, sesión
+MFA viva y relación vigente para esa asignación. Otro preparador del mismo
+alumno no obtiene la evidencia de una pauta ajena por esta vía. Tampoco se
+devuelve historial sin vínculo, datos internos Garmin, FIT o coordenadas. La
+lectura compartida de resultados completados conserva su contrato y opt-in
+independientes. No se amplían grants a las tablas ni al lector privado.
+
+El DTO `DeviceTrainingProgress` usa `deviceResults`, lee el contrato anterior
+durante el despliegue y no suma dos veces ambos campos. `workout_editor_ui`
+presenta cada proveedor con la misma tarjeta plegable; Garmin en revisión se
+identifica por su nombre. El deportista, ADMIN y Trainer consumen esa misma
+implementación. Recibir/mostrar no crea ejecución, no completa una cita ni
+inventa RPE. `get_trainer_assignment_result` sigue reservado a ejecuciones.
+
+Migración `20261103124136` aplicada y cotejada solo en Dev. Se comprueba que la
+carrera existente conserva una observación Apple asociada y una Garmin en
+revisión, sin ejecución. Pasan los tres análisis, 1.740 pruebas raíz (una omisión
+previa), 370 ADMIN (dos omisiones previas), 445 Trainer y cuatro pruebas focales
+de tarjetas compartidas. Los contratos SQL Apple/Garmin, cierre automático y
+retorno Garmin terminan con ROLLBACK. Cubren la agenda profesional real con los
+dos proveedores, otro preparador vigente, sesión revocada, relación retirada,
+actividad privada sin pauta y ausencia de cierre o filtración de metadatos.
+La publicación web del cliente se verifica aparte; desplegar SQL no acredita
+por sí solo que Trainer haya actualizado sus fuentes.
 
 ## Segunda prueba de recepción automática · 03/11/2026
 

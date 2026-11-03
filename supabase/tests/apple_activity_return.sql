@@ -72,21 +72,84 @@ do $$declare owner uuid:=current_setting('fixture.owner')::uuid; sid uuid:=curre
 end $$;
 reset role;
 do $$declare owner uuid:=current_setting('fixture.owner')::uuid; sid uuid:=current_setting('fixture.scheduled')::uuid;
- coach uuid; stranger uuid:=gen_random_uuid(); projection jsonb; agenda jsonb;begin
+ coach uuid; stranger uuid:=gen_random_uuid(); projection jsonb; agenda jsonb; observation jsonb;
+ garmin uuid:=gen_random_uuid(); other_session uuid:=gen_random_uuid(); coach_session uuid;
+begin
  select trainer_id into coach from public.trainer_assignments where scheduled_id=sid;
+ select id into coach_session from auth.sessions where user_id=coach and aal='aal2' limit 1;
+ -- Evidencia Garmin sintética recibida y vinculada por el trabajador, sin cierre.
+ observation:=jsonb_build_object('schemaVersion',1,'externalId','10001','name','Carrera sintética',
+  'startedAt','2026-10-20T08:00:00Z','offsetSeconds',3600,'timerSeconds',125.25,'elapsedSeconds',125.25,
+  'distanceMeters',450,'averageHeartRate',120,'maxHeartRate',145,
+  'laps',jsonb_build_array(jsonb_build_object('index',0,'startedAt','2026-10-20T08:00:00Z',
+   'timerSeconds',125.25,'elapsedSeconds',125.25,'distanceMeters',450,'intensity','active','workoutStepIndex',0)));
+ insert into device_private.activity_observations(id,owner_id,channel,external_id,revision,observation)
+ values(garmin,owner,'garmin','10001',device_private.history_hash(observation),observation);
+ -- Otra actividad privada del mismo deportista, sin vínculo con esta pauta.
+ insert into device_private.activity_observations(owner_id,channel,external_id,revision,observation)
+ values(owner,'garmin','10002',device_private.history_hash(observation||'{"externalId":"10002"}'),
+  observation||'{"externalId":"10002"}');
+ insert into device_private.activity_return_jobs(owner_id,id,event_key,generation,metadata,status,phase,
+  completion_state,completion_code,matched_schedule_id,matched_delivery_revision)
+ values(owner,gen_random_uuid(),repeat('a',64),1,'{"activityId":"10001","activityName":"Carrera sintética"}',
+  'done','stored','review','intervals_require_review',sid,repeat('b',64));
+ perform set_config('request.jwt.claim.sub',owner::text,true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',owner,'role','authenticated','aal','aal1',
+  'session_id',current_setting('fixture.session'))::text,true);
+ if jsonb_array_length(public.my_scheduled_device_results(owner,array[sid])->sid::text)<>2 then
+  raise exception 'El titular no ve ambos proveedores';end if;
  perform set_config('request.jwt.claim.sub',coach::text,true);
  perform set_config('request.jwt.claims',jsonb_build_object('sub',coach,'role','authenticated','aal','aal2',
-  'session_id',(select id from auth.sessions where user_id=coach and aal='aal2' limit 1))::text,true);
+  'session_id',coach_session)::text,true);
  projection:=device_private.apple_results_for_schedule(coach,owner,sid);
  if jsonb_array_length(projection)<>1 then raise exception 'El preparador no recibe datos';end if;
  agenda:=public.list_trainer_client_agenda_filtered('current',coach,owner,current_date,current_date+2);
  if not exists(select 1 from jsonb_array_elements(agenda->'items') entry
   where entry->>'id'=sid::text and entry->'device_training'->'apple_results'->0->>'id'=current_setting('fixture.apple.result')) then
   raise exception 'La agenda real de Trainer no incluye los datos';end if;
+ projection:=device_private.results_for_schedule(coach,owner,sid);
+ if jsonb_array_length(projection)<>2 or not exists(select 1 from jsonb_array_elements(projection) r
+  where r->>'id'=garmin::text and r->>'provider'='garmin' and r->>'state'='review' and r->>'timer_seconds'='125.25') then
+  raise exception 'El preparador no ve Garmin sin completar';end if;
+ if not exists(select 1 from jsonb_array_elements(agenda->'items') entry
+  where entry->>'id'=sid::text and jsonb_array_length(entry->'device_training'->'device_results')=2
+   and entry->'device_training'->>'results_confirmed'='false') then
+  raise exception 'La agenda no usa la proyección común';end if;
+ if public.get_trainer_assignment_result(sid) is not null then raise exception 'La lectura inventa ejecución';end if;
+ if exists(select 1 from jsonb_array_elements(projection) r where r ?| array[
+  'external_id','observation','prescriptionReference','metadata','callback','tokens','positions','latitude','longitude']) then
+  raise exception 'Expone detalles privados del proveedor';end if;
+ if has_function_privilege('authenticated','device_private.results_for_schedule(uuid,uuid,uuid)','EXECUTE')
+  or has_function_privilege('anon','device_private.results_for_schedule(uuid,uuid,uuid)','EXECUTE') then
+  raise exception 'Expone lector privado';end if;
+ -- Otro preparador vigente del mismo alumno sigue sin leer una pauta ajena.
+ insert into auth.users(id,email) values(stranger,stranger||'@received-results.invalid');
+ insert into auth.sessions(id,user_id,aal) values(other_session,stranger,'aal2');
+ insert into auth.mfa_factors(id,user_id,factor_type,status,created_at,updated_at)
+  values(gen_random_uuid(),stranger,'totp','verified',now(),now());
+ insert into public.trainer_access(trainer_id,enabled,client_limit,last_reason) values(stranger,true,5,'Fixture con ROLLBACK');
+ insert into public.trainer_client_relations(id,trainer_id,client_id,accepted_at) values(gen_random_uuid(),stranger,owner,now());
+ perform set_config('request.jwt.claim.sub',stranger::text,true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',stranger,'role','authenticated','aal','aal2',
+  'session_id',other_session)::text,true);
+ if not trainer_private.has_professional_read_access() then raise exception 'Fixture sin acceso profesional';end if;
+ if device_private.results_for_schedule(stranger,owner,sid)<>'[]'::jsonb
+  or device_private.results_for_schedule(coach,owner,sid)<>'[]'::jsonb then
+  raise exception 'Otro preparador lee o suplanta al autor';end if;
+ perform set_config('request.jwt.claim.sub',coach::text,true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',coach,'role','authenticated','aal','aal2',
+  'session_id',gen_random_uuid())::text,true);
+ if device_private.results_for_schedule(coach,owner,sid)<>'[]'::jsonb then raise exception 'Sesión revocada conserva mediciones';end if;
+ projection:=device_private.training_progress(coach,owner,sid);
+ if projection->'device_results'<>'[]'::jsonb or projection->'apple_results'<>'[]'::jsonb then
+  raise exception 'El campo anterior elude la comprobación de sesión viva';end if;
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',coach,'role','authenticated','aal','aal2',
+  'session_id',coach_session)::text,true);
  if device_private.apple_results_for_schedule(stranger,owner,sid)<>'[]'::jsonb then raise exception 'Comparte con otro preparador';end if;
  if (select execution_id from public.scheduled_workouts where id=sid) is not null then raise exception 'Prueba crea ejecución ficticia';end if;
  update public.trainer_client_relations set ended_at=now() where trainer_id=coach and client_id=owner;
  if device_private.apple_results_for_schedule(coach,owner,sid)<>'[]'::jsonb then raise exception 'Relación retirada mantiene acceso';end if;
+ if device_private.results_for_schedule(coach,owner,sid)<>'[]'::jsonb then raise exception 'Relación retirada mantiene Garmin';end if;
 end $$;
-select 'Apple: consentimiento, sesión, asociación, replay, ausencia, enriquecimiento, conflictos, prueba y lectura profesional verificados' as result;
+select 'Apple/Garmin: consentimiento, sesión viva, asociación, replay, privacidad y lectura profesional común verificados' as result;
 rollback;

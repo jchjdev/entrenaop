@@ -1,5 +1,17 @@
 # Registro de decisiones vigentes
 
+**INT-012/INT-023 · Lectura profesional común antes de completar · 03/11/2026:**
+Javier señala la incoherencia de mostrar al preparador el retorno Apple mientras
+el Garmin recibido quedaba limitado al titular. Ambos se proyectan por pauta
+mediante el mismo lector y tarjetas compartidas, conservando origen, mediciones
+y revisión. El preparador autor necesita acceso profesional, sesión MFA viva y
+relación vigente; no se amplía a actividades sin vínculo ni a pautas de otros
+preparadores. No se completa la cita por leer o recibir los datos. El contrato
+añade `device_results`, mantiene el campo Apple anterior y evita duplicar datos.
+Se conserva compatibilidad mientras se actualizan los clientes. Dos relojes en
+las pruebas no equivalen a dos ejecuciones; el uso habitual admite una fuente.
+[Contrato y comprobación](DEVICE_GARMIN_ACTIVITY_RETURN.md#lectura-profesional-antes-del-cierre--03112026).
+
 **Series de carrera y alcance de fuerza · 03/11/2026:** Javier corrige la
 terminología: una carrera de intervalos tiene series; en fuerza, cada serie
 contiene repeticiones. Los nombres técnicos de repetición de un patrón en las

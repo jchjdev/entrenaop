@@ -1,5 +1,15 @@
 # Roadmap de EntrenaOP
 
+**Dispositivos · lectura profesional común de resultados recibidos · 03/11/2026:**
+se corrige la diferencia Apple/Garmin antes de completar una pauta. Titular y
+preparador autor usan el mismo lector por cita y tarjetas compartidas; se exige
+sesión profesional MFA viva y relación vigente, sin abrir el historial privado.
+No cambia el cierre ni los permisos de otros preparadores. SQL Dev contrastado,
+tres análisis y baterías raíz/ADMIN/Trainer correctos; publicación web pendiente
+de comprobar. Este arreglo no acredita el calendario físico del fēnix ni los
+contadores de fuerza o Apple.
+[Contrato](DEVICE_GARMIN_ACTIVITY_RETURN.md#lectura-profesional-antes-del-cierre--03112026).
+
 **Garmin · segunda prueba recibida automáticamente · 03/11/2026:** se comprueba
 la nueva actividad del fēnix desde el aviso normal de Connect hasta `done/stored`
 y su lectura visual en Trainer Dev. Sin exportación, reenvío o mantenimiento de

@@ -75,10 +75,10 @@ class DeviceTrainingProgressTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = progress;
-    if (p.appleResults.isNotEmpty) {
+    if (p.deviceResults.isNotEmpty) {
       return Column(
         children: [
-          for (final result in p.appleResults)
+          for (final result in p.deviceResults)
             DeviceActivitySummaryCard(result: result),
           if (p.hasDelivery || p.resultsConfirmed)
             DeviceTrainingProgressTile(

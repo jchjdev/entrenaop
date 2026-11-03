@@ -18,8 +18,9 @@ enum DeviceTrainingPhase {
   completed,
 }
 
-/// Proyección de entrega de una cita. No contiene concesiones, identidad del
-/// fabricante ni mediciones; recibirla no autoriza operaciones de escritura.
+/// Proyección de entrega de una cita. No contiene concesiones ni identidad del
+/// fabricante. Incluye resúmenes recibidos de la pauta; su recepción no
+/// autoriza operaciones de escritura ni acredita que esté completada.
 class DeviceTrainingProgress {
   const DeviceTrainingProgress({
     required this.id,
@@ -30,7 +31,7 @@ class DeviceTrainingProgress {
     this.resultsConfirmed = false,
     this.hasDelivery = false,
     this.executionId,
-    this.appleResults = const [],
+    this.deviceResults = const [],
   });
 
   factory DeviceTrainingProgress.fromJson(Map<String, dynamic> json) {
@@ -69,8 +70,15 @@ class DeviceTrainingProgress {
       resultsConfirmed: json['results_confirmed'] == true,
       hasDelivery: json['has_delivery'] == true,
       executionId: json['execution_id'] as String?,
-      appleResults: [
-        for (final row in json['apple_results'] as List? ?? [])
+      deviceResults: [
+        // El campo anterior conserva compatibilidad durante el despliegue.
+        // Un listado común vacío es autoritativo: no se suman dos copias.
+        for (final row
+            in (json.containsKey('device_results')
+                        ? json['device_results']
+                        : json['apple_results'])
+                    as List? ??
+                [])
           DeviceActivitySummary.fromJson(Map<String, dynamic>.from(row as Map)),
       ],
     );
@@ -80,5 +88,5 @@ class DeviceTrainingProgress {
   final DeviceTrainingPhase phase;
   final String? reason, executionId;
   final bool resultsConfirmed, hasDelivery;
-  final List<DeviceActivitySummary> appleResults;
+  final List<DeviceActivitySummary> deviceResults;
 }

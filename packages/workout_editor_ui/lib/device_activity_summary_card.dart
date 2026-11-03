@@ -22,7 +22,7 @@ class DeviceActivitySummaryCard extends StatelessWidget {
       'unassigned' =>
         '${r.provider == 'garmin' ? 'Garmin' : 'Apple Watch'} · Pendiente de asociar',
       'test' => 'Prueba · no completa la sesión',
-      'review' => 'Resultado pendiente de revisión',
+      'review' => '$source · Pendiente de revisión',
       _ =>
         r.executionId == null
             ? 'Resultado recibido de $source'
