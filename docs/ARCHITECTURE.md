@@ -1,5 +1,14 @@
 # Arquitectura de EntrenaOP
 
+**Resultado Apple parcial · 03/11/2026:** la finalización acreditada del reloj
+se separa de la atribución de intervalos a series. Un recibo privado de Apple
+permite cerrar la sesión preservando series sin atribución; no abre la
+finalización manual de series pendientes. Las proyecciones deportivas filtran
+las medidas nativas antes de entregarlas al DTO común y a sus tarjetas
+plegables. Los lectores del titular y profesionales mantienen sus controles
+previos; ninguna grabación reemplaza automáticamente otra ejecución cerrada.
+[Contrato](DEVICE_APPLE_WATCH.md#resultado-parcial-y-grabaciones-por-dispositivo--03112026).
+
 **Ajustes y soporte · 02/11/2026:** AppSupportResources y OpenSupportLink separan
 los destinos públicos del lanzador de plataforma. El router compone recursos,
 launchUrl y diagnóstico mínimo; no se añaden capas ni paquetes para un borrador

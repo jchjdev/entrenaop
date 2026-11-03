@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:workout_core/device_activity_summary.dart';
+import 'package:workout_core/performance_time.dart';
 
 class DeviceActivitySummaryCard extends StatelessWidget {
   const DeviceActivitySummaryCard({
@@ -26,7 +27,7 @@ class DeviceActivitySummaryCard extends StatelessWidget {
       _ =>
         r.executionId == null
             ? 'Resultado recibido de $source'
-            : 'Resultados incorporados a la sesión',
+            : 'Resultados incorporados de $source',
     };
     return Card(
       child: ExpansionTile(
@@ -59,6 +60,31 @@ class DeviceActivitySummaryCard extends StatelessWidget {
               '${r.intervalCount} ${r.provider == 'garmin' ? 'vueltas' : 'intervalos'} disponibles',
             ),
           const SizedBox(height: 8),
+          if (r.detailsIncomplete)
+            const Text(
+              'Desglose parcial: los intervalos se conservan en el orden del reloj. No se asignan a series ni se estiman las distancias ausentes.',
+            ),
+          if (r.intervals.isNotEmpty)
+            ExpansionTile(
+              key: PageStorageKey('recorded-intervals-${r.provider}-${r.id}'),
+              title: Text('${r.intervals.length} intervalos registrados'),
+              children: [
+                for (final part in r.intervals)
+                  ListTile(
+                    dense: true,
+                    title: Text('Intervalo ${part.index}'),
+                    subtitle: Text(
+                      [
+                        formatPerformanceTime(part.seconds),
+                        if (part.meters != null)
+                          '${part.meters!.toStringAsFixed(1)} m',
+                        if (part.averageHeartRate != null)
+                          '${part.averageHeartRate} lpm',
+                      ].join(' · '),
+                    ),
+                  ),
+              ],
+            ),
           if (r.executionId == null)
             Text(
               r.state == 'unassigned'

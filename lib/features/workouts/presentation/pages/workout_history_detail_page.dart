@@ -1,5 +1,6 @@
 import 'package:workout_editor_ui/workout_result_review_panel.dart';
 import 'package:workout_editor_ui/running_pace_chart.dart';
+import 'package:workout_editor_ui/device_recordings_panel.dart';
 
 import '../../domain/services/workout_result_review.dart';
 
@@ -177,6 +178,10 @@ class _DetailContentState extends State<_DetailContent> {
                       ? () => _addEffort(context)
                       : null,
                 ),
+                DeviceRecordingsPanel(
+                  recordings: execution.deviceResults,
+                  detailsIncomplete: execution.deviceDetailsIncomplete,
+                ),
                 WorkoutTechniqueSection(execution: execution),
                 if (execution.notes case final notes?
                     when notes.trim().isNotEmpty) ...[
@@ -209,78 +214,82 @@ class _DetailContentState extends State<_DetailContent> {
                   ),
                 ],
                 const SizedBox(height: 24),
-                RunningPaceChart(
-                  analysis: runningPaceExecution(execution, review),
-                ),
-                WorkoutResultReviewControls(
-                  session: review,
-                  onlyDifferences: _onlyDifferences,
-                  onFilterChanged: (value) =>
-                      setState(() => _onlyDifferences = value),
-                  loadHistory: context
-                      .read<WorkoutHistoryDetailCubit>()
-                      .comparisonLoader,
-                ),
-                if (_onlyDifferences && groups.isEmpty && amrapBlocks.isEmpty)
-                  const Text(
-                    'No hay diferencias ni datos pendientes de revisar.',
+                if (!execution.deviceDetailsIncomplete) ...[
+                  RunningPaceChart(
+                    analysis: runningPaceExecution(execution, review),
                   ),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 4,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
+                  WorkoutResultReviewControls(
+                    session: review,
+                    onlyDifferences: _onlyDifferences,
+                    onFilterChanged: (value) =>
+                        setState(() => _onlyDifferences = value),
+                    loadHistory: context
+                        .read<WorkoutHistoryDetailCubit>()
+                        .comparisonLoader,
+                  ),
+                  if (_onlyDifferences && groups.isEmpty && amrapBlocks.isEmpty)
                     const Text(
-                      'Objetivo y resultado',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                      ),
+                      'No hay diferencias ni datos pendientes de revisar.',
                     ),
-                    if (groups.any((group) => group.isFoldable))
-                      TextButton.icon(
-                        onPressed: () => setState(() {
-                          if (_expanded.isNotEmpty) {
-                            _expanded.clear();
-                          } else {
-                            _expanded.addAll(
-                              groups
-                                  .where((g) => g.isFoldable)
-                                  .map((g) => g.key),
-                            );
-                          }
-                        }),
-                        icon: Icon(
-                          _expanded.isEmpty
-                              ? Icons.unfold_more
-                              : Icons.unfold_less,
-                        ),
-                        label: Text(
-                          _expanded.isEmpty ? 'Desplegar todo' : 'Plegar todo',
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 4,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      const Text(
+                        'Objetivo y resultado',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                ...amrapBlocks.map(
-                  (block) => _AmrapResultCard(
-                    block: block,
-                    result: execution.amrapResultFor(block.blockOrder),
+                      if (groups.any((group) => group.isFoldable))
+                        TextButton.icon(
+                          onPressed: () => setState(() {
+                            if (_expanded.isNotEmpty) {
+                              _expanded.clear();
+                            } else {
+                              _expanded.addAll(
+                                groups
+                                    .where((g) => g.isFoldable)
+                                    .map((g) => g.key),
+                              );
+                            }
+                          }),
+                          icon: Icon(
+                            _expanded.isEmpty
+                                ? Icons.unfold_more
+                                : Icons.unfold_less,
+                          ),
+                          label: Text(
+                            _expanded.isEmpty
+                                ? 'Desplegar todo'
+                                : 'Plegar todo',
+                          ),
+                        ),
+                    ],
                   ),
-                ),
-                ...groups.map(
-                  (group) => _ExerciseResultCard(
-                    group,
-                    key: ValueKey(group.key),
-                    isCorrecting: widget.isCorrecting,
-                    expanded: _expanded.contains(group.key),
-                    onToggle: () => setState(() {
-                      if (!_expanded.add(group.key)) {
-                        _expanded.remove(group.key);
-                      }
-                    }),
+                  const SizedBox(height: 12),
+                  ...amrapBlocks.map(
+                    (block) => _AmrapResultCard(
+                      block: block,
+                      result: execution.amrapResultFor(block.blockOrder),
+                    ),
                   ),
-                ),
+                  ...groups.map(
+                    (group) => _ExerciseResultCard(
+                      group,
+                      key: ValueKey(group.key),
+                      isCorrecting: widget.isCorrecting,
+                      expanded: _expanded.contains(group.key),
+                      onToggle: () => setState(() {
+                        if (!_expanded.add(group.key)) {
+                          _expanded.remove(group.key);
+                        }
+                      }),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -409,18 +418,20 @@ class _SummaryCard extends StatelessWidget {
           spacing: 22,
           runSpacing: 14,
           children: [
-            _SummaryMetric(
-              value: '${execution.completedSetCount}',
-              label: 'Completadas',
-            ),
-            _SummaryMetric(
-              value: '${execution.skippedSetCount}',
-              label: 'Omitidas',
-            ),
-            _SummaryMetric(
-              value: '${execution.sets.length - execution.resolvedSetCount}',
-              label: 'Pendientes',
-            ),
+            if (!execution.deviceDetailsIncomplete) ...[
+              _SummaryMetric(
+                value: '${execution.completedSetCount}',
+                label: 'Completadas',
+              ),
+              _SummaryMetric(
+                value: '${execution.skippedSetCount}',
+                label: 'Omitidas',
+              ),
+              _SummaryMetric(
+                value: '${execution.sets.length - execution.resolvedSetCount}',
+                label: 'Pendientes',
+              ),
+            ],
             if (duration != null)
               _SummaryMetric(
                 value: _compactDuration(duration),
@@ -456,9 +467,10 @@ class _SummaryCard extends StatelessWidget {
               _SummaryMetric(value: '$heartRate', label: 'FC media'),
             if (execution.maxHeartRateBpm case final heartRate?)
               _SummaryMetric(value: '$heartRate', label: 'FC máxima'),
-            if (execution.sets.any(
-              (set) => set.blockFormat == WorkoutBlockFormat.running,
-            ))
+            if (!execution.deviceDetailsIncomplete &&
+                execution.sets.any(
+                  (set) => set.blockFormat == WorkoutBlockFormat.running,
+                ))
               _SummaryMetric(
                 value: runningAssessmentLabel(
                   assessRunningExecution(execution.sets),
@@ -466,9 +478,10 @@ class _SummaryCard extends StatelessWidget {
                 label: 'Comparación con la pauta',
                 width: 230,
               ),
-            if (execution.sets.any(
-              (s) => s.blockFormat == WorkoutBlockFormat.running,
-            ))
+            if (!execution.deviceDetailsIncomplete &&
+                execution.sets.any(
+                  (s) => s.blockFormat == WorkoutBlockFormat.running,
+                ))
               SizedBox(
                 width: double.infinity,
                 child: Text(

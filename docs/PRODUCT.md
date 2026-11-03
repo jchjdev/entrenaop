@@ -1,5 +1,12 @@
 # Producto EntrenaOP
 
+**Resultados parciales de Apple Watch · 03/11/2026:** una carrera identificada
+de forma segura puede completar la sesión aunque falte su detalle por series.
+El deportista y su preparador consultan las medidas e intervalos disponibles,
+con tarjetas plegables y sin mostrar como cero lo que no se ha medido. Las
+series sin correspondencia quedan indicadas como sin detalle; no se declaran
+omitidas ni completadas. Las grabaciones de distintos relojes no se mezclan.
+
 **Ubicación en el directorio · 02/11/2026:** provincia seleccionable y localidad
 opcional corresponden al entrenador. Canarias y Baleares añaden isla opcional.
 El deportista puede buscar por cualquiera de esos datos, sin tener que conocer

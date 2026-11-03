@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:workout_core/device_activity_summary.dart';
 import 'package:workout_core/performance_set.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_session_type.dart';
@@ -35,6 +36,8 @@ class WorkoutExecution extends Equatable {
     this.observedTimerSeconds,
     this.observedElapsedSeconds,
     this.observedDistanceMeters,
+    this.deviceResults = const [],
+    this.deviceDetailsIncomplete = false,
   });
 
   final String id;
@@ -55,6 +58,8 @@ class WorkoutExecution extends Equatable {
   final double? observedTimerSeconds;
   final double? observedElapsedSeconds;
   final double? observedDistanceMeters;
+  final List<DeviceActivitySummary> deviceResults;
+  final bool deviceDetailsIncomplete;
   Duration? get measuredDuration => observedTimerSeconds == null
       ? null
       : Duration(microseconds: (observedTimerSeconds! * 1000000).round());
@@ -115,6 +120,8 @@ class WorkoutExecution extends Equatable {
     observedTimerSeconds: observedTimerSeconds,
     observedElapsedSeconds: observedElapsedSeconds,
     observedDistanceMeters: observedDistanceMeters,
+    deviceResults: deviceResults,
+    deviceDetailsIncomplete: deviceDetailsIncomplete,
     sets: sets ?? this.sets,
     amrapResults: amrapResults ?? this.amrapResults,
   );
@@ -139,6 +146,8 @@ class WorkoutExecution extends Equatable {
     observedTimerSeconds,
     observedElapsedSeconds,
     observedDistanceMeters,
+    deviceResults,
+    deviceDetailsIncomplete,
     sets,
     amrapResults,
   ];

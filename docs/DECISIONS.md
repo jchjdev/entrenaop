@@ -1,5 +1,16 @@
 # Registro de decisiones vigentes
 
+**INT-023 · Cierre Apple con desglose parcial y grabaciones consultables · 03/11/2026:**
+Javier pide resolver el bloqueo usando su carrera ya registrada. Una referencia
+WorkoutKit exacta, validada para su titular, pauta vigente y ventana acordada,
+puede acreditar la sesión aunque no permita asignar todos los intervalos a sus
+series. El cierre conserva las medidas disponibles y deja las series sin
+atribución; no las inventa como realizadas ni omitidas. Un recibo privado
+habilita exclusivamente este cierre. Las grabaciones de cada dispositivo se
+consultan por separado desde el resultado, también en Trainer y en el historial
+del deportista. Una ejecución ya cerrada con Garmin no se sustituye por Apple.
+[Contrato](DEVICE_APPLE_WATCH.md#resultado-parcial-y-grabaciones-por-dispositivo--03112026).
+
 **INT-023 · Validar Apple con la carrera ya registrada · 03/11/2026:** Javier
 recuerda que la carrera se grabó con ambos relojes y pide aprovechar esa evidencia.
 Se comprueban recepción Apple y vínculo a la pauta. El desglose tiene fases y

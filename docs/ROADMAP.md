@@ -1,5 +1,20 @@
 # Roadmap de EntrenaOP
 
+**Apple · cierre parcial y consulta de intervalos · 03/11/2026:** se separa
+la finalización de una pauta acreditada de su detalle individual por series.
+Se preservan medidas, ausencias y grabaciones de cada reloj. Se añaden tarjetas
+comunes para historial del deportista y resultados de Trainer, incluidas las
+pautas externas propias. Análisis de las tres apps y baterías raíz/Trainer/ADMIN
+correctos (1743/449/370; omisiones existentes 1/0/2). Pruebas SQL con ROLLBACK
+cubren cierre parcial, idempotencia, pruebas, cancelaciones, referencia,
+ventana y permisos; también pasan los contratos previos de Garmin y Apple.
+La consulta real se contrasta después de publicar. El cierre de la carrera
+ya realizada con Garmin se conserva; la prueba de cierre Apple aislado usa
+fixtures y no equivale a una nueva aceptación física. Siguiente recorrido:
+contrastar una próxima carrera Apple con sincronización normal y mantener
+fuerza Apple fuera de las capacidades anunciadas hasta implementarla y probarla.
+[Contrato](DEVICE_APPLE_WATCH.md#resultado-parcial-y-grabaciones-por-dispositivo--03112026).
+
 **Trainer · resultado de la pauta externa en Para mí · 03/11/2026:** se conecta
 el resultado autorizado desde el inspector de la pauta realizada. El titular
 consulta sus datos sin tener que compartirlos consigo mismo; se mantienen MFA

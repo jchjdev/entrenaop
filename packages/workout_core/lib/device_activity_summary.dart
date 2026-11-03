@@ -16,6 +16,8 @@ class DeviceActivitySummary {
     this.effortScore,
     this.provider = 'apple',
     this.scheduledName,
+    this.intervals = const [],
+    this.detailsIncomplete = false,
   });
 
   factory DeviceActivitySummary.fromJson(Map<String, dynamic> json) {
@@ -54,6 +56,14 @@ class DeviceActivitySummary {
       effortScore: (json['effort_score'] as num?)?.toDouble(),
       provider: provider as String,
       scheduledName: json['scheduled_name'] as String?,
+      intervals: List.unmodifiable(
+        (json['intervals'] as List? ?? const []).map(
+          (row) => DeviceActivityInterval.fromJson(
+            Map<String, dynamic>.from(row as Map),
+          ),
+        ),
+      ),
+      detailsIncomplete: json['details_incomplete'] == true,
     );
   }
 
@@ -67,4 +77,40 @@ class DeviceActivitySummary {
   final String? executionId;
   final int intervalCount;
   final double? effortScore;
+  final List<DeviceActivityInterval> intervals;
+  final bool detailsIncomplete;
+}
+
+/// Intervalo medido por el dispositivo. Su orden no acredita una serie pautada.
+class DeviceActivityInterval {
+  const DeviceActivityInterval({
+    required this.index,
+    required this.seconds,
+    this.meters,
+    this.averageHeartRate,
+  });
+  factory DeviceActivityInterval.fromJson(Map<String, dynamic> json) {
+    final index = json['index'];
+    final seconds = json['timer_seconds'];
+    final meters = json['distance_meters'];
+    if (index is! int ||
+        index < 1 ||
+        index > 100 ||
+        seconds is! num ||
+        !seconds.isFinite ||
+        seconds <= 0 ||
+        meters != null && (meters is! num || !meters.isFinite || meters < 0)) {
+      throw const FormatException('Intervalo del reloj incompatible.');
+    }
+    return DeviceActivityInterval(
+      index: index,
+      seconds: seconds.toDouble(),
+      meters: (meters as num?)?.toDouble(),
+      averageHeartRate: (json['average_heart_rate'] as num?)?.round(),
+    );
+  }
+  final int index;
+  final double seconds;
+  final double? meters;
+  final int? averageHeartRate;
 }

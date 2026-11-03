@@ -196,11 +196,26 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
 
   @override
   Future<Map<String, dynamic>?> getExecution(String executionId) async {
-    return supabaseClient
+    final owner = supabaseClient.auth.currentUser?.id;
+    final row = await supabaseClient
         .from('workout_executions')
         .select(_executionSelect)
         .eq('id', executionId)
         .maybeSingle();
+    if (supabaseClient.auth.currentUser?.id != owner) {
+      throw const AuthException('La cuenta ha cambiado.');
+    }
+    if (row == null || owner == null || row['result_source'] != 'device') {
+      return row;
+    }
+    final details = await supabaseClient.rpc(
+      'my_execution_device_details',
+      params: {'p_owner': owner, 'p_execution': executionId},
+    );
+    if (supabaseClient.auth.currentUser?.id != owner) {
+      throw const AuthException('La cuenta ha cambiado.');
+    }
+    return {...row, ...Map<String, dynamic>.from(details as Map)};
   }
 
   @override

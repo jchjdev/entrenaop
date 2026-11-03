@@ -1,4 +1,5 @@
 import 'package:workout_core/running_step_codec.dart';
+import 'package:workout_core/device_activity_summary.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:workout_core/performance_set_codec.dart';
@@ -48,6 +49,14 @@ class WorkoutExecutionModel {
           ?.toDouble(),
       observedDistanceMeters: (json['observed_distance_meters'] as num?)
           ?.toDouble(),
+      deviceDetailsIncomplete: json['device_details_incomplete'] == true,
+      deviceResults: (json['device_results'] as List? ?? const [])
+          .map(
+            (row) => DeviceActivitySummary.fromJson(
+              Map<String, dynamic>.from(row as Map),
+            ),
+          )
+          .toList(growable: false),
       sets: sets,
       amrapResults: amrapResults,
     );

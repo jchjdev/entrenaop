@@ -9,6 +9,9 @@ import 'package:workout_core/running_pace_analysis.dart';
 import 'workout_result_review_panel.dart';
 import 'running_pace_chart.dart';
 import 'workout_execution_summary.dart';
+import 'device_recordings_panel.dart';
+
+import 'package:workout_core/device_activity_summary.dart';
 
 String _resultDate(DateTime d) =>
     '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
@@ -39,6 +42,14 @@ class _TrainerWorkoutResultContentState
     final sets = (result['workout_execution_sets'] as List? ?? []).cast<Map>();
     final amrap = (result['workout_amrap_results'] as List? ?? []).cast<Map>();
     final review = reviewSessionFromJson(result);
+    final incomplete = result['device_details_incomplete'] == true;
+    final recordings = (result['device_results'] as List? ?? const [])
+        .map(
+          (r) => DeviceActivitySummary.fromJson(
+            Map<String, dynamic>.from(r as Map),
+          ),
+        )
+        .toList();
     final visible = sets
         .where(
           (s) =>
@@ -87,9 +98,9 @@ class _TrainerWorkoutResultContentState
             if (started != null)
               Text('Inicio: ${_resultDate(started.toLocal())}'),
             const SizedBox(height: 16),
-            WorkoutExecutionSummary(review: review),
+            if (!incomplete) WorkoutExecutionSummary(review: review),
             const SizedBox(height: 8),
-            if (hasSeries)
+            if (hasSeries && !incomplete)
               Text(
                 '$completed ${completed == 1 ? 'serie completada' : 'series completadas'} · $skipped omitidas',
               ),
@@ -97,6 +108,10 @@ class _TrainerWorkoutResultContentState
             _ResultOverview(
               result: result,
               running: sets.any((set) => set['block_format'] == 'running'),
+            ),
+            DeviceRecordingsPanel(
+              recordings: recordings,
+              detailsIncomplete: incomplete,
             ),
             if (abandonment != null) Text('Motivo: $abandonment'),
             if ((result['notes'] as String?)?.isNotEmpty == true)
@@ -115,41 +130,45 @@ class _TrainerWorkoutResultContentState
                   ),
                 ),
               ),
-            RunningPaceChart(
-              analysis: RunningPaceAnalysis.fromRows(
-                sets.map((s) => Map<String, dynamic>.from(s)),
-              ),
-            ),
-            WorkoutResultReviewControls(
-              session: review,
-              onlyDifferences: _onlyDifferences,
-              onFilterChanged: (value) =>
-                  setState(() => _onlyDifferences = value),
-              loadHistory: widget.loadHistory,
-            ),
-            if (_onlyDifferences && visible.isEmpty && amrap.isEmpty)
-              const Text('No hay diferencias ni datos pendientes de revisar.'),
-            for (final block in amrap)
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(
-                    'AMRAP · Bloque ${(block['block_order'] as int) + 1}: ${block['completed_rounds']} rondas completas'
-                    '${block['partial_item_order'] == null ? '' : ' · ejercicio ${(block['partial_item_order'] as int) + 1}: ${block['partial_reps']} rep adicionales'}',
-                  ),
+            if (!incomplete) ...[
+              RunningPaceChart(
+                analysis: RunningPaceAnalysis.fromRows(
+                  sets.map((s) => Map<String, dynamic>.from(s)),
                 ),
               ),
-            for (final block in blocks) ...[
-              _ResultBlockHeading(block: block),
-              for (final exercise in block.exercises)
-                if (block.format == 'running')
-                  _RunningResultCard(set: exercise.sets.single)
-                else
-                  _ExerciseResultCard(
-                    key: ValueKey(exercise.key),
-                    exercise: exercise,
-                    format: block.format,
+              WorkoutResultReviewControls(
+                session: review,
+                onlyDifferences: _onlyDifferences,
+                onFilterChanged: (value) =>
+                    setState(() => _onlyDifferences = value),
+                loadHistory: widget.loadHistory,
+              ),
+              if (_onlyDifferences && visible.isEmpty && amrap.isEmpty)
+                const Text(
+                  'No hay diferencias ni datos pendientes de revisar.',
+                ),
+              for (final block in amrap)
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(
+                      'AMRAP · Bloque ${(block['block_order'] as int) + 1}: ${block['completed_rounds']} rondas completas'
+                      '${block['partial_item_order'] == null ? '' : ' · ejercicio ${(block['partial_item_order'] as int) + 1}: ${block['partial_reps']} rep adicionales'}',
+                    ),
                   ),
+                ),
+              for (final block in blocks) ...[
+                _ResultBlockHeading(block: block),
+                for (final exercise in block.exercises)
+                  if (block.format == 'running')
+                    _RunningResultCard(set: exercise.sets.single)
+                  else
+                    _ExerciseResultCard(
+                      key: ValueKey(exercise.key),
+                      exercise: exercise,
+                      format: block.format,
+                    ),
+              ],
             ],
           ],
         ),

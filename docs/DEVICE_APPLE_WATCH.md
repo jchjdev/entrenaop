@@ -1,5 +1,36 @@
 # Apple Watch · WorkoutKit · INT-023
 
+## Resultado parcial y grabaciones por dispositivo · 03/11/2026
+
+La relectura de la grabación existente no añade las medidas ausentes. La
+corrección separa la finalización acreditada de una sesión y la atribución de
+sus intervalos a las series de la pauta. Si el mapa completo no es seguro, la
+recepción automática puede cerrar la pauta mediante su referencia WorkoutKit
+exacta, conservando totales e intervalos originales. Las series quedan sin
+detalle individual; no se consideran completadas, omitidas ni evidencias de
+progresión. El resultado explica esa limitación y no calcula una valoración
+por serie a partir del total.
+
+Se mantienen identidad y sesión viva, permiso, pauta vigente, revisión de
+fuente, ventana de cero a siete días, exclusión de pruebas y conflictos, y
+transacción idempotente. Un resultado global sin fases nativas continúa en
+revisión. El cierre con series sin atribución exige un recibo Apple privado;
+la finalización manual ordinaria sigue rechazando series pendientes. Si otra
+grabación ya completó la cita, no se crea otra ejecución ni se cambia su fuente.
+
+`my_execution_device_details` ofrece al titular su consulta acotada. Los
+lectores profesionales amplían sus resultados después de las comprobaciones
+existentes de autoría o consentimiento compartido. Las tarjetas comunes de
+grabaciones son plegables y muestran cada intervalo con tiempo y solo las
+medidas existentes. No publican identificadores nativos, referencias privadas,
+metadatos, localización ni credenciales. Las distancias ausentes siguen siendo
+NULL. Apple y Garmin conservan sus medidas independientes.
+
+La aceptación de este cambio utiliza la carrera ya recibida para la consulta
+profesional, y fixtures transaccionales para el cierre parcial Apple aislado,
+sin alterar el resultado de Garmin existente. No acredita fuerza Apple ni una
+prueba física nueva de segundo plano o del contador nativo.
+
 ## Comprobación con la grabación existente · 03/11/2026
 
 Javier recuerda que la carrera usada para validar Garmin se grabó también con
