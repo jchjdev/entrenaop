@@ -1,5 +1,14 @@
 # Registro de decisiones vigentes
 
+**Series de carrera y alcance de fuerza · 03/11/2026:** Javier corrige la
+terminología: una carrera de intervalos tiene series; en fuerza, cada serie
+contiene repeticiones. Los nombres técnicos de repetición de un patrón en las
+API no cambian esa terminología de producto. El contador de carrera del fēnix
+está aceptado; fuerza mantiene envío como pasos individuales. La prueba previa
+de banca acredita transporte y recuperación de series, repeticiones, cargas y
+tiempos con actividad simulada, no un contador nativo de grupos de fuerza.
+[Alcance](DEVICE_GARMIN_TRAINING.md#series-de-fuerza-y-contador--03112026).
+
 **INT-012 · Conservar grabaciones Garmin sin desplazamiento · 03/11/2026:**
 Javier aclara que la prueba del contador se realizó parado en la oficina. Connect
 muestra distancia cero y el dominio la rechazaba por exigir una distancia

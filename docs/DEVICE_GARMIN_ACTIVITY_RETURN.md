@@ -1,5 +1,21 @@
 # Retorno de carrera Garmin · INT-012 · 23/10/2026
 
+## Segunda prueba de recepción automática · 03/11/2026
+
+A petición de Javier se crea una nueva autoasignación técnica privada de carrera,
+distinta de la anterior para evitar dos recetas candidatas idénticas. Tiene
+5 s de calentamiento, tres series de 8 s con 4 s de descanso y 5 s de enfriamiento,
+todo temporizado (46 s). Está marcada PRUEBA, puede grabarse sin desplazamiento
+y no es una pauta de entrenamiento físico.
+
+La conciliación automática Dev crea la entrega y Garmin confirma entrenamiento
+y calendario del día, con trabajo terminado y sin errores. No se cambia la
+preferencia de sincronización ni se reenvía la prueba anterior. La recepción se
+comprobará después de que Javier guarde y sincronice, usando exclusivamente el
+aviso y el trabajador normales; no se importarán archivos ni se reparará a mano
+la evidencia de esta segunda prueba. La confirmación de calendario no acredita
+por sí sola aparición física ni retorno a Trainer.
+
 ## Grabaciones sin desplazamiento · 03/11/2026
 
 Tras actualizar la app de escritorio vuelve a estar disponible el acceso al

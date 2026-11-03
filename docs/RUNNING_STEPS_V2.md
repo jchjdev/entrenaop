@@ -14,8 +14,8 @@ termina por tiempo, distancia o avance manual. El objetivo de intensidad de esta
 primera entrega es libre o un ritmo/rango; pulso, cadencia, potencia y zonas
 siguen pendientes y no se muestran como capacidades disponibles.
 
-Las repeticiones mantienen el orden y la recuperación final. La referencia es:
-calentamiento hasta avance manual → cinco repeticiones de 400 m con ritmo y
+Las series mantienen el orden y la recuperación final. La referencia es:
+calentamiento hasta avance manual → cinco series de 400 m con ritmo y
 90 s de recuperación → enfriamiento hasta avance manual. Se guardan siete
 tramos con cinco recuperaciones asociadas; se conservan doce pasos expandidos
 para resultados. Desde el 03/11 la exportación puede representar sus repeticiones
@@ -23,6 +23,10 @@ idénticas mediante `WorkoutRepeatStep`, sin cambiar esa secuencia ni el límite
 cien pasos incluyendo recuperaciones.
 
 ## Repeticiones nativas al exportar · 03/11/2026
+
+En el lenguaje de producto se habla de series de carrera. Aquí «repetición»
+designa la repetición técnica de un patrón al exportarlo, sin confundirla con
+las repeticiones dentro de una serie de fuerza.
 
 El compilador común añade `repeatBlocks` opcional: inicio sobre los pasos
 expandidos, tamaño del patrón, vueltas y omisión de la recuperación final. Se

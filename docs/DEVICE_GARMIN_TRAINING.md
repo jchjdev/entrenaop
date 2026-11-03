@@ -1,5 +1,15 @@
 # Envío común de carrera · INT-007 · 22/10/2026
 
+## Series de fuerza y contador · 03/11/2026
+
+El exportador de fuerza mantiene cada serie y cada descanso como `WorkoutStep`;
+la agrupación nativa añadida a carrera no se aplica aún a fuerza. El ensayo
+anterior de banca acredita envío, recepción automática del FIT y recuperación
+de series, repeticiones, cargas y tiempos, con revisión explícita y actividad
+simulada. No acredita el contador nativo de un grupo de series de fuerza, otros
+formatos ni detección física de repeticiones. No se presenta como equivalente
+a la aceptación del contador de carrera.
+
 **Repeticiones nativas · 03/11/2026:** la traducción de carrera añade
 `WorkoutRepeatStep` para patrones idénticos, conservando la pauta expandida de
 resultados y la omisión final exacta. No requiere cambiar el editor ni reenvía
