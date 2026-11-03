@@ -35,6 +35,23 @@ pasan los contratos de retorno Garmin y lectura Apple/Garmin con ROLLBACK.
 La simulación transaccional de la carrera real conserva todas sus vueltas y
 mediciones y permite un cierre idempotente; se revierte antes del despliegue.
 
+Desplegados solo en Dev `garmin-activity-ingest` v21 y `garmin-activities` v22,
+activos y con el archivo modificado contrastado frente a la fuente. Los demás
+archivos coinciden con la versión anterior y se conservan sus permisos HTTP.
+La recepción existente se concilia una vez mediante el comando de cierre del
+trabajador, con exclusión por cuenta, concesión vigente, candidatos sin cambios
+y revisión exacta de evidencia/receta. No se descarga de nuevo el FIT ni se crea
+una sesión de Auth ficticia. Se audita `stored_reconciliation` y la revisión de
+código; no se presenta esta reparación de una recepción previa como una nueva
+aceptación física del retorno automático.
+
+La cita real y su única ejecución quedan completadas. Se comprueban las medidas
+originales de cada tramo y recuperación, las tres series recortadas, RPE ausente,
+una sola confirmación y una sola observación Garmin. La asignación conserva al
+preparador autor vigente y genera una nueva revisión de resultado pendiente de
+su lectura profesional. La prueba SQL acredita ese lector con datos recortados;
+no se suplanta la sesión real del preparador ni se da por hecha su aceptación.
+
 ## Pauta identificada en la bandeja · 03/11/2026
 
 La bandeja propia de Trainer devolvía todas las actividades sin confirmación

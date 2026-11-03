@@ -6,8 +6,11 @@ nativos continuos y tipos compatibles permiten guardar lo realizado frente a
 la pauta sin exigir que una serie recortada mida lo prescrito. No se cambian
 mediciones, receta, permisos, ambigüedad ni ventana de cierre. Pasan 268 pruebas
 de servidor, tipos y contratos SQL; la simulación del 10×400 real cierra de forma
-idempotente y conserva todas las mediciones, con ROLLBACK. Despliegue Dev y
-conciliación de la recepción existente en curso. No se cambia el binario iOS.
+idempotente y conserva todas las mediciones, con ROLLBACK. Receptores Dev v21/v22
+activos y contrastados. La recepción existente se concilia con auditoría: cita
+completada, una ejecución, medidas originales y nueva revisión para su autor.
+No se cambia el binario iOS. Continúan protegidos los casos sin correspondencia
+segura y las grabaciones sin desplazamiento.
 [Contrato](DEVICE_GARMIN_ACTIVITY_RETURN.md#series-recortadas-con-identidad--03112026).
 
 **Dispositivos · lectura profesional común de resultados recibidos · 03/11/2026:**
