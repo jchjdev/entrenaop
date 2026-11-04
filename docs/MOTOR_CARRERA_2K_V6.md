@@ -100,6 +100,66 @@ versionados, pendientes de calibración física. El modelo de ritmo estimado des
 2 km no equivale a medir umbrales fisiológicos. Las simulaciones contrastan
 decisiones y límites, no predicen adaptaciones ni garantizan las metas.
 
+## Resistencia y estancamiento en 2 km · 04/11/2026
+
+En un estudio de seis semanas y 20 participantes, tanto la carrera continua
+como los esprints de 30 segundos en cinta mejoraron el tiempo de 2 km. Los
+protocolos fueron distintos, así que el resultado apoya varias vías de trabajo
+y no fija su reparto en EntrenaOP. En otro ensayo, 30 corredores con experiencia
+fueron asignados a entrenamiento concurrente o control durante diez semanas;
+se observó una diferencia de 11,3 segundos favorable al concurrente en 2 km.
+Los participantes corrían más de 30 km semanales antes del estudio.
+[Macpherson et al.](https://pubmed.ncbi.nlm.nih.gov/20473222/),
+[Trowell et al.](https://onlinelibrary.wiley.com/doi/full/10.1111/sms.14092).
+
+El ensayo de Nevin de 2026 midió 2 km en 48 soldados británicos entrenados.
+Su resumen informa de ventajas claras en peso muerto y dominadas; el
+resultado de carrera no establece superioridad del programa para este
+objetivo. En 3 km, Hov observó que 4 × 4 min produjo mayor mejora que uno
+de los dos formatos de esprint comparados en hombres entrenados. Es apoyo
+indirecto para incluir intervalos aeróbicos, con dosis y población distintas
+de las de nuestro caso de 2 km.
+[Nevin et al.](https://pubmed.ncbi.nlm.nih.gov/41576259/),
+[Hov et al.](https://pubmed.ncbi.nlm.nih.gov/36314990/).
+
+Reutilizamos del banco de Javier las funciones de rodaje fácil, bloques
+sostenidos, intervalos aeróbicos y práctica específica. Los formatos largos
+como 3 × 800 conservan sus condiciones de entrada. Una marca repetida no
+informa por sí sola de que falte velocidad, volumen o recuperación.
+[Catálogo candidato](CATALOGO_CANDIDATO_CARRERA_2K.md).
+
+### Comparación ejecutada en Dev
+
+El [diagnóstico SQL](audits/estancamiento_carrera_2k_2026_11_04.sql) usa el
+perfil ficticio de 9:55 con objetivo de 8:20, aislado de fuerza, con tres
+controles fijos de 9:55 y cuatro exposiciones al mismo formato de intervalos.
+Las respuestas son entradas de prueba. Se consultó la política instalada
+en solo lectura y con `ROLLBACK`.
+
+| Respuesta a los intervalos | Tendencia de intervalos | Próxima calidad |
+| --- | --- | --- |
+| Ritmo y esfuerzo iguales | Estable | V, de 4 × 2 a 5 × 2 min |
+| Ritmo igual, esfuerzo baja de 7 a 6 | Estable | V, de 4 × 2 a 5 × 2 min |
+| Mejor ritmo a esfuerzo similar | Mejora | T, 2 × 5 min sostenidos |
+| Esfuerzo ausente en las últimas dos exposiciones | Desconocida | V, mantiene 4 × 2 min |
+
+La marca de 2 km se mantiene estable en los cuatro casos. El motor ya
+reconoce series más rápidas a esfuerzo comparable sin mejora de la marca y
+refuerza el trabajo sostenido. Usa el esfuerzo para valorar tolerancia y
+comparabilidad, pero la tendencia por familia se calcula por ritmo. Por eso,
+en la segunda fila no aparece como señal que el mismo trabajo costó menos.
+
+La propuesta es comparar **ritmo, esfuerzo y marca** antes de concluir que el
+corredor lleva tiempo sin mejorar. Registrar «mismo trabajo con menor esfuerzo»
+como una observación es una hipótesis de seguimiento. En el ensayo de
+Nuuttila con corredores recreativos, una prueba de campo a esfuerzo percibido
+fue reproducible y tuvo sensibilidad limitada para cambios pequeños. Su
+protocolo evalúa velocidad a esfuerzo fijado, por lo que no valida un punto de
+RPE a ritmo fijo como umbral para EntrenaOP. El siguiente paso propuesto es
+probar el diagnóstico sobre entrenamientos comparables sin convertir esa señal
+en cambios automáticos de dosis ni en una nueva marca.
+[Nuuttila et al.](https://pubmed.ncbi.nlm.nih.gov/39244198/).
+
 ## Verificación
 
 Instalado y verificado en desarrollo el 16/10/2026:

@@ -3,10 +3,12 @@
 **Estancamiento · línea base · 04/11/2026.** Revisados los capítulos pertinentes
 de Helms y NSCA, el banco de Javier y estudios originales de fuerza y carrera.
 Quince casos de solo lectura en Dev contrastan pauta tolerada, datos ausentes,
-dificultad, tendencia de marcas y decisión de medir. El siguiente paso propuesto
-es comparar un diagnóstico para flexiones en dos minutos con la política vigente,
-antes de decidir si procede modificar la prescripción.
-[Fuentes, resultados y casos reproducibles](PROGRAMA_ADAPTATIVO.md#diagnóstico-de-estancamiento--04112026).
+dificultad, tendencia de marcas y decisión de medir. Cuatro escenarios adicionales
+con el mismo 2 km contrastan ritmo de intervalos, esfuerzo y marca. El siguiente
+paso propuesto para carrera es evaluar si mostrar los cambios de esfuerzo en
+trabajo comparable mejora el diagnóstico de una marca estable.
+[Línea base](PROGRAMA_ADAPTATIVO.md#diagnóstico-de-estancamiento--04112026),
+[evidencia y escenarios de 2 km](MOTOR_CARRERA_2K_V6.md#resistencia-y-estancamiento-en-2-km--04112026).
 
 **STR-042 · Evidencia de rendimiento del mismo día · 04/11/2026.** La
 regresión de servidor activa la preparación, revisa e inicia las citas por
