@@ -1,12 +1,22 @@
 # Roadmap de EntrenaOP
 
+**Auditoría de los tres modos · 04/11/2026.** La misma preparación FAS se
+comparó en nueve escenarios por modo. Pasaron las guardas de tiempo, alcance
+y publicación de las 27 propuestas. Las 18 listas se publicaron con cuentas
+ficticias y `ROLLBACK`. Se reprodujo un control de 2 km publicado tras contar
+cuatro sesiones del mismo día como cuatro días, dos desempates que alteran
+la prescripción de carrera, una discrepancia al progresar en agilidad y avisos
+contradictorios al faltar marca. **Siguiente bloque recomendado:** corregir la
+evidencia de carrera, empezando por el conteo de días de los controles.
+[Informe y reproducciones](audits/AUDITORIA_ADAPTATIVA_2026_11_04.md).
+
 **Estancamiento · línea base · 04/11/2026.** Revisados los capítulos pertinentes
 de Helms y NSCA, el banco de Javier y estudios originales de fuerza y carrera.
 Quince casos de solo lectura en Dev contrastan pauta tolerada, datos ausentes,
 dificultad, tendencia de marcas y decisión de medir. Cuatro escenarios adicionales
-con el mismo 2 km contrastan ritmo de intervalos, esfuerzo y marca. El siguiente
-paso propuesto para carrera es evaluar si mostrar los cambios de esfuerzo en
-trabajo comparable mejora el diagnóstico de una marca estable.
+con el mismo 2 km contrastan ritmo de intervalos, esfuerzo y marca. Evaluar
+los cambios de esfuerzo como señal de seguimiento queda supeditado a corregir
+los hallazgos de evidencia de carrera de la auditoría posterior.
 [Línea base](PROGRAMA_ADAPTATIVO.md#diagnóstico-de-estancamiento--04112026),
 [evidencia y escenarios de 2 km](MOTOR_CARRERA_2K_V6.md#resistencia-y-estancamiento-en-2-km--04112026).
 
