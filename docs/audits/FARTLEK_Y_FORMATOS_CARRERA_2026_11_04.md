@@ -109,3 +109,71 @@ propia. Para ofrecerlo a quien usa solo cronómetro, primero hay que comprobar
 de extremo a extremo un contrato de duración, pausas y esfuerzo con distancia
 ausente. Ese contrato debe distinguir tolerancia al fartlek de un parcial
 comparable o una marca de examen.
+
+## Revalidación de la carrera y la publicación tras los siete arreglos
+
+Se repite el cruce de horizontes de 26 y 52 semanas sobre Dev, con el bloque
+`3bf19e1c`. El barrido conserva los 16 cruces de brazo y guion. El indicador
+`v0_unknown` usa ahora el evaluador vigente de v6, que admite resultados del
+4 × 2 por tiempo. Los recuentos de sesiones y distancias proceden del motor.
+Las marcas externas del barrido son entradas, por lo que su frecuencia no
+sirve para contar controles programados.
+
+El [ensayo FAS](../../tools/simulate_fas_six_month_case.py) comprueba por
+separado la agenda materializada con los RPC de la app y `--automatic-controls`.
+Se ejecuta con `--weeks 26` y `--weeks 52`. El horizonte anual mueve la fecha
+del examen y mantiene la última capacidad ficticia del guion tras la semana
+26. Las revisiones de contexto son acciones explícitas de la fixture. Las dos
+ejecuciones se revierten con `ROLLBACK`.
+
+Con distancia, el brazo de pauta actual repitió los recuentos anteriores.
+A 26 semanas calculó 13 sesiones específicas de 400 m, y a 52 semanas
+calculó 54 de 400 m, 18 de 600 m y 7 de 800 m. El ensayo de pauta actual con
+4 × 2 por tiempo llegó a 30 sesiones de 400 m en el horizonte anual. La
+[prueba de progresión](../../supabase/tests/running_format_progression_v6.sql)
+confirmó en Dev que una dosis compatible permite prescribir 5 × 400,
+4 × 600 y 3 × 800 m.
+
+El barrido completó 576 trayectorias, 22.464 semanas y 59.218 sesiones
+calculadas. No hubo semanas vacías, dos citas de carrera en un mismo día,
+sesiones que excedieran su hueco ni calidades en días consecutivos. Los
+recuentos de 400, 600 y 800 m coincidieron con la tabla histórica en los cuatro
+brazos. El evaluador de v6 reconoció el 4 × 2 por tiempo cuando había datos
+suficientes y ningún fartlek acreditó la dosis de esa receta.
+
+El caso FAS de 26 semanas publicó 98 citas, con 52 sesiones de carrera y
+cuatro controles de 2 km. Los controles se separaron 37, 33 y 35 días y se
+eligieron porque la referencia limitaba la pauta. Coinciden en número con el
+ensayo histórico FAS v6. No se aportaron controles manuales. Todas las
+sesiones de carrera de la decisión aparecieron en la agenda y cada cita
+cupó en el hueco previsto. El ensayo histórico publicó 101 citas físicas
+y las mismas 52 sesiones de carrera. El número total de controles de todas
+las pruebas pasó de 12 a 8.
+
+El caso FAS anual publicó 32 semanas, 122 citas y 69 sesiones de carrera. No
+faltaron sesiones de carrera respecto a la decisión. Pautó cinco controles
+de 2 km (semanas 5, 11, 15, 20 y 26), separados por 33 a 37 días. Todos se
+eligieron porque la referencia limitaba la pauta. El quinto acreditó el
+objetivo ficticio de 8:20 y no hubo más controles en las semanas verificadas.
+Al publicar la semana 33 y al reintentar, la base devolvió `53200`
+([`out_of_memory`](https://www.postgresql.org/docs/current/errcodes-appendix.html)).
+La transacción se revirtió. El registro consultado no precisó la causa, por
+lo que no se atribuye el error al motor ni se dan por verificadas las semanas
+33 a 52 en este recorrido. El script conserva el JSON parcial y devuelve
+error si la publicación queda en revisión tras el reintento.
+
+Al cotejar la decisión y los bloques materializados, el control de plancha
+retiró la única práctica de agilidad en las semanas 3 y 23. Hubo frecuencias
+de rendimiento que no coincidieron con lo publicado en las semanas 3, 4,
+23 y 24. El caso anual reprodujo la pérdida de agilidad en la semana 3.
+En los casos con control de carrera, la guarda de los siete arreglos conservó
+la cobertura obligatoria.
+
+La corrección propuesta es aplicar la misma comprobación de cobertura a
+cualquier control. Para cada fecha candidata, proyectar los bloques que
+quedarían tras sustituir el objetivo del test y retirar el trabajo que
+interfiere con la recuperación. Si desaparece otra prueba obligatoria,
+probar el siguiente hueco o aplazar el test. Al publicar, cotejar frecuencias
+y dosis entregadas con esos bloques, conservando por separado la dosis
+ordinaria que lee la siguiente semana. La prueba debe cubrir tanto un hueco
+alternativo como una semana donde conviene aplazar el control.

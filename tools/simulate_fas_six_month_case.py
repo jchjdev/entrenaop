@@ -1,4 +1,4 @@
-"""Ensayo solicitado: cuatro pruebas, seis meses y cuatro días disponibles.
+"""Ensayo FAS: cuatro pruebas, hasta 52 semanas y cuatro días disponibles.
 
 Ejecuta los RPC instalados de DESARROLLO dentro de una conexión/transacción
 única y termina siempre con ROLLBACK. Las capacidades y los resultados son
@@ -24,6 +24,7 @@ sys.path.insert(0, str(ROOT / 'build/simulation-python'))
 import psycopg
 
 AVAILABILITY = {'1': 60, '3': 75, '5': 60, '6': 75}
+START = date(2026, 10, 19)
 EQUIPMENT = ['cones', 'measuring_tape', 'tennis_ball', 'chalk', 'bench', 'barbell', 'plates']
 # Trayectoria hipotética favorable, con dos mesetas. No se escribe como
 # resultado de test semanal ni se utiliza para modificar prescripciones.
@@ -79,7 +80,7 @@ do $$ declare u uuid:=gen_random_uuid(); g uuid; a uuid; ref uuid; p jsonb; begi
  insert into public.pro_access_grants(user_id,source,starts_at,ends_at,reason)
  values(u,'development_manual','2026-01-01','2028-01-01','Ensayo ficticio con ROLLBACK');
  insert into public.preparation_goals(user_id,program_id,target_date)
- values(u,'fas_periodic_assessment','2027-04-19') returning id into g;
+ values(u,'fas_periodic_assessment',current_setting('entrenaop.case_exam')::date) returning id into g;
  perform set_config('entrenaop.fixture_goal',g::text,true);
  insert into public.fas_periodic_assessments(user_id,preparation_goal_id,catalog_version,category,age_at_assessment,age_band,is_pre_effective_reference)
  values(u,g,'es_def_15_2026_periodic_2027_v1','men',30,'26_30',true) returning id into a;
@@ -108,7 +109,7 @@ do $$ declare u uuid:=gen_random_uuid(); g uuid; a uuid; ref uuid; p jsonb; begi
   'task','{"exercise_code":"slalom_ball_course_16m","exercise_version":1,"protocol_key":"def_15_2026_agility","protocol_version":1,"setup_key":"Siete conos y corredor medido de 16 por 2 metros","measurement":"TIME_FOR_COURSE","load_mode":"bodyweight","target_value":14.3,"intent":"practice"}'::jsonb,
   'reference_kind','repeated_work','targets','[14.3,14.5]'::jsonb,'observed_on','2026-10-18','current_capacity_confirmed',true,
   'rest_seconds',180,'frequency',1));
- perform public.save_adaptive_program_preferences(g,'2027-04-19',
+ perform public.save_adaptive_program_preferences(g,current_setting('entrenaop.case_exam')::date,
   '{"legacy:upper_body_push_ups_2_min":{"measurement":"REPS_IN_TIME","value":50},"legacy:abdominal_plank":{"measurement":"DURATION","value":240},"legacy:agility_speed_circuit":{"measurement":"TIME_FOR_COURSE","value":12.5}}');
 end $$;
 """
@@ -149,7 +150,7 @@ begin
      v:=least(v,floor(plank_cap*0.75));
     elsif es.performance_prescription->>'exercise_code'='slalom_ball_course_16m'
        and es.performance_prescription->>'measurement'='TIME_FOR_COURSE' then
-     v:=greatest(14.0-1.5*i/25.0,coalesce(v,14.3)*0.99);
+     v:=greatest(14.0-1.5*least(i,25)/25.0,coalesce(v,14.3)*0.99);
     end if;
     r:=jsonb_build_object('value',case when es.performance_prescription->>'measurement'<>'PASS_FAIL' then v end,
      'succeeded',case when es.performance_prescription->>'measurement'='PASS_FAIL' then true end,
@@ -186,13 +187,15 @@ def main():
     parser.add_argument('--migration',type=Path,help='Ensayar una migración pendiente sin aplicarla permanentemente')
     parser.add_argument('--automatic-controls',action='store_true',help='Responder a controles pautados; no aportar controles manuales desde la fixture')
     args = parser.parse_args()
-    if not 1 <= args.weeks <= 26:
-        parser.error('--weeks debe estar entre 1 y 26')
+    if not 1 <= args.weeks <= 52:
+        parser.error('--weeks debe estar entre 1 y 52')
+    exam = START + timedelta(weeks=max(26, args.weeks))
     output = {'scenario': {'initial': {'run_seconds':595,'push_ups':10,'plank_seconds':80,'agility_seconds':14},
                           'target': {'run_seconds':500,'push_ups':50,'plank_seconds':240,'agility_seconds':12.5},
                           'availability':AVAILABILITY,'equipment_assumed':EQUIPMENT,
-                          'start':'2026-10-19','exam':'2027-04-19',
-                          'fictional_capacity_push':PUSH,'fictional_capacity_plank':PLANK},
+                          'start':str(START),'exam':str(exam),
+                          'fictional_capacity_push':PUSH,'fictional_capacity_plank':PLANK,
+                          'capacity_after_week_26':'mantiene el último valor del guion'},
               'weeks': [], 'events': [], 'rolled_back':False}
     c = connect(args.cli)
     execute_week=EXECUTE_WEEK
@@ -222,6 +225,7 @@ def main():
             source=re.sub(r'(?i)commit;\s*$','',source)
             c.execute(source)
         c.execute(CLOCK)
+        c.execute("select set_config('entrenaop.case_exam',%s,true)", (str(exam),))
         c.execute(SETUP)
         g = one(c, "select current_setting('entrenaop.fixture_goal')::uuid")
         output['setup'] = one(c, 'select public.get_preparation_training_setup(%s)', (g,))
@@ -233,15 +237,25 @@ def main():
         c.execute("select public.activate_adaptive_program(%s,'2026-10-19',%s::jsonb)", (g,json.dumps(p)))
         for i in range(args.weeks):
             started = time.monotonic()
-            wk = date(2026,10,19)+timedelta(days=7*i)
+            wk = START+timedelta(weeks=i)
             p = one(c, 'select decision from public.preparation_week_decisions where preparation_goal_id=%s and week_start=%s and superseded_at is null', (g,wk))
             schedules = one(c, "select coalesce(jsonb_agg(to_jsonb(sw) order by scheduled_date),'[]') from public.scheduled_workouts sw where preparation_goal_id=%s and scheduled_date between %s and %s and status<>'cancelled'", (g,wk,wk+timedelta(days=6)))
             if not schedules:
                 raise RuntimeError(f'Semana {i+1} sin entrenamientos')
             for s in schedules:
                 assert str(date.fromisoformat(s['scheduled_date']).isoweekday()) in AVAILABILITY
-            assert len(schedules)<=4
-            c.execute("select set_config('entrenaop.case_week',%s,true),set_config('entrenaop.case_index',%s,true),set_config('entrenaop.push_cap',%s,true),set_config('entrenaop.plank_cap',%s,true)", (str(wk),str(i),str(PUSH[i]),str(PLANK[i])))
+            assert len(schedules)<=4 and len({s['scheduled_date'] for s in schedules})==len(schedules)
+            materialized = one(c, """
+              select jsonb_build_object('running', coalesce((select jsonb_agg(rs.prescription order by sw.scheduled_date)
+                from public.scheduled_workouts sw join public.running_week_sessions rs on rs.scheduled_workout_id=sw.id
+                where sw.preparation_goal_id=%s and sw.scheduled_date between %s and %s and sw.status<>'cancelled'),'[]'),
+              'performance',coalesce((select jsonb_agg(jsonb_build_object('reference_id',pw.reference_id,'dose',pw.dose,'date',sw.scheduled_date)
+                order by sw.scheduled_date,pw.block_order) from public.scheduled_workouts sw
+                join public.performance_week_work pw on pw.scheduled_workout_id=sw.id
+                where sw.preparation_goal_id=%s and sw.scheduled_date between %s and %s and sw.status<>'cancelled'),'[]'))
+              """, (g,wk,wk+timedelta(days=6),g,wk,wk+timedelta(days=6)))
+            capacity_index = min(i, len(PUSH)-1)
+            c.execute("select set_config('entrenaop.case_week',%s,true),set_config('entrenaop.case_index',%s,true),set_config('entrenaop.push_cap',%s,true),set_config('entrenaop.plank_cap',%s,true)", (str(wk),str(i),str(PUSH[capacity_index]),str(PLANK[capacity_index])))
             c.execute(execute_week)
             state = one(c, 'select to_jsonb(a) from public.adaptive_program_states a where preparation_goal_id=%s', (g,))
             if state['status']=='needs_review':
@@ -264,13 +278,14 @@ def main():
                 state = one(c, 'select to_jsonb(a) from public.adaptive_program_states a where preparation_goal_id=%s', (g,))
                 output['events'][-1]['after']=state
             executed = one(c, "select coalesce(jsonb_agg(jsonb_build_object('date',sw.scheduled_date,'block_order',es.block_order,'set_order',es.set_order,'format',es.block_format,'prescription',es.performance_prescription,'target_duration',es.target_duration_seconds,'target_distance',es.target_distance_meters,'target_pace_min',es.target_pace_min_seconds_per_km,'target_pace_max',es.target_pace_max_seconds_per_km,'actual_duration',es.actual_duration_seconds,'actual_distance',es.actual_distance_meters,'actual_rpe',es.actual_rpe,'result',es.performance_result) order by sw.scheduled_date,es.block_order,es.set_order),'[]') from public.scheduled_workouts sw join public.workout_execution_sets es on es.execution_id=sw.execution_id where sw.preparation_goal_id=%s and sw.scheduled_date between %s and %s", (g,wk,wk+timedelta(days=6)))
-            output['weeks'].append({'number':i+1,'week_start':str(wk),'decision':p,'schedules':schedules,'executed':executed,'state_after':state,'seconds':round(time.monotonic()-started,2)})
+            output['weeks'].append({'number':i+1,'week_start':str(wk),'decision':p,'schedules':schedules,'materialized':materialized,'executed':executed,'state_after':state,'seconds':round(time.monotonic()-started,2)})
             args.output.parent.mkdir(parents=True,exist_ok=True)
             args.output.write_text(json.dumps(output,ensure_ascii=False,indent=2,default=str),encoding='utf-8')
             print(f'Semana {i+1:02d}: {len(schedules)} días; {len(executed)} registros; estado {state["status"]}; {time.monotonic()-started:.1f}s',flush=True)
             if state['status']=='needs_review':
                 output['blocked']=state
-                break
+                code = state.get('last_error_code') or state['status']
+                raise RuntimeError(f'La simulación se detuvo tras la semana {i+1}: {code}. Revisar el JSON del ensayo.')
         output['final_setup'] = one(c, 'select public.get_preparation_training_setup(%s)', (g,))
     except Exception as error:
         # El error SQL no contiene credenciales: las conexiones se abren fuera

@@ -100,7 +100,8 @@ begin
       when scenario='dificultad' and i between 5 and 6 then 'hard' else 'ok' end;
      execution:=pg_temp.fartlek_lab_execution(recipe,
        arm in ('actual_reloj','fartlek_reloj') and recipe->>'variant_code' in ('V_0_v1','V_fartlek_8min_lab'),response);
-     evaluation:=public.running_evaluate_v2(recipe,execution);
+     evaluation:=case when recipe->>'variant_code'='V_fartlek_8min_lab' then public.running_evaluate_v2(recipe,execution)
+       else public.running_evaluate_manual_time_v1(recipe,execution) end;
      dose_check:=null;
      if recipe->>'variant_code'='V_fartlek_8min_lab' then
       dose_check:=public.running_evaluate_v2(public.running_session_v2('V',0,c.anchor,180),execution);
@@ -121,6 +122,11 @@ with runs as (
   recipe->>'variant_code' as variant, (recipe->>'minutes')::int as minutes,
   (select max((w->>'meters')::int) from jsonb_array_elements(recipe->'segments') w where w->>'role'='work') as meters
  from fartlek_sessions s
+), weekly_counts as (
+ select wk.profile,wk.agenda,wk.legs,wk.horizon,wk.week_no,count(r.week_no) as sessions,
+  count(distinct r.run_date) as days
+ from fartlek_weeks wk left join runs r using(profile,agenda,legs,horizon,week_no)
+ group by wk.profile,wk.agenda,wk.legs,wk.horizon,wk.week_no
 ), ordered as (
  select r.*,lag(run_date) over(partition by profile,agenda,legs,horizon order by run_date) as prior_date
  from runs r where family in ('T','V','S','R')
@@ -136,6 +142,10 @@ select current_setting('entrenaop.fartlek_arm') as arm,current_setting('entrenao
  h as weeks_per_plan,
  (select count(*) from fartlek_weeks where horizon=h) as weeks,
  (select count(*) from fartlek_weeks where horizon=h and week_no=h) as trajectories,
+ (select count(*) from runs where horizon=h) as sessions,
+ (select count(*) from weekly_counts where horizon=h and sessions=0) as empty_weeks,
+ (select count(*) from weekly_counts where horizon=h and sessions<>days) as duplicate_day_weeks,
+ (select count(*) from runs where horizon=h and family='C') as controls_in_pure_motor,
  (select count(*) from fartlek_weeks where horizon=h and mode='reentry') as reentry_weeks,
  (select count(*) from fartlek_weeks where horizon=h and mode='global_deload') as global_deload_weeks,
  (select count(*) from runs where horizon=h and family='T') as tempo,
@@ -143,6 +153,10 @@ select current_setting('entrenaop.fartlek_arm') as arm,current_setting('entrenao
  (select count(*) from runs where horizon=h and family='S') as specific,
  (select coalesce(jsonb_object_agg(meters,n),'{}') from
   (select meters,count(*) as n from runs where horizon=h and family='S' and meters is not null group by meters) q) as distances,
+ (select coalesce(jsonb_agg(jsonb_build_object('meters',meters,'phase',phase,'first_week',first_week,'sessions',n)
+    order by meters,phase),'[]') from
+  (select meters,phase,min(week_no) as first_week,count(*) as n from checks
+   where horizon=h and family='S' and meters in (400,600,800) group by meters,phase) q) as specific_by_phase,
  (select count(*) from runs where horizon=h and variant='V_0_v1' and evaluation->>'status'='unknown') as v0_unknown,
  (select count(*) from runs where horizon=h and variant='V_fartlek_8min_lab') as fartlek,
  (select count(*) from runs where horizon=h and variant='V_fartlek_8min_lab' and evaluation->>'status'='tolerated') as fartlek_tolerated,
