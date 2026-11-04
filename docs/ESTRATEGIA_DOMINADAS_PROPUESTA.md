@@ -138,3 +138,57 @@ ensayar la vinculación de una prueba en Admin, el registro real y la publicaci�
 de una semana siguiente con el coordinador de servidor. El lastre, las supinas,
 el salto y los parciales quedan pendientes de modelar con una referencia y una
 indicación propias. Las agendas de carrera de este ensayo son ejemplos fijos.
+
+## Variante candidata con dos sesiones de calistenia
+
+Javier propone alternar agarres en australianas y combinar el tirón vertical
+asistido con negativas de otro agarre. En personas con dominadas libres propone
+combinar pronas, supinas cerradas y trabajo rápido, con variantes de tronco
+cuando el nivel lo permita. Se plantea un segundo brazo de laboratorio para
+comparar esta semana con el ensayo inicial.
+
+Mantener un bloque de dominada prona de recorrido completo con un montaje
+repetible. Al inicio puede ir asistido y más adelante pasa a libre. Repetirlo
+de una semana a otra permite leer el progreso. Los demás agarres cambian la
+tarea. Los estudios de [dominadas](https://pubmed.ncbi.nlm.nih.gov/28011412/)
+y [remos invertidos](https://pubmed.ncbi.nlm.nih.gov/26422610/) muestran cómo
+cambia la actividad muscular durante la ejecución. No comparan qué combinación
+mejora más la marca estricta a lo largo de un plan.
+
+| Sesión candidata desde cero | Bloque principal | Apoyo si ya se tolera |
+| --- | --- | --- |
+| A | Prona asistida. Ensayar el recorrido completo con ayuda y agarre repetibles. | Australianas supinas, 5 normales + 5 cerradas y 5 s de isometría cerrada. Una negativa neutra puede ocupar el lugar del apoyo si se controla el descenso y hay agarre neutro disponible. |
+| B | Asistida neutra o supina según material y control del gesto. | Australianas en tres anchos. Para comparar al principio, probar 3 abiertas cómodas + 4 normales + 3 cerradas y 5 s de isometría. Una negativa prona controlada puede ocupar el lugar del apoyo. |
+
+Las cifras sirven para representar el circuito, con pausas y esfuerzo por
+definir en la calibración. Pasar de 5 + 5 a 5 + 5 + 5 supone un 50 % más de
+repeticiones en ese bloque aunque el hold siga en 5 s. Introducir primero el
+agarre manteniendo el total permite distinguir variedad de aumento de volumen.
+La suma de repeticiones sirve para describir la receta. El esfuerzo, el montaje,
+el recorrido, los segundos de hold y la duración de las negativas se guardan
+por separado. La variedad de agarres también exige comprobar que se tolera.
+
+Con repeticiones libres consolidadas, probar un día de fuerza o velocidad con
+pocas pronas limpias y una variante cerrada calibrada, y otro con volumen y una
+serie continua en el agarre objetivo. Para la parte rápida, pedir intención de
+subir rápido, descenso controlado y terminar cuando cae claramente la velocidad
+o se pierde el recorrido. La pérdida visual de velocidad es una señal práctica.
+No equivale al umbral instrumental del ensayo de
+[Sánchez-Moreno y colaboradores](https://doi.org/10.1519/JSC.0000000000003500).
+El estudio de [Vigouroux y Devise](https://doi.org/10.3390/bioengineering11010085)
+aporta datos de velocidad y fuerza en escaladores entrenados. La
+[posición ACSM de 2026](https://doi.org/10.1249/MSS.0000000000003897) distingue
+la intención rápida para potencia del trabajo de fuerza máxima y no encuentra
+una ventaja consistente de llegar al fallo.
+
+Rodillas al pecho, L-sit y variantes alternas pueden ensayarse como trabajo
+de control del tronco o de calistenia con su propia referencia. Cuando se
+combinan con la dominada cambian el montaje de esa variante y se registran
+aparte de las estrictas de la prueba.
+
+La comparación debería usar los mismos perfiles, días, minutos disponibles,
+carrera y guiones de respuesta. Revisar si ambas propuestas conservan práctica
+prona comparable, qué apoyos entran o se aplazan y si una subida de ayuda,
+volumen o intensidad se atribuye al montaje correcto. El ensayo del software
+puede verificar esas decisiones. La comparación de mejora en el máximo
+estricto necesita registros de un piloto real.
