@@ -1,5 +1,12 @@
 # Registro de decisiones vigentes
 
+**Pulso de Garmin y Apple Watch · ensayo previo · 04/11/2026.**
+Javier pide contrastar la frecuencia cardíaca en rodajes comparables antes de
+incorporarla al motor. Se conserva como dato de consulta. La observación
+prototipada requiere mediciones repetidas dentro de la misma persona y queda
+pendiente de validación retrospectiva en rodajes reales. Los márgenes del ensayo
+son parámetros de laboratorio. [Alcance](MOTOR_CARRERA_2K_V6.md#pulso-en-rodajes-comparables).
+
 **PLAN-032 · Desviaciones leves de ritmo · 04/11/2026.**
 Javier confirma que un parcial ligeramente fuera del objetivo debe seguir
 contando si el resto de la ejecución es compatible. Con una pauta de

@@ -232,14 +232,15 @@ guarda 119 s de trabajo y 121 s de recuperación frente a 120 s previstos,
 repite el guardado, corrige y calcula la siguiente semana. También cubre
 una repetición omitida, esfuerzo 9/10 y una serie por distancia.
 
-La frecuencia cardíaca se conserva para consulta cuando llega del dispositivo.
-La decisión del motor usa duración, distancia, pausas y esfuerzo, según la
-evidencia disponible. Para estudiar la frecuencia cardíaca conviene empezar
-con comparaciones dentro de la misma persona, en rodajes de condiciones
-parecidas y con mediciones repetibles. Nuuttila y colaboradores estudiaron
-marcadores cardíacos y subjetivos en corredores recreativos durante una
-sobrecarga. Los marcadores tuvieron respuestas distintas según el contexto
-y el grupo. [Estudio original](https://pmc.ncbi.nlm.nih.gov/articles/PMC11235883/).
+## Pulso en rodajes comparables
+
+La frecuencia cardíaca recibida se conserva para consulta. El cálculo vigente
+usa duración, distancia, pausas y esfuerzo según la evidencia disponible. El
+ensayo de pulso se limita a observar rodajes suaves de la misma persona, en
+condiciones similares y con el mismo sensor. Antes de darle peso en el plan
+queda pendiente medir su repetibilidad en rodajes reales y comprobar qué
+información aporta sobre el ritmo y el esfuerzo ya registrados.
+[Evidencia y prueba reproducible](audits/PULSO_RODAJES_COMPARABLES_2026_11_04.md).
 
 ## Desviaciones leves de ritmo · PLAN-032
 
