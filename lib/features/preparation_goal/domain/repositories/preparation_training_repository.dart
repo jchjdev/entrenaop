@@ -12,6 +12,7 @@ class PreparationTrainingData {
     this.proRequired = false,
     bool? availableRunning,
     this.availablePerformance = true,
+    this.personalObjectiveLimit,
     this.trainingScope = TrainingScope.full,
     this.activeProgram,
     this.programName,
@@ -33,6 +34,7 @@ class PreparationTrainingData {
   final bool availableRunning;
   final bool proRequired;
   final bool availablePerformance;
+  final int? personalObjectiveLimit;
   final TrainingScope trainingScope;
   final Map<String, dynamic>? activeProgram;
   final String? programName;

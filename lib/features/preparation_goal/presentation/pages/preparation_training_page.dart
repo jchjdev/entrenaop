@@ -417,6 +417,7 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
     Map<String, dynamic>? existing,
     String? initialWorkCode,
     String? initialMeasurement,
+    bool replacePersonalObjective = false,
   }) async {
     if (_referenceRoute != null) return;
     final data = _data!;
@@ -435,11 +436,10 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
         initialMeasurement: initialMeasurement,
         onSave: (input) async {
           if (!mounted) throw StateError('La preparación ya no está abierta.');
-          await widget.repository.saveReference(
-            widget.goalId,
-            input.reference,
-            testId: input.testId,
-          );
+          await widget.repository.saveReference(widget.goalId, {
+            ...input.reference,
+            if (replacePersonalObjective) 'replace_personal_objective': true,
+          }, testId: input.testId);
         },
       ),
     );
@@ -448,7 +448,9 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
     if (identical(_referenceRoute, route)) _referenceRoute = null;
     if (input == null || !mounted) return;
     await _run(() async {
-      _equipment.addAll(input.equipment);
+      if (objective != null || data.personalObjectiveLimit == null) {
+        _equipment.addAll(input.equipment);
+      }
       _savedContextStamp = _contextStamp;
       await _load(initialize: false);
       if (_reviewOnly) {
@@ -1130,6 +1132,19 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
                       }),
                 child: const Text('Dejar de utilizar esta referencia'),
               ),
+            if (row != null &&
+                _data!.personalObjectiveLimit != null &&
+                _personalObjectiveCount > 1 &&
+                _personalReferences.contains(row))
+              TextButton(
+                onPressed: _busy
+                    ? null
+                    : () => _reference(
+                        existing: row,
+                        replacePersonalObjective: true,
+                      ),
+                child: const Text('Mantener este objetivo personal'),
+              ),
             if (objective != null)
               for (final alternative in _data!.references.where(
                 (r) => r['objective_key'] == key && r['id'] != row?['id'],
@@ -1221,6 +1236,19 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
       ),
     ],
   );
+  Iterable<Map<String, dynamic>> get _personalReferences =>
+      _data!.references.where(
+        (row) =>
+            row['test_id'] == null &&
+            !(row['objective_key'] as String? ?? '').startsWith('legacy:') &&
+            !_data!.objectives.any(
+              (o) => o['objective_key'] == row['objective_key'],
+            ),
+      );
+
+  int get _personalObjectiveCount =>
+      _personalReferences.map((r) => r['objective_key']).toSet().length;
+
   Widget _movements() => Form(
     key: _targetFormKey,
     autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -1249,10 +1277,27 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
           ),
         ))
           _movementCard(null, row),
+        if (_data!.personalObjectiveLimit != null)
+          Text(
+            _personalObjectiveCount > 1
+                ? 'Elige qué objetivo personal quieres mantener. Mientras tanto, se prepara la semana de tus pruebas.'
+                : 'Puedes tener un objetivo personal. Se añade cuando cabe después del trabajo de tus pruebas.',
+          ),
         OutlinedButton.icon(
-          onPressed: _busy ? null : () => _reference(),
+          onPressed: _busy
+              ? null
+              : () => _reference(
+                  replacePersonalObjective:
+                      _data!.personalObjectiveLimit != null &&
+                      _personalReferences.isNotEmpty,
+                ),
           icon: const Icon(Icons.add),
-          label: const Text('Añadir objetivo de mejora'),
+          label: Text(
+            _data!.personalObjectiveLimit != null &&
+                    _personalReferences.isNotEmpty
+                ? 'Cambiar objetivo personal'
+                : 'Añadir objetivo de mejora',
+          ),
         ),
         const SizedBox(height: 12),
         const SizedBox(height: 20),
@@ -1683,8 +1728,12 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
         for (final item in _rows(p['pending']))
           Card(
             child: ListTile(
-              onTap: _busy ? null : () => _openIssue(item),
-              trailing: const Icon(Icons.chevron_right),
+              onTap: _busy || item['status'] == 'personal_objective_deferred'
+                  ? null
+                  : () => _openIssue(item),
+              trailing: item['status'] == 'personal_objective_deferred'
+                  ? null
+                  : const Icon(Icons.chevron_right),
               leading: const Icon(Icons.info_outline),
               title: Text(item['name'] as String? ?? 'Dato pendiente'),
               subtitle: Text(
@@ -1736,6 +1785,10 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
                           work['name'] as String,
                           style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
+                        if (work['personal_extra'] == true)
+                          const Text(
+                            'Objetivo personal · al final de la sesión, después del trabajo de las pruebas.',
+                          ),
                         if (work['stimulus'] is Map)
                           Text((work['stimulus'] as Map)['name'] as String),
                         ExpansionTile(

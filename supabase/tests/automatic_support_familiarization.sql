@@ -1,12 +1,16 @@
 begin;
-select set_config('request.jwt.claim.sub',(select user_id::text from public.admin_permissions limit 1),true);
 do $$
 declare g uuid; rid uuid; main jsonb; candidate jsonb; all_proposals jsonb; task jsonb; observed jsonb;
- t uuid; b uuid; i uuid; ex uuid; execution uuid; es uuid; old_user uuid:=auth.uid(); wk date:=current_date+8-extract(isodow from current_date)::int;
+ t uuid; b uuid; i uuid; ex uuid; execution uuid; es uuid; old_user uuid:=gen_random_uuid(); wk date:=current_date+8-extract(isodow from current_date)::int;
  before_count int; result jsonb; again jsonb; placement jsonb; old_ref jsonb; other_goal uuid; known uuid;
 begin
+ insert into auth.users(id,email) values(old_user,old_user||'@support-fixture.invalid');
+ perform set_config('request.jwt.claim.sub',old_user::text,true);
+ -- Este ensayo aísla los apoyos de varios movimientos independientes.
+ insert into public.preparation_programs(id,name,kind,enabled)
+ values('fixture_automatic_support','Ensayo de apoyos','internal_assessment',true);
  insert into public.preparation_goals(user_id,program_id,target_date)
- values(auth.uid(),'fas_periodic_assessment',current_date+120) returning id into g;
+ values(auth.uid(),'fixture_automatic_support',current_date+120) returning id into g;
  perform public.save_performance_context('{"1":60,"3":60,"5":60}',array['bench','barbell','plates'],false,true);
  rid:=public.save_performance_reference(g,jsonb_build_object('goal_code','push_up_standard','goal_version',1,
   'goal_measurement','REPS','reference_kind','performed_set','observed_on',current_date,'current_capacity_confirmed',true,

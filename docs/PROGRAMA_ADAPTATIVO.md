@@ -763,11 +763,9 @@ prescribir hoy la capacidad deseada.
 
 ### Objetivos personales en preparaciones oficiales
 
-Dirección acordada el 04/11/2026. Implementación pendiente. La pantalla permite
-actualmente añadir objetivos personales a las pruebas del programa. El servidor
-los distingue al guardar la referencia, pero el coordinador puede tratar su
-primer bloque como necesario para publicar. Un extra puede competir por tiempo
-o recuperación y dejar la semana pendiente si se queda sin hueco.
+Dirección acordada el 04/11/2026. El servidor separa los objetivos personales
+de las pruebas del programa antes de calcular la semana. Resuelve el extra
+después de colocar los controles de protocolo.
 
 - **Un objetivo personal activo por preparación.** Contar objetivos distintos,
   no referencias ni variantes. Una prueba del programa y las variantes o apoyos
@@ -780,8 +778,9 @@ o recuperación y dejar la semana pendiente si se queda sin hueco.
   pedir que elija cuál seguir usando. Mientras decide, el plan oficial puede
   continuar y los extras quedan fuera de las decisiones nuevas.
 - **La semana oficial se resuelve primero.** El coordinador calcula sus
-  sesiones, dosis, apoyos elegidos y controles. Luego prueba si cabe el extra
-  respetando ese resultado, los descansos y el presupuesto real de la sesión.
+  sesiones, dosis, apoyos elegidos y controles. Luego prueba si cabe una
+  exposición del extra en una cita que ya incluye rendimiento, respetando
+  los descansos y el presupuesto real de la sesión.
   Si requiere recortar, mover o cambiar un bloque de la preparación, queda
   aplazado con un motivo visible. El extra pendiente no bloquea la publicación
   ni se cuenta como una omisión. La elegibilidad deportiva de cada movimiento
@@ -794,13 +793,13 @@ o recuperación y dejar la semana pendiente si se queda sin hueco.
   carrera y rendimiento. Si el extra comparte cita, va después de ambos
   trabajos y antes del cierre. Si no hay una posición compatible, se aplaza.
 
-Ejemplo de comprobación. Calcular y publicar la misma semana de FAS con y sin
-un farmer carry calibrado. Con una agenda ajustada, deben coincidir las fechas,
-las dosis, los controles y el orden del trabajo oficial. Con espacio compatible,
-el extra debe aparecer en el orden pactado. Probar también que el servidor
-rechaza un segundo objetivo, permite actualizar el mismo y conserva el historial
-al sustituirlo. Cubrir las preparaciones existentes con varios extras y una
-sesión mixta que ya tenía prioridad de rendimiento o de carrera.
+La prueba por RPC publica la misma semana de FAS con y sin farmer carry,
+con las mismas referencias de las pruebas. Compara fechas, dosis, controles
+y bloques oficiales. Con 45 minutos por día disponible se aplaza el extra.
+Con hueco, lo coloca después de agilidad, fuerza y carrera, y antes de la vuelta
+a la calma. La prueba comprueba el rechazo de un segundo objetivo, la edición
+del mismo, la sustitución con historial y la publicación con varios extras
+antiguos pendientes de elección. [Prueba reproducible](../supabase/tests/personal_preparation_objective.sql).
 
 ### Horizonte y mesociclo
 

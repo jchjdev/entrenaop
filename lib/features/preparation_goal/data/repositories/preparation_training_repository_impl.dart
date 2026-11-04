@@ -84,6 +84,7 @@ class SupabasePreparationTrainingRepository
       proRequired: j['pro_required'] == true,
       availableRunning: j['available_running'] == true,
       availablePerformance: j['available_performance'] == true,
+      personalObjectiveLimit: j['personal_objective_limit'] as int?,
       trainingScope: TrainingScope.parse(j['training_scope']),
       programName: j['program_name'] as String?,
       activeProgram: j['active_program'] == null
