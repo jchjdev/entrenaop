@@ -157,16 +157,25 @@ mejora más la marca estricta a lo largo de un plan.
 
 | Sesión candidata desde cero | Bloque principal | Apoyo si ya se tolera |
 | --- | --- | --- |
-| A | Prona asistida. Ensayar el recorrido completo con ayuda y agarre repetibles. | Australianas supinas, 5 normales + 5 cerradas y 5 s de isometría cerrada. Una negativa neutra puede ocupar el lugar del apoyo si se controla el descenso y hay agarre neutro disponible. |
-| B | Asistida neutra o supina según material y control del gesto. | Australianas en tres anchos. Para comparar al principio, probar 3 abiertas cómodas + 4 normales + 3 cerradas y 5 s de isometría. Una negativa prona controlada puede ocupar el lugar del apoyo. |
+| A | Prona asistida. Ensayar el recorrido completo con ayuda y agarre repetibles. | Australianas supinas, 5 normales + 5 cerradas + 5 s de isometría cerrada. Una negativa neutra puede ocupar el lugar del apoyo si se controla el descenso y hay agarre neutro disponible. |
+| B | Asistida neutra o supina según material y control del gesto. | Australianas supinas, 5 abiertas + 5 normales + 5 cerradas + 5 s de isometría cerrada. Una negativa prona controlada puede ocupar el lugar del apoyo. |
 
-Las cifras sirven para representar el circuito, con pausas y esfuerzo por
-definir en la calibración. Pasar de 5 + 5 a 5 + 5 + 5 supone un 50 % más de
-repeticiones en ese bloque aunque el hold siga en 5 s. Introducir primero el
-agarre manteniendo el total permite distinguir variedad de aumento de volumen.
-La suma de repeticiones sirve para describir la receta. El esfuerzo, el montaje,
-el recorrido, los segundos de hold y la duración de las negativas se guardan
-por separado. La variedad de agarres también exige comprobar que se tolera.
+Las repeticiones y la isometría de ese circuito son de remo invertido supino.
+La anchura cambia dentro de la supinación. La receta viene de la experiencia
+de Javier y queda como hipótesis de laboratorio. El estudio citado de remo
+invertido compara orientación de manos y apoyo de pies durante la ejecución.
+En la búsqueda no se encontró un ensayo de esta secuencia de tres anchos con
+un hold final de 5 s ni de su transferencia a la dominada estricta.
+
+Pasar de 5 + 5 a 5 + 5 + 5 añade un 50 % de repeticiones horizontales en ese
+bloque, con los mismos 5 s de hold. Para estudiar el efecto de introducir el
+ancho abierto sin subir el número de repeticiones, se puede comparar una
+variante de 3 abiertas + 4 normales + 3 cerradas con la pauta A. Para interpretar
+el resultado, registrar el montaje, el recorrido, las pausas, el esfuerzo y la
+posición y duración del hold. Medir por separado el progreso con el mismo
+montaje de remo y el progreso en la referencia vertical. Una simulación de
+26 o 52 semanas comprueba qué pauta el algoritmo según los registros ficticios.
+La transferencia a la dominada estricta se tendría que observar en personas.
 
 Con repeticiones libres consolidadas, probar un día de fuerza o velocidad con
 pocas pronas limpias y una variante cerrada calibrada, y otro con volumen y una

@@ -5,6 +5,8 @@ ensayar la progresión a 26 y 52 semanas con diferentes niveles, materiales
 y agendas de carrera antes de plantear su activación. El laboratorio de Admin
 permite revisar las semanas y sus decisiones con resultados ficticios.
 [Reglas, ejemplos y límites](ESTRATEGIA_DOMINADAS_PROPUESTA.md#primer-ensayo-en-el-laboratorio-de-admin).
+Javier aclara que los cambios de anchura y el hold de su circuito son de
+australiana supina. La receta queda como [hipótesis de laboratorio](ESTRATEGIA_DOMINADAS_PROPUESTA.md#variante-candidata-con-dos-sesiones-de-calistenia).
 
 **Objetivo personal en una preparación oficial · 04/11/2026.** Javier ve
 bien partir de un objetivo personal activo por preparación. El trabajo de
