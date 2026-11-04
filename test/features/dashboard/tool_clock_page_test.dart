@@ -1,3 +1,4 @@
+import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:entrenaop/features/dashboard/presentation/pages/tool_clock_page.dart';
 import 'package:entrenaop/features/workouts/data/services/shared_preferences_workout_cue_service.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_cue_service.dart';
@@ -39,6 +40,7 @@ void main() {
     );
     await tester.pumpWidget(
       MaterialApp(
+        theme: EntrenaTheme.dark,
         home: ToolClockPage(cueService: service, clock: () => now),
       ),
     );
@@ -129,7 +131,7 @@ void main() {
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
       await advance(tester, 25);
-      expect(find.text('00:03.000'), findsOneWidget);
+      expect(find.text('00:03.00'), findsOneWidget);
       expect(find.text('En pausa'), findsOneWidget);
       expect(screenChanges, [true, false]);
 
@@ -137,14 +139,14 @@ void main() {
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
       await tap(tester, 'Reanudar');
       await advance(tester, 2);
-      expect(find.text('00:05.000'), findsOneWidget);
+      expect(find.text('00:05.00'), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
       expect(screenChanges, [true, false, true, false]);
     },
   );
 
   testWidgets(
-    'mide vueltas con milésimas y mantiene controles al girar el iPhone 12',
+    'muestra dos decimales y mantiene controles al girar el iPhone 12',
     (tester) async {
       tester.view.devicePixelRatio = 1;
       tester.view.physicalSize = const Size(390, 844);
@@ -160,7 +162,7 @@ void main() {
       tester.view.viewPadding = landscapePadding;
       now = const Duration(milliseconds: 3421);
       await tester.pump(const Duration(milliseconds: 16));
-      expect(find.text('00:03.421').hitTestable(), findsOneWidget);
+      expect(find.text('00:03.42').hitTestable(), findsOneWidget);
       expect(find.text('Vuelta 1').hitTestable(), findsOneWidget);
       expect(find.text('Pausar').hitTestable(), findsOneWidget);
       final lap = find.text('Vuelta').hitTestable();
@@ -168,13 +170,13 @@ void main() {
       now = const Duration(milliseconds: 3456);
       await tester.tap(lap);
       await tester.pump();
-      expect(find.text('00:02.222'), findsOneWidget);
+      expect(find.text('00:02.22'), findsOneWidget);
       expect(find.text('Vuelta 2'), findsOneWidget);
       await tap(tester, 'Pausar');
-      expect(find.text('00:03.456').hitTestable(), findsOneWidget);
+      expect(find.text('00:03.45').hitTestable(), findsOneWidget);
       await tap(tester, 'Reiniciar');
       expect(find.text('Vuelta 1'), findsNothing);
-      expect(find.text('00:00.000').hitTestable(), findsOneWidget);
+      expect(find.text('00:00.00').hitTestable(), findsOneWidget);
 
       await tap(tester, 'Intervalos');
       expect(find.text('00:20').hitTestable(), findsOneWidget);
@@ -186,4 +188,51 @@ void main() {
     },
     variant: const TargetPlatformVariant({TargetPlatform.iOS}),
   );
+
+  testWidgets('las vueltas ocupan el hueco y se pueden recorrer en marcha', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(390, 844);
+    const padding = FakeViewPadding(top: 47, bottom: 34);
+    tester.view.padding = padding;
+    tester.view.viewPadding = padding;
+    addTearDown(tester.view.reset);
+    await open(tester);
+    await tap(tester, 'Iniciar');
+    for (var lap = 1; lap <= 40; lap++) {
+      now += const Duration(milliseconds: 1378);
+      await tap(tester, 'Vuelta');
+      if (lap == 10) {
+        expect(find.text('Vuelta 5').hitTestable(), findsOneWidget);
+      }
+    }
+
+    expect(find.text('Vuelta 40').hitTestable(), findsOneWidget);
+    final scrollable = find.byType(Scrollable);
+    expect(scrollable, findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Vuelta 1'),
+      250,
+      scrollable: scrollable,
+    );
+    await tester.pump();
+    expect(find.text('Vuelta 1').hitTestable(), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  }, variant: const TargetPlatformVariant({TargetPlatform.iOS}));
+
+  testWidgets('el temporizador manual usa la máscara de minutos y segundos', (
+    tester,
+  ) async {
+    await open(tester);
+    await tap(tester, 'Temporizador');
+    await tap(tester, 'Otro');
+    final field = find.byType(EditableText);
+    await tester.enterText(field, '200');
+    await tester.pump();
+    expect(tester.widget<EditableText>(field).controller.text, '02:00');
+    await tap(tester, 'Iniciar');
+    await advance(tester, 1);
+    expect(find.text('01:59'), findsOneWidget);
+  });
 }

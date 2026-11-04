@@ -69,10 +69,12 @@ deportista. No se ha consultado ni modificado producción.
 ## Reloj · 04/11/2026
 
 Inicio → Herramientas → Reloj abre una utilidad local. El cronómetro cuenta
-hacia arriba en milésimas. Durante la cuenta, Vuelta registra el tiempo desde
-la marca anterior sin detener el cronómetro. Reiniciar borra las vueltas.
-El temporizador ofrece 30 segundos, uno o dos minutos y una
-duración manual en segundos. Intervalos parte de 20 segundos de trabajo,
+hacia arriba con dos decimales. Durante la cuenta, Vuelta registra el tiempo
+desde la marca anterior sin detener el cronómetro. Los parciales se muestran
+del más reciente al más antiguo en el mismo desplazamiento de la pantalla.
+Reiniciar borra las vueltas. El temporizador ofrece 30 segundos, uno o dos
+minutos y una duración manual con la máscara de reloj de la app (`00:00`).
+Intervalos parte de 20 segundos de trabajo,
 10 de descanso y ocho rondas, todos editables. Con descanso cero, las rondas
 de trabajo se suceden directamente. El reloj termina con el último trabajo.
 

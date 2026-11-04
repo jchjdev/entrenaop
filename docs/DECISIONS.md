@@ -24,6 +24,11 @@ milésimas y vueltas en el cronómetro, aprovechar los avisos de mitad de tiempo
 y poder ver el reloj con el iPhone 12 apoyado en horizontal.
 [Recorrido](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#reloj--04112026).
 
+**Presentación de vueltas y tiempo manual · 04/11/2026.** Tras probar Reloj
+en iPhone, Javier pide aprovechar el espacio para ver las vueltas, mostrar
+dos decimales y usar el formato de reloj de la app para la entrada manual.
+[Recorrido](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#reloj--04112026).
+
 **Pulso y cierre de la preparación desde el reloj · 04/11/2026.**
 Javier confirma conservar la frecuencia cardíaca para consulta y excluirla de
 las decisiones del plan. El análisis de rodajes mostró que el modelo de reloj

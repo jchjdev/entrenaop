@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:workout_core/performance_time.dart';
+import 'package:workout_editor_ui/duration_input_formatter.dart';
 
 enum _ClockMode {
   stopwatch('Cronómetro'),
@@ -34,6 +35,7 @@ class _ToolClockPageState extends State<ToolClockPage>
 
   final _clock = Stopwatch();
   final _laps = <Duration>[];
+  final _stopwatchDisplay = ValueNotifier(Duration.zero);
   late final AppLifecycleListener _lifecycle;
   Ticker? _stopwatchTicker;
   Timer? _ticker;
@@ -54,7 +56,7 @@ class _ToolClockPageState extends State<ToolClockPage>
   int get _restSeconds => int.tryParse(_rest) ?? 0;
   int get _roundCount => int.tryParse(_rounds) ?? 0;
   int get _cycle => _workSeconds + _restSeconds;
-  int get _countdownSeconds => _preset ?? int.tryParse(_custom) ?? 0;
+  int get _countdownSeconds => _preset ?? parseDurationInput(_custom) ?? 0;
 
   bool get _valid => switch (_mode) {
     _ClockMode.stopwatch => true,
@@ -95,6 +97,7 @@ class _ToolClockPageState extends State<ToolClockPage>
     _lifecycle.dispose();
     _stop();
     _stopwatchTicker?.dispose();
+    _stopwatchDisplay.dispose();
     _clock.stop();
     super.dispose();
   }
@@ -128,6 +131,7 @@ class _ToolClockPageState extends State<ToolClockPage>
     // El pulso refresca la interfaz. El tiempo sale del reloj monotónico.
     _elapsed += now - _sampleAt!;
     _sampleAt = now;
+    if (_mode == _ClockMode.stopwatch) _stopwatchDisplay.value = _elapsed;
   }
 
   void _pause() {
@@ -173,7 +177,7 @@ class _ToolClockPageState extends State<ToolClockPage>
       _started = true;
       _sampleAt = _now;
       if (_mode == _ClockMode.stopwatch) {
-        (_stopwatchTicker ??= createTicker((_) => setState(_advance))).start();
+        (_stopwatchTicker ??= createTicker((_) => _advance())).start();
       } else {
         _ticker = Timer.periodic(
           const Duration(milliseconds: 100),
@@ -187,6 +191,7 @@ class _ToolClockPageState extends State<ToolClockPage>
   void _reset() {
     _stop();
     _elapsed = Duration.zero;
+    _stopwatchDisplay.value = Duration.zero;
     _laps.clear();
     _started = false;
   }
@@ -202,11 +207,11 @@ class _ToolClockPageState extends State<ToolClockPage>
 
   String _formatStopwatch(Duration elapsed) {
     final time = formatPerformanceTime(elapsed.inSeconds).padLeft(5, '0');
-    final milliseconds = (elapsed.inMilliseconds % 1000).toString().padLeft(
-      3,
+    final hundredths = (elapsed.inMilliseconds ~/ 10 % 100).toString().padLeft(
+      2,
       '0',
     );
-    return '$time.$milliseconds';
+    return '$time.$hundredths';
   }
 
   String get _status {
@@ -243,40 +248,30 @@ class _ToolClockPageState extends State<ToolClockPage>
                     const SizedBox(width: 16),
                     Expanded(
                       flex: 2,
-                      child: SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            _modeSelector(),
-                            ..._options(),
-                            const SizedBox(height: 8),
-                            _actions(compact: true),
-                            if (_laps.isNotEmpty) _lapList(),
-                          ],
-                        ),
-                      ),
+                      child: _scrollPanel([
+                        _modeSelector(),
+                        ..._options(),
+                        const SizedBox(height: 8),
+                        _actions(compact: true),
+                      ]),
                     ),
                   ],
                 ),
               );
             }
-            return SingleChildScrollView(
+            return Padding(
               padding: const EdgeInsets.all(20),
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 480),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _modeSelector(),
-                      const SizedBox(height: 20),
-                      _face(),
-                      ..._options(),
-                      const SizedBox(height: 20),
-                      _actions(compact: false),
-                      if (_laps.isNotEmpty) _lapList(),
-                    ],
-                  ),
+                  child: _scrollPanel([
+                    _modeSelector(),
+                    const SizedBox(height: 20),
+                    _face(),
+                    ..._options(),
+                    const SizedBox(height: 20),
+                    _actions(compact: false),
+                  ]),
                 ),
               ),
             );
@@ -309,28 +304,30 @@ class _ToolClockPageState extends State<ToolClockPage>
 
   Widget _face() {
     final theme = Theme.of(context);
-    final time = _mode == _ClockMode.stopwatch
-        ? _formatStopwatch(_elapsed)
-        : formatPerformanceTime(_displaySeconds).padLeft(5, '0');
+    final style = theme.textTheme.displayLarge?.copyWith(
+      fontSize: 96,
+      fontWeight: FontWeight.w700,
+      fontFeatures: const [FontFeature.tabularFigures()],
+      color: _mode == _ClockMode.intervals && _started && !_finished
+          ? (_resting ? theme.colorScheme.secondary : theme.colorScheme.primary)
+          : null,
+    );
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(_status, textAlign: TextAlign.center),
         FittedBox(
           fit: BoxFit.scaleDown,
-          child: Text(
-            time,
-            style: theme.textTheme.displayLarge?.copyWith(
-              fontSize: 96,
-              fontWeight: FontWeight.w700,
-              fontFeatures: const [FontFeature.tabularFigures()],
-              color: _mode == _ClockMode.intervals && _started && !_finished
-                  ? (_resting
-                        ? theme.colorScheme.secondary
-                        : theme.colorScheme.primary)
-                  : null,
-            ),
-          ),
+          child: _mode == _ClockMode.stopwatch
+              ? ValueListenableBuilder(
+                  valueListenable: _stopwatchDisplay,
+                  builder: (context, elapsed, _) =>
+                      Text(_formatStopwatch(elapsed), style: style),
+                )
+              : Text(
+                  formatPerformanceTime(_displaySeconds).padLeft(5, '0'),
+                  style: style,
+                ),
         ),
       ],
     );
@@ -376,29 +373,35 @@ class _ToolClockPageState extends State<ToolClockPage>
           );
   }
 
-  Widget _lapList() => ConstrainedBox(
-    constraints: const BoxConstraints(maxHeight: 128),
-    child: ListView.builder(
-      primary: false,
-      padding: EdgeInsets.zero,
-      shrinkWrap: true,
-      itemCount: _laps.length,
-      itemBuilder: (context, index) {
-        final lap = _laps.length - 1 - index;
-        final split = _laps[lap] - (lap == 0 ? Duration.zero : _laps[lap - 1]);
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          child: Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            spacing: 8,
-            children: [
-              Text('Vuelta ${lap + 1}'),
-              Text(_formatStopwatch(split)),
-            ],
-          ),
-        );
-      },
-    ),
+  Widget _scrollPanel(List<Widget> header) => CustomScrollView(
+    slivers: [
+      SliverToBoxAdapter(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: header,
+        ),
+      ),
+      if (_laps.isNotEmpty)
+        SliverList.builder(
+          itemCount: _laps.length,
+          itemBuilder: (context, index) {
+            final lap = _laps.length - 1 - index;
+            final split =
+                _laps[lap] - (lap == 0 ? Duration.zero : _laps[lap - 1]);
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                spacing: 8,
+                children: [
+                  Text('Vuelta ${lap + 1}'),
+                  Text(_formatStopwatch(split)),
+                ],
+              ),
+            );
+          },
+        ),
+    ],
   );
 
   Widget _countdownOptions() => Column(
@@ -426,14 +429,11 @@ class _ToolClockPageState extends State<ToolClockPage>
         TextFormField(
           initialValue: _custom,
           decoration: const InputDecoration(
-            labelText: 'Tiempo en segundos',
-            hintText: 'Ej. 90',
+            labelText: 'Tiempo',
+            hintText: '00:00',
           ),
           keyboardType: TextInputType.number,
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            LengthLimitingTextInputFormatter(5),
-          ],
+          inputFormatters: const [DurationInputFormatter()],
           onChanged: (value) => setState(() => _custom = value),
         ),
       ],
