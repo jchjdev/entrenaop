@@ -74,6 +74,7 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
       target_rpe,
       target_rir,
       running_step,
+      manual_distance_optional,
       target_pace_min_seconds_per_km,
       target_pace_max_seconds_per_km,
       recovery_type,

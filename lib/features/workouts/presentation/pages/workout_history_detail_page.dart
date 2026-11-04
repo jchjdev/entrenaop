@@ -949,7 +949,10 @@ class _CorrectionDialogState extends State<_CorrectionDialog> {
                     set.blockFormat == WorkoutBlockFormat.running)
                   _CorrectionField(
                     controller: _distance,
-                    label: 'Metros realizados',
+                    label: set.manualDistanceOptional
+                        ? 'Metros realizados (opcional)'
+                        : 'Metros realizados',
+                    optional: set.manualDistanceOptional,
                   ),
                 if (set.targetLoadKg != null)
                   _CorrectionField(
@@ -1019,11 +1022,13 @@ class _CorrectionField extends StatelessWidget {
     required this.controller,
     required this.label,
     this.decimal = true,
+    this.optional = false,
   });
 
   final TextEditingController controller;
   final String label;
   final bool decimal;
+  final bool optional;
 
   @override
   Widget build(BuildContext context) {
@@ -1034,6 +1039,7 @@ class _CorrectionField extends StatelessWidget {
         keyboardType: TextInputType.numberWithOptions(decimal: decimal),
         decoration: InputDecoration(labelText: label),
         validator: (value) {
+          if (optional && (value ?? '').trim().isEmpty) return null;
           final parsed = _parseDecimal(value ?? '');
           if (parsed == null) return 'Introduce un número válido';
           if (parsed < 0) return 'El valor no puede ser negativo';

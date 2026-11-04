@@ -1,5 +1,15 @@
 # Roadmap de EntrenaOP
 
+**PLAN-031 · Registro manual del 4×2 por tiempo · 04/11/2026.** El 4×2
+de carrera v6 admite distancia opcional. La semana siguiente distingue
+tolerancia por tiempo, trabajo parcial y dificultad. La regresión verifica
+un segundo de diferencia, una repetición omitida, esfuerzo alto, corrección
+y conservación de los parciales medidos. Migración `20261104141757` verificada
+en Dev. Pasan las regresiones de Garmin, Apple Watch, controles y series
+largas, el análisis de Flutter y 1.835 pruebas con una omisión previa.
+Versión `1.9.0+21`.
+[Contrato y prueba](MOTOR_CARRERA_2K_V6.md#registro-manual-del-42-por-tiempo--plan-031).
+
 **PLAN-030 · Alternativa de agenda para la carrera · 04/11/2026.** La vista
 previa ofrece un traslado de fuerza propia si recupera una sesión de calidad
 y conserva la cobertura. La semana alternativa muestra las citas y remite a

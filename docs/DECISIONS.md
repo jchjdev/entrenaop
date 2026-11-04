@@ -1,5 +1,13 @@
 # Registro de decisiones vigentes
 
+**PLAN-031 · Registro manual del 4×2 sin distancia · 04/11/2026.**
+Javier autoriza que los metros sean opcionales en los intervalos aeróbicos
+de entrada de carrera v6. La duración y las pausas reales se guardan junto
+con el esfuerzo que declare el deportista. El motor distingue tolerancia
+por tiempo, trabajo parcial y dificultad. La progresión por ritmo conserva
+su requisito de parciales medidos.
+[Contrato y prueba](MOTOR_CARRERA_2K_V6.md#registro-manual-del-42-por-tiempo--plan-031).
+
 **PLAN-030 · Alternativa de agenda para la carrera · 04/11/2026.**
 Javier confirma mostrar qué sesión propia de fuerza se puede mover y cómo
 quedaría la semana. El coordinador vuelve a calcular con esa fecha hipotética.

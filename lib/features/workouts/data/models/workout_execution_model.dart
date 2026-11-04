@@ -82,6 +82,7 @@ class WorkoutExecutionModel {
       setOrder: json['set_order'] as int,
       targetReps: json['target_reps'] as int?,
       runningStep: RunningStepCodec.decode(json['running_step']),
+      manualDistanceOptional: json['manual_distance_optional'] == true,
       targetDurationSeconds: json['target_duration_seconds'] as int?,
       targetDistanceMeters: _doubleOrNull(json['target_distance_meters']),
       targetLoadKg: _doubleOrNull(json['target_load_kg']),

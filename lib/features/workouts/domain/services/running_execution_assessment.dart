@@ -1,7 +1,7 @@
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 
-enum RunningExecutionAssessment { onTarget, changed, incomplete }
+enum RunningExecutionAssessment { onTarget, timeOnly, changed, incomplete }
 
 RunningExecutionAssessment assessRunningExecution(
   Iterable<WorkoutExecutionSet> sets,
@@ -13,23 +13,29 @@ RunningExecutionAssessment assessRunningExecution(
       runningSets.any((set) => set.status != WorkoutSetStatus.completed)) {
     return RunningExecutionAssessment.incomplete;
   }
-  return runningSets.every(_matchesPrescription)
-      ? RunningExecutionAssessment.onTarget
-      : RunningExecutionAssessment.changed;
+  if (!runningSets.every(_matchesPrescription)) {
+    return RunningExecutionAssessment.changed;
+  }
+  return runningSets.any((set) => set.actualDistanceMeters == null)
+      ? RunningExecutionAssessment.timeOnly
+      : RunningExecutionAssessment.onTarget;
 }
 
 bool _matchesPrescription(WorkoutExecutionSet set) {
   final duration = set.measuredDurationSeconds;
   final distance = set.actualDistanceMeters;
   if (duration == null ||
-      distance == null ||
       duration <= 0 ||
-      (distance < 0 ||
-          (distance == 0 && set.runningStep?.kind != RunningStepKind.rest))) {
+      (distance == null && !set.manualDistanceOptional) ||
+      (distance != null &&
+          (distance < 0 ||
+              (distance == 0 && set.runningStep?.kind != RunningStepKind.rest)))) {
     return false;
   }
   if (set.targetDistanceMeters case final target?) {
-    if (!_withinTolerance(distance, target, 0.01)) return false;
+    if (distance == null || !_withinTolerance(distance, target, 0.01)) {
+      return false;
+    }
   }
   if (set.targetDurationSeconds case final target?) {
     if (!_withinTolerance(duration.toDouble(), target.toDouble(), 0.02)) {
@@ -38,7 +44,7 @@ bool _matchesPrescription(WorkoutExecutionSet set) {
   }
   final fastest = set.targetPaceMinSecondsPerKm;
   final slowest = set.targetPaceMaxSecondsPerKm;
-  if (fastest != null && slowest != null) {
+  if (fastest != null && slowest != null && distance != null) {
     final pace = duration * 1000 / distance;
     if (pace < fastest || pace > slowest) return false;
   }
@@ -62,6 +68,7 @@ bool _withinTolerance(double actual, double target, double tolerance) =>
 String runningAssessmentLabel(RunningExecutionAssessment assessment) =>
     switch (assessment) {
       RunningExecutionAssessment.onTarget => 'Marca registrada según la pauta',
+      RunningExecutionAssessment.timeOnly => 'Tiempos registrados · ritmo sin medir',
       RunningExecutionAssessment.changed => 'Diferencias con la pauta',
       RunningExecutionAssessment.incomplete => 'Registro parcial',
     };

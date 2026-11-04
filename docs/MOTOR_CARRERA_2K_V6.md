@@ -210,6 +210,37 @@ por los RPC y verifica los tramos de trabajo de la semana publicada. El
 barrido longitudinal añade la trayectoria con tres semanas sin entrenar que
 reveló el caso y comprueba los horizontes de 26 y 52 semanas.
 
+## Registro manual del 4×2 por tiempo · PLAN-031
+
+En la receta `V_0_v1` de v6 se pueden guardar los tramos pautados por tiempo
+con la distancia en blanco. La app conserva los metros si el deportista
+los introduce y usa las mismas reglas al corregir un resultado. Se registra
+la duración real, las pausas prescritas y el esfuerzo declarado. Una serie
+pautada en metros conserva su validación de distancia.
+
+El motor registra la tolerancia por tiempo con cuatro tramos suficientes,
+pausas compatibles y esfuerzo dentro del límite. En el registro por tiempo,
+una repetición omitida con las otras tres registradas se conserva como
+trabajo parcial y orienta a consolidar. Ante un esfuerzo alto se conserva
+la señal de dificultad. Se
+reutilizan las tolerancias de duración y recuperación de v6. La evidencia
+de ritmo anterior permanece disponible y los tramos por tiempo sin distancia
+quedan fuera del cómputo de parciales compatibles para subir escalón.
+
+La [prueba por RPC](../supabase/tests/running_v0_manual_time_results.sql)
+guarda 119 s de trabajo y 121 s de recuperación frente a 120 s previstos,
+repite el guardado, corrige y calcula la siguiente semana. También cubre
+una repetición omitida, esfuerzo 9/10 y una serie por distancia.
+
+La frecuencia cardíaca se conserva para consulta cuando llega del dispositivo.
+La decisión del motor usa duración, distancia, pausas y esfuerzo, según la
+evidencia disponible. Para estudiar la frecuencia cardíaca conviene empezar
+con comparaciones dentro de la misma persona, en rodajes de condiciones
+parecidas y con mediciones repetibles. Nuuttila y colaboradores estudiaron
+marcadores cardíacos y subjetivos en corredores recreativos durante una
+sobrecarga. Los marcadores tuvieron respuestas distintas según el contexto
+y el grupo. [Estudio original](https://pmc.ncbi.nlm.nih.gov/articles/PMC11235883/).
+
 ## Verificación
 
 Instalado y verificado en desarrollo el 16/10/2026:

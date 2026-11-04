@@ -9,6 +9,7 @@ class WorkoutNumberResultField extends StatelessWidget {
     required this.controller,
     required this.label,
     this.decimal = true,
+    this.optional = false,
     this.onChanged,
     this.enabled = true,
   });
@@ -16,6 +17,7 @@ class WorkoutNumberResultField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
   final bool decimal;
+  final bool optional;
   final ValueChanged<String>? onChanged;
   final bool enabled;
 
@@ -30,6 +32,7 @@ class WorkoutNumberResultField extends StatelessWidget {
         decoration: InputDecoration(labelText: label),
         onChanged: onChanged,
         validator: (value) {
+          if (optional && (value ?? '').trim().isEmpty) return null;
           final parsed = parseWorkoutDecimal(value ?? '');
           if (parsed == null || !parsed.isFinite) {
             return 'Introduce un número válido';

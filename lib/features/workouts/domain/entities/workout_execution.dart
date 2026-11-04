@@ -337,6 +337,7 @@ class WorkoutExecutionSet extends Equatable {
     this.targetPaceMinSecondsPerKm,
     this.targetPaceMaxSecondsPerKm,
     this.runningStep,
+    this.manualDistanceOptional = false,
     this.recoveryType,
     this.recoveryDurationSeconds,
     this.recoveryDistanceMeters,
@@ -377,6 +378,7 @@ class WorkoutExecutionSet extends Equatable {
   final int? targetPaceMinSecondsPerKm;
   final int? targetPaceMaxSecondsPerKm;
   final RunningStepMetadata? runningStep;
+  final bool manualDistanceOptional;
   final RunningRecoveryType? recoveryType;
   final int? recoveryDurationSeconds;
   final double? recoveryDistanceMeters;
@@ -471,6 +473,7 @@ class WorkoutExecutionSet extends Equatable {
     targetPaceMinSecondsPerKm: targetPaceMinSecondsPerKm,
     targetPaceMaxSecondsPerKm: targetPaceMaxSecondsPerKm,
     runningStep: runningStep,
+    manualDistanceOptional: manualDistanceOptional,
     recoveryType: recoveryType,
     recoveryDurationSeconds: recoveryDurationSeconds,
     recoveryDistanceMeters: recoveryDistanceMeters,
@@ -540,6 +543,7 @@ class WorkoutExecutionSet extends Equatable {
     targetPaceMinSecondsPerKm,
     targetPaceMaxSecondsPerKm,
     runningStep,
+    manualDistanceOptional,
     recoveryType,
     recoveryDurationSeconds,
     recoveryDistanceMeters,

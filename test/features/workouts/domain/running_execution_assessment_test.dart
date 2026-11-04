@@ -4,6 +4,35 @@ import 'package:entrenaop/features/workouts/domain/services/running_execution_as
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('el 4×2 reconoce un segundo de diferencia con distancia opcional', () {
+    final set = WorkoutExecutionSet(
+      id: 'timed',
+      blockOrder: 0,
+      blockName: 'Intervalos aeróbicos',
+      blockFormat: WorkoutBlockFormat.running,
+      itemOrder: 0,
+      exerciseId: runningExerciseId,
+      exerciseName: 'Carrera',
+      setOrder: 1,
+      restAfterSeconds: 0,
+      status: WorkoutSetStatus.completed,
+      targetDurationSeconds: 120,
+      targetPaceMinSecondsPerKm: 270,
+      targetPaceMaxSecondsPerKm: 287,
+      recoveryDurationSeconds: 120,
+      manualDistanceOptional: true,
+      actualDurationSeconds: 119,
+      actualRecoveryDurationSeconds: 121,
+      resultSource: WorkoutResultSource.manual,
+    );
+    expect(assessRunningExecution([set]), RunningExecutionAssessment.timeOnly);
+    expect(runningAssessmentDifferences([set]), isEmpty);
+    expect(
+      assessRunningExecution([set.copyWith(actualDistanceMeters: 425)]),
+      RunningExecutionAssessment.onTarget,
+    );
+  });
+
   test(
     'el ritmo usa el tiempo nativo y una corrección manual lo sustituye',
     () {

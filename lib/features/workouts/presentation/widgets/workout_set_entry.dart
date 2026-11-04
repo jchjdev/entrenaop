@@ -613,7 +613,10 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
                 WorkoutNumberResultField(
                   enabled: !widget.saving,
                   controller: _distanceController,
-                  label: 'Metros realizados',
+                  label: set.manualDistanceOptional
+                      ? 'Metros realizados (opcional)'
+                      : 'Metros realizados',
+                  optional: set.manualDistanceOptional,
                   onChanged: set.blockFormat == WorkoutBlockFormat.running
                       ? (_) => setState(() {})
                       : null,
