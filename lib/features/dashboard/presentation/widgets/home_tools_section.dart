@@ -51,6 +51,13 @@ class HomeToolsSection extends StatelessWidget {
           );
         },
       ),
+      const SizedBox(height: 10),
+      const _ToolCard(
+        icon: Icons.av_timer_outlined,
+        title: 'Reloj',
+        description: 'Cronómetro, temporizador e intervalos',
+        route: '/tools/clock',
+      ),
     ],
   );
 }
@@ -60,7 +67,7 @@ class HomeToolsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Herramientas para tus pruebas')),
+    appBar: AppBar(title: const Text('Herramientas')),
     body: SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Center(

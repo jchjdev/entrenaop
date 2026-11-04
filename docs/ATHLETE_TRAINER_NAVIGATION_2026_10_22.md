@@ -66,6 +66,20 @@ SHA-256 del JavaScript e identidad del proyecto `sxbxfjqgoddzhtcyhalw` comprobad
 Estas publicaciones conservan sus versiones: el cambio funcional es del
 deportista. No se ha consultado ni modificado producción.
 
+## Reloj · 04/11/2026
+
+Inicio → Herramientas → Reloj abre una utilidad local. El cronómetro cuenta
+hacia arriba. El temporizador ofrece 30 segundos, uno o dos minutos y una
+duración manual en segundos. Intervalos parte de 20 segundos de trabajo,
+10 de descanso y ocho rondas, todos editables. Con descanso cero, las rondas
+de trabajo se suceden directamente. El reloj termina con el último trabajo.
+
+Los tres modos admiten pausa, reanudación y reinicio. El temporizador y los
+intervalos usan los avisos de sonido y vibración ya disponibles. En Android e
+iOS la cuenta solicita mantener encendida la pantalla mientras está activa.
+Pasar a segundo plano pausa la cuenta y salir de Reloj la descarta. La pantalla
+funciona sin ejercicios, sesiones ni almacenamiento de resultados.
+
 ## Favoritos, herramientas y presentación · 02/11/2026
 
 El editor de Inicio amplía las opciones existentes y agrupa los destinos en

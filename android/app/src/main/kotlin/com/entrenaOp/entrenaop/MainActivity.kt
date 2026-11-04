@@ -5,6 +5,7 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
+import android.view.WindowManager
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -12,6 +13,7 @@ import io.flutter.plugin.common.MethodChannel
 class MainActivity : FlutterActivity() {
     private val workoutVibration by lazy { WorkoutVibration(this) }
     private var vibrationChannel: MethodChannel? = null
+    private var screenChannel: MethodChannel? = null
     private var notificationPermissionResult: MethodChannel.Result? = null
     private var isForeground = false
     private val isDebug by lazy {
@@ -20,6 +22,21 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        screenChannel = MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            "es.entrenaop/clock_screen",
+        ).also { channel ->
+            channel.setMethodCallHandler { call, result ->
+                val enabled = call.arguments as? Boolean
+                if (call.method == "setEnabled" && enabled != null) {
+                    val flag = WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+                    if (enabled) window.addFlags(flag) else window.clearFlags(flag)
+                    result.success(null)
+                } else {
+                    result.notImplemented()
+                }
+            }
+        }
         vibrationChannel = MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             "es.entrenaop/workout_vibration",
@@ -123,6 +140,9 @@ class MainActivity : FlutterActivity() {
     }
 
     override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
+        screenChannel?.setMethodCallHandler(null)
+        screenChannel = null
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         notificationPermissionResult?.error("permission_request_cancelled", "Prueba interrumpida", null)
         notificationPermissionResult = null
         vibrationChannel?.setMethodCallHandler(null)

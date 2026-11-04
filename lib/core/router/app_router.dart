@@ -55,6 +55,7 @@ import 'package:entrenaop/features/auth/presentation/bloc/auth_cubit.dart';
 import 'package:entrenaop/features/auth/presentation/bloc/auth_state.dart';
 import 'package:entrenaop/features/auth/presentation/pages/home_page.dart';
 import 'package:entrenaop/features/dashboard/presentation/widgets/home_tools_section.dart';
+import 'package:entrenaop/features/dashboard/presentation/pages/tool_clock_page.dart';
 import 'package:entrenaop/features/auth/presentation/pages/login_page.dart';
 import 'package:entrenaop/features/auth/presentation/pages/sign_up_page.dart';
 import 'package:entrenaop/features/auth/presentation/pages/account_email_page.dart';
@@ -74,6 +75,7 @@ import 'package:entrenaop/features/guided_programs/presentation/guided_program_p
 import 'package:entrenaop/features/guided_programs/presentation/guided_session_page.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/workout_execution_usecases.dart';
 import 'package:entrenaop/features/workouts/domain/repositories/workout_repository.dart';
+import 'package:entrenaop/features/workouts/domain/services/workout_cue_service.dart';
 import 'package:entrenaop/features/exercises/presentation/pages/personal_exercise_creator_page.dart';
 import 'package:entrenaop/core/di/injection_container.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/bloc/physical_assessment_cubit.dart';
@@ -1759,6 +1761,11 @@ class AppRouter {
         materialAppRoute(
           path: '/tools/running-pace-calculator',
           builder: (context, state) => const RunningPaceCalculatorPage(),
+        ),
+        materialAppRoute(
+          path: '/tools/clock',
+          builder: (context, state) =>
+              ToolClockPage(cueService: sl<WorkoutCueService>()),
         ),
         materialAppRoute(
           path: '/tools',

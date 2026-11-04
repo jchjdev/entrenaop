@@ -21,5 +21,17 @@ import device_health
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "WorkoutVibration") {
       workoutVibration = WorkoutVibration(messenger: registrar.messenger())
     }
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "ClockScreen") {
+      let channel = FlutterMethodChannel(
+        name: "es.entrenaop/clock_screen", binaryMessenger: registrar.messenger())
+      channel.setMethodCallHandler { call, result in
+        guard call.method == "setEnabled", let enabled = call.arguments as? Bool else {
+          result(FlutterMethodNotImplemented)
+          return
+        }
+        UIApplication.shared.isIdleTimerDisabled = enabled
+        result(nil)
+      }
+    }
   }
 }

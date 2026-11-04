@@ -1,5 +1,11 @@
 # Registro de decisiones vigentes
 
+**Reloj en Herramientas · 04/11/2026.** Javier confirma una pantalla de
+cronómetro, temporizador rápido e intervalos. Trabajo, descanso y rondas se
+ajustan antes de iniciar. Basta con mantener la pantalla encendida durante la
+cuenta en el móvil. El reloj funciona localmente, sin ejercicios ni resultados.
+[Recorrido](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#reloj--04112026).
+
 **Pulso y cierre de la preparación desde el reloj · 04/11/2026.**
 Javier confirma conservar la frecuencia cardíaca para consulta y excluirla de
 las decisiones del plan. El análisis de rodajes mostró que el modelo de reloj
