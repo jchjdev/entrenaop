@@ -175,16 +175,38 @@ class SupabasePreparationTrainingRepository
     DateTime week, {
     bool revise = false,
     bool activation = false,
-  }) async => Map<String, dynamic>.from(
-    await _rpc(
+  }) async {
+    final params = {'p_goal_id': goalId, 'p_week_start': _date(week)};
+    final plan = Map<String, dynamic>.from(await _rpc(
       activation
           ? 'preview_adaptive_program_activation'
           : revise
           ? 'preview_preparation_week_revision'
           : 'calculate_preparation_week',
-      params: {'p_goal_id': goalId, 'p_week_start': _date(week)},
-    ) as Map,
-  );
+      params: params,
+    ) as Map);
+    final running = plan['running'] as Map?;
+    if (plan['status'] == 'ready' &&
+        plan['decision_id'] == null &&
+        running?['mode'] == 'normal' &&
+        !_rows(running?['sessions']).any(
+          (session) => const {'T', 'V', 'S', 'C'}.contains(session['family']),
+        )) {
+      try {
+        final alternative = await client.rpc(
+          'preview_preparation_strength_move',
+          params: {
+            ...params,
+            'p_mode': activation ? 'activation' : revise ? 'revision' : 'weekly',
+          },
+        );
+        if (alternative is Map) plan['strength_schedule_alternative'] = alternative;
+      } on Exception {
+        // Una sugerencia opcional no invalida la semana ya calculada.
+      }
+    }
+    return plan;
+  }
   @override
   Future<Map<String, dynamic>> publish(
     String goalId,

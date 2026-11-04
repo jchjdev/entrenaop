@@ -44,6 +44,8 @@ class _Repository implements PreparationTrainingRepository {
   TrainingScope activeScope = TrainingScope.full;
   DateTime? oldPublishedWeek;
   List<Map<String, dynamic>>? programsToPause;
+  Map<String, dynamic>? strengthAlternative;
+  int calculations = 0;
   @override
   Future<void> pause(String goalId) async {
     pauses++;
@@ -201,6 +203,7 @@ class _Repository implements PreparationTrainingRepository {
     bool revise = false,
     bool activation = false,
   }) async {
+    calculations++;
     if (revise) revisions++;
     calculatedActivation = activation;
     calculatedWeek = week;
@@ -208,6 +211,8 @@ class _Repository implements PreparationTrainingRepository {
       'status': blocked ? 'needs_attention' : 'ready',
       'reason': 'Referencia y contexto comprobados.',
       'sessions': [],
+      if (strengthAlternative != null)
+        'strength_schedule_alternative': strengthAlternative,
       if (activation && programsToPause != null)
         'activation': {'pauses': programsToPause},
       if (includeSession)
@@ -260,6 +265,59 @@ Future<void> _prepare(WidgetTester t) async {
 
 void main() {
   setUpAll(loadReviewFont);
+
+  testWidgets('la alternativa muestra la semana y deja reprogramar o conservar', (t) async {
+    final repo = _Repository()
+      ..strengthAlternative = {
+        'name': 'Fuerza de piernas',
+        'scheduled_id': 'legs-tuesday',
+        'from_date': '2026-11-10',
+        'to_date': '2026-11-11',
+        'agenda': [
+          {'date': '2026-11-11', 'name': 'Fuerza de piernas', 'minutes': 35},
+        ],
+        'running': [
+          {'date': '2026-11-09', 'name': 'Intervalos sostenidos', 'minutes': 30},
+        ],
+        'performance': [],
+      };
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (_, _) => PreparationTrainingPage(goalId: 'goal', repository: repo),
+        ),
+        GoRoute(
+          path: '/plan/week',
+          builder: (_, state) => Scaffold(
+            body: Text('Agenda ${state.uri.queryParameters['session']}'),
+          ),
+        ),
+        GoRoute(
+          path: '/plan/goal/goal/plan',
+          builder: (_, _) => const Scaffold(body: Text('Plan activado')),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await t.pumpWidget(MaterialApp.router(routerConfig: router));
+    await t.pumpAndSettle();
+    await _prepare(t);
+
+    expect(find.textContaining('martes 10/11 al miércoles 11/11'), findsOneWidget);
+    expect(find.text('lunes 9/11 · Intervalos sostenidos · 30 min'), findsOneWidget);
+    expect(find.text('miércoles 11/11 · Fuerza de piernas · 35 min'), findsOneWidget);
+    final initialCalculations = repo.calculations;
+    await _tap(t, 'Abrir sesión en mi agenda');
+    expect(find.text('Agenda legs-tuesday'), findsOneWidget);
+    expect(repo.publications, 0);
+    router.pop();
+    await t.pumpAndSettle();
+    expect(repo.calculations, initialCalculations + 1);
+    await _tap(t, 'Activar mi plan');
+    expect(repo.publications, 1);
+    expect(repo.reviewed!.containsKey('strength_schedule_alternative'), isFalse);
+  });
 
   for (final anotherRoute in [false, true]) {
     testWidgets(

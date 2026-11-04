@@ -481,9 +481,10 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
   Future<void> _publish() async {
     var accepted = false;
     await _run(() async {
-      final p = _plan!['revision'] != null
-          ? await widget.repository.publish(widget.goalId, _week, _plan!)
-          : await widget.repository.activate(widget.goalId, _week, _plan!);
+      final reviewed = {..._plan!}..remove('strength_schedule_alternative');
+      final p = reviewed['revision'] != null
+          ? await widget.repository.publish(widget.goalId, _week, reviewed)
+          : await widget.repository.activate(widget.goalId, _week, reviewed);
       accepted = true;
       await _load(initialize: false);
       if (mounted) {
@@ -1590,6 +1591,19 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
               (p['control_schedule'] as Map?)?.cast<String, dynamic>() ??
               const {},
         ),
+        if (!published)
+          if (p['strength_schedule_alternative'] case final Map move)
+            _StrengthScheduleAlternative(
+              move: move.cast<String, dynamic>(),
+              onOpenAgenda: !showActions || _busy
+                  ? null
+                  : () async {
+                      final date = move['from_date'] as String;
+                      final id = Uri.encodeQueryComponent(move['scheduled_id'] as String);
+                      await context.push('/plan/week?date=$date&session=$id');
+                      if (mounted) await _calculate(revise: p['revision'] != null);
+                    },
+            ),
         if (!published && p['status'] != 'ready') ...[
           const SizedBox(height: 16),
           const Text(
@@ -1868,6 +1882,58 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
     'PASS_FAIL' => 'intento técnico',
     _ => 's',
   };
+}
+
+class _StrengthScheduleAlternative extends StatelessWidget {
+  const _StrengthScheduleAlternative({required this.move, this.onOpenAgenda});
+
+  final Map<String, dynamic> move;
+  final VoidCallback? onOpenAgenda;
+
+  String _day(String value) {
+    final date = DateTime.parse(value);
+    const names = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
+    return '${names[date.weekday - 1]} ${DateFormat('d/M').format(date)}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = [
+      ...move['agenda'] as List,
+      ...move['running'] as List,
+      ...move['performance'] as List,
+    ].cast<Map>()..sort((a, b) => (a['date'] as String).compareTo(b['date'] as String));
+    return Card(
+      child: ExpansionTile(
+        initiallyExpanded: true,
+        leading: const Icon(Icons.event_repeat_rounded),
+        title: const Text('Un cambio de agenda deja hueco para las series'),
+        subtitle: Text(
+          'Puedes mover «${move['name']}» del ${_day(move['from_date'] as String)} '
+          'al ${_day(move['to_date'] as String)} o conservar la propuesta actual.',
+        ),
+        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('Así quedaría la semana', style: Theme.of(context).textTheme.titleSmall),
+          const SizedBox(height: 8),
+          for (final row in rows)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Text(
+                '${_day(row['date'] as String)} · ${row['name']}'
+                '${row['minutes'] == null ? '' : ' · ${row['minutes']} min'}',
+              ),
+            ),
+          if (onOpenAgenda != null)
+            OutlinedButton(
+              onPressed: onOpenAgenda,
+              child: const Text('Abrir sesión en mi agenda'),
+            ),
+        ],
+      ),
+    );
+  }
 }
 
 class _TrialResetDialog extends StatefulWidget {

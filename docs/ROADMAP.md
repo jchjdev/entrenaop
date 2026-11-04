@@ -1,5 +1,15 @@
 # Roadmap de EntrenaOP
 
+**PLAN-030 · Alternativa de agenda para la carrera · 04/11/2026.** La vista
+previa ofrece un traslado de fuerza propia si recupera una sesión de calidad
+y conserva la cobertura. La semana alternativa muestra las citas y remite a
+la agenda para que el deportista decida. Reproducción por RPC con fuerza el
+martes y el viernes. Al mover el martes al miércoles, la calidad vuelve el
+lunes. Migración `20261104130931` verificada en Dev con `ROLLBACK`.
+Diez baterías SQL, análisis Flutter limpio y 1.834 pruebas correctas con una
+omisión previa. Versión `1.8.0+20`.
+[Contrato y prueba](PROGRAMA_ADAPTATIVO.md#alternativa-de-agenda-para-la-carrera--plan-030).
+
 **PLAN-029 · Primera sesión de calidad · 04/11/2026.** El recorrido por RPC
 reproduce que una segunda calidad podía bloquear la publicación de la semana
 39. La migración `20261104125431` conserva el `5×400` de 32 minutos y

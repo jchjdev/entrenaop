@@ -1,5 +1,11 @@
 # Registro de decisiones vigentes
 
+**PLAN-030 · Alternativa de agenda para la carrera · 04/11/2026.**
+Javier confirma mostrar qué sesión propia de fuerza se puede mover y cómo
+quedaría la semana. El coordinador vuelve a calcular con esa fecha hipotética.
+El deportista puede conservar la propuesta o reprogramar desde su agenda.
+[Contrato y prueba](PROGRAMA_ADAPTATIVO.md#alternativa-de-agenda-para-la-carrera--plan-030).
+
 **PLAN-029 · Conservar la primera sesión de calidad · 04/11/2026.**
 Javier autoriza corregir el bloqueo reproducido en la semana 39. Si, al
 buscar una segunda sesión de calidad, el motor v6 intenta reconstruir la

@@ -1324,3 +1324,24 @@ automática; comprueba cierre completo, idempotencia y límite de anticipación.
 y que dificultad/transición no convierten el entrenamiento en máximo.
 `adaptive_program_recovery.sql` comprueba que las molestias conservan todos los
 resultados y dejan la continuidad en revisión sin publicar otra semana.
+
+## Alternativa de agenda para la carrera · PLAN-030
+
+En la vista previa de una semana normal sin sesión de calidad, el coordinador
+puede ensayar el traslado de una cita editable de fuerza de piernas. Comprueba
+días libres de la misma semana con tiempo declarado suficiente. Muestra una
+alternativa cuando recupera trabajo sostenido, intervalos o series específicas
+y conserva las salidas de carrera y las exposiciones de fuerza previstas.
+
+La tarjeta indica la cita, ambas fechas y el detalle de la semana resultante.
+«Abrir sesión en mi agenda» abre la cita original para que el deportista elija
+si la reprograma. Al volver se calcula la propuesta con la agenda guardada.
+La vista previa alternativa es de lectura y la activación usa la propuesta
+ordinaria revisada.
+
+La [prueba por RPC](../supabase/tests/adaptive_strength_schedule_preview.sql)
+parte de fuerza el martes y el viernes. Comprueba tres rodajes en la
+propuesta original y recupera la sesión de calidad del lunes al simular
+el traslado del martes al miércoles. Verifica que la vista previa conserva
+las citas, que coincide con el cálculo tras el cambio explícito y que
+las preparaciones ajenas quedan fuera de la consulta.
