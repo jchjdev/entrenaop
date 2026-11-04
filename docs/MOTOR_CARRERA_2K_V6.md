@@ -180,6 +180,38 @@ equivalentes. Los rodajes de Javier son útiles para comprobar comparabilidad
 por tramos, con evidencia insuficiente para afirmar una meseta en 2 km.
 [Nuuttila et al.](https://pubmed.ncbi.nlm.nih.gov/39244198/).
 
+### Cuándo mostrar menor esfuerzo
+
+El [ensayo local](audits/mismo_trabajo_menos_esfuerzo.mjs) propone una
+observación en el resultado más reciente de una pauta por distancia.
+«En las dos últimas sesiones comparables, anotaste menos esfuerzo para el
+mismo trabajo». Compara las cuatro últimas ejecuciones de esa pauta en días
+distintos, en un máximo de 56 días entre la primera y la última. Los dos
+esfuerzos recientes deben ser inferiores a ambos anteriores, con la misma
+escala y el mismo alcance de la valoración (bloque o sesión). Una sola pareja,
+un valor aislado o un dato ausente dejan la observación sin mostrar.
+
+| Comprobación | Márgenes del ensayo |
+| --- | --- |
+| Trabajo completo y misma secuencia | Cada distancia medida queda a un 2 % o menos de la pautada. |
+| Ritmo comparable | Diferencia de hasta el 3 % por parcial y del 2 % en la media de ritmos. |
+| Recuperación comparable | Mismo tipo. La diferencia de duración admite hasta el menor de 10 s y el 10 % por pausa. Para distancia admite el mayor de 10 m y el 20 %. Se admiten hasta 10 s fuera del temporizador sin asignar. |
+| Contexto y resto de la sesión | Misma ruta, sentido, superficie y condiciones de exposición al viento. Hasta 3 °C y 10 km/h de diferencia. Hasta 2 min de diferencia tanto en calentamiento como en vuelta a la calma. |
+
+Los límites son hipótesis de trabajo. Los 30 escenarios ficticios cubren
+variaciones pequeñas, diferencias que la media oculta, duplicados, orden
+invertido y la falta de datos. El ensayo se ejecuta con
+`node docs/audits/mismo_trabajo_menos_esfuerzo.mjs`.
+
+Al contrastar las sesiones reales de Javier, los bloques largos tuvieron
+parciales muy parecidos y menor esfuerzo anotado, con otra forma de recuperar
+y distintas condiciones. En las series cortas se observó menor esfuerzo a un
+ritmo más rápido y pausas fuera del temporizador que no se pudieron localizar.
+Ambas parejas quedan como observaciones privadas del historial. Los datos
+normalizados actuales no garantizan contexto ni tipo real de recuperación. Si
+no hay información suficiente, la regla se abstiene. La frecuencia cardíaca
+queda fuera de la comparación.
+
 ## Orden de ejecuciones del mismo día · PLAN-028
 
 El día local delimita las ventanas de historial. Dentro del día, v6 ordena

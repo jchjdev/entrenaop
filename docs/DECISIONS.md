@@ -1,5 +1,11 @@
 # Registro de decisiones vigentes
 
+**Menor esfuerzo a igual trabajo · ensayo de observación · 04/11/2026.**
+Javier pide probar cuándo mostrar que la misma pauta cuesta menos. El ensayo
+compara repeticiones, ritmo, recuperación, condiciones y esfuerzo declarado.
+La señal queda fuera del motor y de la aplicación mientras se estudia.
+[Criterios y prueba](MOTOR_CARRERA_2K_V6.md#cuándo-mostrar-menor-esfuerzo).
+
 **Reloj en Herramientas · 04/11/2026.** Javier confirma una pantalla de
 cronómetro, temporizador rápido e intervalos. Trabajo, descanso y rondas se
 ajustan antes de iniciar. Basta con mantener la pantalla encendida durante la
