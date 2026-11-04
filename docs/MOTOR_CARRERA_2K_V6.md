@@ -149,6 +149,20 @@ refuerza el trabajo sostenido. Usa el esfuerzo para valorar tolerancia y
 comparabilidad, pero la tendencia por familia se calcula por ritmo. Por eso,
 en la segunda fila no aparece como señal que el mismo trabajo costó menos.
 
+La misma consulta contrasta otros ocho escenarios con la marca fija. Los
+resultados proceden de la política instalada en Dev, en solo lectura.
+
+| Última semana o cambio observado | Respuesta de v6 |
+| --- | --- |
+| Una calidad con pausas prolongadas | Consolida el 4 × 2 min. |
+| Pausas prolongadas en la misma calidad durante dos semanas | Descarga global. |
+| Semana sin registros | Mantiene la decisión sin inferir inactividad. En la fixture no prescribe calidad. |
+| Las tres salidas constan como omitidas | Reentrada con reducción. |
+| Interrupción por falta de tiempo | Consolida el 4 × 2 min. |
+| Dos dosis completas con esfuerzo alto y sin dificultad objetiva | Mantiene el 4 × 2 min y propone revisar la escala de esfuerzo. |
+| Solo una exposición a menor esfuerzo | Misma tendencia y prescripción que la referencia. |
+| Cambia solo el pulso | La respuesta completa del motor es idéntica a la referencia. |
+
 La propuesta es comparar **ritmo, esfuerzo y marca** antes de concluir que el
 corredor lleva tiempo sin mejorar. Registrar «mismo trabajo con menor esfuerzo»
 como una observación es una hipótesis de seguimiento. En el ensayo de
@@ -157,7 +171,13 @@ fue reproducible y tuvo sensibilidad limitada para cambios pequeños. Su
 protocolo evalúa velocidad a esfuerzo fijado, por lo que no valida un punto de
 RPE a ritmo fijo como umbral para EntrenaOP. El siguiente paso propuesto es
 probar el diagnóstico sobre entrenamientos comparables sin convertir esa señal
-en cambios automáticos de dosis ni en una nueva marca.
+en cambios automáticos de dosis ni en una nueva marca. La comparación
+exploratoria de dos exposiciones iniciales con dos recientes, todas toleradas,
+detectó el descenso repetido de esfuerzo y se abstuvo ante un único descenso,
+pausas alargadas o datos insuficientes. Los límites sirven para las fixtures.
+La comparación de sesiones reales sigue requiriendo dosis, pausas y condiciones
+equivalentes. Los rodajes de Javier son útiles para comprobar comparabilidad
+por tramos, con evidencia insuficiente para afirmar una meseta en 2 km.
 [Nuuttila et al.](https://pubmed.ncbi.nlm.nih.gov/39244198/).
 
 ## Orden de ejecuciones del mismo día · PLAN-028
@@ -232,15 +252,26 @@ guarda 119 s de trabajo y 121 s de recuperación frente a 120 s previstos,
 repite el guardado, corrige y calcula la siguiente semana. También cubre
 una repetición omitida, esfuerzo 9/10 y una serie por distancia.
 
-## Pulso en rodajes comparables
+## Pulso y cierre desde el reloj
 
-La frecuencia cardíaca recibida se conserva para consulta. El cálculo vigente
-usa duración, distancia, pausas y esfuerzo según la evidencia disponible. El
-ensayo de pulso se limita a observar rodajes suaves de la misma persona, en
-condiciones similares y con el mismo sensor. Antes de darle peso en el plan
-queda pendiente medir su repetibilidad en rodajes reales y comprobar qué
-información aporta sobre el ritmo y el esfuerzo ya registrados.
-[Evidencia y prueba reproducible](audits/PULSO_RODAJES_COMPARABLES_2026_11_04.md).
+La frecuencia cardíaca recibida se conserva para consulta y queda fuera de las
+decisiones del plan. El cálculo usa duración, distancia, pausas y esfuerzo
+según la evidencia disponible. El reloj que grabó el entrenamiento y el sensor
+que midió el pulso pueden ser distintos. El ensayo de rodajes queda como
+antecedente de esa decisión. [Evidencia](audits/PULSO_RODAJES_COMPARABLES_2026_11_04.md).
+
+Una carrera de preparación con receta compatible y retorno asociado puede
+quedar completada con las mediciones del reloj. La valoración de la dosis usa
+lo observado y el esfuerzo declarado si existe. Un parcial recortado conserva
+sus metros y tiempo reales, y un esfuerzo ausente queda sin registrar. El
+alcance actual de Apple y Garmin para la preparación es carrera. El recorrido
+de fuerza de Garmin corresponde a las asignaciones profesionales compatibles.
+
+La [prueba transaccional](../supabase/tests/adaptive_running_device_completion.sql)
+materializa dos citas de carrera de preparación. El retorno Apple y la
+conciliación Garmin verifican en Dev el estado completado, los datos observados,
+el pulso guardado y un solo cierre ante el reenvío. Usa observaciones sintéticas
+y revierte la transacción. La aceptación desde relojes físicos queda aparte.
 
 ## Desviaciones leves de ritmo · PLAN-032
 

@@ -1,11 +1,15 @@
 # Registro de decisiones vigentes
 
-**Pulso de Garmin y Apple Watch · ensayo previo · 04/11/2026.**
-Javier pide contrastar la frecuencia cardíaca en rodajes comparables antes de
-incorporarla al motor. Se conserva como dato de consulta. La observación
-prototipada requiere mediciones repetidas dentro de la misma persona y queda
-pendiente de validación retrospectiva en rodajes reales. Los márgenes del ensayo
-son parámetros de laboratorio. [Alcance](MOTOR_CARRERA_2K_V6.md#pulso-en-rodajes-comparables).
+**Pulso y cierre de la preparación desde el reloj · 04/11/2026.**
+Javier confirma conservar la frecuencia cardíaca para consulta y excluirla de
+las decisiones del plan. El análisis de rodajes mostró que el modelo de reloj
+no acredita que se usara el mismo sensor. Javier pide que Garmin y Apple Watch
+puedan cerrar las sesiones de preparación como las pautas del preparador.
+El cierre y la valoración deportiva se comprueban por separado. Se retoma el
+estancamiento con ritmo, esfuerzo declarado, dosis y marca comparable.
+[Carrera](MOTOR_CARRERA_2K_V6.md#pulso-y-cierre-desde-el-reloj)
+· [Garmin](DEVICE_GARMIN_ACTIVITY_RETURN.md)
+· [Apple Watch](DEVICE_APPLE_WATCH.md).
 
 **PLAN-032 · Desviaciones leves de ritmo · 04/11/2026.**
 Javier confirma que un parcial ligeramente fuera del objetivo debe seguir
