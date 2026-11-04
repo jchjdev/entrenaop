@@ -47,6 +47,34 @@ de EntrenaOP requieren su propia validación.
 [Coleman et al.](https://pubmed.ncbi.nlm.nih.gov/38274324/),
 [Hov et al.](https://pubmed.ncbi.nlm.nih.gov/36314990/).
 
+### Evidencia actual sobre la prueba de dos minutos
+
+La declaración de ACSM de 2026 encuentra mejoras en resistencia muscular con
+entrenamiento de fuerza. Para ese desenlace, los datos son insuficientes para
+determinar el efecto de variables como carga, volumen y estructura de las
+series. Las recomendaciones para fuerza máxima e hipertrofia corresponden a
+otros desenlaces. [ACSM, apartado de resistencia muscular](https://pmc.ncbi.nlm.nih.gov/articles/PMC12965823/).
+
+CAPTI evaluó flexiones en dos minutos en 138 cadetes durante 16 semanas. Los
+dos programas mejoraron en flexiones y la diferencia entre grupos no alcanzó
+significación estadística para esa prueba (`p = 0,08`). La comparación fue
+por batallones y las intervenciones combinaron componentes y frecuencias
+diferentes. El estudio aporta evidencia sobre una prueba cercana, con alcance
+insuficiente para elegir la dosis de cadencia o una intervención ante meseta.
+[Estudio original CAPTI](https://pmc.ncbi.nlm.nih.gov/articles/PMC11385287/).
+
+En la prueba militar estadounidense de flexiones a 90° durante dos minutos,
+distintos evaluadores discreparon al puntuar las mismas repeticiones en vídeo.
+Para el diagnóstico de EntrenaOP, esto respalda exigir criterios de recuento y
+condiciones comparables antes de interpretar variaciones pequeñas. El margen de
+error del protocolo local y del autorregistro sigue pendiente de medir.
+[Estudio original de fiabilidad](https://pubmed.ncbi.nlm.nih.gov/26837086/).
+
+La búsqueda dirigida hasta el 04/11/2026 deja abierta la elección de un umbral
+de estancamiento y de una respuesta superior para el protocolo de EntrenaOP.
+La aplicación práctica propuesta es separar la marca comparable del trabajo
+realizado y comprobar primero si hay evidencia suficiente de transferencia.
+
 ### Línea base reproducida en Dev
 
 El [diagnóstico SQL](audits/estancamiento_base_2026_11_04.sql) ejecuta 15 casos
