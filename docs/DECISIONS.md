@@ -1,5 +1,13 @@
 # Registro de decisiones vigentes
 
+**STR-042 · Evidencia de rendimiento del mismo día · 04/11/2026.** Javier
+autoriza reproducir el fallo por el flujo normal y corregir únicamente el
+punto confirmado. Dos ejecuciones comparables del mismo día cuentan como un
+solo día. Si una indica dificultad y otra tolerancia, se aplica la respuesta
+ya prevista ante dificultad con independencia del orden de los cierres.
+El estancamiento y las posibles mejoras del alta se revisarán aparte.
+[Contrato y regresión](PROGRAMA_ADAPTATIVO.md#evidencia-de-rendimiento-del-mismo-día--str-042).
+
 **UI-067 · Preparación coherente y configuración recuperable · 03/11/2026:**
 Javier autoriza corregir los fallos reproducidos en la revisión de preparaciones,
 conservando estética, procesos y reglas del algoritmo. Ficha y plan publicado

@@ -1,5 +1,25 @@
 # Programa adaptativo
 
+## Evidencia de rendimiento del mismo día · STR-042
+
+La decisión de rendimiento evalúa las ejecuciones antes de elegir la señal de
+cada día. Fase y frecuencia leen cada exposición frente a su propia pauta. La
+dosis conserva su comparación con el trabajo vigente y su compatibilidad entre
+fases. Entre señales comparables de la misma fecha se priorizan molestias,
+dificultad, información inconclusa y tolerancia, en ese orden. El desempate es
+estable y la fecha sigue contando una sola vez. Dos ejecuciones toleradas
+el mismo día acreditan un día, y dos dificultades no acreditan dos días.
+
+La propuesta conserva la revisión `performance_same_day_evidence_v1`. Se
+aplica al cálculo nuevo de rendimiento sin recalcular las semanas publicadas.
+La regresión usa cuentas ficticias, activa planes, inicia y cierra las citas
+por los RPC de la app y verifica que se publique automáticamente la semana
+siguiente. Antes del arreglo, cambiar el orden de los cierres cambiaba la
+decisión entre mantener 46 repeticiones por serie y reducir a 39. Con ambos
+órdenes, la siguiente semana conserva la dificultad y reduce a 39. La prueba
+revierte todos sus datos con `ROLLBACK`.
+[Regresión del recorrido](../supabase/tests/adaptive_same_day_evidence.sql).
+
 ## Selección y progresión de carrera · PLAN-026 · 16/10/2026
 
 Javier autoriza corregir los bloqueos del diagnóstico de STR-041. Las nuevas

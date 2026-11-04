@@ -1,5 +1,20 @@
 # Roadmap de EntrenaOP
 
+**STR-042 · Evidencia de rendimiento del mismo día · 04/11/2026.** La
+regresión de servidor activa la preparación, revisa e inicia las citas por
+los RPC de la app y comprueba su continuación automática. Ambos órdenes de
+cierre producen la misma reducción cuando una exposición indica dificultad.
+Dos exposiciones toleradas el mismo día acreditan un solo día. La corrección
+queda en el motor de rendimiento y las nuevas propuestas registran su revisión.
+Aplicada en Dev con la migración `20261104060810`. La regresión falla antes,
+pasa con la candidata y vuelve a pasar sobre la migración instalada. Pasan
+otras ocho baterías SQL con `ROLLBACK`, el análisis raíz y 1.833 pruebas Flutter
+con una omisión previa. Versión de app `1.7.1+16`. La verificación del recorrido
+se hizo por RPC, sin ensayo físico. El siguiente bloque del motor es diagnosticar
+el estancamiento con las sesiones aportadas por Javier y evidencia científica
+pertinente. La aceptación física de los recorridos sigue registrada en UI-067.
+[Contrato y regresión](PROGRAMA_ADAPTATIVO.md#evidencia-de-rendimiento-del-mismo-día--str-042).
+
 **Preparaciones · corrección de recorridos · 03/11/2026:** cerrados los fallos
 reproducidos en la revisión con tres agentes: ciclo ficha/plan, semana de consulta,
 respuestas obsoletas, frontera de cuenta, finalizado que oculta borrador y
