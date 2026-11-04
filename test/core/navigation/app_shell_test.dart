@@ -191,8 +191,8 @@ void main() {
           Rect? previous;
           for (final label in [
             'Inicio',
-            'Entrenar',
             'Biblioteca',
+            'Entrena',
             'Preparador',
             'Perfil',
           ]) {
@@ -233,17 +233,30 @@ void main() {
     expect(find.byType(NavigationBar), findsOneWidget);
     expect(find.byType(NavigationRail), findsNothing);
 
-    await tester.tap(find.text('Entrenar'));
+    final mark = find.byKey(const ValueKey('pulso-op-mark'));
+    expect(
+      (tester.widget<Image>(mark).image as AssetImage).assetName,
+      'assets/branding/entrenaop_op_mark.png',
+    );
+    expect(
+      tester.getCenter(mark).dx,
+      closeTo(tester.getCenter(find.byType(NavigationBar)).dx, 0.01),
+    );
+    await tester.tap(mark);
     await tester.pumpAndSettle();
 
     expect(find.text('Contenido de Entrenar'), findsOneWidget);
     expect(router.state.matchedLocation, '/plan');
+    expect(
+      tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+      2,
+    );
     await tester.tap(find.text('Biblioteca'));
     await tester.pumpAndSettle();
     expect(router.state.matchedLocation, '/library');
     final bar = tester.widget<NavigationBar>(find.byType(NavigationBar));
     expect(bar.destinations, hasLength(5));
-    expect(bar.selectedIndex, 2);
+    expect(bar.selectedIndex, 1);
     await tester.tap(find.text('Perfil'));
     await tester.pumpAndSettle();
     expect(router.state.matchedLocation, '/profile');
@@ -253,7 +266,7 @@ void main() {
     expect(router.state.matchedLocation, '/library');
     expect(
       tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
-      2,
+      1,
     );
   });
 
@@ -285,7 +298,11 @@ void main() {
       router.go('/my-trainer/detail');
       await tester.pumpAndSettle();
       expect(find.text('Detalle de Preparador'), findsOneWidget);
-      await tester.tap(find.byIcon(Icons.event_note_outlined));
+      await tester.tap(
+        width < 840
+            ? find.text('Entrena')
+            : find.byIcon(Icons.event_note_outlined),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.byIcon(Icons.people_outline));
       await tester.pumpAndSettle();

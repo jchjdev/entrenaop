@@ -220,7 +220,7 @@ void main() {
       );
       final bar = tester.widget<NavigationBar>(find.byType(NavigationBar));
       expect(bar.destinations, hasLength(5));
-      expect(bar.selectedIndex, 2);
+      expect(bar.selectedIndex, 1);
       expect(find.text(content), findsOneWidget);
       if (route.contains('tab=personal') && route.contains('exercises')) {
         expect(find.text('Sentadilla de catálogo'), findsNothing);
@@ -279,7 +279,7 @@ void main() {
       );
       expect(
         tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
-        2,
+        1,
       );
       expect(tester.takeException(), isNull);
     },

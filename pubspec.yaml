@@ -1,7 +1,7 @@
 name: entrenaop
 description: "App de entrenamiento personal y preparación de oposiciones militares"
 publish_to: 'none'
-version: 1.13.0+31
+version: 1.14.0+32
 
 environment:
   sdk: '>=3.13.0 <4.0.0'
@@ -77,6 +77,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - assets/branding/entrenaop_op_mark.png
     - assets/audio/workout/
     - assets/programs/tropa/initial_week_draft_v1.json
     - assets/programs/fas_periodic_2027/assessment_reference_v1.json

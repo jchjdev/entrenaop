@@ -1,5 +1,10 @@
 # Registro de decisiones vigentes
 
+**Pulso en la navegación del deportista · 04/11/2026.** Javier elige Pulso
+para móvil y confirma «Entrena» en el centro con la silueta del OP del
+logotipo original. La selección abre la rama de entrenamiento existente.
+[Diseño y alcance](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#barra-pulso-del-deportista--04112026).
+
 **Dominadas de 0 a 25 · ensayo de laboratorio · 04/11/2026.** Javier pide
 ensayar la progresión a 26 y 52 semanas con diferentes niveles, materiales
 y agendas de carrera antes de plantear su activación. El laboratorio de Admin

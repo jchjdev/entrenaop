@@ -1,5 +1,26 @@
 # Navegación del alumno y preparador · TRN-025 · 22/10/2026
 
+## Barra Pulso del deportista · 04/11/2026
+
+En el ancho móvil, Pulso presenta Inicio, Biblioteca, Entrena, Preparador y
+Perfil sobre una base mate separada de los bordes. Entrena lleva una pieza
+naranja elevada con la silueta OP extraída del logotipo original sobre fondo
+oscuro. El archivo conserva el contorno transparente y Flutter lo tiñe para
+obtener contraste sobre el naranja. Una raya bajo la sección activa indica
+la selección, también cuando el botón central está presente en otra sección.
+
+La barra reutiliza los destinos Material, sus etiquetas accesibles y las
+ramas de GoRouter. Entrena abre el centro de entrenamiento. Al volver a una
+sección se recupera su pantalla y al pulsar de nuevo la activa se abre su
+raíz. Los avisos de Preparador y Perfil conservan sus indicadores propios.
+En ancho amplio se usa el rail existente. La versión del deportista es
+`1.14.0+32`.
+
+Verificación: análisis limpio, 1.844 pruebas correctas y una omisión previa.
+Las 55 comprobaciones dirigidas incluyen rutas y capturas a 320 y 390 px
+con texto normal y ampliado. Se comprueba que la pieza central abre Entrena
+al tocar directamente el OP y que Biblioteca conserva su rama.
+
 ## Preparación, configuración y consulta · 03/11/2026
 
 Implementación UI-067, autorizada tras la [revisión del vídeo y sus fronteras](audits/preparation-flow-review-2026-11-03.md).

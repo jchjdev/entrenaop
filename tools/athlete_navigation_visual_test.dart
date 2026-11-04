@@ -256,6 +256,15 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      final pulsoMark = find.byKey(const ValueKey('pulso-op-mark'));
+      if (pulsoMark.evaluate().isNotEmpty) {
+        await tester.runAsync(
+          () => precacheImage(
+            tester.widget<Image>(pulsoMark).image,
+            tester.element(pulsoMark),
+          ),
+        );
+      }
       if (find.byType(HomePage).evaluate().isNotEmpty) {
         await tester.runAsync(
           () => precacheImage(
@@ -280,7 +289,7 @@ void main() {
               .map(
                 (destination) => (destination as NavigationDestination).label,
               ),
-          ['Inicio', 'Entrenar', 'Biblioteca', 'Preparador', 'Perfil'],
+          ['Inicio', 'Biblioteca', 'Entrena', 'Preparador', 'Perfil'],
         );
         if (screen.startsWith('entrenar-')) {
           final nav = find.byType(NavigationBar);

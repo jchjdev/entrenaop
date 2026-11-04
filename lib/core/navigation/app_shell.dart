@@ -3,6 +3,7 @@ import '../../features/coach_workspace/presentation/coach_mobile_style.dart';
 import '../../features/trainers/presentation/student_navigation.dart';
 
 import 'package:entrenaop/core/presentation/widgets/entrena_wordmark.dart';
+import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -48,9 +49,9 @@ class AppShell extends StatelessWidget {
         child: frame(navigationShell),
       );
     }
-    // Se conservan las ramas históricas y la profesional; solo cambia el orden
-    // visible. Evolución y Perfil comparten la rama 3.
-    const indices = [0, 1, 2, 4, 3];
+    // El orden de Pulso es visual. Evolución y Perfil comparten la rama 3.
+    const mobileIndices = [0, 2, 1, 4, 3];
+    const railIndices = [0, 1, 2, 4, 3];
     Widget trainerIcon(IconData icon) => Badge.count(
       count: studentUnread,
       maxCount: 99,
@@ -78,21 +79,20 @@ class AppShell extends StatelessWidget {
     final destinations = [
       ..._barDestinations.take(3),
       NavigationDestination(
-        icon: trainerIcon(Icons.people_outline),
-        selectedIcon: trainerIcon(Icons.people),
+        icon: _PulsoIcon(child: trainerIcon(Icons.people_outline)),
+        selectedIcon: _PulsoIcon(child: trainerIcon(Icons.people)),
         label: 'Preparador',
         tooltip: studentUnread > 0
             ? 'Preparador · $studentUnread novedades sin leer'
             : 'Preparador',
       ),
       NavigationDestination(
-        icon: profileIcon(Icons.account_circle_outlined),
-        selectedIcon: profileIcon(Icons.account_circle),
+        icon: _PulsoIcon(child: profileIcon(Icons.account_circle_outlined)),
+        selectedIcon: _PulsoIcon(child: profileIcon(Icons.account_circle)),
         label: 'Perfil',
         tooltip: profileTooltip,
       ),
     ];
-    final selectedIndex = indices.indexOf(navigationShell.currentIndex);
     return LayoutBuilder(
       builder: (context, constraints) {
         if (constraints.maxWidth >= 840) {
@@ -102,9 +102,11 @@ class AppShell extends StatelessWidget {
                 children: [
                   SafeArea(
                     child: NavigationRail(
-                      selectedIndex: selectedIndex,
+                      selectedIndex: railIndices.indexOf(
+                        navigationShell.currentIndex,
+                      ),
                       onDestinationSelected: (index) =>
-                          _selectDestination(indices[index]),
+                          _selectDestination(railIndices[index]),
                       extended: constraints.maxWidth >= 1180,
                       labelType: constraints.maxWidth >= 1180
                           ? NavigationRailLabelType.none
@@ -154,20 +156,15 @@ class AppShell extends StatelessWidget {
           );
         }
 
-        final labelStyle = _barLabelStyle(
-          context,
-          constraints.maxWidth,
-          destinations,
-        );
         return frame(
           Scaffold(
             body: navigationShell,
-            bottomNavigationBar: NavigationBar(
-              labelPadding: const EdgeInsets.fromLTRB(6, 4, 6, 0),
-              labelTextStyle: labelStyle,
-              selectedIndex: selectedIndex,
+            bottomNavigationBar: _PulsoNavigationBar(
+              selectedIndex: mobileIndices.indexOf(
+                navigationShell.currentIndex,
+              ),
               onDestinationSelected: (index) =>
-                  _selectDestination(indices[index]),
+                  _selectDestination(mobileIndices[index]),
               destinations: destinations,
             ),
           ),
@@ -175,6 +172,130 @@ class AppShell extends StatelessWidget {
       },
     );
   }
+}
+
+class _PulsoNavigationBar extends StatelessWidget {
+  const _PulsoNavigationBar({
+    required this.destinations,
+    required this.selectedIndex,
+    required this.onDestinationSelected,
+  });
+
+  final List<NavigationDestination> destinations;
+  final int selectedIndex;
+  final ValueChanged<int> onDestinationSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(8, 0, 8, 7),
+        child: LayoutBuilder(
+          builder: (context, constraints) => Stack(
+            children: [
+              Positioned.fill(
+                top: 12,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: colors.surfaceContainerHigh,
+                    border: Border.all(color: colors.outlineVariant),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              ),
+              NavigationBar(
+                height: 76,
+                backgroundColor: Colors.transparent,
+                surfaceTintColor: Colors.transparent,
+                indicatorColor: Colors.transparent,
+                elevation: 0,
+                labelPadding: const EdgeInsets.fromLTRB(6, 4, 6, 0),
+                labelTextStyle: _barLabelStyle(
+                  context,
+                  constraints.maxWidth,
+                  destinations,
+                ),
+                selectedIndex: selectedIndex,
+                onDestinationSelected: onDestinationSelected,
+                destinations: destinations,
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 5,
+                child: IgnorePointer(
+                  child: Row(
+                    children: [
+                      for (var index = 0; index < destinations.length; index++)
+                        Expanded(
+                          child: Center(
+                            child: index == selectedIndex
+                                ? Container(
+                                    width: 12,
+                                    height: 2,
+                                    decoration: BoxDecoration(
+                                      color: colors.secondary,
+                                      borderRadius: BorderRadius.circular(1),
+                                    ),
+                                  )
+                                : const SizedBox.shrink(),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PulsoIcon extends StatelessWidget {
+  const _PulsoIcon({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) =>
+      SizedBox(height: 36, child: Center(widthFactor: 1, child: child));
+}
+
+class _PulsoMark extends StatelessWidget {
+  const _PulsoMark();
+
+  @override
+  Widget build(BuildContext context) => Transform.translate(
+    offset: const Offset(0, -7),
+    child: Container(
+      width: 42,
+      height: 36,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: EntrenaTheme.brandOrange,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            spreadRadius: 4,
+          ),
+        ],
+      ),
+      child: ExcludeSemantics(
+        child: Image.asset(
+          'assets/branding/entrenaop_op_mark.png',
+          key: const ValueKey('pulso-op-mark'),
+          width: 30,
+          color: const Color(0xFF220B03),
+          filterQuality: FilterQuality.high,
+        ),
+      ),
+    ),
+  );
 }
 
 WidgetStateProperty<TextStyle> _barLabelStyle(
@@ -185,7 +306,12 @@ WidgetStateProperty<TextStyle> _barLabelStyle(
   final theme = Theme.of(context);
   TextStyle style(Set<WidgetState> states) => theme.textTheme.labelMedium!
       .merge(theme.navigationBarTheme.labelTextStyle?.resolve(states))
-      .copyWith(letterSpacing: 0);
+      .copyWith(
+        letterSpacing: 0,
+        color: states.contains(WidgetState.selected)
+            ? theme.colorScheme.secondary
+            : theme.colorScheme.onSurfaceVariant,
+      );
   final selected = style({WidgetState.selected});
   final baseSize = selected.fontSize!;
   final available = width / destinations.length - 12;
@@ -213,20 +339,16 @@ WidgetStateProperty<TextStyle> _barLabelStyle(
 
 const _barDestinations = [
   NavigationDestination(
-    icon: Icon(Icons.home_outlined),
-    selectedIcon: Icon(Icons.home_rounded),
+    icon: _PulsoIcon(child: Icon(Icons.home_outlined)),
+    selectedIcon: _PulsoIcon(child: Icon(Icons.home_rounded)),
     label: 'Inicio',
   ),
   NavigationDestination(
-    icon: Icon(Icons.event_note_outlined),
-    selectedIcon: Icon(Icons.event_note_rounded),
-    label: 'Entrenar',
-  ),
-  NavigationDestination(
-    icon: Icon(Icons.library_books_outlined),
-    selectedIcon: Icon(Icons.library_books_rounded),
+    icon: _PulsoIcon(child: Icon(Icons.library_books_outlined)),
+    selectedIcon: _PulsoIcon(child: Icon(Icons.library_books_rounded)),
     label: 'Biblioteca',
   ),
+  NavigationDestination(icon: _PulsoMark(), label: 'Entrena'),
 ];
 
 const _railDestinations = [

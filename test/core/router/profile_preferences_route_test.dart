@@ -98,7 +98,7 @@ void main() {
       expect(tester.state(find.byType(TrainingHubPage)), same(original));
       expect(
         tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
-        1,
+        2,
       );
       expect(find.text('Editar disponibilidad y material'), findsOneWidget);
       expect(tester.takeException(), isNull);
