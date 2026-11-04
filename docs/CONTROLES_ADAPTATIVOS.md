@@ -1,5 +1,26 @@
 # Controles adaptativos por necesidad
 
+## Días distintos en carrera · PLAN-027
+
+El selector de controles de 2 km cuenta fechas locales de realización con
+trabajo tolerado. La misma unidad se usa en los tres contadores: práctica
+tolerada en la ventana de 42 días, días recientes dentro de los últimos 14 y
+días posteriores al último control o referencia aplicable. Una observación
+adversa reciente sigue bloqueando el control aunque coincida con una tolerada.
+Los umbrales de cuatro días tolerados, dos recientes y cuatro nuevos siguen
+siendo criterios operativos del producto. La evidencia de recuperación y
+medición respalda considerar el contexto de cada exposición y estandarizar las
+comparaciones; no establece esos números como umbrales fisiológicos.
+[Recuperación tras distintos intervalos](https://pubmed.ncbi.nlm.nih.gov/41994354/),
+[repetibilidad de un test de campo](https://pubmed.ncbi.nlm.nih.gov/39244198/).
+
+La [regresión](../supabase/tests/adaptive_running_control_distinct_days.sql)
+publica cuatro citas en fechas de agenda distintas y las cierra el mismo día
+por los RPC de la app. La continuación automática debe registrar `1/1/1` y
+publicar la semana ordinaria sin control. Una segunda fixture acredita cuatro
+días distintos y comprueba `4/4/4` y elegibilidad. La colocación posterior
+sigue dependiendo de la agenda y la recuperación.
+
 ## Acuerdo y alcance · STR-041 · 16/10/2026
 
 Javier autoriza cerrar el recorrido automático de controles y tests para las

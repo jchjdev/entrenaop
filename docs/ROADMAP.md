@@ -1,13 +1,24 @@
 # Roadmap de EntrenaOP
 
+**PLAN-027 · Días de práctica para el control de 2 km · 04/11/2026.** En Dev,
+cuatro salidas el mismo día se contaban como cuatro y podían publicar un control.
+Con la migración `20261104103530`, cuentan como un día y se publica la semana
+ordinaria. Cuatro días distintos conservan elegibilidad. Regresión por RPC antes
+y después con `ROLLBACK`, siete baterías SQL, 78 trayectorias y 1.573 semanas
+sintéticas de carrera v6. La regresión de selección alcanza 200, 400, 600 y 800 m
+con evidencia compatible. Se cotejaron las recetas instaladas y el cuerpo de
+diez funciones. El cambio se limita a los tres contadores del selector. Análisis
+raíz limpio y 1.833 pruebas Flutter correctas con una omisión previa. Versión
+`1.7.2+17`. [Contrato y prueba](CONTROLES_ADAPTATIVOS.md#días-distintos-en-carrera--plan-027).
+
 **Auditoría de los tres modos · 04/11/2026.** La misma preparación FAS se
 comparó en nueve escenarios por modo. Pasaron las guardas de tiempo, alcance
 y publicación de las 27 propuestas. Las 18 listas se publicaron con cuentas
 ficticias y `ROLLBACK`. Se reprodujo un control de 2 km publicado tras contar
 cuatro sesiones del mismo día como cuatro días, dos desempates que alteran
 la prescripción de carrera, una discrepancia al progresar en agilidad y avisos
-contradictorios al faltar marca. **Siguiente bloque recomendado:** corregir la
-evidencia de carrera, empezando por el conteo de días de los controles.
+contradictorios al faltar marca. El conteo se corrige en PLAN-027. Queda pendiente
+reproducir por RPC los empates de carrera que alteran la prescripción.
 [Informe y reproducciones](audits/AUDITORIA_ADAPTATIVA_2026_11_04.md).
 
 **Estancamiento · línea base · 04/11/2026.** Revisados los capítulos pertinentes

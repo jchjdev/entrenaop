@@ -53,9 +53,9 @@ begin
  if exists(select 1 from jsonb_array_elements(p->'changes') x where x->>'dimension' in ('dose_step','speed','easy_minutes')) then
   raise exception 'Ancla nueva y aumento de dosis simultáneos'; end if;
 
- -- Los formatos existentes de 400 y 800 son alcanzables con sus requisitos;
+ -- Los formatos existentes de 400, 600 y 800 son alcanzables con sus requisitos;
  -- no es necesario insertarlos a mano ni abrirlos a un principiante.
- foreach seed_step in array array[2,5] loop
+ foreach seed_step in array array[2,4,5] loop
   s:=public.running_session_v2('S',seed_step,577,50);h:='[]';
   for i in 1..4 loop
    h:=h||jsonb_build_array(jsonb_build_object('date',wk-35+i*7,'session',s,'execution',pg_temp.format_execution(s)));

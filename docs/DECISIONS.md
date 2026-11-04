@@ -1,5 +1,11 @@
 # Registro de decisiones vigentes
 
+**PLAN-027 · Días de práctica para el control de 2 km · 04/11/2026.** Javier
+autoriza corregir el conteo del selector de controles. La práctica tolerada
+se acredita por fecha local distinta de realización. Cuatro salidas del mismo
+día acreditan un día y resultan insuficientes para proponer el control.
+[Contrato y regresión](CONTROLES_ADAPTATIVOS.md#días-distintos-en-carrera--plan-027).
+
 **INT-021 · 04/11/2026 · Nombres legibles en Fuerza nativa.** Javier señala
 que los identificadores `EOP…` siguen apareciendo después de vincular su cuenta
 habitual. La Beta 1.7 pide un título nativo de hasta 22 bytes ASCII, con una
