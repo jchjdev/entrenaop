@@ -1,5 +1,11 @@
 # Registro de decisiones vigentes
 
+**Dominadas de 0 a 25 · ensayo de laboratorio · 04/11/2026.** Javier pide
+ensayar la progresión a 26 y 52 semanas con diferentes niveles, materiales
+y agendas de carrera antes de plantear su activación. El laboratorio de Admin
+permite revisar las semanas y sus decisiones con resultados ficticios.
+[Reglas, ejemplos y límites](ESTRATEGIA_DOMINADAS_PROPUESTA.md#primer-ensayo-en-el-laboratorio-de-admin).
+
 **Objetivo personal en una preparación oficial · 04/11/2026.** Javier ve
 bien partir de un objetivo personal activo por preparación. El trabajo de
 las pruebas tiene prioridad sobre ese extra. La prioridad debe aplicarse

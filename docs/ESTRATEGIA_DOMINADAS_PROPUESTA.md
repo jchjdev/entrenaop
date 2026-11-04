@@ -84,3 +84,57 @@ pide calibrar una variante accesible por debajo de dos repeticiones. El tramo
 de cero a la primera libre necesita selección específica de variante y una
 transición basada en práctica registrada. Esta revisión no activa una estrategia
 ni aprueba sus dosis.
+
+## Primer ensayo en el laboratorio de Admin
+
+**Ruta:** Laboratorio → Dominadas de 0 a 25. Permite elegir marca inicial,
+material, agenda, respuesta e inspeccionar cualquiera de las semanas. La misma
+política se ejecuta en lote con `dart run tool/simulate_pull_ups.dart` desde
+`admin_app/`. El JSON devuelve los recuentos y las pautas de cuatro escenarios.
+
+Se cruzaron siete puntos de partida (sin medir, 0, 1, 5, 12, 18 y 25), siete
+conjuntos de material, tres agendas y cuatro guiones de respuesta. Se ensayaron
+dos horizontes con 588 escenarios cada uno. Las dos agendas combinadas traen
+un rodaje fácil y una sesión de calidad de ejemplo por semana. Se reservan
+primero en el calendario. El tirón solo comparte día con el rodaje fácil si
+cabe por minutos. Se exigen dos días de separación entre exposiciones de tirón,
+también entre semanas.
+
+En el ensayo hacen falta dos registros recientes de la misma dosis para subir
+o recortar. Un dato incompleto o una sesión difícil aislada mantienen la pauta.
+Para plantear un control se piden al menos cuatro exposiciones toleradas nuevas,
+seis semanas desde el control anterior y una señal de que medir aporta algo.
+Si no cabe junto a una exposición ordinaria de tirón, se sigue entrenando.
+La separación de seis semanas y el resto de umbrales son parámetros del ensayo.
+
+| Comprobación | 26 semanas | 52 semanas |
+| --- | ---: | ---: |
+| Semanas simuladas | 15.288 | 30.576 |
+| Sesiones de carrera conservadas | 20.384 | 40.768 |
+| Exposiciones de dominadas colocadas, incluidos controles | 18.908 | 38.307 |
+| Exposiciones de dominadas aplazadas | 3.775 | 7.896 |
+| Controles colocados | 464 | 1.008 |
+| Controles con un solo hueco de tirón | 0 | 0 |
+
+En el guion favorable con gomas y carrera, la semana 2 pauta 3×5 asistidas
+el lunes y el viernes, con dos minutos de pausa. La reducción de ayuda se
+ensaya con una sola serie en las semanas 12 y 23. Se observa la primera estricta
+en la semana 34 y al observar dos válidas se calibra trabajo de repeticiones
+sueltas. Con barra baja solo para australianas, el ensayo progresa hacia un
+montaje más horizontal y la marca estricta sigue en cero. Desde 18 válidas,
+la semana 2 separa 4×7 de una sesión de 13 + 6 + 6. Ese guion entrega una
+marca de 25 en el control de la semana 27 y el plan deja de pedir máximos.
+
+Los guiones entregan una marca ficticia únicamente cuando el plan consigue
+colocar y ejecutar un control. Para una persona que parte de cero, el primer
+resultado positivo del guion favorable es una repetición. Diferentes montajes
+pueden hacer que el plan pida controles en momentos distintos. Los recuentos
+miden decisiones del laboratorio y no permiten comparar la eficacia de las
+negativas con la de las gomas ni pronosticar mejoras en seis o doce meses.
+
+La política de laboratorio incluye asistidas, australianas, negativas con
+escalón, libres sueltas y series libres. Para activar la estrategia hace falta
+ensayar la vinculación de una prueba en Admin, el registro real y la publicación
+de una semana siguiente con el coordinador de servidor. El lastre, las supinas,
+el salto y los parciales quedan pendientes de modelar con una referencia y una
+indicación propias. Las agendas de carrera de este ensayo son ejemplos fijos.

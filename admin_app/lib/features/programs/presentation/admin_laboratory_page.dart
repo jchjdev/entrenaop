@@ -6,15 +6,18 @@ import '../../../core/admin_shell.dart';
 import '../../exercises/data/admin_exercise_repository.dart';
 import 'admin_performance_progression_lab.dart';
 import 'admin_push_up_policy_lab.dart';
+import 'admin_pull_up_lab.dart';
 
 class AdminLaboratoryPage extends StatelessWidget {
   const AdminLaboratoryPage({
     required this.repository,
     this.pushUps = false,
+    this.pullUps = false,
     super.key,
   });
   final AdminExerciseRepository repository;
   final bool pushUps;
+  final bool pullUps;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -50,7 +53,7 @@ class AdminLaboratoryPage extends StatelessWidget {
                 children: [
                   ChoiceChip(
                     label: const Text('Fuerza y rendimiento'),
-                    selected: !pushUps,
+                    selected: !pushUps && !pullUps,
                     onSelected: (_) => context.go('/laboratory'),
                   ),
                   ChoiceChip(
@@ -58,10 +61,17 @@ class AdminLaboratoryPage extends StatelessWidget {
                     selected: pushUps,
                     onSelected: (_) => context.go('/laboratory/push-ups'),
                   ),
+                  ChoiceChip(
+                    label: const Text('Dominadas de 0 a 25'),
+                    selected: pullUps,
+                    onSelected: (_) => context.go('/laboratory/pull-ups'),
+                  ),
                 ],
               ),
               const SizedBox(height: 24),
-              if (pushUps)
+              if (pullUps)
+                const AdminPullUpLab()
+              else if (pushUps)
                 AdminPushUpPolicyLab(repository: repository)
               else
                 AdminPerformanceProgressionLab(repository: repository),

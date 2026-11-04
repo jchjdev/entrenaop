@@ -812,6 +812,13 @@ GoRouter createAdminRouter({
             ),
             routes: [
               GoRoute(
+                path: 'pull-ups',
+                builder: (_, _) => load(
+                  () async => true,
+                  (_) => AdminLaboratoryPage(repository: exercises, pullUps: true),
+                ),
+              ),
+              GoRoute(
                 path: 'push-ups',
                 builder: (_, _) => load(
                   () async => true,
