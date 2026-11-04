@@ -1,10 +1,11 @@
 # Registro de decisiones vigentes
 
-**Menor esfuerzo a igual trabajo · ensayo de observación · 04/11/2026.**
-Javier pide probar cuándo mostrar que la misma pauta cuesta menos. El ensayo
-compara repeticiones, ritmo, recuperación, condiciones y esfuerzo declarado.
-La señal queda fuera del motor y de la aplicación mientras se estudia.
-[Criterios y prueba](MOTOR_CARRERA_2K_V6.md#cuándo-mostrar-menor-esfuerzo).
+**Estancamiento y decisiones de entrenamiento · 04/11/2026.** Javier descarta
+el aviso «el mismo trabajo te cuesta menos» y prioriza mejorar la prescripción
+y el rendimiento. El ensayo de esfuerzo queda como antecedente. La revisión
+se centra en qué evidencia justifica cambiar la próxima sesión y en cuándo
+hay una marca comparable para evaluar ese cambio.
+[Diagnóstico](MOTOR_CARRERA_2K_V6.md#orden-del-entrenamiento-y-del-control-de-2-km).
 
 **Reloj en Herramientas · 04/11/2026.** Javier confirma una pantalla de
 cronómetro, temporizador rápido e intervalos. Trabajo, descanso y rondas se

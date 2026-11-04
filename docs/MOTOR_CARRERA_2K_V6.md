@@ -163,15 +163,12 @@ resultados proceden de la política instalada en Dev, en solo lectura.
 | Solo una exposición a menor esfuerzo | Misma tendencia y prescripción que la referencia. |
 | Cambia solo el pulso | La respuesta completa del motor es idéntica a la referencia. |
 
-La propuesta es comparar **ritmo, esfuerzo y marca** antes de concluir que el
-corredor lleva tiempo sin mejorar. Registrar «mismo trabajo con menor esfuerzo»
-como una observación es una hipótesis de seguimiento. En el ensayo de
+La revisión distingue **ritmo, esfuerzo y marca** antes de concluir que el
+corredor lleva tiempo sin mejorar. En el ensayo de
 Nuuttila con corredores recreativos, una prueba de campo a esfuerzo percibido
 fue reproducible y tuvo sensibilidad limitada para cambios pequeños. Su
 protocolo evalúa velocidad a esfuerzo fijado, por lo que no valida un punto de
-RPE a ritmo fijo como umbral para EntrenaOP. El siguiente paso propuesto es
-probar el diagnóstico sobre entrenamientos comparables sin convertir esa señal
-en cambios automáticos de dosis ni en una nueva marca. La comparación
+RPE a ritmo fijo como umbral para EntrenaOP. La comparación
 exploratoria de dos exposiciones iniciales con dos recientes, todas toleradas,
 detectó el descenso repetido de esfuerzo y se abstuvo ante un único descenso,
 pausas alargadas o datos insuficientes. Los límites sirven para las fixtures.
@@ -182,8 +179,8 @@ por tramos, con evidencia insuficiente para afirmar una meseta en 2 km.
 
 ### Cuándo mostrar menor esfuerzo
 
-El [ensayo local](audits/mismo_trabajo_menos_esfuerzo.mjs) propone una
-observación en el resultado más reciente de una pauta por distancia.
+Javier descartó este aviso tras el [ensayo local](audits/mismo_trabajo_menos_esfuerzo.mjs).
+El texto ensayado para el resultado más reciente de una pauta por distancia fue
 «En las dos últimas sesiones comparables, anotaste menos esfuerzo para el
 mismo trabajo». Compara las cuatro últimas ejecuciones de esa pauta en días
 distintos, en un máximo de 56 días entre la primera y la última. Los dos
@@ -211,6 +208,29 @@ Ambas parejas quedan como observaciones privadas del historial. Los datos
 normalizados actuales no garantizan contexto ni tipo real de recuperación. Si
 no hay información suficiente, la regla se abstiene. La frecuencia cardíaca
 queda fuera de la comparación.
+
+### Orden del entrenamiento y del control de 2 km
+
+En Dev, dos series recientes más rápidas a esfuerzo similar llevan a v6 a
+proponer 2 × 5 min de tempo con el motivo «series mejoran sin transferencia al
+2 km». La decisión aparece incluso cuando el último control comparable de
+2 km es anterior a las dos series mejoradas. También aparece si el control se
+hizo entre ambas. En los tres casos, las marcas registradas son de 9:55.
+
+La [reproducción SQL](audits/estancamiento_carrera_2k_2026_11_04.sql) mantiene
+el mismo historial de entrenamiento y mueve la fecha de los controles. Al
+retirar su tendencia en los dos casos anteriores, el cálculo de laboratorio
+propone 5 × 2 min de intervalos, con la misma referencia de ritmo y agenda.
+Así se aísla el efecto de usar una tendencia de marcas que precede a las
+series. Los dos formatos son salidas del cálculo, sin pronóstico de mejora en
+el examen.
+
+La [prueba por RPC](audits/cronologia_control_carrera_rpc.sql) registra las
+mismas ejecuciones en dos preparaciones ficticias. Comprueba que ambas publican
+2 × 5 min, con el último control antes o después de las series mejoradas, y
+revierte la transacción en Dev. El siguiente paso es probar que el cambio de
+familia por falta de transferencia exige un control posterior a las sesiones
+que sustentan la mejora, con la misma referencia y calendario de controles.
 
 ## Orden de ejecuciones del mismo día · PLAN-028
 

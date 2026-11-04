@@ -73,10 +73,12 @@ de las ejecuciones de carrera en PLAN-028.
 de Helms y NSCA, el banco de Javier y estudios originales de fuerza y carrera.
 Quince casos de solo lectura en Dev contrastan pauta tolerada, datos ausentes,
 dificultad, tendencia de marcas y decisión de medir. Cuatro escenarios adicionales
-con el mismo 2 km contrastan ritmo de intervalos, esfuerzo y marca. Evaluar
-los cambios de esfuerzo como señal de seguimiento es el siguiente bloque de
-carrera. La revisión comparará sesiones de Javier con condiciones equivalentes
-y distinguirá tolerancia, dificultad y cambio de marca.
+con el mismo 2 km contrastan ritmo de intervalos, esfuerzo y marca. Javier
+descarta el aviso de menor esfuerzo. En Dev se reproduce que la falta de
+transferencia cambia la pauta usando un control previo a la mejora de las
+series. La prueba por RPC confirma la publicación de 2 × 5 min con el control
+antes o después de las series. El siguiente bloque es validar la corrección
+temporal sobre la prescripción.
 [Línea base](PROGRAMA_ADAPTATIVO.md#diagnóstico-de-estancamiento--04112026),
 [evidencia y escenarios de 2 km](MOTOR_CARRERA_2K_V6.md#resistencia-y-estancamiento-en-2-km--04112026).
 

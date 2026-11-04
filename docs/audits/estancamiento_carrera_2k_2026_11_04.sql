@@ -20,7 +20,9 @@ with profile as (
     (9,'Última calidad interrumpida por tiempo'),
     (10,'Dos sesiones completas con esfuerzo alto'),
     (11,'Mismo ritmo, un esfuerzo inferior aislado'),
-    (12,'Mismo trabajo, cambia solo el pulso')
+    (12,'Mismo trabajo, cambia solo el pulso'),
+    (13,'Mejor ritmo, último 2 km anterior a las dos mejoras'),
+    (14,'Mejor ritmo, último 2 km entre las dos mejoras')
   ) cases(position,label)
 ), runs as (
   select s.position,s.label,d.week_start,trial.ordinal,trial.days_ago,trial.session,
@@ -40,7 +42,7 @@ with profile as (
             else (part->>'recovery_seconds')::numeric end) order by part_number)
         from jsonb_array_elements(trial.session->'segments') with ordinality as segments(part,part_number)
         cross join lateral (select coalesce(case
-          when s.position=3 and trial.ordinal>=3 and trial.ordinal<=4 then (part->>'pace_min')::numeric+1
+          when s.position in (3,13,14) and trial.ordinal>=3 and trial.ordinal<=4 then (part->>'pace_min')::numeric+1
           else (part->>'pace_max')::numeric-1 end,450) as pace) as p)
     )) as execution
   from doses d cross join scenarios s
@@ -54,21 +56,29 @@ with profile as (
   select position,label,jsonb_agg(jsonb_build_object('date',week_start-days_ago,
     'session',session,'execution',execution) order by ordinal) as history
   from runs group by position,label
-), plans as (
+), inputs as (
   select h.*,
-    public.running_plan_v6(jsonb_build_object(
+    jsonb_build_object(
       'week_start',d.week_start,'target_date',d.week_start+70,'anchor_seconds',d.anchor,
-      'anchor_age_days',2,'goal_seconds',d.goal,'availability','{"1":60,"3":60,"6":60}'::jsonb,
+      'anchor_age_days',case h.position when 13 then 15 when 14 then 10 else 2 end,
+      'goal_seconds',d.goal,'availability','{"1":60,"3":60,"6":60}'::jsonb,
       'recent_days',array[case when h.position in (7,8) then 0 else 3 end,3,3,3],
       'recent_minutes',array[case when h.position in (7,8) then 0 else 95 end,95,95,95],'capacity_minutes',45,
       'previous',jsonb_build_object('week_start',d.week_start-7,'normal_budget',95,
         'anchor_seconds',d.anchor,'mode','normal','rotation',1,
         'sessions',jsonb_build_array(d.interval_session,d.easy_session,d.easy_session)),
       'controls',(select jsonb_agg(jsonb_build_object('date',d.week_start-days_ago,'seconds',d.anchor,
-        'protocol','pista_2000')) from unnest(array[30,16,2]) as days(days_ago)),
+        'protocol','pista_2000') order by days_ago) from unnest(case h.position
+          when 13 then array[43,29,15] when 14 then array[38,24,10] else array[30,16,2] end) as days(days_ago)),
       'history',h.history
-    )) as plan
+    ) as input
   from histories h cross join doses d
+), plans as (
+  select *, public.running_plan_v6(input) as plan,
+    -- Contrafactual de laboratorio. Mantiene la misma referencia y agenda,
+    -- pero retira los controles para que no justifiquen un cambio de familia.
+    case when position in (13,14) then public.running_plan_v6(input-'controls') end as plan_without_control_trend
+  from inputs
 ), paired as (
   -- Lectura exploratoria de estas fixtures. Los cuatro ensayos usan la misma
   -- receta y ancla en fechas distintas. No es un umbral para el motor.
@@ -85,6 +95,9 @@ with profile as (
 )
 select label,evidence->'families'->'V' as interval_trend,
   plan->'control_review'->>'trend' as test_trend,plan->>'outcome' as decision,plan->>'mode' as mode,
+  plan#>>'{control_review,controls,0,date}' as latest_control,
+  (select item->>'variant_code' from jsonb_array_elements(plan_without_control_trend->'sessions') item
+    where item->>'family' in ('T','V','S') limit 1) as quality_without_control_trend,
   case when exposures<>4 or tolerated<>4 then 'evidencia insuficiente para comparar esfuerzo'
     when abs(late_pace/nullif(early_pace,0)-1)>0.02 then 'ritmo distinto'
     when late_rpe_max<early_rpe_min then 'esfuerzo inferior repetido a ritmo similar'
