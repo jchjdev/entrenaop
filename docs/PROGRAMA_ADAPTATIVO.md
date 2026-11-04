@@ -463,6 +463,11 @@ repartidor v4. Las versiones anteriores conservan su significado histórico.
 
 ### Coordinación y recuperación
 
+En desarrollo y especificidad, la progresión desde la práctica técnica de
+agilidad exige tolerancia en las dos últimas fechas comparables dentro de la
+ventana de 21 días y desde la referencia vigente. Las dificultades prevalecen
+si coinciden con otra práctica el mismo día. [Regresión](../supabase/tests/performance_agility_tolerated_days.sql).
+
 La práctica controlada de frenada/sectores (`COD-T01`, `COD-SP01`) admite días
 consecutivos. Trabajo regional, carga, isometría, circuito completo, potencia,
 cuerda y práctica no caracterizada mantienen la guarda conservadora de evitar

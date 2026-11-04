@@ -236,6 +236,21 @@ control anterior, entre las dos series o del mismo día publica 5 × 2 min de
 intervalos. El control posterior publica 2 × 5 min de tempo con el motivo de
 transferencia. La prueba revierte la transacción en Dev.
 
+Si hay varias marcas en el día de la referencia seleccionada, la tendencia
+usa esa marca. En otros días usa el último instante conocido del protocolo.
+Cuando dos marcas distintas del mismo protocolo tienen la misma prioridad y
+la hora no permite ordenarlas, ese día queda fuera de la comparación. La
+regresión añade una marca anterior en el día de la referencia y verifica que
+la publicación sigue utilizando la elegida.
+
+### Carga de carrera al cambiar de semana
+
+Las dificultades objetivas se cuentan por fecha de realización para decidir
+una descarga. Dos citas difíciles en la misma fecha acreditan un solo día.
+Una calidad marcada como omitida deja de bloquear por cercanía la siguiente
+sesión exigente. Si el resultado está pendiente de confirmar, se conserva la
+separación prudente.
+
 ## Orden de ejecuciones del mismo día · PLAN-028
 
 El día local delimita las ventanas de historial. Dentro del día, v6 ordena

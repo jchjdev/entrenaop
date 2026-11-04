@@ -80,6 +80,17 @@ La corrección de cronología se valida por separado en la
 | Media | Una sesión omitida puede bloquear la siguiente calidad | Con dos rodajes tolerados y el lunes como único hueco apto para calidad, una cita de intervalos omitida el domingo dejó tres rodajes publicados. Al mover solo esa cita omitida al sábado, los RPC publicaron 4 × 2 min el lunes y dos rodajes. La regla de separación comprueba fecha y familia sin distinguir la omisión. [Separación](../../supabase/migrations/20261016202528_running_format_progression_v6.sql#L315). |
 | Media | Solo carrera muestra un aviso de falta de tiempo al faltar la marca | La propuesta con cuatro huecos de 60–75 min y sin marca de 2 km pide registrar la marca y también añadir tiempo para una preparación conjunta. [Composición de avisos](../../supabase/migrations/20261016191546_adaptive_protocol_controls.sql#L600). |
 
-El siguiente bloque recomendado es conservar la cobertura de las pruebas
-obligatorias al colocar el control de 2 km. La verificación debe leer las
-citas materializadas y cotejar su frecuencia con la decisión publicada.
+## Corrección de los hallazgos
+
+- Coordinación comprueba que el 2 km conserve la cobertura obligatoria antes
+  de elegir la fecha. En la reproducción mueve el control del lunes al viernes
+  y conserva las tres pruebas. La publicación contrasta las frecuencias con la agenda.
+  La misma prueba comprueba que una marca ausente en solo carrera muestre el
+  motivo de referencia. [Semana combinada y avisos](../../supabase/tests/adaptive_control_required_coverage.sql).
+- Carrera cuenta días de dificultad y reconoce la omisión al separar dos
+  sesiones exigentes. [Carga y omisiones](../../supabase/tests/running_difficulty_days_and_skipped_load.sql).
+- Una marca de 2 km seleccionada representa su fecha en la tendencia. La
+  regresión comprueba también el histórico con empates sin hora. [Publicación y cronología](../../supabase/tests/running_transfer_control_chronology.sql).
+- Agilidad exige dos fechas comparables toleradas y el control de flexiones
+  exige acreditar el objetivo de la dosis. [Agilidad](../../supabase/tests/performance_agility_tolerated_days.sql)
+  · [Flexiones](../../supabase/tests/performance_controls_completed_dose.sql).

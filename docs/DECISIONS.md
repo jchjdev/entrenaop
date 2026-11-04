@@ -1,5 +1,13 @@
 # Registro de decisiones vigentes
 
+**Cobertura y evidencia de la semana adaptativa · 04/11/2026.** Javier pide
+corregir los fallos reproducidos en carrera, rendimiento y coordinación. La
+colocación del 2 km conserva la práctica de las pruebas obligatorias y la
+decisión declara las exposiciones que se publican. Carrera distingue días
+adversos, omisiones confirmadas y marcas del mismo día. La progresión de
+agilidad y los controles de flexiones se apoyan en trabajo acreditado.
+[Verificación](audits/AUDITORIA_ADAPTATIVA_2026_11_04.md#corrección-de-los-hallazgos).
+
 **Control posterior a la mejora de las series · 04/11/2026.** Javier autoriza
 corregir el cambio de pauta por falta de transferencia. La tendencia de 2 km
 solo justifica ese cambio si su último control comparable es de un día posterior

@@ -1,14 +1,15 @@
 begin;
-select set_config('request.jwt.claim.sub',(select user_id::text from public.admin_permissions limit 1),true);
 -- Aislamos la colocación: la decisión por evidencia y su lectura real tienen
 -- cobertura independiente. Esta sustitución vive únicamente en el ROLLBACK.
 create or replace function public.adaptive_control_candidates_v1(goal uuid,wk date,plan jsonb) returns jsonb
 language sql stable security definer set search_path='' as $$
  select current_setting('entrenaop.control_placement_fixture')::jsonb
 $$;
-do $$ declare g uuid; wk date:=current_date-extract(isodow from current_date)::int+1;
+do $$ declare u uuid:=gen_random_uuid(); g uuid; wk date:=current_date-extract(isodow from current_date)::int+1;
  p jsonb; control jsonb; plan jsonb; actual jsonb; friday jsonb; course jsonb; plank jsonb; manual_template uuid; manual_session uuid;
 begin
+ insert into auth.users(id,email) values(u,u||'@adaptive-control-placement.invalid');
+ perform set_config('request.jwt.claim.sub',u::text,true);
  insert into public.preparation_goals(user_id,program_id,target_date) values(auth.uid(),'fas_periodic_assessment',wk+60) returning id into g;
  course:=jsonb_build_object('reference_id',gen_random_uuid(),'objective_key','course','name','Circuito','optional',false,'model','course',
   'body_regions','["lower_body"]'::jsonb,'dose','{"task":{"measurement":"TIME_FOR_COURSE","target_value":14},"targets":[14,14],"rest_seconds":90}'::jsonb);

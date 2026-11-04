@@ -7,7 +7,7 @@ do $$
 declare
  wk date:=current_date-extract(isodow from current_date)::int+1;
  availability jsonb:='{"1":60,"3":60,"6":60}';
- last_control_age int; athlete uuid; goal uuid; mark uuid; execution uuid; expected text;
+ last_control_age int; athlete uuid; goal uuid; mark uuid; other_mark uuid; execution uuid; expected text;
  reference jsonb; previous_week record; appointment record; result_set record;
  pace numeric; proposal jsonb; receipt jsonb; quality text; decision jsonb;
 begin
@@ -23,10 +23,16 @@ begin
   values(athlete,'fas_periodic_assessment',wk+70) returning id into goal;
   for offset_days in reverse 2..0 loop
    insert into public.fas_periodic_assessments(user_id,preparation_goal_id,catalog_version,category,age_at_assessment,age_band,is_pre_effective_reference,completed_at)
-   values(athlete,goal,'es_def_15_2026_periodic_2027_v1','men',30,'26_30',true,wk-last_control_age-14*offset_days)
+   values(athlete,goal,'es_def_15_2026_periodic_2027_v1','men',30,'26_30',true,(wk-last_control_age-14*offset_days)+time '12:00')
    returning id into mark;
    insert into public.fas_periodic_marks values(mark,'run_2000_m',595000);
   end loop;
+  if last_control_age=2 then
+   insert into public.fas_periodic_assessments(user_id,preparation_goal_id,catalog_version,category,age_at_assessment,age_band,is_pre_effective_reference,completed_at)
+   values(athlete,goal,'es_def_15_2026_periodic_2027_v1','men',30,'26_30',true,(wk-last_control_age)+time '08:00')
+   returning id into other_mark;
+   insert into public.fas_periodic_marks values(other_mark,'run_2000_m',550000);
+  end if;
   insert into public.running_reference_selections(preparation_goal_id,reference_source,reference_record_id)
   values(goal,'fasPeriodicAssessment',mark::text);
   insert into public.running_intake_contexts(preparation_goal_id,context_version,available_minutes_by_weekday,
@@ -79,6 +85,7 @@ begin
    and rs.prescription->>'family' in ('T','V','S');
   if receipt->>'decision_id' is null or quality is distinct from expected
    or (decision#>>'{control_review,controls,0,date}')::date is distinct from wk-last_control_age
+   or (decision#>>'{control_review,controls,0,seconds}')::numeric is distinct from 595
    or decision#>>'{evidence,families,V,trend}' is distinct from 'improving'
    or (strpos(coalesce(decision->>'reason',''),'series mejoran sin transferencia al 2 km')>0) is distinct from (last_control_age<7) then
    raise exception 'Control de hace % días: se esperaba % y se publicó %, motivo %',last_control_age,expected,quality,decision->>'reason';
@@ -86,5 +93,22 @@ begin
  end loop;
 end $$;
 
-select 'Solo el control posterior a las series mejoradas justifica el cambio de 5 × 2 min a 2 × 5 min' as result;
+do $$
+declare
+ wk date:='2026-10-19';
+ marks jsonb:='[{"date":"2026-10-17","seconds":550,"protocol":"p"},{"date":"2026-10-17","seconds":620,"protocol":"p"},{"date":"2026-10-03","seconds":595,"protocol":"p"},{"date":"2026-09-19","seconds":595,"protocol":"p"}]';
+ reversed jsonb;
+begin
+ select jsonb_agg(value order by ord desc) into reversed from jsonb_array_elements(marks) with ordinality x(value,ord);
+ if public.running_test_trend_v2(marks,wk) is distinct from '{"trend":"unknown","samples":2}'::jsonb
+  or public.running_test_trend_v2(reversed,wk) is distinct from public.running_test_trend_v2(marks,wk) then
+  raise exception 'Un empate histórico sin hora debe ser independiente del orden y quedar fuera de la tendencia';
+ end if;
+ marks:=jsonb_set(jsonb_set(marks,'{0,performed_at_epoch}','100'),'{1,performed_at_epoch}','200');
+ if public.running_test_trend_v2(marks,wk)#>>'{controls,0,seconds}' is distinct from '620' then
+  raise exception 'El instante observado decide entre dos marcas históricas del mismo día';
+ end if;
+end $$;
+
+select 'Se conserva la referencia seleccionada en su día y solo un control posterior cambia de intervalos a tempo' as result;
 rollback;

@@ -78,9 +78,8 @@ descarta el aviso de menor esfuerzo. La corrección de cronología exige que el
 último control comparable sea posterior a las series antes de cambiar de
 familia por falta de transferencia. La regresión publica 5 × 2 min con un
 control anterior o del mismo día y 2 × 5 min con un control posterior.
-El siguiente bloque de coordinación es conservar las pruebas obligatorias
-al colocar un control de carrera. En Dev se reprodujo una semana combinada
-publicada sin su única exposición de agilidad.
+La corrección de coordinación conserva las pruebas obligatorias al colocar un
+control de carrera y refleja las exposiciones que llegan a la agenda.
 [Línea base](PROGRAMA_ADAPTATIVO.md#diagnóstico-de-estancamiento--04112026),
 [evidencia y escenarios de 2 km](MOTOR_CARRERA_2K_V6.md#resistencia-y-estancamiento-en-2-km--04112026),
 [hallazgos de seguimiento](audits/AUDITORIA_ADAPTATIVA_2026_11_04.md#seguimiento-tras-corregir-la-cronología-del-control).

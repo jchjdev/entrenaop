@@ -1,5 +1,4 @@
 begin;
-select set_config('request.jwt.claim.sub',(select user_id::text from public.admin_permissions limit 1),true);
 
 do $$ declare f jsonb:='{"supported":true,"healthy":true,"adverse":false,"phase":"development","days_left":100,"tolerated_days":8,"recent_days":3,"new_days":6,"growth":1,"has_mark":true}';
  task jsonb; result jsonb; source text;
@@ -27,9 +26,11 @@ end $$;
 
 -- Publicación, ejecución y reutilización de un control de carrera. Se conserva
 -- el registro ordinario estricto y no se insertan puntuaciones/baremos.
-do $$ declare u uuid:=auth.uid(); g uuid; a uuid; plan jsonb; p jsonb; task jsonb; e uuid; es record;
+do $$ declare u uuid:=gen_random_uuid(); g uuid; a uuid; plan jsonb; p jsonb; task jsonb; e uuid; es record;
  sid uuid; source_set uuid; test_id uuid; before_tests int; wk date:=current_date-extract(isodow from current_date)::int+1;
 begin
+ insert into auth.users(id,email) values(u,u||'@adaptive-protocol-controls.invalid');
+ perform set_config('request.jwt.claim.sub',u::text,true);
  insert into public.pro_access_grants(user_id,source,starts_at,ends_at,reason)
  values(u,'development_manual',now()-interval '1 day',now()+interval '1 year','Fixture controles');
  insert into public.preparation_goals(user_id,program_id,target_date) values(u,'fas_periodic_assessment',wk+180) returning id into g;

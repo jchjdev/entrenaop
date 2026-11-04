@@ -69,6 +69,11 @@ no acreditan por sí solas tolerancia del protocolo de flexión o antebrazos.
 La práctica técnica pertinente de agilidad aporta información de calidad, sin
 convertirse en marca del circuito. Un esfuerzo desconocido no acredita tolerancia.
 
+Para habilitar un control de flexiones, la dosis ordinaria debe acreditar las
+repeticiones pautadas. El trabajo por tiempo requiere también la ventana
+completa. Registrar el cierre de todas las series sigue siendo un dato distinto
+de haber completado sus objetivos. [Regresión](../supabase/tests/performance_controls_completed_dose.sql).
+
 ## Coste y colocación
 
 No se pauta un máximo al inicio sin práctica suficiente, tras respuesta adversa,
@@ -98,6 +103,12 @@ Si no cabe una oportunidad compatible, la semana ordinaria sigue disponible y
 la decisión se conserva para auditoría. Omitir, abandonar o invalidar un control
 no genera una marca ni obliga a repetirlo semanalmente. Se reconsidera cuando
 haya una necesidad nueva y trabajo suficiente.
+
+En una semana combinada, el 2 km busca otro hueco si la recuperación dejaría
+sin práctica alguna prueba obligatoria ya cubierta. Si todos los huecos
+compatibles causan esa pérdida, se aplaza el control. Si solo se retiran
+exposiciones adicionales, la decisión recoge las que quedan en la agenda.
+[Regresión del coordinador](../supabase/tests/adaptive_control_required_coverage.sql).
 
 ## Protocolos y registro
 

@@ -2,9 +2,10 @@
 begin;
 set local timezone='UTC';
 
-create function pg_temp.same_day_adaptive_fixture(difficult_first boolean default null) returns jsonb language plpgsql as $$
+create function pg_temp.same_day_adaptive_fixture(difficult_first boolean default null, agility boolean default false)
+returns jsonb language plpgsql as $$
 declare
- u uuid:=gen_random_uuid(); g uuid; ref_id uuid;
+ u uuid:=gen_random_uuid(); g uuid; ref_id uuid; agility_ref uuid;
  wk date:=current_date+1-extract(isodow from current_date)::int;
  p jsonb; preview jsonb; s record; es record; e uuid; n int:=0; ordinal int:=0; difficult boolean;
  observed timestamptz; local_offset int; completed_day date; prior_ids uuid[]:='{}'; initial_targets jsonb;
@@ -26,16 +27,26 @@ begin
  perform public.save_performance_reference(g,jsonb_build_object('goal_code','front_plank_forearms','goal_version',1,'goal_measurement','DURATION','program_objective_key','legacy:abdominal_plank',
  'task','{"exercise_code":"front_plank_forearms","exercise_version":1,"protocol_key":"def_15_2026_plank","protocol_version":1,"setup_key":"Suelo antideslizante y codos bajo hombros","measurement":"DURATION","load_mode":"bodyweight","target_value":50,"intent":"work"}'::jsonb,
  'reference_kind','repeated_work','targets','[50,45]'::jsonb,'observed_on',current_date,'current_capacity_confirmed',true,'reported_rpe',7,'rest_seconds',90,'frequency',1));
- perform public.save_performance_reference(g,jsonb_build_object('goal_code','slalom_ball_course_16m','goal_version',1,'goal_measurement','TIME_FOR_COURSE','program_objective_key','legacy:agility_speed_circuit','equipment_confirmed',true,
+ agility_ref:=public.save_performance_reference(g,jsonb_build_object('goal_code','slalom_ball_course_16m','goal_version',1,'goal_measurement','TIME_FOR_COURSE','program_objective_key','legacy:agility_speed_circuit','equipment_confirmed',true,
  'task','{"exercise_code":"slalom_ball_course_16m","exercise_version":1,"protocol_key":"def_15_2026_agility","protocol_version":1,"setup_key":"Siete conos y corredor medido de 16 por 2 metros","measurement":"TIME_FOR_COURSE","load_mode":"bodyweight","target_value":14.3,"intent":"practice"}'::jsonb,
- 'reference_kind','repeated_work','targets','[14.3,14.5]'::jsonb,'observed_on',current_date,'current_capacity_confirmed',true,'rest_seconds',180,'frequency',1));
+ 'reference_kind','repeated_work','targets','[14.3,14.5]'::jsonb,'observed_on',current_date,'current_capacity_confirmed',true,'rest_seconds',180,'frequency',case when agility then 2 else 1 end));
+ if agility then ref_id:=agility_ref; end if;
  perform public.save_adaptive_program_preferences(g,current_date+120,'{}','performance');
  p:=public.preview_adaptive_program_activation(g,wk);
  if p->>'status' is distinct from 'ready' then raise exception 'Propuesta no publicable: % %',p->>'status',p->'pending'; end if;
  select value->'dose'->'targets' into initial_targets from jsonb_array_elements(p->'proposals')
  where value->>'reference_id'=ref_id::text;
- if initial_targets is null then raise exception 'Falta la dosis inicial de flexiones'; end if;
+ if initial_targets is null then raise exception 'Falta la dosis inicial'; end if;
  perform public.activate_adaptive_program(g,wk,p);
+ if agility then
+  -- Representar una fase de desarrollo ya alcanzada, antes del cierre que
+  -- desencadena la continuación automática de esta cuenta ficticia.
+  update public.preparation_week_decisions d
+  set decision=jsonb_set(d.decision,'{proposals}',(
+    select jsonb_agg(case when obj->>'reference_id'=ref_id::text then obj||'{"phase":"development"}'::jsonb else obj end order by ord)
+    from jsonb_array_elements(d.decision->'proposals') with ordinality t(obj,ord)))
+  where d.preparation_goal_id=g and d.week_start=wk and d.superseded_at is null;
+ end if;
 
  -- Las citas son distintas, pero se realizan el mismo día. El reloj observado
  -- conserva su orden sin alterar fechas de agenda ni resultados persistidos.
@@ -88,11 +99,14 @@ begin
  p:=public.calculate_preparation_week(g,wk+7);
  if p->>'decision_id' is null then raise exception 'No se publicó la continuación automática: %', p->>'status'; end if;
  select value into p from jsonb_array_elements(p->'proposals') where value->>'reference_id'=ref_id::text;
- if p is null then raise exception 'Falta la propuesta de flexiones'; end if;
+ if p is null then raise exception 'Falta la propuesta del objetivo'; end if;
  return jsonb_build_object('status',p->'status','outcome',p->'outcome','frequency',p->'frequency',
   'phase',p->'phase','frequency_reason',p->'frequency_reason',
   'recent_difficulty',p->'block'->'recent_difficulty',
   'comparable_tolerated_exposures',p->'block'->'comparable_tolerated_exposures',
+  'published_stimuli',case when agility then (select jsonb_agg(pw.dose->'task'->>'stimulus_code' order by sw.scheduled_date)
+    from public.performance_week_work pw join public.scheduled_workouts sw on sw.id=pw.scheduled_workout_id
+    where pw.reference_id=ref_id and sw.scheduled_date between wk+7 and wk+13 and sw.status<>'cancelled') end,
   'dose',p->'dose','exposure_doses',p->'exposure_doses','initial_targets',initial_targets,
   'evidence',coalesce((select jsonb_agg(x->>'signal') from jsonb_array_elements(p->'evidence') x),'[]'));
 end $$;
@@ -101,7 +115,7 @@ do $$
 declare
  tolerated_first jsonb:=pg_temp.same_day_adaptive_fixture(false);
  difficult_first jsonb:=pg_temp.same_day_adaptive_fixture(true);
- both_tolerated jsonb;
+ both_tolerated jsonb; agility_plan jsonb;
 begin
  if tolerated_first-'evidence' is distinct from difficult_first-'evidence' then
   raise exception 'Cambiar el orden altera la decisión: tolerada primero % %, dificultad primero % %',
@@ -124,6 +138,12 @@ begin
    or both_tolerated->>'comparable_tolerated_exposures' is distinct from '1'
    or both_tolerated->'dose'->'targets' is distinct from both_tolerated->'initial_targets' then
   raise exception 'Dos exposiciones toleradas el mismo día no acreditan dos días: %',both_tolerated;
+ end if;
+ agility_plan:=pg_temp.same_day_adaptive_fixture(agility=>true);
+ if agility_plan->>'phase' is distinct from 'development'
+   or agility_plan->>'comparable_tolerated_exposures' is distinct from '1'
+   or agility_plan->'published_stimuli' is distinct from '["COD-T01","COD-T01"]'::jsonb then
+  raise exception 'Una sola fecha de práctica no debe publicar sectores de agilidad: %',agility_plan;
  end if;
 end $$;
 select 'Orden de cierres del mismo día: misma reducción y sin duplicar días tolerados' as result;
