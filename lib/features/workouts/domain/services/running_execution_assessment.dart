@@ -1,7 +1,13 @@
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 
-enum RunningExecutionAssessment { onTarget, timeOnly, changed, incomplete }
+enum RunningExecutionAssessment {
+  onTarget,
+  timeOnly,
+  slightPaceDifference,
+  changed,
+  incomplete,
+}
 
 RunningExecutionAssessment assessRunningExecution(
   Iterable<WorkoutExecutionSet> sets,
@@ -14,14 +20,21 @@ RunningExecutionAssessment assessRunningExecution(
     return RunningExecutionAssessment.incomplete;
   }
   if (!runningSets.every(_matchesPrescription)) {
-    return RunningExecutionAssessment.changed;
+    return runningSets.every(
+      (set) => _matchesPrescription(set, allowSmallPaceDifference: true),
+    )
+        ? RunningExecutionAssessment.slightPaceDifference
+        : RunningExecutionAssessment.changed;
   }
   return runningSets.any((set) => set.actualDistanceMeters == null)
       ? RunningExecutionAssessment.timeOnly
       : RunningExecutionAssessment.onTarget;
 }
 
-bool _matchesPrescription(WorkoutExecutionSet set) {
+bool _matchesPrescription(
+  WorkoutExecutionSet set, {
+  bool allowSmallPaceDifference = false,
+}) {
   final duration = set.measuredDurationSeconds;
   final distance = set.actualDistanceMeters;
   if (duration == null ||
@@ -46,7 +59,11 @@ bool _matchesPrescription(WorkoutExecutionSet set) {
   final slowest = set.targetPaceMaxSecondsPerKm;
   if (fastest != null && slowest != null && distance != null) {
     final pace = duration * 1000 / distance;
-    if (pace < fastest || pace > slowest) return false;
+    if ((pace < fastest || pace > slowest) &&
+        !(allowSmallPaceDifference &&
+            _withinPaceMargin(pace, fastest, slowest))) {
+      return false;
+    }
   }
   if (set.recoveryDurationSeconds case final target?) {
     final actual = set.measuredRecoverySeconds;
@@ -65,10 +82,17 @@ bool _matchesPrescription(WorkoutExecutionSet set) {
 bool _withinTolerance(double actual, double target, double tolerance) =>
     (actual - target).abs() <= target * tolerance;
 
+// Márgenes de ritmo de running_policy_v1. El motor evalúa además la sesión
+// completa, sus recuperaciones y el esfuerzo declarado.
+bool _withinPaceMargin(double pace, int fastest, int slowest) =>
+    pace >= fastest * 0.97 && pace <= slowest * 1.05;
+
 String runningAssessmentLabel(RunningExecutionAssessment assessment) =>
     switch (assessment) {
       RunningExecutionAssessment.onTarget => 'Marca registrada según la pauta',
       RunningExecutionAssessment.timeOnly => 'Tiempos registrados · ritmo sin medir',
+      RunningExecutionAssessment.slightPaceDifference =>
+        'Registrado · ajusta un poco el ritmo',
       RunningExecutionAssessment.changed => 'Diferencias con la pauta',
       RunningExecutionAssessment.incomplete => 'Registro parcial',
     };
@@ -104,9 +128,16 @@ List<String> runningAssessmentDifferences(Iterable<WorkoutExecutionSet> sets) {
         set.targetPaceMinSecondsPerKm != null &&
         set.targetPaceMaxSecondsPerKm != null) {
       final pace = seconds * 1000 / meters;
-      if (pace < set.targetPaceMinSecondsPerKm! ||
-          pace > set.targetPaceMaxSecondsPerKm!) {
-        fields.add('ritmo medio fuera del intervalo pautado');
+      final fastest = set.targetPaceMinSecondsPerKm!;
+      final slowest = set.targetPaceMaxSecondsPerKm!;
+      if (pace < fastest || pace > slowest) {
+        fields.add(
+          _withinPaceMargin(pace, fastest, slowest)
+              ? pace < fastest
+                    ? 'ritmo ligeramente rápido, prueba a aflojar un poco'
+                    : 'ritmo ligeramente lento, prueba a acelerar un poco'
+              : 'ritmo medio fuera del intervalo pautado',
+        );
       }
     }
     if (set.recoveryDurationSeconds case final target?) {

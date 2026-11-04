@@ -1,5 +1,13 @@
 # Roadmap de EntrenaOP
 
+**PLAN-032 · Desviaciones leves de ritmo · 04/11/2026.** La pauta de
+3:40–3:50/km acredita los parciales de 3:38 y 3:53 si la ejecución es
+compatible. V6 compara la caída con el margen lento de la receta. El historial
+orienta el ajuste de ritmo. Migración `20261104162319` verificada en Dev.
+Pasan ocho baterías SQL, el análisis de Flutter y 1.836 pruebas con una
+omisión previa. Versión `1.9.1+22`.
+[Contrato y prueba](MOTOR_CARRERA_2K_V6.md#desviaciones-leves-de-ritmo--plan-032).
+
 **PLAN-031 · Registro manual del 4×2 por tiempo · 04/11/2026.** El 4×2
 de carrera v6 admite distancia opcional. La semana siguiente distingue
 tolerancia por tiempo, trabajo parcial y dificultad. La regresión verifica

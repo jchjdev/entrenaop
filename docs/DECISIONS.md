@@ -1,5 +1,12 @@
 # Registro de decisiones vigentes
 
+**PLAN-032 · Desviaciones leves de ritmo · 04/11/2026.**
+Javier confirma que un parcial ligeramente fuera del objetivo debe seguir
+contando si el resto de la ejecución es compatible. Con una pauta de
+3:40–3:50/km, 3:38 y 3:53 pueden acreditar trabajo tolerado. La app orienta
+el ajuste y v6 interpreta la desaceleración junto al margen del último tramo.
+[Contrato y regresión](MOTOR_CARRERA_2K_V6.md#desviaciones-leves-de-ritmo--plan-032).
+
 **PLAN-031 · Registro manual del 4×2 sin distancia · 04/11/2026.**
 Javier autoriza que los metros sean opcionales en los intervalos aeróbicos
 de entrada de carrera v6. La duración y las pausas reales se guardan junto

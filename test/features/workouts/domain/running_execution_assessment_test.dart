@@ -4,6 +4,37 @@ import 'package:entrenaop/features/workouts/domain/services/running_execution_as
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('orienta los ritmos de 3:38 y 3:53 en una pauta de 3:40 a 3:50', () {
+    final sets = [
+      for (final (index, secondsPerKm) in [218, 233].indexed)
+        WorkoutExecutionSet(
+          id: 'set-$index',
+          blockOrder: 0,
+          blockName: 'Series',
+          blockFormat: WorkoutBlockFormat.running,
+          itemOrder: 0,
+          exerciseId: runningExerciseId,
+          exerciseName: 'Carrera',
+          setOrder: index,
+          restAfterSeconds: 0,
+          status: WorkoutSetStatus.completed,
+          targetDistanceMeters: 1000,
+          targetPaceMinSecondsPerKm: 220,
+          targetPaceMaxSecondsPerKm: 230,
+          actualDistanceMeters: 1000,
+          actualDurationSeconds: secondsPerKm,
+        ),
+    ];
+    expect(
+      assessRunningExecution(sets),
+      RunningExecutionAssessment.slightPaceDifference,
+    );
+    expect(runningAssessmentDifferences(sets), [
+      contains('aflojar un poco'),
+      contains('acelerar un poco'),
+    ]);
+  });
+
   test('el 4×2 reconoce un segundo de diferencia con distancia opcional', () {
     final set = WorkoutExecutionSet(
       id: 'timed',
@@ -66,7 +97,7 @@ void main() {
       expect(manual.observedDurationSeconds, isNull);
       expect(
         assessRunningExecution([manual]),
-        RunningExecutionAssessment.changed,
+        RunningExecutionAssessment.slightPaceDifference,
       );
     },
   );

@@ -241,6 +241,22 @@ marcadores cardíacos y subjetivos en corredores recreativos durante una
 sobrecarga. Los marcadores tuvieron respuestas distintas según el contexto
 y el grupo. [Estudio original](https://pmc.ncbi.nlm.nih.gov/articles/PMC11235883/).
 
+## Desviaciones leves de ritmo · PLAN-032
+
+El rango pautado orienta al corredor. El historial distingue un pequeño
+exceso o defecto de ritmo e indica si conviene aflojar o acelerar. La
+tolerancia del motor para cada ritmo sigue siendo la de la política vigente.
+La desaceleración entre el primer y el último tramo acredita dificultad
+por ritmo cuando rebasa su umbral relativo y el último parcial también
+rebasa el margen lento de la receta. Una transición entre 3:38 y 3:53/km
+con objetivo 3:40–3:50/km puede acreditar tolerancia con la dosis, pausas
+y esfuerzo compatibles.
+
+La [regresión](../supabase/tests/running_small_pace_deviations.sql) compara
+ambos órdenes de parciales, verifica la evidencia para la siguiente dosis
+y conserva las señales de esfuerzo alto, exceso de velocidad, caída tardía
+fuera del margen e irregularidad entre tramos.
+
 ## Verificación
 
 Instalado y verificado en desarrollo el 16/10/2026:
