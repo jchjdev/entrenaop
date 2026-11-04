@@ -69,13 +69,17 @@ deportista. No se ha consultado ni modificado producción.
 ## Reloj · 04/11/2026
 
 Inicio → Herramientas → Reloj abre una utilidad local. El cronómetro cuenta
-hacia arriba. El temporizador ofrece 30 segundos, uno o dos minutos y una
+hacia arriba en milésimas. Durante la cuenta, Vuelta registra el tiempo desde
+la marca anterior sin detener el cronómetro. Reiniciar borra las vueltas.
+El temporizador ofrece 30 segundos, uno o dos minutos y una
 duración manual en segundos. Intervalos parte de 20 segundos de trabajo,
 10 de descanso y ocho rondas, todos editables. Con descanso cero, las rondas
 de trabajo se suceden directamente. El reloj termina con el último trabajo.
 
-Los tres modos admiten pausa, reanudación y reinicio. El temporizador y los
-intervalos usan los avisos de sonido y vibración ya disponibles. En Android e
+Los tres modos admiten pausa, reanudación y reinicio. Los avisos existentes
+se reutilizan también a mitad de la cuenta atrás y a mitad de cada tramo de
+trabajo. En horizontal, el tiempo queda visible a un lado y los controles y
+vueltas se sitúan al otro. Girar conserva la cuenta y las marcas. En Android e
 iOS la cuenta solicita mantener encendida la pantalla mientras está activa.
 Pasar a segundo plano pausa la cuenta y salir de Reloj la descarta. La pantalla
 funciona sin ejercicios, sesiones ni almacenamiento de resultados.

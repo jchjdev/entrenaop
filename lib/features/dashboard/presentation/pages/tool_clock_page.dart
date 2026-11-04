@@ -4,6 +4,7 @@ import 'package:entrenaop/features/workouts/domain/services/workout_cue_service.
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_cue_settings_button.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:workout_core/performance_time.dart';
 
@@ -26,12 +27,15 @@ class ToolClockPage extends StatefulWidget {
   State<ToolClockPage> createState() => _ToolClockPageState();
 }
 
-class _ToolClockPageState extends State<ToolClockPage> {
+class _ToolClockPageState extends State<ToolClockPage>
+    with SingleTickerProviderStateMixin {
   static const _screenChannel = MethodChannel('es.entrenaop/clock_screen');
   static const _presets = {30: '30 s', 60: '1 min', 120: '2 min'};
 
   final _clock = Stopwatch();
+  final _laps = <Duration>[];
   late final AppLifecycleListener _lifecycle;
+  Ticker? _stopwatchTicker;
   Timer? _ticker;
   Duration _elapsed = Duration.zero;
   Duration? _sampleAt;
@@ -90,6 +94,7 @@ class _ToolClockPageState extends State<ToolClockPage> {
   void dispose() {
     _lifecycle.dispose();
     _stop();
+    _stopwatchTicker?.dispose();
     _clock.stop();
     super.dispose();
   }
@@ -112,6 +117,7 @@ class _ToolClockPageState extends State<ToolClockPage> {
   void _stop() {
     if (!_running) return;
     _sampleAt = null;
+    _stopwatchTicker?.stop();
     _ticker?.cancel();
     _ticker = null;
     unawaited(_keepScreenOn(false));
@@ -135,6 +141,7 @@ class _ToolClockPageState extends State<ToolClockPage> {
   void _signal(WorkoutCue cue) => unawaited(widget.cueService.signal(cue));
 
   void _tick() {
+    final previousElapsed = _elapsed;
     final previousRound = _round;
     final wasResting = _resting;
     setState(_advance);
@@ -144,10 +151,19 @@ class _ToolClockPageState extends State<ToolClockPage> {
     } else if (_mode == _ClockMode.intervals &&
         (previousRound != _round || wasResting != _resting)) {
       _signal(_resting ? WorkoutCue.workFinished : WorkoutCue.workStarted);
+    } else if (_mode == _ClockMode.countdown || !_resting) {
+      final halfway = _mode == _ClockMode.countdown
+          ? Duration(seconds: _total) ~/ 2
+          : Duration(seconds: (_round - 1) * _cycle) +
+                Duration(seconds: _workSeconds) ~/ 2;
+      if (previousElapsed < halfway && _elapsed >= halfway) {
+        _signal(WorkoutCue.halfway);
+      }
     }
   }
 
   void _start() {
+    if (_running || !_valid) return;
     FocusScope.of(context).unfocus();
     setState(() {
       if (_finished) _reset();
@@ -156,10 +172,14 @@ class _ToolClockPageState extends State<ToolClockPage> {
       }
       _started = true;
       _sampleAt = _now;
-      _ticker = Timer.periodic(
-        const Duration(milliseconds: 100),
-        (_) => _tick(),
-      );
+      if (_mode == _ClockMode.stopwatch) {
+        (_stopwatchTicker ??= createTicker((_) => setState(_advance))).start();
+      } else {
+        _ticker = Timer.periodic(
+          const Duration(milliseconds: 100),
+          (_) => _tick(),
+        );
+      }
       unawaited(_keepScreenOn(true));
     });
   }
@@ -167,7 +187,26 @@ class _ToolClockPageState extends State<ToolClockPage> {
   void _reset() {
     _stop();
     _elapsed = Duration.zero;
+    _laps.clear();
     _started = false;
+  }
+
+  void _lap() {
+    if (!_running) return;
+    setState(() {
+      // La vuelta usa el instante de la pulsación, aunque aún no haya otro frame.
+      _advance();
+      _laps.add(_elapsed);
+    });
+  }
+
+  String _formatStopwatch(Duration elapsed) {
+    final time = formatPerformanceTime(elapsed.inSeconds).padLeft(5, '0');
+    final milliseconds = (elapsed.inMilliseconds % 1000).toString().padLeft(
+      3,
+      '0',
+    );
+    return '$time.$milliseconds';
   }
 
   String get _status {
@@ -183,93 +222,184 @@ class _ToolClockPageState extends State<ToolClockPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final time = formatPerformanceTime(_displaySeconds).padLeft(5, '0');
     return Scaffold(
       appBar: AppBar(
         title: const Text('Reloj'),
         actions: [WorkoutCueSettingsButton(cueService: widget.cueService)],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Wrap(
-                    alignment: WrapAlignment.center,
-                    spacing: 8,
-                    children: [
-                      for (final mode in _ClockMode.values)
-                        ChoiceChip(
-                          label: Text(mode.label),
-                          selected: _mode == mode,
-                          onSelected: _running
-                              ? null
-                              : (selected) {
-                                  if (!selected) return;
-                                  setState(() {
-                                    _reset();
-                                    _mode = mode;
-                                  });
-                                },
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxWidth >= 550 &&
+                MediaQuery.orientationOf(context) == Orientation.landscape) {
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: FittedBox(fit: BoxFit.scaleDown, child: _face()),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      flex: 2,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _modeSelector(),
+                            ..._options(),
+                            const SizedBox(height: 8),
+                            _actions(compact: true),
+                            if (_laps.isNotEmpty) _lapList(),
+                          ],
                         ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  Text(_status, textAlign: TextAlign.center),
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      time,
-                      style: theme.textTheme.displayLarge?.copyWith(
-                        fontSize: 96,
-                        fontWeight: FontWeight.w700,
-                        fontFeatures: const [FontFeature.tabularFigures()],
-                        color:
-                            _mode == _ClockMode.intervals &&
-                                _started &&
-                                !_finished
-                            ? (_resting
-                                  ? theme.colorScheme.secondary
-                                  : theme.colorScheme.primary)
-                            : null,
                       ),
                     ),
-                  ),
-                  if (!_started) ...[
-                    if (_mode == _ClockMode.countdown) _countdownOptions(),
-                    if (_mode == _ClockMode.intervals) _intervalOptions(),
                   ],
-                  const SizedBox(height: 20),
-                  FilledButton(
-                    onPressed: _running ? _pause : (_valid ? _start : null),
-                    child: Text(
-                      _running
-                          ? 'Pausar'
-                          : _finished
-                          ? 'Repetir'
-                          : _started
-                          ? 'Reanudar'
-                          : 'Iniciar',
-                    ),
+                ),
+              );
+            }
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 480),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _modeSelector(),
+                      const SizedBox(height: 20),
+                      _face(),
+                      ..._options(),
+                      const SizedBox(height: 20),
+                      _actions(compact: false),
+                      if (_laps.isNotEmpty) _lapList(),
+                    ],
                   ),
-                  if (_started)
-                    TextButton(
-                      onPressed: () => setState(_reset),
-                      child: const Text('Reiniciar'),
-                    ),
-                ],
+                ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       ),
     );
   }
+
+  Widget _modeSelector() => Wrap(
+    alignment: WrapAlignment.center,
+    spacing: 8,
+    children: [
+      for (final mode in _ClockMode.values)
+        ChoiceChip(
+          label: Text(mode.label),
+          selected: _mode == mode,
+          onSelected: _running
+              ? null
+              : (selected) {
+                  if (!selected) return;
+                  setState(() {
+                    _reset();
+                    _mode = mode;
+                  });
+                },
+        ),
+    ],
+  );
+
+  Widget _face() {
+    final theme = Theme.of(context);
+    final time = _mode == _ClockMode.stopwatch
+        ? _formatStopwatch(_elapsed)
+        : formatPerformanceTime(_displaySeconds).padLeft(5, '0');
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(_status, textAlign: TextAlign.center),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            time,
+            style: theme.textTheme.displayLarge?.copyWith(
+              fontSize: 96,
+              fontWeight: FontWeight.w700,
+              fontFeatures: const [FontFeature.tabularFigures()],
+              color: _mode == _ClockMode.intervals && _started && !_finished
+                  ? (_resting
+                        ? theme.colorScheme.secondary
+                        : theme.colorScheme.primary)
+                  : null,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  List<Widget> _options() => [
+    if (!_started && _mode == _ClockMode.countdown) _countdownOptions(),
+    if (!_started && _mode == _ClockMode.intervals) _intervalOptions(),
+  ];
+
+  Widget _actions({required bool compact}) {
+    final startPause = FilledButton(
+      onPressed: _running ? _pause : (_valid ? _start : null),
+      child: Text(
+        _running
+            ? 'Pausar'
+            : _finished
+            ? 'Repetir'
+            : _started
+            ? 'Reanudar'
+            : 'Iniciar',
+      ),
+    );
+    final secondary = Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 8,
+      children: [
+        if (compact) startPause,
+        if (_mode == _ClockMode.stopwatch && _running)
+          FilledButton.tonal(onPressed: _lap, child: const Text('Vuelta')),
+        if (_started)
+          TextButton(
+            onPressed: () => setState(_reset),
+            child: const Text('Reiniciar'),
+          ),
+      ],
+    );
+    return compact
+        ? secondary
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [startPause, secondary],
+          );
+  }
+
+  Widget _lapList() => ConstrainedBox(
+    constraints: const BoxConstraints(maxHeight: 128),
+    child: ListView.builder(
+      primary: false,
+      padding: EdgeInsets.zero,
+      shrinkWrap: true,
+      itemCount: _laps.length,
+      itemBuilder: (context, index) {
+        final lap = _laps.length - 1 - index;
+        final split = _laps[lap] - (lap == 0 ? Duration.zero : _laps[lap - 1]);
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            spacing: 8,
+            children: [
+              Text('Vuelta ${lap + 1}'),
+              Text(_formatStopwatch(split)),
+            ],
+          ),
+        );
+      },
+    ),
+  );
 
   Widget _countdownOptions() => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,

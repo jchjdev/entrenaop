@@ -13,6 +13,11 @@ ajustan antes de iniciar. Basta con mantener la pantalla encendida durante la
 cuenta en el móvil. El reloj funciona localmente, sin ejercicios ni resultados.
 [Recorrido](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#reloj--04112026).
 
+**Vueltas, mitad de tiempo y Reloj horizontal · 04/11/2026.** Javier pide
+milésimas y vueltas en el cronómetro, aprovechar los avisos de mitad de tiempo
+y poder ver el reloj con el iPhone 12 apoyado en horizontal.
+[Recorrido](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#reloj--04112026).
+
 **Pulso y cierre de la preparación desde el reloj · 04/11/2026.**
 Javier confirma conservar la frecuencia cardíaca para consulta y excluirla de
 las decisiones del plan. El análisis de rodajes mostró que el modelo de reloj
