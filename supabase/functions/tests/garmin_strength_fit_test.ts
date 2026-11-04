@@ -79,8 +79,31 @@ test('rechaza recortar notas o nombres por el límite FIT de bytes UTF-8', () =>
   assert.throws(() => garminStrengthFit(longNotes, identity), /unsupported_prescription/);
   const longName = recipe(); longName.blocks[0].items[0].exercise_name = 'é'.repeat(130);
   assert.throws(() => garminStrengthFit(longName, identity), /unsupported_prescription/);
-  const longDescription = recipe(); longDescription.description = 'é'.repeat(130);
+  const longDescription = recipe(); longDescription.description = 'é'.repeat(500);
   assert.throws(() => garminStrengthFit(longDescription, identity), /unsupported_prescription/);
+});
+
+test('una descripción larga cabe íntegra en las notas FIT sin añadir ni cambiar pasos', () => {
+  const snapshot = recipe();
+  const normal = decode(garminStrengthFit(snapshot, identity));
+  snapshot.description = 'Técnica, control y progresión 🏋️. '.repeat(12) + 'Última instrucción.';
+  const long = decode(garminStrengthFit(snapshot, identity));
+  assert.match(long.workoutMesgs[0].wktDescription, /pauta general numerada/);
+  const parts: string[] = [];
+  assert.deepEqual(long.workoutStepMesgs.map(({notes, ...step}: any, index: number) => {
+    const previous = normal.workoutStepMesgs[index].notes;
+    if (notes !== previous) {
+      assert.equal(step.intensity, 'active');
+      const prefix = `${previous}\nPauta general (${parts.length + 1}): `;
+      assert.ok(notes.startsWith(prefix));
+      assert.ok(Buffer.byteLength(notes, 'utf8') <= 254);
+      parts.push(notes.slice(prefix.length));
+    }
+    return step;
+  }), normal.workoutStepMesgs.map(({notes, ...step}: any) => step));
+  assert.ok(parts.length > 1);
+  assert.equal(parts.join(''), snapshot.description);
+  assert.deepEqual(long.exerciseTitleMesgs, normal.exerciseTitleMesgs);
 });
 
 test('rechaza formatos no traducidos y recetas sin descansos explícitos', () => {

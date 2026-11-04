@@ -1,5 +1,28 @@
 # Envío común de carrera · INT-007 · 22/10/2026
 
+## Fuerza en Connect IQ y notas largas · 04/11/2026
+
+Una lista vacía con «Actualizado ahora» correspondía al vínculo activo de la
+cuenta secundaria de pruebas. La cita de fuerza estaba en la cuenta habitual y
+su entrega por Training API estaba confirmada. «Ir» es el rótulo nativo de los
+pasos sin equivalencia en el catálogo, cuyos nombres se conservan en las notas.
+El vínculo Connect IQ se cambia desde la cuenta anterior y se autoriza de nuevo
+desde la cuenta correcta. Es independiente de la conexión con Garmin Connect.
+
+El mismo entrenamiento superaba también los 254 bytes útiles de la descripción
+FIT. Si la descripción general excede ese límite, el exportador coloca un aviso
+en el encabezado y reparte el texto íntegro en notas numeradas de pasos de
+trabajo existentes. Cada fragmento conserva caracteres UTF-8 completos y deja
+intactas las instrucciones de su paso. Si falta espacio, la receta se sigue
+rechazando. Las descripciones que caben mantienen su codificación anterior.
+
+Se decodifica el FIT de la pauta existente con el SDK y se verifican la
+integridad, seis títulos, quince pasos y la recuperación íntegra de la nota en
+tres fragmentos. Pasa la batería de servidor y la comprobación de tipos. Dev
+sirve `garmin-ciq` v11 y el manifiesto sin credencial responde 401. Quedan la
+vinculación a la cuenta habitual y la comprobación de descarga y presentación
+en el reloj físico. No se modifican citas, credenciales ni calendarios.
+
 ## Series de fuerza y contador · 03/11/2026
 
 El exportador de fuerza mantiene cada serie y cada descanso como `WorkoutStep`;
@@ -529,8 +552,9 @@ cargas y todos los descansos explícitos. Dos ejercicios homónimos tienen
 referencias distintas. La identidad y fecha de creación del archivo las aporta
 el llamador para producir los mismos bytes en un reintento.
 
-FIT limita cada campo de texto a 254 bytes UTF-8 más terminador. El generador
-rechaza una pauta que no quepa; no la recorta. El peso se escribe con la escala
+FIT limita cada campo de texto a 254 bytes UTF-8 más terminador. Desde el 04/11,
+las descripciones generales largas se reparten como se indica arriba. El
+generador rechaza una pauta que aun así no quepa. El peso se escribe con la escala
 100 del SDK oficial y rechaza más de 655,34 kg o precisión no representable;
 conserva cero y distingue carga ausente. La categoría UNKNOWN y la tabla
 EXERCISE_TITLE no declaran equivalencias con el catálogo Garmin. Se mantiene

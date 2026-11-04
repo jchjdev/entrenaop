@@ -1,5 +1,14 @@
 # Registro de decisiones vigentes
 
+**INT-021 · 04/11/2026 · Fuerza Connect IQ y notas largas.** La beta consulta
+la cuenta vinculada al reloj, que en el incidente era la secundaria de pruebas.
+La cita de la cuenta habitual estaba entregada por Training API. Para evitar
+otro bloqueo de su FIT, el exportador conserva las indicaciones generales largas
+en notas numeradas de los primeros pasos, con aviso previo y sin añadir pasos.
+Se conserva el rechazo cuando falta espacio. El cambio está comprobado con el
+FIT de la cita y desplegado en Dev. Queda la aceptación física tras vincular la
+cuenta correcta. [Detalle](DEVICE_GARMIN_TRAINING.md#fuerza-en-connect-iq-y-notas-largas--04112026).
+
 **STR-042 · Evidencia de rendimiento del mismo día · 04/11/2026.** Javier
 autoriza reproducir el fallo por el flujo normal y corregir únicamente el
 punto confirmado. Dos ejecuciones comparables del mismo día cuentan como un
