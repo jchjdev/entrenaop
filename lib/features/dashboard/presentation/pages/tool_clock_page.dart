@@ -242,12 +242,12 @@ class _ToolClockPageState extends State<ToolClockPage>
                 child: Row(
                   children: [
                     Expanded(
-                      flex: 3,
+                      flex: 4,
                       child: FittedBox(fit: BoxFit.scaleDown, child: _face()),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
-                      flex: 2,
+                      flex: 3,
                       child: _scrollPanel([
                         _modeSelector(),
                         ..._options(),
@@ -270,7 +270,7 @@ class _ToolClockPageState extends State<ToolClockPage>
                     _face(),
                     ..._options(),
                     const SizedBox(height: 20),
-                    _actions(compact: false),
+                    _actions(),
                   ]),
                 ),
               ),
@@ -338,39 +338,59 @@ class _ToolClockPageState extends State<ToolClockPage>
     if (!_started && _mode == _ClockMode.intervals) _intervalOptions(),
   ];
 
-  Widget _actions({required bool compact}) {
-    final startPause = FilledButton(
-      onPressed: _running ? _pause : (_valid ? _start : null),
-      child: Text(
-        _running
-            ? 'Pausar'
-            : _finished
-            ? 'Repetir'
-            : _started
-            ? 'Reanudar'
-            : 'Iniciar',
-      ),
+  Widget _actions({bool compact = false}) {
+    const shape = StadiumBorder();
+    final secondaryStyle = OutlinedButton.styleFrom(
+      shape: shape,
+      iconSize: compact ? 16 : null,
+      padding: compact
+          ? const EdgeInsets.symmetric(horizontal: 6, vertical: 12)
+          : null,
+      textStyle: compact ? const TextStyle(fontSize: 14) : null,
     );
-    final secondary = Wrap(
-      alignment: WrapAlignment.center,
-      spacing: 8,
+    final (label, icon) = switch ((_running, _finished, _started)) {
+      (true, _, _) => ('Pausar', Icons.pause_rounded),
+      (_, true, _) => ('Repetir', Icons.replay_rounded),
+      (_, _, true) => ('Reanudar', Icons.play_arrow_rounded),
+      _ => ('Iniciar', Icons.play_arrow_rounded),
+    };
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (compact) startPause,
-        if (_mode == _ClockMode.stopwatch && _running)
-          FilledButton.tonal(onPressed: _lap, child: const Text('Vuelta')),
-        if (_started)
-          TextButton(
-            onPressed: () => setState(_reset),
-            child: const Text('Reiniciar'),
+        FilledButton.icon(
+          onPressed: _running ? _pause : (_valid ? _start : null),
+          style: FilledButton.styleFrom(
+            shape: shape,
+            minimumSize: const Size(48, 52),
           ),
+          icon: Icon(icon),
+          label: Text(label),
+        ),
+        if (_started) ...[
+          const SizedBox(height: 12),
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              if (_mode == _ClockMode.stopwatch && _running)
+                OutlinedButton.icon(
+                  onPressed: _lap,
+                  style: secondaryStyle,
+                  icon: const Icon(Icons.flag_outlined),
+                  label: const Text('Vuelta'),
+                ),
+              OutlinedButton.icon(
+                onPressed: () => setState(_reset),
+                style: secondaryStyle,
+                icon: const Icon(Icons.restart_alt_rounded),
+                label: const Text('Reiniciar'),
+              ),
+            ],
+          ),
+        ],
       ],
     );
-    return compact
-        ? secondary
-        : Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [startPause, secondary],
-          );
   }
 
   Widget _scrollPanel(List<Widget> header) => CustomScrollView(

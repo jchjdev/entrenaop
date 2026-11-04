@@ -153,6 +153,28 @@ void main() {
       addTearDown(tester.view.reset);
       await open(tester);
       await tap(tester, 'Iniciar');
+      Rect buttonRect(String label) => tester.getRect(
+        find.ancestor(
+          of: find.text(label),
+          matching: find.byWidgetPredicate(
+            (widget) => widget is ButtonStyleButton,
+          ),
+        ),
+      );
+      void expectSpacedActions() {
+        final pause = buttonRect('Pausar');
+        final lap = buttonRect('Vuelta');
+        final reset = buttonRect('Reiniciar');
+        expect(lap.top - pause.bottom, greaterThanOrEqualTo(12));
+        expect(
+          reset.top >= lap.bottom
+              ? reset.top - lap.bottom
+              : reset.left - lap.right,
+          greaterThanOrEqualTo(12),
+        );
+      }
+
+      expectSpacedActions();
       now = const Duration(milliseconds: 1234);
       await tap(tester, 'Vuelta');
 
@@ -165,6 +187,7 @@ void main() {
       expect(find.text('00:03.42').hitTestable(), findsOneWidget);
       expect(find.text('Vuelta 1').hitTestable(), findsOneWidget);
       expect(find.text('Pausar').hitTestable(), findsOneWidget);
+      expectSpacedActions();
       final lap = find.text('Vuelta').hitTestable();
       expect(lap, findsOneWidget);
       now = const Duration(milliseconds: 3456);

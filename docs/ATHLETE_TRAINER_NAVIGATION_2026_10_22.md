@@ -78,7 +78,9 @@ Intervalos parte de 20 segundos de trabajo,
 10 de descanso y ocho rondas, todos editables. Con descanso cero, las rondas
 de trabajo se suceden directamente. El reloj termina con el último trabajo.
 
-Los tres modos admiten pausa, reanudación y reinicio. Los avisos existentes
+Los tres modos admiten pausa, reanudación y reinicio. La acción principal del
+Reloj ocupa su propia fila. Vuelta y Reiniciar aparecen debajo como botones
+con contorno, icono y espacio entre ellos. Los avisos existentes
 se reutilizan también a mitad de la cuenta atrás y a mitad de cada tramo de
 trabajo. En horizontal, el tiempo queda visible a un lado y los controles y
 vueltas se sitúan al otro. Girar conserva la cuenta y las marcas. En Android e
