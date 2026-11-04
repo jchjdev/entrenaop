@@ -47,6 +47,9 @@ con el número de citas previsto; las otras nueve quedaron sin publicar.
 
 ## Hallazgos reproducidos, por prioridad
 
+Esta tabla recoge la primera pasada de auditoría. El seguimiento indica qué
+fallos siguen vigentes y cuáles llegaron a una semana publicada.
+
 | Prioridad | Frontera | Qué se observó y cuál es el límite |
 | --- | --- | --- |
 | Alta | Control de carrera usa sesiones como días | Cuatro citas de agenda distinta se realizaron y cerraron el mismo día local. El candidato registró `4/4/4` en sus tres contadores de días con un solo día real. Con 140 min recientes propuso el control y quedó sin colocar. Con 160 min, la continuación automática publicó y materializó un control de 2 km. La regla documentada exige días de práctica. [Recorrido por RPC](auditoria_adaptativa_controles_2026_11_04.sql), [contrato](../CONTROLES_ADAPTATIVOS.md). |
@@ -61,14 +64,22 @@ petición de control. La comprobación de acceso Pro y la de validación, correc
 e invalidación de controles pasaron con titulares ficticios. No se midió el
 impacto de los hallazgos sobre usuarios reales ni se calibraron umbrales nuevos.
 
-## Siguiente bloque propuesto
+## Seguimiento tras corregir la cronología del control
 
-Corregir primero la evidencia de carrera. Empezar por hacer cumplir el contrato
-ya acordado de días distintos en el control, con la reproducción que hoy llega
-a materializarlo. En el mismo diagnóstico de carrera, distinguir las decisiones
-que dependen de la secuencia temporal real de las que deben contar por día.
-La corrección del empate debe demostrar igualdad al permutar registros y
-conservar la respuesta ante dificultad; hace falta un caso por RPC antes de
-cerrar ese fallo. La puerta de agilidad y los avisos se mantienen como hallazgos
-separados. El diagnóstico de estancamiento depende de que las señales de base
-sean fiables.
+Las reproducciones siguientes usaron cuentas ficticias y `ROLLBACK` en Dev.
+La corrección de cronología se valida por separado en la
+[regresión de publicación](../../supabase/tests/running_transfer_control_chronology.sql).
+
+| Prioridad | Fallo pendiente | Reproducción |
+| --- | --- | --- |
+| Alta | Un control de 2 km puede dejar una semana combinada sin agilidad | En una agenda de siete días de 70 min con examen a 31 días, cuatro salidas toleradas en días distintos y resultados completos de fuerza, la continuación publicó `ready` con un control de transferencia. El ajuste de recuperación retiró la única cita de agilidad y dejó una de dos exposiciones de flexiones y plancha. La propuesta publicada seguía declarando las frecuencias anteriores. Se usaron las referencias de la [auditoría de tres modos](auditoria_adaptativa_tres_modos_2026_11_04.sql) y el recorrido de [control por días distintos](../../supabase/tests/adaptive_running_control_distinct_days.sql). [Ajuste de recuperación](../../supabase/migrations/20261016195705_adaptive_control_shared_recovery_guard.sql#L107). |
+| Alta | Una dosis de flexiones casi sin ejecutar puede habilitar un control | Cuatro exposiciones en días distintos se cerraron por RPC. Dos registraron `1 + 1` frente a `46 + 46`; las dos recientes sí completaron la pauta. El selector acreditó los cuatro días como tolerados y la continuación programó un control de dos minutos. La evaluación de elegibilidad mira el estado, RIR y esfuerzo, pero omite el contraste entre repeticiones observadas y pautadas. [Elegibilidad](../../supabase/migrations/20261016191546_adaptive_protocol_controls.sql#L117). |
+| Alta | Dos sesiones difíciles del mismo día desencadenan una descarga global | Con dos citas de intervalos y un rodaje, duplicar las pausas de una cita mantuvo `normal`. Duplicarlas en ambas publicó `global_deload`, incluso al registrar ambas citas el mismo día real. La rama cuenta sesiones en vez de distinguir los días de la dificultad. [Condición](../../supabase/migrations/20261016202528_running_format_progression_v6.sql#L126). |
+| Alta | Dos marcas de 2 km el mismo día pueden cambiar qué se publica | Se seleccionó como referencia una marca de 9:55 a las 12:00. Al añadir un control de 9:10 a las 08:00 del mismo día, la tendencia usó el de la mañana y la publicación pasó de tempo 2 × 5 min a intervalos 5 × 2 min, con la referencia de ritmo aún en 9:55. Invertir dos controles empatados en la entrada de la función también cambia su tendencia. [Selección por fecha](../../supabase/migrations/20261001008000_running_engine_response_v2.sql#L33). |
+| Media | La puerta de agilidad permite avanzar con un solo día tolerado | Con la fase de desarrollo en la decisión anterior y dos frenadas `COD-T01` cerradas el mismo día por RPC, se publicaron dos sesiones `COD-SP01` aunque la fase acreditó un único día tolerado. En el selector de especificidad, dos frenadas toleradas seguidas de dificultad reciente también permiten elegir el circuito completo `COD-SP02`. [Selección](../../supabase/migrations/20261016182512_adaptive_movement_continuity.sql#L281). |
+| Media | Una sesión omitida puede bloquear la siguiente calidad | Con dos rodajes tolerados y el lunes como único hueco apto para calidad, una cita de intervalos omitida el domingo dejó tres rodajes publicados. Al mover solo esa cita omitida al sábado, los RPC publicaron 4 × 2 min el lunes y dos rodajes. La regla de separación comprueba fecha y familia sin distinguir la omisión. [Separación](../../supabase/migrations/20261016202528_running_format_progression_v6.sql#L315). |
+| Media | Solo carrera muestra un aviso de falta de tiempo al faltar la marca | La propuesta con cuatro huecos de 60–75 min y sin marca de 2 km pide registrar la marca y también añadir tiempo para una preparación conjunta. [Composición de avisos](../../supabase/migrations/20261016191546_adaptive_protocol_controls.sql#L600). |
+
+El siguiente bloque recomendado es conservar la cobertura de las pruebas
+obligatorias al colocar el control de 2 km. La verificación debe leer las
+citas materializadas y cotejar su frecuencia con la decisión publicada.

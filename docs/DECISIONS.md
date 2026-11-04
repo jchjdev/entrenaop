@@ -1,5 +1,11 @@
 # Registro de decisiones vigentes
 
+**Control posterior a la mejora de las series · 04/11/2026.** Javier autoriza
+corregir el cambio de pauta por falta de transferencia. La tendencia de 2 km
+solo justifica ese cambio si su último control comparable es de un día posterior
+a la última serie usada para detectar la mejora. La referencia sigue disponible
+para calcular ritmos. [Prueba](MOTOR_CARRERA_2K_V6.md#orden-del-entrenamiento-y-del-control-de-2-km).
+
 **Estancamiento y decisiones de entrenamiento · 04/11/2026.** Javier descarta
 el aviso «el mismo trabajo te cuesta menos» y prioriza mejorar la prescripción
 y el rendimiento. El ensayo de esfuerzo queda como antecedente. La revisión

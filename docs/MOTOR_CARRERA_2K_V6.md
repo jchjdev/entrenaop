@@ -211,11 +211,10 @@ queda fuera de la comparación.
 
 ### Orden del entrenamiento y del control de 2 km
 
-En Dev, dos series recientes más rápidas a esfuerzo similar llevan a v6 a
-proponer 2 × 5 min de tempo con el motivo «series mejoran sin transferencia al
-2 km». La decisión aparece incluso cuando el último control comparable de
-2 km es anterior a las dos series mejoradas. También aparece si el control se
-hizo entre ambas. En los tres casos, las marcas registradas son de 9:55.
+Antes de la corrección, dos series recientes más rápidas a esfuerzo similar
+llevaban a v6 a proponer 2 × 5 min de tempo por falta de transferencia al
+2 km, aunque el último control fuera anterior a las dos series mejoradas o
+se hubiera hecho entre ambas. Las marcas de la reproducción son de 9:55.
 
 La [reproducción SQL](audits/estancamiento_carrera_2k_2026_11_04.sql) mantiene
 el mismo historial de entrenamiento y mueve la fecha de los controles. Al
@@ -225,12 +224,17 @@ Así se aísla el efecto de usar una tendencia de marcas que precede a las
 series. Los dos formatos son salidas del cálculo, sin pronóstico de mejora en
 el examen.
 
-La [prueba por RPC](audits/cronologia_control_carrera_rpc.sql) registra las
-mismas ejecuciones en dos preparaciones ficticias. Comprueba que ambas publican
-2 × 5 min, con el último control antes o después de las series mejoradas, y
-revierte la transacción en Dev. El siguiente paso es probar que el cambio de
-familia por falta de transferencia exige un control posterior a las sesiones
-que sustentan la mejora, con la misma referencia y calendario de controles.
+V6 conserva la fecha de la última sesión que entra en la tendencia de cada
+familia. Para cambiar de intervalos a tempo por falta de transferencia, el
+último control comparable debe ser de un día posterior al de esa última serie.
+El control conserva su función como referencia de ritmo. La fecha, por sí sola,
+no permite ordenar una serie y un control realizados el mismo día.
+
+La [regresión por RPC](../supabase/tests/running_transfer_control_chronology.sql)
+registra los mismos entrenamientos en cuatro preparaciones ficticias. Un
+control anterior, entre las dos series o del mismo día publica 5 × 2 min de
+intervalos. El control posterior publica 2 × 5 min de tempo con el motivo de
+transferencia. La prueba revierte la transacción en Dev.
 
 ## Orden de ejecuciones del mismo día · PLAN-028
 

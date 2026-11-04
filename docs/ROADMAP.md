@@ -74,13 +74,16 @@ de Helms y NSCA, el banco de Javier y estudios originales de fuerza y carrera.
 Quince casos de solo lectura en Dev contrastan pauta tolerada, datos ausentes,
 dificultad, tendencia de marcas y decisión de medir. Cuatro escenarios adicionales
 con el mismo 2 km contrastan ritmo de intervalos, esfuerzo y marca. Javier
-descarta el aviso de menor esfuerzo. En Dev se reproduce que la falta de
-transferencia cambia la pauta usando un control previo a la mejora de las
-series. La prueba por RPC confirma la publicación de 2 × 5 min con el control
-antes o después de las series. El siguiente bloque es validar la corrección
-temporal sobre la prescripción.
+descarta el aviso de menor esfuerzo. La corrección de cronología exige que el
+último control comparable sea posterior a las series antes de cambiar de
+familia por falta de transferencia. La regresión publica 5 × 2 min con un
+control anterior o del mismo día y 2 × 5 min con un control posterior.
+El siguiente bloque de coordinación es conservar las pruebas obligatorias
+al colocar un control de carrera. En Dev se reprodujo una semana combinada
+publicada sin su única exposición de agilidad.
 [Línea base](PROGRAMA_ADAPTATIVO.md#diagnóstico-de-estancamiento--04112026),
-[evidencia y escenarios de 2 km](MOTOR_CARRERA_2K_V6.md#resistencia-y-estancamiento-en-2-km--04112026).
+[evidencia y escenarios de 2 km](MOTOR_CARRERA_2K_V6.md#resistencia-y-estancamiento-en-2-km--04112026),
+[hallazgos de seguimiento](audits/AUDITORIA_ADAPTATIVA_2026_11_04.md#seguimiento-tras-corregir-la-cronología-del-control).
 
 **STR-042 · Evidencia de rendimiento del mismo día · 04/11/2026.** La
 regresión de servidor activa la preparación, revisa e inicia las citas por

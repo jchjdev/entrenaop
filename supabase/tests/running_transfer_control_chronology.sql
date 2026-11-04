@@ -1,4 +1,4 @@
--- Datos ficticios. Las dos semanas se publican por los RPC de la app.
+-- Datos ficticios. Las semanas se publican por los RPC de la app.
 begin;
 set local timezone='UTC';
 set local statement_timeout='55s';
@@ -7,11 +7,12 @@ do $$
 declare
  wk date:=current_date-extract(isodow from current_date)::int+1;
  availability jsonb:='{"1":60,"3":60,"6":60}';
- last_control_age int; athlete uuid; goal uuid; mark uuid; execution uuid;
+ last_control_age int; athlete uuid; goal uuid; mark uuid; execution uuid; expected text;
  reference jsonb; previous_week record; appointment record; result_set record;
  pace numeric; proposal jsonb; receipt jsonb; quality text; decision jsonb;
 begin
- foreach last_control_age in array array[2,15] loop
+ foreach last_control_age in array array[15,10,7,2] loop
+  expected:=case when last_control_age<7 then 'T_0_v1' else 'V_1_v1' end;
   athlete:=gen_random_uuid();
   insert into auth.users(id,email) values(athlete,athlete||'@running-control-chronology.invalid');
   perform set_config('request.jwt.claim.sub',athlete::text,true);
@@ -76,14 +77,14 @@ begin
   join public.running_week_decisions d on d.id=rs.decision_id
   where sw.preparation_goal_id=goal and d.week_start=wk and d.superseded_at is null
    and rs.prescription->>'family' in ('T','V','S');
-  if receipt->>'decision_id' is null or quality is distinct from 'T_0_v1'
+  if receipt->>'decision_id' is null or quality is distinct from expected
    or (decision#>>'{control_review,controls,0,date}')::date is distinct from wk-last_control_age
    or decision#>>'{evidence,families,V,trend}' is distinct from 'improving'
-   or strpos(coalesce(decision->>'reason',''),'series mejoran sin transferencia al 2 km')=0 then
-   raise exception 'Control de hace % días: el caso publicado debe reproducir T_0_v1, obtuvo %',last_control_age,quality;
+   or (strpos(coalesce(decision->>'reason',''),'series mejoran sin transferencia al 2 km')>0) is distinct from (last_control_age<7) then
+   raise exception 'Control de hace % días: se esperaba % y se publicó %, motivo %',last_control_age,expected,quality,decision->>'reason';
   end if;
  end loop;
 end $$;
 
-select 'Se reproduce la publicación de 2 × 5 min con el control antes o después de mejorar las series' as result;
+select 'Solo el control posterior a las series mejoradas justifica el cambio de 5 × 2 min a 2 × 5 min' as result;
 rollback;
