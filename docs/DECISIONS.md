@@ -55,6 +55,13 @@ dos decimales y usar el formato de reloj de la app para la entrada manual.
 Reiniciar y darles una presentación propia dentro de Reloj.
 [Recorrido](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#reloj--04112026).
 
+**Preparación opcional del temporizador · 04/11/2026.** Javier pide poder
+activar una cuenta previa para colocarse antes de empezar. Reloj usa tres
+segundos y los avisos existentes de preparación e inicio. Javier pide también
+cuidar el aspecto general de la pantalla. El tiempo y la fase se agrupan y
+los parciales se distinguen con separadores.
+[Recorrido](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#reloj--04112026).
+
 **Pulso y cierre de la preparación desde el reloj · 04/11/2026.**
 Javier confirma conservar la frecuencia cardíaca para consulta y excluirla de
 las decisiones del plan. El análisis de rodajes mostró que el modelo de reloj

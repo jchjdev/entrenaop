@@ -145,6 +145,39 @@ void main() {
     },
   );
 
+  testWidgets('la preparación se puede pausar y precede al tiempo elegido', (
+    tester,
+  ) async {
+    await open(tester);
+    await tap(tester, 'Temporizador');
+    await tap(tester, '30 s');
+    await tap(tester, 'Preparación · 3 s');
+    await tap(tester, 'Iniciar');
+    expect(find.text('Prepárate'), findsOneWidget);
+    expect(find.text('00:03'), findsOneWidget);
+    await advance(tester, 1);
+    await tap(tester, 'Pausar');
+    await advance(tester, 10);
+    expect(find.text('Preparación en pausa'), findsOneWidget);
+    expect(find.text('00:02'), findsOneWidget);
+
+    await tap(tester, 'Reanudar');
+    await advance(tester, 2);
+    expect(find.text('00:30'), findsOneWidget);
+    expect(cues, [
+      WorkoutCue.preparationTick,
+      WorkoutCue.preparationTick,
+      WorkoutCue.workStarted,
+    ]);
+    await advance(tester, 14);
+    expect(cues.last, WorkoutCue.workStarted);
+    await advance(tester, 1);
+    expect(cues.last, WorkoutCue.halfway);
+    await advance(tester, 15);
+    expect(find.text('Terminado'), findsOneWidget);
+    expect(cues.last, WorkoutCue.workFinished);
+  });
+
   testWidgets(
     'muestra dos decimales y mantiene controles al girar el iPhone 12',
     (tester) async {
@@ -206,6 +239,7 @@ void main() {
       expect(find.text('Iniciar').hitTestable(), findsOneWidget);
       await tap(tester, 'Temporizador');
       expect(find.text('01:00').hitTestable(), findsOneWidget);
+      expect(find.text('Preparación · 3 s').hitTestable(), findsOneWidget);
       expect(find.text('Iniciar').hitTestable(), findsOneWidget);
       expect(tester.takeException(), isNull);
     },

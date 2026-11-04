@@ -32,6 +32,7 @@ class _ToolClockPageState extends State<ToolClockPage>
     with SingleTickerProviderStateMixin {
   static const _screenChannel = MethodChannel('es.entrenaop/clock_screen');
   static const _presets = {30: '30 s', 60: '1 min', 120: '2 min'};
+  static const _preparationDuration = 3;
 
   final _clock = Stopwatch();
   final _laps = <Duration>[];
@@ -42,6 +43,7 @@ class _ToolClockPageState extends State<ToolClockPage>
   Duration _elapsed = Duration.zero;
   Duration? _sampleAt;
   bool _started = false;
+  bool _prepareCountdown = false;
   var _mode = _ClockMode.stopwatch;
   int? _preset = 60;
   String _custom = '';
@@ -57,6 +59,12 @@ class _ToolClockPageState extends State<ToolClockPage>
   int get _roundCount => int.tryParse(_rounds) ?? 0;
   int get _cycle => _workSeconds + _restSeconds;
   int get _countdownSeconds => _preset ?? parseDurationInput(_custom) ?? 0;
+  int get _preparationSeconds =>
+      _mode == _ClockMode.countdown && _prepareCountdown
+      ? _preparationDuration
+      : 0;
+  bool get _preparing => _started && _elapsedSeconds < _preparationSeconds;
+  bool get _configuringCountdown => !_started && _mode == _ClockMode.countdown;
 
   bool get _valid => switch (_mode) {
     _ClockMode.stopwatch => true,
@@ -67,7 +75,7 @@ class _ToolClockPageState extends State<ToolClockPage>
 
   int get _total => switch (_mode) {
     _ClockMode.stopwatch => 0,
-    _ClockMode.countdown => _countdownSeconds,
+    _ClockMode.countdown => _preparationSeconds + _countdownSeconds,
     // El descanso separa rondas. La última termina al acabar el trabajo.
     _ClockMode.intervals => _cycle * _roundCount - _restSeconds,
   };
@@ -79,7 +87,12 @@ class _ToolClockPageState extends State<ToolClockPage>
 
   int get _displaySeconds => switch (_mode) {
     _ClockMode.stopwatch => _elapsedSeconds,
-    _ClockMode.countdown => (_total - _elapsedSeconds).clamp(0, _total),
+    _ClockMode.countdown when _preparing =>
+      _preparationSeconds - _elapsedSeconds,
+    _ClockMode.countdown => (_total - _elapsedSeconds).clamp(
+      0,
+      _countdownSeconds,
+    ),
     _ClockMode.intervals when _finished || !_valid => 0,
     _ClockMode.intervals =>
       (_resting ? _cycle : _workSeconds) - _elapsedSeconds % _cycle,
@@ -146,18 +159,26 @@ class _ToolClockPageState extends State<ToolClockPage>
 
   void _tick() {
     final previousElapsed = _elapsed;
+    final wasPreparing = _preparing;
     final previousRound = _round;
     final wasResting = _resting;
     setState(_advance);
     if (_finished) {
       _stop();
       _signal(WorkoutCue.workFinished);
+    } else if (wasPreparing) {
+      if (!_preparing) {
+        _signal(WorkoutCue.workStarted);
+      } else if (previousElapsed.inSeconds != _elapsedSeconds) {
+        _signal(WorkoutCue.preparationTick);
+      }
     } else if (_mode == _ClockMode.intervals &&
         (previousRound != _round || wasResting != _resting)) {
       _signal(_resting ? WorkoutCue.workFinished : WorkoutCue.workStarted);
     } else if (_mode == _ClockMode.countdown || !_resting) {
       final halfway = _mode == _ClockMode.countdown
-          ? Duration(seconds: _total) ~/ 2
+          ? Duration(seconds: _preparationSeconds) +
+                Duration(seconds: _countdownSeconds) ~/ 2
           : Duration(seconds: (_round - 1) * _cycle) +
                 Duration(seconds: _workSeconds) ~/ 2;
       if (previousElapsed < halfway && _elapsed >= halfway) {
@@ -171,8 +192,12 @@ class _ToolClockPageState extends State<ToolClockPage>
     FocusScope.of(context).unfocus();
     setState(() {
       if (_finished) _reset();
-      if (!_started && _mode == _ClockMode.intervals) {
-        _signal(WorkoutCue.workStarted);
+      if (!_started) {
+        if (_preparationSeconds > 0) {
+          _signal(WorkoutCue.preparationTick);
+        } else if (_mode == _ClockMode.intervals) {
+          _signal(WorkoutCue.workStarted);
+        }
       }
       _started = true;
       _sampleAt = _now;
@@ -216,6 +241,7 @@ class _ToolClockPageState extends State<ToolClockPage>
 
   String get _status {
     if (_finished) return 'Terminado';
+    if (_preparing) return _running ? 'Prepárate' : 'Preparación en pausa';
     if (_mode == _ClockMode.intervals && _started) {
       final phase = _resting ? 'Descanso' : 'Trabajo';
       final pause = _running ? '' : 'En pausa · ';
@@ -243,7 +269,18 @@ class _ToolClockPageState extends State<ToolClockPage>
                   children: [
                     Expanded(
                       flex: 4,
-                      child: FittedBox(fit: BoxFit.scaleDown, child: _face()),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: _face(),
+                            ),
+                          ),
+                          if (_configuringCountdown) _preparationOption(),
+                        ],
+                      ),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -266,10 +303,13 @@ class _ToolClockPageState extends State<ToolClockPage>
                   constraints: const BoxConstraints(maxWidth: 480),
                   child: _scrollPanel([
                     _modeSelector(),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
                     _face(),
+                    const SizedBox(height: 8),
                     ..._options(),
-                    const SizedBox(height: 20),
+                    if (_configuringCountdown)
+                      Center(child: _preparationOption()),
+                    const SizedBox(height: 12),
                     _actions(),
                   ]),
                 ),
@@ -304,37 +344,65 @@ class _ToolClockPageState extends State<ToolClockPage>
 
   Widget _face() {
     final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final phaseColor = _mode == _ClockMode.intervals && _started && _resting
+        ? colors.secondary
+        : colors.primary;
     final style = theme.textTheme.displayLarge?.copyWith(
       fontSize: 96,
       fontWeight: FontWeight.w700,
       fontFeatures: const [FontFeature.tabularFigures()],
-      color: _mode == _ClockMode.intervals && _started && !_finished
-          ? (_resting ? theme.colorScheme.secondary : theme.colorScheme.primary)
+      color:
+          _preparing ||
+              (_mode == _ClockMode.intervals && _started && !_finished)
+          ? phaseColor
           : null,
     );
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(_status, textAlign: TextAlign.center),
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: _mode == _ClockMode.stopwatch
-              ? ValueListenableBuilder(
-                  valueListenable: _stopwatchDisplay,
-                  builder: (context, elapsed, _) =>
-                      Text(_formatStopwatch(elapsed), style: style),
-                )
-              : Text(
-                  formatPerformanceTime(_displaySeconds).padLeft(5, '0'),
-                  style: style,
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        border: Border.all(color: colors.outlineVariant),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Wrap(
+              alignment: WrapAlignment.center,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              children: [
+                Icon(
+                  Icons.circle,
+                  size: 8,
+                  color: _running ? phaseColor : colors.onSurfaceVariant,
                 ),
+                Text(_status, textAlign: TextAlign.center),
+              ],
+            ),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: _mode == _ClockMode.stopwatch
+                  ? ValueListenableBuilder(
+                      valueListenable: _stopwatchDisplay,
+                      builder: (context, elapsed, _) =>
+                          Text(_formatStopwatch(elapsed), style: style),
+                    )
+                  : Text(
+                      formatPerformanceTime(_displaySeconds).padLeft(5, '0'),
+                      style: style,
+                    ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
   List<Widget> _options() => [
-    if (!_started && _mode == _ClockMode.countdown) _countdownOptions(),
+    if (_configuringCountdown) _countdownOptions(),
     if (!_started && _mode == _ClockMode.intervals) _intervalOptions(),
   ];
 
@@ -405,18 +473,37 @@ class _ToolClockPageState extends State<ToolClockPage>
         SliverList.builder(
           itemCount: _laps.length,
           itemBuilder: (context, index) {
+            final theme = Theme.of(context);
             final lap = _laps.length - 1 - index;
             final split =
                 _laps[lap] - (lap == 0 ? Duration.zero : _laps[lap - 1]);
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                spacing: 8,
-                children: [
-                  Text('Vuelta ${lap + 1}'),
-                  Text(_formatStopwatch(split)),
-                ],
+            return DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: theme.colorScheme.outlineVariant),
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  spacing: 8,
+                  children: [
+                    Text(
+                      'Vuelta ${lap + 1}',
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    Text(
+                      _formatStopwatch(split),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontFeatures: [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           },
@@ -458,6 +545,12 @@ class _ToolClockPageState extends State<ToolClockPage>
         ),
       ],
     ],
+  );
+
+  Widget _preparationOption() => FilterChip(
+    label: const Text('Preparación · $_preparationDuration s'),
+    selected: _prepareCountdown,
+    onSelected: (selected) => setState(() => _prepareCountdown = selected),
   );
 
   Widget _intervalOptions() => Wrap(

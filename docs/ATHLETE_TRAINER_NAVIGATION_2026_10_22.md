@@ -74,13 +74,18 @@ desde la marca anterior sin detener el cronómetro. Los parciales se muestran
 del más reciente al más antiguo en el mismo desplazamiento de la pantalla.
 Reiniciar borra las vueltas. El temporizador ofrece 30 segundos, uno o dos
 minutos y una duración manual con la máscara de reloj de la app (`00:00`).
+La opción Preparación añade tres segundos antes de la cuenta principal, con
+los avisos de preparación e inicio. Está desactivada al abrir el Reloj y
+la fase de preparación admite pausa y reanudación.
 Intervalos parte de 20 segundos de trabajo,
 10 de descanso y ocho rondas, todos editables. Con descanso cero, las rondas
 de trabajo se suceden directamente. El reloj termina con el último trabajo.
 
 Los tres modos admiten pausa, reanudación y reinicio. La acción principal del
 Reloj ocupa su propia fila. Vuelta y Reiniciar aparecen debajo como botones
-con contorno, icono y espacio entre ellos. Los avisos existentes
+con contorno, icono y espacio entre ellos. La pantalla agrupa el tiempo y el
+indicador de fase. Las vueltas alinean el parcial a la derecha con un separador
+entre filas. Los avisos existentes
 se reutilizan también a mitad de la cuenta atrás y a mitad de cada tramo de
 trabajo. En horizontal, el tiempo queda visible a un lado y los controles y
 vueltas se sitúan al otro. Girar conserva la cuenta y las marcas. En Android e
