@@ -110,6 +110,18 @@ compatibles causan esa pérdida, se aplaza el control. Si solo se retiran
 exposiciones adicionales, la decisión recoge las que quedan en la agenda.
 [Regresión del coordinador](../supabase/tests/adaptive_control_required_coverage.sql).
 
+El control de plancha de antebrazos también busca otro día si retiraría toda
+la práctica esencial ya asignada al circuito FAS. Cuenta el bloque elegido
+para esa fase, sea una frenada, un sector o el circuito completo. Cuando todos
+los demás huecos incumplen tiempo o recuperación, se aplaza el test de plancha
+y se publica la semana ordinaria. Esto evita que otro máximo ocupe el mismo
+hueco y termine retirando la práctica protegida.
+El [ensayo por RPC](../tools/simulate_fas_six_month_case.py) comprueba la semana
+publicada con `--weeks 3 --automatic-controls --check-plank-agility move` y
+con `--check-plank-agility defer`. En el segundo caso se añade una cita libre
+el jueves para bloquear los huecos alternativos por recuperación. Ambos casos
+comprueban el eslalon del lunes en la agenda y terminan con `ROLLBACK`.
+
 ## Protocolos y registro
 
 Se reutiliza `PerformanceSetPrescription` con intención `control`, sin RIR.

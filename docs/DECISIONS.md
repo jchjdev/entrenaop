@@ -1,5 +1,11 @@
 # Registro de decisiones vigentes
 
+**Control de plancha y práctica de agilidad · 04/11/2026.** Javier confirma
+que si un control de plancha quitaría toda la práctica esencial de agilidad
+de esa semana, se busca otro día y se aplaza cuando no hay uno compatible.
+La práctica protegida puede ser técnica, por sectores o del circuito completo.
+[Regla y ensayo](CONTROLES_ADAPTATIVOS.md#coste-y-colocación).
+
 **Cobertura y evidencia de la semana adaptativa · 04/11/2026.** Javier pide
 corregir los fallos reproducidos en carrera, rendimiento y coordinación. La
 colocación del 2 km conserva la práctica de las pruebas obligatorias y la

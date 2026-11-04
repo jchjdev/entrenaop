@@ -179,6 +179,29 @@ def one(c, query, params=()):
     return c.execute(query, params).fetchone()[0]
 
 
+def check_plank_agility(week, expected):
+    decision = week['decision']
+    controls = decision['control_schedule']
+    plank_profile = 'front_plank_forearms'
+    if not any(item['profile'] == plank_profile and item['decision']['action'] == 'control'
+               for item in controls['reviewed']):
+        raise RuntimeError('El ensayo requiere un control de plancha elegible en la semana 3.')
+    proposal = next(item for item in decision['proposals']
+                    if item['objective_key'] == 'legacy:agility_speed_circuit' and item['required_for_objective'])
+    practice = [item for item in week['materialized']['performance']
+                if item['reference_id'] == proposal['reference_id']]
+    plank = [item for item in week['materialized']['performance']
+             if item['dose']['task']['exercise_code'] == plank_profile]
+    tests = [item['date'] for item in plank if item['dose'].get('control')]
+    planned_tests = [item['date'] for item in controls['scheduled'] if item['profile'] == plank_profile]
+    if len(practice) != 1 or practice[0]['date'] != week['week_start'] or practice[0]['dose']['task'].get('stimulus_code') != 'COD-SP01':
+        raise RuntimeError('La agenda de la semana 3 perdió su única práctica de eslalon del lunes.')
+    expected_tests = [str(date.fromisoformat(week['week_start']) + timedelta(days=2))] if expected == 'move' else []
+    if tests != expected_tests or planned_tests != expected_tests or (expected == 'defer' and (not plank or controls['scheduled'])):
+        raise RuntimeError(f'Plancha en la semana 3: control esperado {expected_tests}, decisión {planned_tests}, agenda {tests}.')
+    print(f'Regresión plancha/agilidad: eslalon el {practice[0]["date"]}, control {tests or "aplazado"}.', flush=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--cli', default=os.environ.get('SUPABASE_CLI', 'supabase'))
@@ -186,9 +209,13 @@ def main():
     parser.add_argument('--weeks', type=int, default=26)
     parser.add_argument('--migration',type=Path,help='Ensayar una migración pendiente sin aplicarla permanentemente')
     parser.add_argument('--automatic-controls',action='store_true',help='Responder a controles pautados; no aportar controles manuales desde la fixture')
+    parser.add_argument('--check-plank-agility', choices=('move', 'defer'),
+                        help='Verificar en la semana 3 que el control cambia de día o se aplaza conservando la agilidad')
     args = parser.parse_args()
     if not 1 <= args.weeks <= 52:
         parser.error('--weeks debe estar entre 1 y 52')
+    if args.check_plank_agility and (args.weeks != 3 or not args.automatic_controls):
+        parser.error('--check-plank-agility requiere --weeks 3 y --automatic-controls')
     exam = START + timedelta(weeks=max(26, args.weeks))
     output = {'scenario': {'initial': {'run_seconds':595,'push_ups':10,'plank_seconds':80,'agility_seconds':14},
                           'target': {'run_seconds':500,'push_ups':50,'plank_seconds':240,'agility_seconds':12.5},
@@ -238,6 +265,13 @@ def main():
         for i in range(args.weeks):
             started = time.monotonic()
             wk = START+timedelta(weeks=i)
+            if i == 1 and args.check_plank_agility == 'defer':
+                # La cita libre del jueves deja intacta la práctica del lunes y
+                # bloquea los demás huecos para el control por recuperación.
+                template = one(c, """insert into public.workout_templates
+                    (name,origin,owner_user_id,visibility,status,estimated_duration_minutes)
+                    values('Sesión libre de la fixture','user',auth.uid(),'private','published',40) returning id""")
+                c.execute('select public.schedule_workout(%s,%s)', (template, wk + timedelta(days=10)))
             p = one(c, 'select decision from public.preparation_week_decisions where preparation_goal_id=%s and week_start=%s and superseded_at is null', (g,wk))
             schedules = one(c, "select coalesce(jsonb_agg(to_jsonb(sw) order by scheduled_date),'[]') from public.scheduled_workouts sw where preparation_goal_id=%s and scheduled_date between %s and %s and status<>'cancelled'", (g,wk,wk+timedelta(days=6)))
             if not schedules:
@@ -279,6 +313,8 @@ def main():
                 output['events'][-1]['after']=state
             executed = one(c, "select coalesce(jsonb_agg(jsonb_build_object('date',sw.scheduled_date,'block_order',es.block_order,'set_order',es.set_order,'format',es.block_format,'prescription',es.performance_prescription,'target_duration',es.target_duration_seconds,'target_distance',es.target_distance_meters,'target_pace_min',es.target_pace_min_seconds_per_km,'target_pace_max',es.target_pace_max_seconds_per_km,'actual_duration',es.actual_duration_seconds,'actual_distance',es.actual_distance_meters,'actual_rpe',es.actual_rpe,'result',es.performance_result) order by sw.scheduled_date,es.block_order,es.set_order),'[]') from public.scheduled_workouts sw join public.workout_execution_sets es on es.execution_id=sw.execution_id where sw.preparation_goal_id=%s and sw.scheduled_date between %s and %s", (g,wk,wk+timedelta(days=6)))
             output['weeks'].append({'number':i+1,'week_start':str(wk),'decision':p,'schedules':schedules,'materialized':materialized,'executed':executed,'state_after':state,'seconds':round(time.monotonic()-started,2)})
+            if i == 2 and args.check_plank_agility:
+                check_plank_agility(output['weeks'][-1], args.check_plank_agility)
             args.output.parent.mkdir(parents=True,exist_ok=True)
             args.output.write_text(json.dumps(output,ensure_ascii=False,indent=2,default=str),encoding='utf-8')
             print(f'Semana {i+1:02d}: {len(schedules)} días; {len(executed)} registros; estado {state["status"]}; {time.monotonic()-started:.1f}s',flush=True)
