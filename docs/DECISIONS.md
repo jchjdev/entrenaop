@@ -1,5 +1,12 @@
 # Registro de decisiones vigentes
 
+**Objetivo personal en una preparación oficial · 04/11/2026.** Javier ve
+bien partir de un objetivo personal activo por preparación. El trabajo de
+las pruebas tiene prioridad sobre ese extra. La prioridad debe aplicarse
+tanto al construir la semana como al ordenar una sesión. La propuesta de
+implementación y las comprobaciones pendientes quedan en el
+[contrato de objetivos personales](PROGRAMA_ADAPTATIVO.md#objetivos-personales-en-preparaciones-oficiales).
+
 **Control de plancha y práctica de agilidad · 04/11/2026.** Javier confirma
 que si un control de plancha quitaría toda la práctica esencial de agilidad
 de esa semana, se busca otro día y se aplaza cuando no hay uno compatible.

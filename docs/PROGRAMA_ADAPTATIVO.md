@@ -761,6 +761,47 @@ de control ni un máximo periódico. Los objetivos numéricos pueden orientar
 prioridades con mediciones compatibles, sin prometer que se alcanzarán ni
 prescribir hoy la capacidad deseada.
 
+### Objetivos personales en preparaciones oficiales
+
+Dirección acordada el 04/11/2026. Implementación pendiente. La pantalla permite
+actualmente añadir objetivos personales a las pruebas del programa. El servidor
+los distingue al guardar la referencia, pero el coordinador puede tratar su
+primer bloque como necesario para publicar. Un extra puede competir por tiempo
+o recuperación y dejar la semana pendiente si se queda sin hueco.
+
+- **Un objetivo personal activo por preparación.** Contar objetivos distintos,
+  no referencias ni variantes. Una prueba del programa y las variantes o apoyos
+  ligados a ella no usan esa plaza. El servidor comprueba el límite al guardar
+  dentro de la operación que ya bloquea la fila de la preparación. Editar la
+  referencia del mismo objetivo conserva su plaza. Para cambiar a otro, validar
+  primero la nueva referencia y sustituir el objetivo activo en una sola
+  operación, conservando el historial. Mostrar la plaza y la acción de cambiar
+  en la pantalla. Si una preparación antigua tiene varios extras activos,
+  pedir que elija cuál seguir usando. Mientras decide, el plan oficial puede
+  continuar y los extras quedan fuera de las decisiones nuevas.
+- **La semana oficial se resuelve primero.** El coordinador calcula sus
+  sesiones, dosis, apoyos elegidos y controles. Luego prueba si cabe el extra
+  respetando ese resultado, los descansos y el presupuesto real de la sesión.
+  Si requiere recortar, mover o cambiar un bloque de la preparación, queda
+  aplazado con un motivo visible. El extra pendiente no bloquea la publicación
+  ni se cuenta como una omisión. La elegibilidad deportiva de cada movimiento
+  sigue dependiendo de su estrategia, del material y de la referencia.
+- **La sesión conserva el orden deportivo del programa.** Después del
+  calentamiento, colocar el control o trabajo prioritario según su propósito
+  y sus restricciones, y a continuación los apoyos. Un apoyo que sea la
+  única variante accesible para practicar la prueba cumple la función del
+  bloque principal. En una sesión mixta se conserva el orden calculado entre
+  carrera y rendimiento. Si el extra comparte cita, va después de ambos
+  trabajos y antes del cierre. Si no hay una posición compatible, se aplaza.
+
+Ejemplo de comprobación. Calcular y publicar la misma semana de FAS con y sin
+un farmer carry calibrado. Con una agenda ajustada, deben coincidir las fechas,
+las dosis, los controles y el orden del trabajo oficial. Con espacio compatible,
+el extra debe aparecer en el orden pactado. Probar también que el servidor
+rechaza un segundo objetivo, permite actualizar el mismo y conserva el historial
+al sustituirlo. Cubrir las preparaciones existentes con varios extras y una
+sesión mixta que ya tenía prioridad de rendimiento o de carrera.
+
 ### Horizonte y mesociclo
 
 Los 1/2/3/4/6/12 meses son horizontes de simulación/verificación hasta la prueba,
