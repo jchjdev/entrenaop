@@ -194,6 +194,22 @@ separa los resultados en aspirantes y militares de los obtenidos en otras
 distancias o poblaciones. Se registra como base para el análisis deportivo
 posterior. Esta corrección se limita a la secuencia de registros.
 
+## Primera sesión de calidad · PLAN-029
+
+El barrido anual encontró una semana con `5×400` en 32 minutos. Al buscar
+una segunda calidad, el motor intentaba reconstruir la primera con
+`10×200`. Las pausas de esta última requieren 38 min 40 s en total con el
+ancla del caso. La reconstrucción devolvía una receta vacía y el coordinador
+marcaba la semana como pendiente de carrera.
+
+V6 conserva el `5×400` y los tres rodajes si ese intento de reparto falla.
+La corrección protege la receta completa, incluidas las recuperaciones.
+La [regresión por RPC](../supabase/tests/running_second_quality_publication.sql)
+prepara las recetas históricas de una cuenta ficticia, registra los resultados
+por los RPC y verifica los tramos de trabajo de la semana publicada. El
+barrido longitudinal añade la trayectoria con tres semanas sin entrenar que
+reveló el caso y comprueba los horizontes de 26 y 52 semanas.
+
 ## Verificación
 
 Instalado y verificado en desarrollo el 16/10/2026:

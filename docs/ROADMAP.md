@@ -1,5 +1,15 @@
 # Roadmap de EntrenaOP
 
+**PLAN-029 · Primera sesión de calidad · 04/11/2026.** El recorrido por RPC
+reproduce que una segunda calidad podía bloquear la publicación de la semana
+39. La migración `20261104125431` conserva el `5×400` de 32 minutos y
+publica tres rodajes. La candidata completa las 216 trayectorias de 6 y 12
+meses, con 8.424 semanas calculadas. En Dev pasan la regresión por RPC, el
+escenario anual que fallaba y las pruebas de formato y controles. Análisis
+Flutter limpio y 1.833 pruebas correctas con una omisión previa. Versión
+`1.7.4+19`.
+[Contrato y prueba](MOTOR_CARRERA_2K_V6.md#primera-sesión-de-calidad--plan-029).
+
 **PLAN-028 · Orden de la evidencia de carrera · 04/11/2026.** Reproducido
 por RPC el cambio de `6×200` a `8×200` al invertir el UUID de dos
 ejecuciones del mismo día. Dev ordena ahora por el instante observado con

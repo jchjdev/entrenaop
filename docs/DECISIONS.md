@@ -1,5 +1,12 @@
 # Registro de decisiones vigentes
 
+**PLAN-029 · Conservar la primera sesión de calidad · 04/11/2026.**
+Javier autoriza corregir el bloqueo reproducido en la semana 39. Si, al
+buscar una segunda sesión de calidad, el motor v6 intenta reconstruir la
+primera con una receta que no cabe, descarta el reparto y conserva la
+propuesta válida. El número de escalón no garantiza una duración menor.
+[Contrato y prueba](MOTOR_CARRERA_2K_V6.md#primera-sesión-de-calidad--plan-029).
+
 **PLAN-028 · Orden de la evidencia de carrera del mismo día · 04/11/2026.**
 Javier autoriza corregir el empate que alteraba la semana publicada. El motor
 v6 conserva el día local para sus ventanas y usa el instante observado para
