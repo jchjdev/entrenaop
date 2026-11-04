@@ -112,6 +112,40 @@ test('revocación, revisión obsoleta y respuestas parciales nunca sirven FIT o 
   assert.throws(()=>ciqExport({...exported(),serial:0}));
 });
 
+test('la beta nueva recibe el mismo título corto en manifiesto y FIT, con identidad propia', async () => {
+  const entry = exported();
+  entry.snapshot.name = 'Fuerza · Paralelas y press con acentos';
+  const {f} = mock(({p_action}) => p_action === 'manifest'
+    ? {complete:true,entries:[entry],blocked:0} : entry);
+  const negotiated = (path: string, body?: unknown) => {
+    const req = request(path,body,credential);
+    req.headers.set('X-EntrenaOP-FIT-Name','readable-1');
+    return req;
+  };
+  const manifest = await (await handleGarminCiq(negotiated('watch',{action:'manifest'}),config,f)).json();
+  const changes = await (await handleGarminCiq(negotiated('watch',{action:'changes'}),config,f)).json();
+  const legacy = await (await handleGarminCiq(request('watch',{action:'manifest'},credential),config,f)).json();
+  assert.equal(manifest.entries[0].name,entry.snapshot.name);
+  assert.match(manifest.entries[0].fit_name,/^Fuerza Paralel[a-z]*-[A-Z0-9]{1,7}$/);
+  assert.ok(manifest.entries[0].fit_name.length <= 22);
+  assert.equal(changes.revision,manifest.revision);
+  assert.notEqual(changes.revision,legacy.revision);
+  assert.equal(legacy.entries[0].fit_name,'EOP1000000000');
+  const fit = await handleGarminCiq(negotiated('fit/'+id),config,f);
+  assert.equal(fit.status,200);
+  const bytes = new Uint8Array(await fit.arrayBuffer());
+  const decoder = new Decoder(Stream.fromByteArray(bytes));
+  assert.equal(decoder.checkIntegrity(),true);
+  const {messages,errors} = decoder.read();
+  assert.deepEqual(errors,[]);
+  assert.equal(messages.workoutMesgs[0].wktName,manifest.entries[0].fit_name);
+  assert.equal(messages.fileIdMesgs[0].product,3);
+  assert.equal(messages.fileIdMesgs[0].serialNumber,entry.serial);
+  assert.equal(messages.exerciseTitleMesgs[0].wktStepName,'Mi dominada');
+  assert.deepEqual(bytes,ciqExport(entry,true).bytes);
+  assert.notEqual(ciqExport({...entry,serial:0xfffffffe},true).name,manifest.entries[0].fit_name);
+});
+
 test('la comprobación ligera de cambios no entrega nombres, recetas o credenciales',async()=>{
   const {f}=mock(()=>({complete:true,entries:[exported()],blocked:0}));
   const a=await (await handleGarminCiq(request('watch',{action:'changes'},credential),config,f)).json();

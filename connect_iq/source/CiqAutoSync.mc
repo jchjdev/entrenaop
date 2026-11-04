@@ -35,7 +35,7 @@ class CiqAutoSync {
     function requestManifest() as Void {
         Communications.makeWebRequest("https://sxbxfjqgoddzhtcyhalw.supabase.co/functions/v1/garmin-ciq/watch",
             {"action"=>"manifest"},{:method=>Communications.HTTP_REQUEST_METHOD_POST,
-            :headers=>{"Content-Type"=>Communications.REQUEST_CONTENT_TYPE_JSON,"Authorization"=>"Bearer "+_credential},
+            :headers=>{"X-EntrenaOP-FIT-Name"=>"readable-1","Content-Type"=>Communications.REQUEST_CONTENT_TYPE_JSON,"Authorization"=>"Bearer "+_credential},
             :responseType=>Communications.HTTP_RESPONSE_CONTENT_TYPE_JSON},method(:onManifest));
     }
     function onManifest(code as Number,data as Communications.ContentType?) as Void {
@@ -70,7 +70,7 @@ class CiqAutoSync {
     function requestFit(id as String) as Void {
         Communications.makeWebRequest("https://sxbxfjqgoddzhtcyhalw.supabase.co/functions/v1/garmin-ciq/fit/"+
             Communications.encodeURL(id),null,{:method=>Communications.HTTP_REQUEST_METHOD_GET,
-            :headers=>{"Authorization"=>"Bearer "+_credential},
+            :headers=>{"X-EntrenaOP-FIT-Name"=>"readable-1","Authorization"=>"Bearer "+_credential},
             :responseType=>Communications.HTTP_RESPONSE_CONTENT_TYPE_FIT},method(:onFit));
     }
     function onFit(code as Number,data as Communications.ContentType?) as Void {

@@ -1,5 +1,24 @@
 # Envío común de carrera · INT-007 · 22/10/2026
 
+## Nombres legibles en Fuerza · 04/11/2026
+
+La Beta 1.7 negocia el mismo formato para manifiesto, cambios y FIT. Fuerza
+muestra un título corto de hasta 22 bytes ASCII y un sufijo base 36 único por
+exportación. El límite se apoya en la muestra física de 22 bytes del primer
+ensayo. La lista de la beta conserva el título completo. El FIT usa producto 3
+para que Garmin distinga la copia nueva de la copia `EOP…` de producto 2.
+Una copia anterior puede seguir en la biblioteca nativa. La aplicación exige
+el nombre exacto, descarta duplicados y solo busca en la biblioteca general
+cuando tiene evidencia de una solicitud previa. Los clientes sin negociación
+continúan usando `EOP…` y producto 2.
+
+Se decodifica la exportación real de fuerza en ambos formatos. Coinciden los
+quince pasos, las notas y los seis títulos de ejercicio. Pasan 270 pruebas de
+servidor, tipos estrictos y 55 pruebas de simulador por variante. Dev sirve
+`ciq-private-3` y devuelve 401 si falta credencial. El paquete privado 1.7 está
+firmado y verificado con el SDK. Quedan la carga en Garmin y la comprobación
+física de la copia con el título corto.
+
 ## Fuerza en Connect IQ y notas largas · 04/11/2026
 
 Una lista vacía con «Actualizado ahora» correspondía al vínculo activo de la

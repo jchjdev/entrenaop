@@ -197,3 +197,13 @@ function foregroundWaitsForRecentBackgroundImportWithoutWaitingForever(logger as
     var result=pending && !ciqSyncImportPending("EOP1000000144",now+1);
     ciqAutoRestore(saved); return result;
 }
+(:test)
+function readableNamesRequireARequestBeforeUsingTheNativeLibrary(logger as Test.Logger) as Boolean {
+    var saved=ciqAutoSave();
+    var name="RH4.1 Paralelas-GJDGZP";
+    var unrequested=!ciqSyncTrustsNative(name);
+    ciqSyncAttempt(name,"10000000-0000-4000-8000-000000000001",Time.now().value(),"segundo plano");
+    var result=unrequested && ciqSyncTrustsNative(name) && ciqNativeAlias("EOP1000000144") &&
+        !ciqNativeAlias("Fuerza-Á") && !ciqNativeAlias("Fuerza-GJDGZP-2") && !ciqNativeAlias("Fuerza-");
+    ciqAutoRestore(saved); return result;
+}

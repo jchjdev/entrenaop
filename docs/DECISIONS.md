@@ -1,5 +1,12 @@
 # Registro de decisiones vigentes
 
+**INT-021 · 04/11/2026 · Nombres legibles en Fuerza nativa.** Javier señala
+que los identificadores `EOP…` siguen apareciendo después de vincular su cuenta
+habitual. La Beta 1.7 pide un título nativo de hasta 22 bytes ASCII, con una
+abreviatura del título y un sufijo único por exportación. La lista de EntrenaOP
+conserva el título completo. La apertura sigue exigiendo coincidencia exacta y
+permiso vigente. La 1.6 conserva el formato anterior. [Detalle](DEVICE_GARMIN_TRAINING.md#nombres-legibles-en-fuerza--04112026).
+
 **INT-021 · 04/11/2026 · Fuerza Connect IQ y notas largas.** La beta consulta
 la cuenta vinculada al reloj, que en el incidente era la secundaria de pruebas.
 La cita de la cuenta habitual estaba entregada por Training API. Para evitar

@@ -54,7 +54,7 @@ class CiqView extends WatchUi.View {
     }
     private function request(action as String,callback as Method(code as Number,data as Communications.ContentType?) as Void) as Void {
         if (ciqProbeHeld()) { throw new Lang.InvalidValueException("Ensayo: sin red en primer plano"); }
-        var headers={"Content-Type"=>Communications.REQUEST_CONTENT_TYPE_JSON} as Dictionary;
+        var headers={"X-EntrenaOP-FIT-Name"=>"readable-1","Content-Type"=>Communications.REQUEST_CONTENT_TYPE_JSON} as Dictionary;
         if (_credential!=null) { headers["Authorization"]="Bearer "+_credential; }
         Communications.makeWebRequest("https://sxbxfjqgoddzhtcyhalw.supabase.co/functions/v1/garmin-ciq/watch",
             {"action"=>action},{:method=>Communications.HTTP_REQUEST_METHOD_POST,:headers=>headers,
@@ -128,7 +128,7 @@ class CiqView extends WatchUi.View {
                 ciqSyncAttempt(name,entry["id"] as String,Time.now().value(),"primer plano");
                 Communications.makeWebRequest("https://sxbxfjqgoddzhtcyhalw.supabase.co/functions/v1/garmin-ciq/fit/"+
                     Communications.encodeURL(entry["id"] as String),null,
-                    {:method=>Communications.HTTP_REQUEST_METHOD_GET,:headers=>{"Authorization"=>"Bearer "+_credential},
+                    {:method=>Communications.HTTP_REQUEST_METHOD_GET,:headers=>{"X-EntrenaOP-FIT-Name"=>"readable-1","Authorization"=>"Bearer "+_credential},
                      :responseType=>Communications.HTTP_RESPONSE_CONTENT_TYPE_FIT},method(:onFit));
             } catch(error) { fail("Descarga no confirmada"); } return;
         }

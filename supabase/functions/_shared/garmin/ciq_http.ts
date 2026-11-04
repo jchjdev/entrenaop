@@ -10,8 +10,8 @@ const tokenPattern = /^eopciq_[A-Za-z0-9_-]{43}$/;
 const codes = new Set(['invalid_code','rate_limited','device_limit','account_changed','access_required','link_not_found',
   'link_required','link_revoked','pair_expired','source_not_available','stale_prescription','too_many_sessions',
   'source_not_allowed','unsupported_prescription']);
-const headers = {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'authorization,apikey,x-client-info,content-type',
-  'Access-Control-Allow-Methods':'POST,GET,OPTIONS','Cache-Control':'no-store','X-EntrenaOP-Version':'ciq-private-2'};
+const headers = {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'authorization,apikey,x-client-info,content-type,x-entrenaop-fit-name',
+  'Access-Control-Allow-Methods':'POST,GET,OPTIONS','Cache-Control':'no-store','X-EntrenaOP-Version':'ciq-private-3'};
 const object = (v: unknown): Record<string, any> => {
   if (!v || typeof v !== 'object' || Array.isArray(v)) throw new HttpError(503,'ciq_unavailable');
   return v as Record<string, any>;
@@ -33,18 +33,25 @@ function credentials() {
     code:Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b=>alphabet[b&31]).join('')};
 }
 type Export = {id:string; serial:number; created_at:string; snapshot:Record<string,unknown>; revision?:string; scheduled_id?:string};
-export function ciqExport(raw: unknown): {entry:Export; name:string; bytes:Uint8Array} {
+function readableFitName(title: unknown, serial: number): string {
+  const suffix = serial.toString(36).toUpperCase();
+  // El fēnix ya reconoció una muestra de 22 bytes ASCII por su nombre exacto.
+  const maxPrefix = 22 - suffix.length - 1;
+  const ascii = typeof title === 'string'
+    ? title.normalize('NFD').replace(/\p{Mark}/gu, '').replace(/[^A-Za-z0-9.]+/g, ' ').trim()
+    : '';
+  const prefix = ascii.slice(0, maxPrefix).trimEnd() || 'Fuerza';
+  return `${prefix}-${suffix}`;
+}
+
+export function ciqExport(raw: unknown, readable = false): {entry:Export; name:string; bytes:Uint8Array} {
   const entry=object(raw) as Export;
   if (!uuid.test(entry.id) || !Number.isSafeInteger(entry.serial) || entry.serial<1 || entry.serial>0xfffffffe ||
       typeof entry.created_at!=='string') throw new HttpError(503,'ciq_unavailable');
   const snapshot=object(entry.snapshot);
-  // La comparación nativa es exacta: evitar títulos largos o normalizaciones.
-  // El nombre visible completo permanece en el manifiesto; este alias es único
-  // por exportación, ASCII y de hasta 13 bytes para todo el rango uint32 válido.
-  const name=`EOP${entry.serial}`;
-  // Otro producto distingue este formato del anterior aunque ya se haya importado
-  // el mismo serial/fecha. La identidad sigue siendo estable entre reintentos.
-  const bytes=garminStrengthFit(snapshot,{serialNumber:entry.serial,createdAt:new Date(entry.created_at),workoutName:name,productNumber:2});
+  const name = readable ? readableFitName(snapshot.name, entry.serial) : `EOP${entry.serial}`;
+  // Una copia con el nuevo nombre tiene identidad distinta, estable al reintentar.
+  const bytes=garminStrengthFit(snapshot,{serialNumber:entry.serial,createdAt:new Date(entry.created_at),workoutName:name,productNumber:readable ? 3 : 2});
   return {entry,name,bytes};
 }
 export async function handleGarminCiq(request:Request,c:GarminServerConfig,f:typeof fetch=fetch):Promise<Response> {
@@ -98,6 +105,7 @@ export async function handleGarminCiq(request:Request,c:GarminServerConfig,f:typ
     const token=authorization.startsWith('Bearer ')?authorization.slice(7):'';
     if(!tokenPattern.test(token)) throw new HttpError(401,'link_required');
     const token_hash=await ciqHash('token',token);
+    const readable = request.headers.get('X-EntrenaOP-FIT-Name') === 'readable-1';
     if(path.endsWith('/garmin-ciq/watch')) {
       if(body.action==='status'||body.action==='unlink') return json(await command(body.action,{token_hash}));
       if(body.action==='manifest'||body.action==='changes') {
@@ -106,7 +114,7 @@ export async function handleGarminCiq(request:Request,c:GarminServerConfig,f:typ
         const entries=[]; let blocked=Number(result.blocked)||0;
         for(const raw of result.entries) {
           try {
-            const {entry,name}=ciqExport(raw);
+            const {entry,name}=ciqExport(raw,readable);
             entries.push({id:entry.id,scheduled_id:entry.scheduled_id,revision:entry.revision,name:entry.snapshot.name,
               date:entry.snapshot.date,fit_name:name});
           } catch(error) {
@@ -122,7 +130,7 @@ export async function handleGarminCiq(request:Request,c:GarminServerConfig,f:typ
     }
     const match=path.match(/\/garmin-ciq\/fit\/([0-9a-f-]{36})$/i);
     if(!match||!uuid.test(match[1])||request.method!=='GET') throw new HttpError(404,'not_found');
-    const {bytes}=ciqExport(await command('download',{token_hash,id:match[1]}));
+    const {bytes}=ciqExport(await command('download',{token_hash,id:match[1]}),readable);
     return new Response(new Uint8Array(bytes),{headers:{...headers,'Content-Type':'application/vnd.ant.fit',
       'Content-Disposition':`attachment; filename="entrenaop-${match[1]}.fit"`}});
   } catch(error) {

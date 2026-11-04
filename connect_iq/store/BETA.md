@@ -1,5 +1,12 @@
 # EntrenaOP Beta · preparación de Connect IQ Store
 
+**1.7.0 preparada · 04/11/2026:** título legible con sufijo único en Fuerza
+nativa y título completo en la lista de EntrenaOP. 55 pruebas por variante.
+Paquete `connect_iq/bin/entrenaop-beta.iq`, 59.341 bytes, SHA-256
+`7ce8776e22b7adde7ff7a95aa6bae4572c252385ce45e65c5425b34065217a41`.
+Firma verificada con el SDK y la clave existente. Subir como actualización de
+la ficha privada existente. La carga y la instalación física están pendientes.
+
 **1.6.0 instalada; prueba automática en curso · INT-021:** búsqueda exacta de alias previamente solicitado
 en biblioteca general si no figura en la propia; no implica propiedad ni borra
 contenido. Descarga automática cada 15 min tras lista válida, desactivable, un

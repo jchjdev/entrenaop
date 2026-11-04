@@ -28,7 +28,7 @@ class CiqBackground extends System.ServiceDelegate {
         try {
             Communications.makeWebRequest("https://sxbxfjqgoddzhtcyhalw.supabase.co/functions/v1/garmin-ciq/watch",
                 {"action"=>"changes"},{:method=>Communications.HTTP_REQUEST_METHOD_POST,
-                :headers=>{"Content-Type"=>Communications.REQUEST_CONTENT_TYPE_JSON,"Authorization"=>"Bearer "+credential},
+                :headers=>{"X-EntrenaOP-FIT-Name"=>"readable-1","Content-Type"=>Communications.REQUEST_CONTENT_TYPE_JSON,"Authorization"=>"Bearer "+credential},
                 :responseType=>Communications.HTTP_RESPONSE_CONTENT_TYPE_JSON},method(:onChanges));
         } catch(error) { recordState("Error al solicitar"); finish(); }
     }

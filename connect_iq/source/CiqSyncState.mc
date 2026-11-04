@@ -60,9 +60,21 @@ function ciqSyncDue(record as Dictionary?,now as Number) as Boolean {
 
 (:background)
 function ciqNativeAlias(name as String) as Boolean {
-    if (name.length()!=13 || !(name.substring(0,3) as String).equals("EOP")) { return false; }
-    for (var i=3;i<name.length();i++) {
-        if ("0123456789".find(name.substring(i,i+1) as String)==null) { return false; }
+    var separator=name.find("-");
+    if (separator==null) {
+        if (name.length()<4 || name.length()>13 || !(name.substring(0,3) as String).equals("EOP")) { return false; }
+        return ciqAliasCharacters(name,3,name.length(),"0123456789");
+    }
+    var suffixLength=name.length()-separator-1;
+    return name.length()<=22 && separator>0 && suffixLength>=1 && suffixLength<=7 &&
+        ciqAliasCharacters(name,0,separator,"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 .") &&
+        ciqAliasCharacters(name,separator+1,name.length(),"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+}
+
+(:background)
+function ciqAliasCharacters(name as String,start as Number,end as Number,alphabet as String) as Boolean {
+    for (var i=start;i<end;i++) {
+        if (alphabet.find(name.substring(i,i+1) as String)==null) { return false; }
     }
     return true;
 }
