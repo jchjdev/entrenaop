@@ -1,5 +1,98 @@
 # Programa adaptativo
 
+## Diagnóstico de estancamiento · 04/11/2026
+
+### Revisión de las fuentes y las sesiones aportadas
+
+- **Helms, Valdez y Morgan, _The Muscle & Strength Pyramid: Entrenamiento_,
+  2.ª edición, pp. 118, 129–131, 135–137, 141–143 y 258.** El capítulo separa
+  sobrecarga y adaptación, propone valorar el rendimiento con una medida
+  pertinente al objetivo y revisa técnica, esfuerzo y recuperación antes de
+  variar el volumen. Su ejemplo de 8–12 semanas trata de fuerza en un levantador
+  avanzado. La doble progresión y las descargas ofrecen opciones de diseño,
+  con condiciones propias de sus ejemplos.
+- **Coburn y Malek, _Manual NSCA: Fundamentos del entrenamiento personal_,
+  2.ª edición, cap. 10 (pp. 403 y 414 del PDF) y cap. 15 (pp. 748–751 del PDF).**
+  La reevaluación distingue seguimiento durante el programa y logro del
+  objetivo. La selección y administración de la prueba condicionan la
+  comparación. El ejemplo de progresión de carga y la regla 2-en-2 tienen
+  supuestos distintos de una prueba cronometrada de flexiones.
+- **Banco V2 de Javier.** `FLEX-E01` acredita trabajo repetido submáximo.
+  `FLEX-SP01/SP02` aportan práctica de cadencia y repeticiones válidas dentro
+  de una ventana, y `FLEX-X01` representa el control completo. La banca es
+  apoyo. Cada uno responde una pregunta distinta. En carrera, `3 × 800 m`
+  y el 2 km fraccionado conservan la puerta de tolerancia específica. Una
+  marca estable por sí sola no habilita esos formatos.
+  [Banco de fuerza](references/2026-10-04_banco_bloques_v2_propuesta_usuario.txt#L321),
+  [catálogo candidato de 2 km](CATALOGO_CANDIDATO_CARRERA_2K.md).
+
+El ensayo de Plotkin comparó progresar en carga o repeticiones en 43 personas
+con experiencia de fuerza del tren inferior durante ocho semanas. Ambas vías
+produjeron adaptaciones. Sirve para contemplar distintas variables de
+progresión, con transferencia por comprobar en flexiones de dos minutos.
+Kotarsky comparó flexiones progresivas y banca durante cuatro semanas en
+23 hombres y observó mayor mejora en su progresión de flexiones con el grupo
+específico. El desenlace del ensayo fue una progresión de variantes, distinta
+de las repeticiones válidas en 120 segundos.
+[Plotkin et al.](https://pubmed.ncbi.nlm.nih.gov/36199287/),
+[Kotarsky et al.](https://pubmed.ncbi.nlm.nih.gov/29466268/).
+
+El ensayo de Coleman comparó interrumpir la fuerza una semana a mitad de un
+programa de nueve semanas. El resultado no favoreció esa interrupción para
+fuerza de tren inferior. Una descarga parcial ajustada a dificultad es otra
+intervención. En carrera, Hov comparó tres formatos durante ocho semanas en
+hombres entrenados y midió 3 km. Justifica evaluar dosis y propósito del
+formato completo; la receta y el umbral para cambiar de estímulo en el 2 km
+de EntrenaOP requieren su propia validación.
+[Coleman et al.](https://pubmed.ncbi.nlm.nih.gov/38274324/),
+[Hov et al.](https://pubmed.ncbi.nlm.nih.gov/36314990/).
+
+### Línea base reproducida en Dev
+
+El [diagnóstico SQL](audits/estancamiento_base_2026_11_04.sql) ejecuta 15 casos
+ficticios sobre las funciones instaladas, en transacciones de solo lectura
+con `ROLLBACK`. Cubre la propuesta de dosis, la tendencia de marcas y la
+elección informativa de un control. Los casos evalúan la política y no
+simulan una publicación ni predicen una mejora fisiológica.
+
+| Caso | Decisión observada |
+| --- | --- |
+| Flexiones, misma dosis `20 + 20` tolerada en dos días | Pauta `21 + 20`, dos exposiciones. |
+| Misma dosis de flexiones con esfuerzo desconocido o interrupción por tiempo | Mantiene `20 + 20`, dos exposiciones. Conserva señales distintas. |
+| Dificultad repetida al hacer las flexiones | Reduce a `17 + 17` y una exposición. |
+| Carrera, dos `7:58` o tres con uno de otro protocolo | Tendencia desconocida. |
+| Carrera, tres `7:58` del mismo protocolo, separados catorce días | Tendencia estable. Sin historial de entrenamiento, la decisión sigue siendo de entrada. |
+| Carrera, tres marcas de `7:58` a `7:52` | Tendencia de mejora. Una mejora exacta del 1 % queda dentro de la banda estable actual. |
+| Seis días nuevos tolerados con dosis repetida y firma aún sin comprobar | El selector considera un control de transferencia. La colocación depende del coordinador. |
+| Misma firma ya comprobada, evidencia nueva insuficiente, objetivo acreditado, examen cercano o señal adversa | El selector descarta o aplaza el control según el motivo. |
+
+Rendimiento mide la repetición de la **pauta** con los valores objetivo de
+las series. Ese indicador aporta una pregunta de transferencia, no una
+tendencia de la marca de examen. Carrera ya separa tendencia de marcas y
+respuesta a las sesiones, y puede cambiar la prioridad cuando la evidencia de
+una familia mejora y la del 2 km queda estable. Conviene aprovechar esas
+fronteras antes de plantear un algoritmo general de estancamiento. Los
+umbrales existentes sirven de línea base y no se validan clínicamente aquí.
+
+### Propuesta a revisar
+
+Probar primero **un diagnóstico explicable para flexiones en dos minutos**.
+Usar la marca compatible del protocolo, la práctica específica, la dosis
+tolerada y los motivos de interrupción ya disponibles. La salida distingue
+evidencia insuficiente, dificultad o recuperación pendiente, objetivo ya
+acreditado y transferencia por revisar. Si hay varias marcas comparables
+estables y mejora el trabajo submáximo, presentar esa combinación como una
+pregunta sobre transferencia. Si ambos permanecen estables, explicitar qué
+restricción se ha observado y qué dato falta antes de atribuir una causa.
+
+La primera comparación sería en modo diagnóstico, sobre las mismas entradas
+y con la pauta vigente como referencia. Los casos mínimos son marca estable
+con práctica específica mejorando, marca ausente con trabajo repetido, y
+dificultad reciente aunque la marca se mantenga. Las ventanas y la cantidad
+de evidencia necesaria quedan pendientes de acordar por protocolo. Cualquier
+cambio de dosis, formato de sesión o frecuencia de control requiere su
+propuesta deportiva y validación propias.
+
 ## Evidencia de rendimiento del mismo día · STR-042
 
 La decisión de rendimiento evalúa las ejecuciones antes de elegir la señal de

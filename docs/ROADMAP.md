@@ -1,5 +1,13 @@
 # Roadmap de EntrenaOP
 
+**Estancamiento · línea base · 04/11/2026.** Revisados los capítulos pertinentes
+de Helms y NSCA, el banco de Javier y estudios originales de fuerza y carrera.
+Quince casos de solo lectura en Dev contrastan pauta tolerada, datos ausentes,
+dificultad, tendencia de marcas y decisión de medir. El siguiente paso propuesto
+es comparar un diagnóstico para flexiones en dos minutos con la política vigente,
+antes de decidir si procede modificar la prescripción.
+[Fuentes, resultados y casos reproducibles](PROGRAMA_ADAPTATIVO.md#diagnóstico-de-estancamiento--04112026).
+
 **STR-042 · Evidencia de rendimiento del mismo día · 04/11/2026.** La
 regresión de servidor activa la preparación, revisa e inicia las citas por
 los RPC de la app y comprueba su continuación automática. Ambos órdenes de
