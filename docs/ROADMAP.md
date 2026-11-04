@@ -1,5 +1,15 @@
 # Roadmap de EntrenaOP
 
+**PLAN-028 · Orden de la evidencia de carrera · 04/11/2026.** Reproducido
+por RPC el cambio de `6×200` a `8×200` al invertir el UUID de dos
+ejecuciones del mismo día. Dev ordena ahora por el instante observado con
+la migración `20261104112547`. Pasan la publicación y la tendencia al
+permutar el historial, las recetas de `5×400`, `4×600` y `3×800` m,
+y el control por días distintos. Validación con diez baterías SQL,
+78 trayectorias y 1.573 semanas sintéticas, análisis de Flutter y
+1.833 pruebas de raíz con una omisión previa. Versión `1.7.3+18`.
+[Contrato y regresiones](MOTOR_CARRERA_2K_V6.md#orden-de-ejecuciones-del-mismo-día--plan-028).
+
 **PLAN-027 · Días de práctica para el control de 2 km · 04/11/2026.** En Dev,
 cuatro salidas el mismo día se contaban como cuatro y podían publicar un control.
 Con la migración `20261104103530`, cuentan como un día y se publica la semana
@@ -17,8 +27,8 @@ y publicación de las 27 propuestas. Las 18 listas se publicaron con cuentas
 ficticias y `ROLLBACK`. Se reprodujo un control de 2 km publicado tras contar
 cuatro sesiones del mismo día como cuatro días, dos desempates que alteran
 la prescripción de carrera, una discrepancia al progresar en agilidad y avisos
-contradictorios al faltar marca. El conteo se corrige en PLAN-027. Queda pendiente
-reproducir por RPC los empates de carrera que alteran la prescripción.
+contradictorios al faltar marca. El conteo se corrige en PLAN-027 y el orden
+de las ejecuciones de carrera en PLAN-028.
 [Informe y reproducciones](audits/AUDITORIA_ADAPTATIVA_2026_11_04.md).
 
 **Estancamiento · línea base · 04/11/2026.** Revisados los capítulos pertinentes
@@ -26,8 +36,9 @@ de Helms y NSCA, el banco de Javier y estudios originales de fuerza y carrera.
 Quince casos de solo lectura en Dev contrastan pauta tolerada, datos ausentes,
 dificultad, tendencia de marcas y decisión de medir. Cuatro escenarios adicionales
 con el mismo 2 km contrastan ritmo de intervalos, esfuerzo y marca. Evaluar
-los cambios de esfuerzo como señal de seguimiento queda supeditado a corregir
-los hallazgos de evidencia de carrera de la auditoría posterior.
+los cambios de esfuerzo como señal de seguimiento es el siguiente bloque de
+carrera. La revisión comparará sesiones de Javier con condiciones equivalentes
+y distinguirá tolerancia, dificultad y cambio de marca.
 [Línea base](PROGRAMA_ADAPTATIVO.md#diagnóstico-de-estancamiento--04112026),
 [evidencia y escenarios de 2 km](MOTOR_CARRERA_2K_V6.md#resistencia-y-estancamiento-en-2-km--04112026).
 

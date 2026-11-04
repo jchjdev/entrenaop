@@ -14,7 +14,7 @@ begin
 end $$;
 
 do $$ declare wk date:='2026-10-19'; a jsonb; s jsonb; e jsonb; h jsonb:='[]';
- info jsonb; input jsonb; p jsonb; previous jsonb; q jsonb; seed_step int; i int; normalized jsonb;
+ info jsonb; input jsonb; p jsonb; previous jsonb; q jsonb; format record; i int; normalized jsonb;
 begin
  s:=public.running_session_v2('S',0,595,40);
  e:=pg_temp.format_execution(s);
@@ -55,8 +55,8 @@ begin
 
  -- Los formatos existentes de 400, 600 y 800 son alcanzables con sus requisitos;
  -- no es necesario insertarlos a mano ni abrirlos a un principiante.
- foreach seed_step in array array[2,4,5] loop
-  s:=public.running_session_v2('S',seed_step,577,50);h:='[]';
+ for format in select * from (values (2,5,400),(4,4,600),(5,3,800)) as f(seed_step,reps,meters) loop
+  s:=public.running_session_v2('S',format.seed_step,577,50);h:='[]';
   for i in 1..4 loop
    h:=h||jsonb_build_array(jsonb_build_object('date',wk-35+i*7,'session',s,'execution',pg_temp.format_execution(s)));
   end loop;
@@ -64,7 +64,11 @@ begin
    jsonb_build_object('date',wk-3,'session',a,'execution',jsonb_set(pg_temp.format_execution(a),'{rpe}','4')));
   p:=public.running_plan_v6(input||jsonb_build_object('history',h,'previous',previous||'{"normal_budget":120}'::jsonb));
   select value into q from jsonb_array_elements(p->'sessions') where value->>'family'='S';
-  if q is null or (q->>'step')::int<>seed_step+1 then raise exception 'Formato conocido inaccesible: %/%',seed_step,p; end if;
+  if q is null or (q->>'step')::int<>format.seed_step+1
+    or (select array_agg((seg->>'meters')::int) from jsonb_array_elements(q->'segments') seg
+        where seg->>'role'='work') is distinct from array_fill(format.meters,array[format.reps]) then
+   raise exception 'No se prescribe %×% m con evidencia compatible: %',format.reps,format.meters,q;
+  end if;
  end loop;
 
  -- Tres mínimos de 25 min no deben expulsar un T conocido que necesita 28.

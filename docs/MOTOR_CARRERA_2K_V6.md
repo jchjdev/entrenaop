@@ -160,6 +160,40 @@ probar el diagnóstico sobre entrenamientos comparables sin convertir esa señal
 en cambios automáticos de dosis ni en una nueva marca.
 [Nuuttila et al.](https://pubmed.ncbi.nlm.nih.gov/39244198/).
 
+## Orden de ejecuciones del mismo día · PLAN-028
+
+El día local delimita las ventanas de historial. Dentro del día, v6 ordena
+por el instante observado. Los registros sin hora se sitúan antes de los
+que la tienen. En un empate de hora o si falta en ambos, el motor compara
+fecha programada, receta y datos deportivos de la ejecución. Ese desempate
+es reproducible y no acredita una hora real. Ni el UUID ni la hora de
+recepción deciden qué ejecución se considera posterior.
+
+La revisión `running_history_sequence_v1` queda en la evidencia de las nuevas
+decisiones. El mismo orden alimenta la dosis compatible, la selección de
+observaciones y las dos parejas de la tendencia por familia. Se conservan
+las reglas de progresión, el catálogo y las publicaciones existentes.
+
+- [Regresión por RPC](../supabase/tests/running_same_day_publication.sql).
+  Compara las recetas materializadas al intercambiar el orden de los UUID con
+  idénticas realizaciones y recepciones. Antes se publicaban `6×200` y
+  `8×200`. Ahora ambas publican `6×200` si la dificultad fue posterior.
+  Invertir solo las horas de realización permite `8×200`. El historial de
+  partida y los inicios offline son sintéticos. La vista previa, el registro
+  de resultados, el cierre y la publicación se ejercitan por los RPC.
+- [Tendencia e histórico sin hora](../supabase/tests/running_same_day_evidence_v6.sql).
+  La tendencia y la propuesta conservan el resultado al permutar el historial
+  y los metadatos de recepción. Cambiar la cronología observada sí puede
+  invertir la tendencia.
+- [Recetas específicas](../supabase/tests/running_format_progression_v6.sql).
+  Los perfiles con práctica compatible reciben `5×400`, `4×600` y
+  `3×800` m. La prueba verifica las distancias y el número de repeticiones.
+
+La [revisión de estudios sobre 2 km y oposiciones](audits/EVIDENCIA_CARRERA_2KM_2026_11_04.md)
+separa los resultados en aspirantes y militares de los obtenidos en otras
+distancias o poblaciones. Se registra como base para el análisis deportivo
+posterior. Esta corrección se limita a la secuencia de registros.
+
 ## Verificación
 
 Instalado y verificado en desarrollo el 16/10/2026:

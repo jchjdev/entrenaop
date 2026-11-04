@@ -1,5 +1,13 @@
 # Registro de decisiones vigentes
 
+**PLAN-028 · Orden de la evidencia de carrera del mismo día · 04/11/2026.**
+Javier autoriza corregir el empate que alteraba la semana publicada. El motor
+v6 conserva el día local para sus ventanas y usa el instante observado para
+ordenar las ejecuciones del mismo día. Si falta la hora o coincide, el
+desempate usa la fecha programada y el contenido deportivo, independientemente
+del UUID y del orden de recepción.
+[Contrato y regresiones](MOTOR_CARRERA_2K_V6.md#orden-de-ejecuciones-del-mismo-día--plan-028).
+
 **PLAN-027 · Días de práctica para el control de 2 km · 04/11/2026.** Javier
 autoriza corregir el conteo del selector de controles. La práctica tolerada
 se acredita por fecha local distinta de realización. Cuatro salidas del mismo
