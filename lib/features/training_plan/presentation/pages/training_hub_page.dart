@@ -183,6 +183,7 @@ class _TrainingHubPageState extends State<TrainingHubPage>
       ),
       body: SafeArea(
         top: false,
+        bottom: false,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -383,7 +384,12 @@ class _TrainingPaneState extends State<_TrainingPane>
       child: ListView(
         key: PageStorageKey(widget.storageKey),
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+        padding: EdgeInsets.fromLTRB(
+          20,
+          20,
+          20,
+          32 + MediaQuery.paddingOf(context).bottom,
+        ),
         children: [
           Center(
             child: ConstrainedBox(

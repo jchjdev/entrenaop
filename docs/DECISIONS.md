@@ -3,6 +3,8 @@
 **Pulso en la navegación del deportista · 04/11/2026.** Javier elige Pulso
 para móvil y confirma «Entrena» en el centro con la silueta del OP del
 logotipo original. La selección abre la rama de entrenamiento existente.
+Javier pide que se vea el contenido alrededor de la barra. Las cinco
+portadas desplazan su contenido detrás de Pulso y el botón pierde su reborde.
 [Diseño y alcance](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#barra-pulso-del-deportista--04112026).
 
 **Dominadas de 0 a 25 · ensayo de laboratorio · 04/11/2026.** Javier pide

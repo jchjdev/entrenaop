@@ -191,7 +191,12 @@ class _LibraryGroup extends StatelessWidget {
             // vertical si su contenido legible supera realmente la pestaña.
             hasScrollBody: false,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+              padding: EdgeInsets.fromLTRB(
+                20,
+                12,
+                20,
+                12 + MediaQuery.paddingOf(context).bottom,
+              ),
               child: vertical
                   ? Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,

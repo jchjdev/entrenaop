@@ -21,6 +21,12 @@ Las 55 comprobaciones dirigidas incluyen rutas y capturas a 320 y 390 px
 con texto normal y ampliado. Se comprueba que la pieza central abre Entrena
 al tocar directamente el OP y que Biblioteca conserva su rama.
 
+En `1.14.1+33`, el contenido de las cinco portadas se desplaza por detrás de
+la barra mate. El margen inferior forma parte del desplazamiento para que la
+última acción se pueda llevar por encima de Pulso. El OP sobresale con su
+contorno naranja. Los detalles dentro de cada sección reservan el pie de
+pantalla para sus acciones.
+
 ## Preparación, configuración y consulta · 03/11/2026
 
 Implementación UI-067, autorizada tras la [revisión del vídeo y sus fronteras](audits/preparation-flow-review-2026-11-03.md).

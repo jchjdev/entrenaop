@@ -51,7 +51,12 @@ class _CatalogState extends State<_Catalog> with AutomaticKeepAliveClientMixin {
     return BlocBuilder<GuidedCatalogCubit, GuidedCatalogState>(
       builder: (context, state) => ListView(
         key: const PageStorageKey('guided-program-catalog'),
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+        padding: EdgeInsets.fromLTRB(
+          20,
+          12,
+          20,
+          12 + MediaQuery.paddingOf(context).bottom,
+        ),
         children: [
           Row(
             children: [

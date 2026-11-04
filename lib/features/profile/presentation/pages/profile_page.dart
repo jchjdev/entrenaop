@@ -174,8 +174,14 @@ class ProfilePage extends StatelessWidget {
           ],
         ),
         body: SafeArea(
+          bottom: false,
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 36),
+            padding: EdgeInsets.fromLTRB(
+              20,
+              8,
+              20,
+              36 + MediaQuery.paddingOf(context).bottom,
+            ),
             children: [
               Center(
                 child: ConstrainedBox(

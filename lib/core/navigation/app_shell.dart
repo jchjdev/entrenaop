@@ -158,6 +158,11 @@ class AppShell extends StatelessWidget {
 
         return frame(
           Scaffold(
+            // Las portadas reservan el espacio de Pulso dentro del scroll.
+            // Los detalles pueden tener acciones fijas al pie de la pantalla.
+            extendBody: _pulsoOverlayRoutes.contains(
+              GoRouterState.of(context).uri.path,
+            ),
             body: navigationShell,
             bottomNavigationBar: _PulsoNavigationBar(
               selectedIndex: mobileIndices.indexOf(
@@ -173,6 +178,14 @@ class AppShell extends StatelessWidget {
     );
   }
 }
+
+const _pulsoOverlayRoutes = {
+  '/home',
+  '/library',
+  '/plan',
+  '/my-trainer',
+  '/profile',
+};
 
 class _PulsoNavigationBar extends StatelessWidget {
   const _PulsoNavigationBar({
@@ -278,12 +291,6 @@ class _PulsoMark extends StatelessWidget {
       decoration: BoxDecoration(
         color: EntrenaTheme.brandOrange,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            spreadRadius: 4,
-          ),
-        ],
       ),
       child: ExcludeSemantics(
         child: Image.asset(

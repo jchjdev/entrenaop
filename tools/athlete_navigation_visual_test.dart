@@ -20,6 +20,7 @@ import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_
 import 'package:entrenaop/features/profile/data/profile_birth_date_repository.dart';
 import 'package:entrenaop/features/profile/data/profile_name_repository.dart';
 import 'package:entrenaop/features/profile/presentation/pages/profile_page.dart';
+import 'package:entrenaop/features/library/presentation/library_hub_page.dart';
 import 'package:entrenaop/features/profile/presentation/pages/edit_profile_page.dart';
 import 'package:entrenaop/features/profile/presentation/pages/profile_settings_page.dart';
 import 'package:entrenaop/features/training_plan/domain/entities/training_context.dart';
@@ -56,6 +57,8 @@ void main() {
     ('entrenar-preparaciones', 390.0, 1.0, 2, true, '/plan/preparations'),
     ('entrenar-disponibilidad', 390.0, 1.0, 2, true, '/plan?tab=availability'),
     ('entrenar-accesible', 320.0, 2.0, 2, true, '/plan?tab=availability'),
+    ('biblioteca', 390.0, 1.0, 2, true, '/library'),
+    ('biblioteca-programas', 390.0, 1.0, 2, true, '/library?tab=programs'),
     ('preparador', 390.0, 1.0, 2, true, '/my-trainer'),
     ('sin-preparador', 390.0, 1.0, 0, false, '/my-trainer'),
     ('historial', 390.0, 1.0, 0, true, '/my-trainer'),
@@ -71,6 +74,8 @@ void main() {
     testWidgets('captura $screen', (tester) async {
       tester.view.physicalSize = Size(width, 900);
       tester.view.devicePixelRatio = 1;
+      tester.view.padding = const FakeViewPadding(bottom: 34);
+      tester.view.viewPadding = const FakeViewPadding(bottom: 34);
       addTearDown(tester.view.reset);
       if (!fontsLoaded) {
         await tester.runAsync(() async {
@@ -180,7 +185,11 @@ void main() {
                 routes: [
                   GoRoute(
                     path: '/library',
-                    builder: (_, _) => const Scaffold(),
+                    builder: (_, state) => LibraryHubPage(
+                      guided: guided,
+                      initialTab:
+                          state.uri.queryParameters['tab'] ?? 'sessions',
+                    ),
                   ),
                 ],
               ),
@@ -309,6 +318,33 @@ void main() {
       expect(find.byTooltip('Mi perfil'), findsNothing);
       expect(find.byTooltip('$unread avisos sin leer'), findsNothing);
       await _capture(tester, boundary, screen);
+      final lastAction = switch (screen) {
+        'inicio' || 'inicio-accesible' => 'Editar',
+        'entrenar-disponibilidad' ||
+        'entrenar-accesible' => 'Editar disponibilidad y material',
+        'biblioteca' => 'Crear sesión',
+        'biblioteca-programas' => 'Fuerza básica',
+        'preparador' => 'Vínculo e historial con mi preparador',
+        'perfil' => 'Dispositivos y conexiones',
+        _ => null,
+      };
+      if (lastAction != null) {
+        final nav = tester.getRect(find.byType(NavigationBar));
+        final scrollable = find
+            .byWidgetPredicate(
+              (widget) =>
+                  widget is Scrollable &&
+                  widget.axisDirection == AxisDirection.down,
+            )
+            .first;
+        expect(tester.getRect(scrollable).bottom, greaterThan(nav.bottom));
+        final position = tester.state<ScrollableState>(scrollable).position;
+        position.jumpTo(position.maxScrollExtent);
+        await tester.pumpAndSettle();
+        final action = find.text(lastAction);
+        expect(action.hitTestable(), findsOneWidget);
+        expect(tester.getBottomLeft(action).dy, lessThan(nav.top));
+      }
       if (screen == 'perfil-profesional-accesible') {
         await tester.ensureVisible(find.text('Entrar como preparador'));
         await tester.pumpAndSettle();
@@ -463,6 +499,9 @@ class _BirthDate implements ProfileBirthDateRepository {
 }
 
 class _Guided implements GuidedProgramRepository {
+  @override
+  Future<List<GuidedProgramCategory>> categories() async => [];
+
   @override
   Future<GuidedCatalogPage> catalog({
     String query = '',
