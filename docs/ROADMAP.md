@@ -1,5 +1,14 @@
 # Roadmap de EntrenaOP
 
+**Preparación de tiendas · 05/11/2026:** Javier pospone la subida hasta cerrar
+sesiones, programas y preparaciones y pide preparar el terreno. Google Play
+es la primera opción preferida. Se registra una secuencia de cierre deportivo,
+requisitos de salida y candidata verificable; no se publican binarios ni se activan
+compras ni se configura producción. La revisión localizada distingue lo ya
+implementado de la aceptación física y de las compras nativas/eliminación de
+cuenta pendientes. No cierra ningún bloque deportivo ni cambia sus prioridades.
+[Plan de preparación](STORE_LAUNCH.md).
+
 **ADMIN · desplegables FAS/Tropa · 05/11/2026:** 0.7.1+13 publicada y verificada en Dev. Se reproduce y corrige la colisión entre estado de plegado y desplazamiento que causaba bloques grises al mostrar condiciones. Claves independientes para objetivos, textos, historial, comparación y simulación; 408 pruebas ADMIN correctas, análisis/compilación y recorrido autenticado en Chrome sin errores nuevos. Sin cambios deportivos ni de servidor. [Causa y evidencia](audits/BUILTIN_ASSESSMENT_AUTHORING_2026_11_05.md#regresión-al-desplegar-condiciones--05112026).
 
 **Calculadora FAS · 05/11/2026 · edad libre, app 1.18.0+38:** edad editable

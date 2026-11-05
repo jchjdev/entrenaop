@@ -1,5 +1,14 @@
 # Registro de decisiones vigentes
 
+**Tiendas · preparar sin desplegar · 05/11/2026.** Javier aclara que no quiere
+subir la app todavía: quiere preparar la salida para cuando estén cerrados
+sesiones, programas y preparaciones. Google Play es la primera opción preferida.
+Se mantiene la distribución privada actual; no se dan de alta cuentas de pago
+ni se envían binarios ni se activa producción o cobros por esta preparación.
+La lista de cierre distingue núcleo deportivo, aceptación física y requisitos
+de lanzamiento, sin convertir las ampliaciones futuras en bloqueos automáticos.
+[Preparación y límites](STORE_LAUNCH.md).
+
 **Edad libre en la calculadora FAS · 05/11/2026.** Javier confirma conservar
 el diseño actual y permitir simular otra edad con entrada manual o deslizador,
 sin modificar el perfil ni registrar automáticamente. La edad del perfil solo
