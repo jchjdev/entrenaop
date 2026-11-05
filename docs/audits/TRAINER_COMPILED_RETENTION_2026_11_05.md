@@ -20,8 +20,8 @@ No reintenta DELETE de resultado incierto. Se excluyen ADMIN, copias, expirados,
 nombres ajenos y revisiones que no coinciden con la ejecución de main.
 
 32 pruebas de herramientas Trainer y 48 ADMIN correctas antes de activar, incluido
-el aislamiento entre familias y la protección de la versión publicada. La ejecución
-real y su inventario final se acreditan al cerrar la recuperación.
+el aislamiento entre familias y la protección de la versión publicada. La
+evidencia de ejecución real figura a continuación.
 
 
 ## Aplicación acreditada

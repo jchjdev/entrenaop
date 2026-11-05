@@ -69,10 +69,22 @@ vacía en los intentos anteriores. Hay dos revisiones semilla publicadas, doce
 vínculos de preparaciones y cero borradores/fixtures persistidos por el ensayo.
 
 Los asesores de seguridad no añaden errores ni advertencias: aparecen únicamente
-dos INFO RLS-sin-política para las tablas privadas creation_requests y events,
+dos [INFO RLS-sin-política](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy)
+para las tablas privadas creation_requests y events,
 intencionalmente cerradas y sin grants de acceso directo al cliente. Las funciones
 privadas validan permiso/AAL2 y exponen solo las operaciones autorizadas.
 
-La versión publicada HTTPS y la copia posterior al esquema nuevo se acreditan
-tras el despliegue. La aceptación física en iPhone requiere instalar el nuevo
-cliente; el ensayo web/servidor no acredita instalación nativa en ese dispositivo.
+La copia posterior 42092600721-1 queda verified: restauración aislada del
+esquema nuevo a las 19:24:19 UTC, paquete cifrado de 4.280.331 bytes y recibo
+a las 19:24:24 UTC; disponibilidad hasta el 12/11 a las 19:24:21 UTC. La recogida
+de errores de servicios también pasa.
+
+ADMIN Dev 42091933340 completa validación, publicación y retención. La revisión
+f3d8e03e69070de28b1b4eeee4f77b1fbef87575 queda activa en admin.entrenaop.es como
+0.7.0+12, con sourceTreeDirty=false y destino sxbxfjqgoddzhtcyhalw. Una consulta
+HTTPS independiente comprueba build-info, version.json, base del índice, hash
+SHA-256 de main.dart.js, X-Frame-Options DENY y Cache-Control no-store. CI repite
+1.872 pruebas raíz y 406 ADMIN, análisis limpios y compilación. Trainer Dev
+42091933173 y ensayo de Salud 42091933283 también terminan correctamente.
+
+La aceptación física en iPhone requiere instalar el nuevo cliente; el ensayo web/servidor no acredita instalación nativa en ese dispositivo.

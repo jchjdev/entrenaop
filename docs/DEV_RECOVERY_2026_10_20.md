@@ -334,4 +334,10 @@ Hostinger ni reintentos de DELETE. No altera la regla ADMIN existente.
 [Arreglo de extensiones](audits/DEV_BACKUP_EXTENSIONS_2026_11_05.md) y
 [autorización/alcance de retención](audits/TRAINER_COMPILED_RETENTION_2026_11_05.md).
 El nuevo esquema builtin_assessment_private se incluye en copia y recuperación.
-La limpieza aplicada y la copia almacenada se acreditan al cerrar el bloque.
+La limpieza se acredita en Trainer Dev 42088472822: 107 ZIP retirados al avanzar
+la ventana con la nueva compilación; quedan cinco Trainer y cinco ADMIN,
+158.250.328 bytes. La copia previa 42085037509-3 se restaura y conserva antes
+de aplicar la migración. La posterior 42092600721-1 también queda verified:
+restauración aislada del esquema nuevo a las 19:24:19 UTC, 4.280.331 bytes
+cifrados, recibo a las 19:24:24 UTC y disponibilidad hasta el 12/11 a las
+19:24:21 UTC. No se restauran datos sobre Dev ni sobre producción.

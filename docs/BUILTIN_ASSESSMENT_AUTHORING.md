@@ -78,7 +78,17 @@ Dev con ROLLBACK, incluyendo los negativos de permisos/contexto, sin persistir
 revisiones ni intentos de ensayo. Un primer ensayo detectó una ambigüedad de
 alias al publicar Tropa; corregida antes de volver a ensayar el contrato completo.
 
-La migración se aplica solo en Dev: 309 coincidentes, contrato instalado y dos pruebas SQL anteriores correctas con ROLLBACK; las huellas de los 15 intentos originales permanecen iguales. La copia previa queda restaurada/cifrada y conservada como verified. La publicación del subdominio y la copia del esquema nuevo se acreditan al cerrar el bloque.
-La calculadora personal ofrece Actualizar baremo ante la señal builtin_reference_changed, conserva las marcas y recalcula únicamente tras confirmar esa actualización; un fallo de recarga ofrece reintento. La verificación de funciones de autoría no acredita revisión de una nueva norma.
+La migración se aplica solo en Dev: 309 coincidentes, contrato instalado y dos
+pruebas SQL anteriores correctas con ROLLBACK; las huellas de los 15 intentos
+originales permanecen iguales. Las copias previa 42085037509-3 y posterior
+42092600721-1 quedan restauradas, cifradas y conservadas como verified.
+ADMIN 0.7.0+12 está publicado en admin.entrenaop.es, revisión f3d8e03e, destino
+Dev, índice y hash del código comprobados por HTTPS.
+
+La calculadora personal ofrece Actualizar baremo ante la señal
+builtin_reference_changed, conserva las marcas y recalcula únicamente tras
+confirmar esa actualización; un fallo de recarga ofrece reintento. La verificación
+de autoría no acredita revisión de una nueva norma ni instalación del cliente
+1.17.0+37 en el iPhone. [Evidencia del bloque](audits/BUILTIN_ASSESSMENT_AUTHORING_2026_11_05.md).
 Los cambios estructurales de protocolos y la migración explícita de preparaciones
 activas a otra revisión siguen fuera de esta primera entrega.
