@@ -146,6 +146,7 @@ class _AdminPerformanceExecutionDialogState
 
   @override
   Widget build(BuildContext context) => AlertDialog(
+    scrollable: true,
     title: Text('Registrar ejecución · ${widget.label}'),
     content: SizedBox(
       width: 480,

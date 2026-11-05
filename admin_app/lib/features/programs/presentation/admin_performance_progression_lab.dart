@@ -558,33 +558,46 @@ class _AdminPerformanceProgressionLabState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: TextFormField(
-                    initialValue:
-                        spec.model == PerformanceProgressionModel.duration &&
-                            num.tryParse(series.value) != null
-                        ? formatDurationSeconds(num.parse(series.value))
-                        : series.value,
-                    decoration: InputDecoration(
-                      labelText: 'Serie ${i + 1}',
-                      suffixText: unit,
-                    ),
-                    keyboardType: TextInputType.number,
-                    inputFormatters:
-                        spec.model == PerformanceProgressionModel.duration
-                        ? const [DurationInputFormatter()]
-                        : null,
-                    onChanged: (value) => series.value =
-                        spec.model == PerformanceProgressionModel.duration
-                        ? parseDurationInput(value)?.toString() ?? value
-                        : value,
-                    validator: (value) {
-                      final target =
-                          spec.model == PerformanceProgressionModel.duration
-                          ? parseDurationInput(value ?? '')
-                          : int.tryParse((value ?? '').trim());
-                      return target == null || target < 1 || target > 3600
-                          ? 'Introduce un entero entre 1 y 3600.'
-                          : null;
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      // La unidad no debe consumir el área editable con texto ampliado.
+                      final unitBelow =
+                          constraints.maxWidth /
+                              MediaQuery.textScalerOf(context).scale(1) <
+                          260;
+                      return TextFormField(
+                        initialValue:
+                            spec.model ==
+                                    PerformanceProgressionModel.duration &&
+                                num.tryParse(series.value) != null
+                            ? formatDurationSeconds(num.parse(series.value))
+                            : series.value,
+                        decoration: InputDecoration(
+                          labelText: 'Serie ${i + 1}',
+                          suffixText: unitBelow ? null : unit,
+                          helperText: unitBelow ? unit : null,
+                          helperMaxLines: 2,
+                          errorMaxLines: 3,
+                        ),
+                        keyboardType: TextInputType.number,
+                        inputFormatters:
+                            spec.model == PerformanceProgressionModel.duration
+                            ? const [DurationInputFormatter()]
+                            : null,
+                        onChanged: (value) => series.value =
+                            spec.model == PerformanceProgressionModel.duration
+                            ? parseDurationInput(value)?.toString() ?? value
+                            : value,
+                        validator: (value) {
+                          final target =
+                              spec.model == PerformanceProgressionModel.duration
+                              ? parseDurationInput(value ?? '')
+                              : int.tryParse((value ?? '').trim());
+                          return target == null || target < 1 || target > 3600
+                              ? 'Introduce un entero entre 1 y 3600.'
+                              : null;
+                        },
+                      );
                     },
                   ),
                 ),

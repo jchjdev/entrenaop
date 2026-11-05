@@ -18,6 +18,32 @@ class _AdminPullUpLabState extends State<AdminPullUpLab> {
   PullCalendar _calendar = PullCalendar.combined;
   PullResponse _response = PullResponse.favorable;
 
+  (int, int, PullGear, PullCalendar, PullResponse)? _simulationKey;
+  late List<PullWeek> _trace;
+  late List<PullWeek> _candidate;
+
+  void _refreshSimulation() {
+    final key = (_mark, _weeks, _gear, _calendar, _response);
+    if (_simulationKey == key) return;
+    _trace = simulatePullUps(
+      startingMark: _mark < 0 ? null : _mark,
+      gear: _gear,
+      calendar: _calendar,
+      response: _response,
+      weeks: _weeks,
+    );
+    _candidate = simulatePullUps(
+      startingMark: _mark < 0 ? null : _mark,
+      gear: _gear,
+      calendar: _calendar,
+      response: _response,
+      weeks: _weeks,
+      approach: PullApproach.australian,
+    );
+    // Consultar otra semana no cambia los parámetros ni recalcula ambos brazos.
+    _simulationKey = key;
+  }
+
   Widget _choice<T>(
     String label,
     T value,
@@ -49,21 +75,7 @@ class _AdminPullUpLabState extends State<AdminPullUpLab> {
 
   @override
   Widget build(BuildContext context) {
-    final trace = simulatePullUps(
-      startingMark: _mark < 0 ? null : _mark,
-      gear: _gear,
-      calendar: _calendar,
-      response: _response,
-      weeks: _weeks,
-    );
-    final candidate = simulatePullUps(
-      startingMark: _mark < 0 ? null : _mark,
-      gear: _gear,
-      calendar: _calendar,
-      response: _response,
-      weeks: _weeks,
-      approach: PullApproach.australian,
-    );
+    _refreshSimulation();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -145,11 +157,11 @@ class _AdminPullUpLabState extends State<AdminPullUpLab> {
               children: [
                 SizedBox(
                   width: width,
-                  child: _weekView(PullApproach.current, trace),
+                  child: _weekView(PullApproach.current, _trace),
                 ),
                 SizedBox(
                   width: width,
-                  child: _weekView(PullApproach.australian, candidate),
+                  child: _weekView(PullApproach.australian, _candidate),
                 ),
               ],
             );

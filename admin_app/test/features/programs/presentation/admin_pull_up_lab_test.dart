@@ -68,6 +68,41 @@ void main() {
     },
   );
 
+  for (final width in [320.0, 1000.0]) {
+    testWidgets(
+      'dominadas admite texto doble a $width sin solapar selectores',
+      (t) async {
+        t.view.physicalSize = Size(width, 1200);
+        t.view.devicePixelRatio = 1;
+        addTearDown(t.view.resetPhysicalSize);
+        addTearDown(t.view.resetDevicePixelRatio);
+        await t.pumpWidget(
+          MaterialApp(
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: TextScaler.linear(2)),
+              child: child!,
+            ),
+            home: const Scaffold(
+              body: SingleChildScrollView(
+                padding: EdgeInsets.all(24),
+                child: AdminPullUpLab(),
+              ),
+            ),
+          ),
+        );
+        await t.pumpAndSettle();
+        expect(t.takeException(), isNull);
+        final fields = find.byType(InputDecorator);
+        expect(fields, findsNWidgets(6));
+        for (final field in fields.evaluate()) {
+          final box = field.renderObject! as RenderBox;
+          expect(box.size.width, lessThanOrEqualTo(width - 48));
+        }
+      },
+    );
+  }
+
   testWidgets(
     'el laboratorio permite cambiar el horizonte y ver la semana 52',
     (t) async {

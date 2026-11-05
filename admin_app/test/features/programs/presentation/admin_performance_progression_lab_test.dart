@@ -1,4 +1,5 @@
 import 'package:workout_editor_ui/workout_effort_field.dart';
+import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop_admin/features/exercises/data/admin_exercise_repository.dart';
 import 'package:entrenaop_admin/features/programs/presentation/admin_performance_progression_lab.dart';
 import 'package:flutter/material.dart';
@@ -7,16 +8,34 @@ import 'package:workout_core/strength_exercise_catalog_codec.dart';
 
 import '../../../../../test/features/exercises/domain/strength_exercise_catalog_test.dart'
     show readCatalogJson;
+import '../../../../../test/helpers/performance_visual_review.dart';
 
 void main() {
-  Future<void> mount(WidgetTester tester, {bool profiles = true}) async {
+  setUpAll(loadReviewFont);
+  Future<void> mount(
+    WidgetTester tester, {
+    bool profiles = true,
+    double scale = 1,
+    double padding = 0,
+  }) async {
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: SingleChildScrollView(
-            child: AdminPerformanceProgressionLab(
-              key: UniqueKey(),
-              repository: _Repository(profiles),
+      RepaintBoundary(
+        key: const ValueKey('review-boundary'),
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: capturePerformanceReview ? EntrenaTheme.dark : null,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: TextScaler.linear(scale)),
+            child: child!,
+          ),
+          home: Scaffold(
+            body: SingleChildScrollView(
+              padding: EdgeInsets.all(padding),
+              child: AdminPerformanceProgressionLab(
+                key: UniqueKey(),
+                repository: _Repository(profiles),
+              ),
             ),
           ),
         ),
@@ -223,6 +242,43 @@ void main() {
     expect(find.text('Dosificación pendiente'), findsNWidgets(4));
     expect(tester.takeException(), isNull);
   });
+
+  for (final (width, scale) in [(320.0, 2.0), (600.0, 2.0), (1440.0, 1.0)]) {
+    testWidgets('laboratorio con registros a $width px y texto $scale', (
+      tester,
+    ) async {
+      tester.view.physicalSize = Size(width, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await mount(tester, scale: scale, padding: 24);
+      await example(tester);
+      await next(tester);
+      await executionExamples(tester, 'push');
+      expect(
+        tester
+            .getSize(
+              find.descendant(
+                of: seriesField('push', 0),
+                matching: find.byType(EditableText),
+              ),
+            )
+            .width,
+        greaterThanOrEqualTo(80),
+      );
+      expect(tester.takeException(), isNull);
+      await tester.ensureVisible(find.byKey(const ValueKey('targets_push')));
+      await tester.pumpAndSettle();
+      await capturePerformanceWidget(
+        tester,
+        'admin-performance-series-${width.toInt()}-${scale.toInt()}',
+      );
+      await finish(tester);
+      expect(find.text('Objetivos con propuesta: 4/4'), findsOneWidget);
+      expect(find.textContaining('Progresar ·'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets('recorrido completo en pantalla estrecha sin desbordamientos', (
     tester,

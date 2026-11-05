@@ -40,7 +40,7 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
   final _search = TextEditingController();
   GoRouter? _navigationRouter;
   bool _catalogVisible = false, _refreshScheduled = false;
-  int _workRevision = 0;
+  int _workRevision = 0, _ownedNavigation = 0;
 
   @override
   void didChangeDependencies() {
@@ -57,12 +57,28 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
     final visible = _navigationRouter?.state.uri.path == _routeBase;
     final returned = visible && !_catalogVisible;
     _catalogVisible = visible;
-    if (!returned || _refreshScheduled) return;
+    if (returned && _ownedNavigation == 0) _scheduleLoad();
+  }
+
+  Future<T?> _openRoute<T>(String path) async {
+    _ownedNavigation++;
+    try {
+      return await context.push<T>(path);
+    } finally {
+      _ownedNavigation--;
+      if (mounted) _scheduleLoad();
+    }
+  }
+
+  void _scheduleLoad() {
+    if (_refreshScheduled) return;
     _refreshScheduled = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _refreshScheduled = false;
-      if (!mounted || !_catalogVisible) return;
-      // Una URL directa no tiene el Future de _create esperando al editor.
+      if (!mounted) return;
+      // El retorno propio lo confirma _openRoute; la observación de la ruta
+      // cubre además las entradas directas sin reconstruir filtros.
+      setState(() => _workRevision++);
       _load();
     });
   }
@@ -106,7 +122,6 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
       if (mounted) {
         setState(() {
           _workouts = workouts;
-          _workRevision++;
           _error = null;
         });
       }
@@ -118,8 +133,7 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
   }
 
   Future<void> _create() async {
-    final saved = await context.push<bool>('$_routeBase/new');
-    await _load();
+    final saved = await _openRoute<bool>('$_routeBase/new');
     if (saved == true) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -132,15 +146,13 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
   }
 
   Future<void> _preview(AdminWorkoutSummary workout) async {
-    await context.push<bool>('$_routeBase/${Uri.encodeComponent(workout.id)}');
-    if (mounted) await _load();
+    await _openRoute<bool>('$_routeBase/${Uri.encodeComponent(workout.id)}');
   }
 
   Future<void> _openGuidedProgram(AdminWorkoutProgramUsage program) async {
-    await context.push(
+    await _openRoute(
       '/guided-programs/${Uri.encodeComponent(program.id)}/edit',
     );
-    if (mounted) await _load();
   }
 
   Future<void> _trash(AdminWorkoutSummary workout) async {
@@ -191,8 +203,7 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
   }
 
   Future<void> _openTrash() async {
-    await context.push('/sessions/trash');
-    if (mounted) await _load();
+    await _openRoute('/sessions/trash');
   }
 
   @override
@@ -255,8 +266,7 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
               repository: widget.workRepository,
               programId: widget.program?.id,
               onOpen: (path) async {
-                await context.push(path);
-                if (mounted) await _load();
+                await _openRoute(path);
               },
             ),
             TextField(

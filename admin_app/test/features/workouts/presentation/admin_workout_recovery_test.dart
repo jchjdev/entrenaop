@@ -11,10 +11,14 @@ import '../../../../../packages/workout_editor_ui/test/workout_editor_work_test.
     as fixture;
 
 class Workouts extends Fake implements AdminWorkoutRepository {
+  int reads = 0;
   @override
   Future<List<AdminExercise>> listPublicExercises() async => [];
   @override
-  Future<List<AdminWorkoutSummary>> listGeneral() async => const [];
+  Future<List<AdminWorkoutSummary>> listGeneral() async {
+    reads++;
+    return const [];
+  }
 }
 
 class Catalog extends fixture.Works {
@@ -34,19 +38,23 @@ class Catalog extends fixture.Works {
 
 class PendingWork extends fixture.Works {
   bool pending = false;
+  int reads = 0;
   @override
-  Future<List<WorkoutEditorWork>> list() async => pending
-      ? [
-          const WorkoutEditorWork(
-            id: 'pending',
-            origin: {'programId': null},
-            revision: 1,
-            state: {
-              'editor': {'nameText': 'Sin terminar y conservada'},
-            },
-          ),
-        ]
-      : [];
+  Future<List<WorkoutEditorWork>> list() async {
+    reads++;
+    return pending
+        ? [
+            const WorkoutEditorWork(
+              id: 'pending',
+              origin: {'programId': null},
+              revision: 1,
+              state: {
+                'editor': {'nameText': 'Sin terminar y conservada'},
+              },
+            ),
+          ]
+        : [];
+  }
 }
 
 void main() {
@@ -110,6 +118,7 @@ void main() {
       'volver del editor refresca pendientes, entrada directa $direct',
       (tester) async {
         final work = PendingWork();
+        final workouts = Workouts();
         final router = GoRouter(
           initialLocation: direct ? '/sessions/new' : '/sessions',
           routes: [
@@ -117,7 +126,7 @@ void main() {
               path: '/sessions',
               builder: (_, _) => AdminProgramWorkoutsPage(
                 program: null,
-                repository: Workouts(),
+                repository: workouts,
                 workRepository: work,
               ),
               routes: [
@@ -145,12 +154,29 @@ void main() {
             find.text('No tienes sesiones incompletas en esta consulta.'),
             findsOneWidget,
           );
+          await tester.enterText(
+            find.widgetWithText(TextField, 'Buscar sesiones'),
+            'gluteos',
+          );
           await tester.tap(find.text('Nueva sesión'));
           await tester.pumpAndSettle();
         }
         await tester.tap(find.text('Salir sin terminar'));
         await tester.pumpAndSettle();
         expect(find.text('Sin terminar y conservada'), findsOneWidget);
+        expect(workouts.reads, 2);
+        expect(work.reads, 2);
+        if (!direct) {
+          expect(
+            tester
+                .widget<TextField>(
+                  find.widgetWithText(TextField, 'Buscar sesiones'),
+                )
+                .controller!
+                .text,
+            'gluteos',
+          );
+        }
         expect(
           find.text('No tienes sesiones incompletas en esta consulta.'),
           findsNothing,

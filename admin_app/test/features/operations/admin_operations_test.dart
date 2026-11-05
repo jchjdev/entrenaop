@@ -137,6 +137,18 @@ class _DelayedQuality extends _Operations {
       delay ? next.future : super.quality();
 }
 
+class _ChangingQuality extends _Operations {
+  int reads = 0;
+  bool fixed = false;
+  @override
+  Future<List<Map<String, dynamic>>> quality() async {
+    reads++;
+    return (await super.quality())
+        .where((item) => !fixed || item['resource_type'] != 'exercise')
+        .toList();
+  }
+}
+
 class _Programs extends Fake implements AdminProgramRepository {
   @override
   Future<bool> hasAccess() async => false;
@@ -422,4 +434,62 @@ void main() {
       },
     );
   }
+  testWidgets(
+    'calidad actualiza al volver del recurso y conserva búsqueda y filtro',
+    (tester) async {
+      final operations = _ChangingQuality();
+      final router = GoRouter(
+        initialLocation: '/quality',
+        routes: [
+          GoRoute(
+            path: '/quality',
+            builder: (_, _) => AdminQualityPage(repository: operations),
+          ),
+          GoRoute(
+            path: '/exercises',
+            builder: (context, _) => Scaffold(
+              body: TextButton(
+                onPressed: () {
+                  operations.fixed = true;
+                  context.pop();
+                },
+                child: const Text('Corregir y volver'),
+              ),
+            ),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Buscar'),
+        'gluteos',
+      );
+      await tester.tap(find.text('Por completar (1)'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Abrir recurso'));
+      await tester.tap(find.text('Abrir recurso'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Corregir y volver'));
+      await tester.pumpAndSettle();
+      expect(operations.reads, 2);
+      expect(find.text('No hay avisos con este filtro.'), findsOneWidget);
+      expect(
+        tester
+            .widget<TextField>(find.widgetWithText(TextField, 'Buscar'))
+            .controller!
+            .text,
+        'gluteos',
+      );
+      expect(
+        tester
+            .widget<ChoiceChip>(
+              find.widgetWithText(ChoiceChip, 'Por completar (0)'),
+            )
+            .selected,
+        isTrue,
+      );
+    },
+  );
 }

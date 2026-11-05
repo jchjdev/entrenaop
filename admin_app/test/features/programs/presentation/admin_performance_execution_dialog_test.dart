@@ -58,10 +58,17 @@ void main() {
     PerformanceProgressionDose prescription, {
     PerformanceProgressionExposure? initial,
     DateTime? date,
+    double textScale = 1,
+    String label = 'Ejercicio',
   }) async {
     saved = null;
     await tester.pumpWidget(
       MaterialApp(
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: TextScaler.linear(textScale)),
+          child: child!,
+        ),
         home: Scaffold(
           body: Builder(
             builder: (context) => TextButton(
@@ -70,7 +77,7 @@ void main() {
                   context: context,
                   builder: (_) => AdminPerformanceExecutionDialog(
                     id: initial?.id ?? 'record',
-                    label: 'Ejercicio',
+                    label: label,
                     dose: prescription,
                     date:
                         date ??
@@ -100,6 +107,34 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text(label).last);
     await tester.pumpAndSettle();
+  }
+
+  for (final width in [320.0, 1100.0]) {
+    testWidgets(
+      'registro con texto doble a $width conserva campos y acciones',
+      (tester) async {
+        tester.view.physicalSize = Size(width, 900);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final prescription = dose();
+        await mount(
+          tester,
+          prescription,
+          textScale: 2,
+          label: 'Flexiones máximas con una descripción larga de la variante',
+        );
+        expect(tester.takeException(), isNull);
+        final units = find.byKey(const ValueKey('actual_units_0'));
+        await tester.ensureVisible(units);
+        await tester.pumpAndSettle();
+        await tester.enterText(units, '7');
+        await tap(tester, find.text('Guardar registro'));
+        expect(saved!.dose, same(prescription));
+        expect(saved!.sets.single.validUnits, 7);
+        expect(tester.takeException(), isNull);
+      },
+    );
   }
 
   testWidgets('un registro vacío conserva ausencias y no copia objetivos', (

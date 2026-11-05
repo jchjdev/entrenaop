@@ -475,7 +475,10 @@ class _AdminQualityPageState extends State<AdminQualityPage> {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: OutlinedButton.icon(
-                          onPressed: () => context.push(_path(row)),
+                          onPressed: () async {
+                            await context.push(_path(row));
+                            if (mounted) _refresh();
+                          },
                           icon: const Icon(Icons.open_in_new),
                           label: Text(
                             row['resource_type'] == 'video'

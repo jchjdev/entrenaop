@@ -1,5 +1,7 @@
 # Registro de decisiones vigentes
 
+**Revisión visual de ADMIN · 05/11/2026.** Javier pide revisar con varios agentes los colapsos de laboratorio y la eficiencia de ADMIN, y aclara que son solapamientos. Se corrigen fallos reproducidos conservando diseño y reglas deportivas; paginación y otros cambios importantes se presentan como propuesta antes de aplicarse. [Alcance y resultados](audits/ADMIN_REVIEW_2026_11_05.md).
+
 **Comparación de australianas en laboratorio · 05/11/2026.** Javier pide
 comparar su circuito supino con la progresión de referencia a 26 y 52 semanas,
 con niveles y material distintos, y revisar sesiones, adaptación y evidencia
