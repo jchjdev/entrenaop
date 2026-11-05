@@ -481,6 +481,7 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
     final yes = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
+        scrollable: true,
         title: const Text('¿Descartar este trabajo incompleto?'),
         content: const Text(
           'Las sesiones guardadas y las utilizadas en otros programas se conservan.',
@@ -1219,7 +1220,7 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
               ? 'Guardar programa privado'
               : _checkpoint == null
               ? 'Guardar borrador'
-              : 'Guardar en catálogo',
+              : 'Guardar borrador y salir',
         ),
       ),
     ],

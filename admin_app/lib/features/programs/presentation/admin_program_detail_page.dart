@@ -1,3 +1,6 @@
+import '../data/admin_builtin_program_repository.dart';
+import 'admin_builtin_program_panel.dart';
+
 import 'dart:convert';
 
 import 'package:entrena_ui/entrena_ui.dart';
@@ -22,8 +25,10 @@ class AdminProgramDetailPage extends StatefulWidget {
     required this.repository,
     required this.workoutRepository,
     this.coverRepository,
+    this.builtinRepository,
   });
 
+  final AdminBuiltinProgramRepository? builtinRepository;
   final AdminProgram program;
   final AdminProgramRepository repository;
   final AdminWorkoutRepository workoutRepository;
@@ -41,6 +46,8 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
       .getScoringRule(widget.program.id);
   late Future<List<AdminProgramTrainingModule>> _modules = widget.repository
       .listTrainingModules(widget.program.id);
+  bool get _builtin =>
+      AdminBuiltinProgramRepository.supports(widget.program.id);
   String? _selectedRunningTestId;
   bool _saving = false;
   final _contentSection = GlobalKey();
@@ -407,18 +414,20 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
                     Icons.article_outlined,
                     _contentSection,
                   ),
-                  _sectionLink(
-                    'assessment',
-                    'Evaluación',
-                    Icons.fact_check_outlined,
-                    _assessmentSection,
-                  ),
-                  _sectionLink(
-                    'training',
-                    'Entrenamiento',
-                    Icons.fitness_center,
-                    _trainingSection,
-                  ),
+                  if (!_builtin)
+                    _sectionLink(
+                      'assessment',
+                      'Evaluación',
+                      Icons.fact_check_outlined,
+                      _assessmentSection,
+                    ),
+                  if (!_builtin)
+                    _sectionLink(
+                      'training',
+                      'Entrenamiento',
+                      Icons.fitness_center,
+                      _trainingSection,
+                    ),
                 ],
               ),
             ),
@@ -443,11 +452,13 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
         ),
         const SizedBox(height: 8),
         Text(
-          widget.program.enabled
+          _builtin
+              ? 'Preparación integrada · consulta del catálogo y sus condiciones'
+              : widget.program.enabled
               ? 'Programa publicado · las pruebas existentes se conservan.'
               : 'Borrador · define sus pruebas antes de publicarlo.',
         ),
-        if (!widget.program.enabled) ...[
+        if (!widget.program.enabled && !_builtin) ...[
           const SizedBox(height: 12),
           Align(
             alignment: Alignment.centerRight,
@@ -458,7 +469,7 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
             ),
           ),
         ],
-        if (widget.program.enabled) ...[
+        if (widget.program.enabled && !_builtin) ...[
           const SizedBox(height: 12),
           Align(
             alignment: Alignment.centerRight,
@@ -492,385 +503,405 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
           ),
           const SizedBox(height: 12),
         ],
-        const SizedBox(height: 28),
-        Text(
-          'Evaluación del programa',
-          key: _assessmentSection,
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
-        const SizedBox(height: 8),
-        const Text('Calificación, pruebas y baremos de esta versión.'),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                'Calificación',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        FutureBuilder<AdminProgramScoringRule?>(
-          future: _rule,
-          builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              return TextButton(
-                onPressed: () => setState(() {
-                  _rule = widget.repository.getScoringRule(widget.program.id);
-                  _rule.ignore();
-                }),
-                child: const Text(
-                  'No se pudo cargar la regla de calificación. Reintentar',
-                ),
-              );
-            }
-            if (!snapshot.hasData &&
-                snapshot.connectionState != ConnectionState.done) {
-              return const LinearProgressIndicator();
-            }
-            final rule = snapshot.data;
-            return Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      rule == null
-                          ? 'Sin regla de evaluación. Define fuente y criterio de aprobado.'
-                          : '${rule.sourceLabel} · ${rule.version}',
-                    ),
-                    if (rule != null) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        rule.scoringMode == 'pass_fail'
-                            ? 'Apto / no apto por mínimos · ${rule.stageLabel}'
-                            : '${rule.aggregation == 'average'
-                                  ? 'Media'
-                                  : rule.aggregation == 'sum'
-                                  ? 'Suma'
-                                  : 'Mínimos por prueba'} · mínimo por prueba ${formatMark(rule.minEachPoints)} · mínimo total ${formatMark(rule.minAggregatePoints)}',
-                      ),
-                    ],
-                    if (!widget.program.enabled) ...[
-                      const SizedBox(height: 12),
-                      OutlinedButton.icon(
-                        onPressed: _saving ? null : () => _editRule(rule),
-                        icon: const Icon(Icons.edit_outlined),
-                        label: Text(
-                          rule == null
-                              ? 'Definir calificación'
-                              : 'Editar calificación',
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-        const SizedBox(height: 28),
-        Wrap(
-          spacing: 12,
-          runSpacing: 8,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
+        if (_builtin) ...[
+          const SizedBox(height: 24),
+          if (widget.builtinRepository != null)
+            AdminBuiltinProgramPanel(
+              programId: widget.program.id,
+              repository: widget.builtinRepository!,
+            )
+          else
             const Text(
-              'Pruebas del programa',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              'No se ha conectado la consulta del catálogo integrado. No se presenta como un programa vacío.',
             ),
-            if (!widget.program.enabled)
-              FilledButton.icon(
-                onPressed: _saving ? null : _createTest,
-                icon: const Icon(Icons.add),
-                label: const Text('Añadir prueba'),
+        ] else ...[
+          const SizedBox(height: 28),
+          Text(
+            'Evaluación del programa',
+            key: _assessmentSection,
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 8),
+          const Text('Calificación, pruebas y baremos de esta versión.'),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Calificación',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
               ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'Define cada ejercicio para H, M o ambos y sus edades. Después añade mínimos o tramos de puntuación. Un borrador incompleto no se usa para evaluar.',
-        ),
-        const SizedBox(height: 16),
-        FutureBuilder<List<AdminProgramTest>>(
-          future: _tests,
-          builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              return TextButton(
-                onPressed: () => setState(() {
-                  _tests = widget.repository.listTests(widget.program.id);
-                  _tests.ignore();
-                }),
-                child: const Text(
-                  'No se pudieron cargar las pruebas. Reintentar',
-                ),
-              );
-            }
-            if (!snapshot.hasData) return const LinearProgressIndicator();
-            if (snapshot.data!.isEmpty) {
-              return const Card(
+            ],
+          ),
+          const SizedBox(height: 8),
+          FutureBuilder<AdminProgramScoringRule?>(
+            future: _rule,
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return TextButton(
+                  onPressed: () => setState(() {
+                    _rule = widget.repository.getScoringRule(widget.program.id);
+                    _rule.ignore();
+                  }),
+                  child: const Text(
+                    'No se pudo cargar la regla de calificación. Reintentar',
+                  ),
+                );
+              }
+              if (!snapshot.hasData &&
+                  snapshot.connectionState != ConnectionState.done) {
+                return const LinearProgressIndicator();
+              }
+              final rule = snapshot.data;
+              return Card(
                 child: Padding(
-                  padding: EdgeInsets.all(20),
-                  child: Text(
-                    'Este programa todavía no tiene pruebas definidas.',
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        rule == null
+                            ? 'Sin regla de evaluación. Define fuente y criterio de aprobado.'
+                            : '${rule.sourceLabel} · ${rule.version}',
+                      ),
+                      if (rule != null) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          rule.scoringMode == 'pass_fail'
+                              ? 'Apto / no apto por mínimos · ${rule.stageLabel}'
+                              : '${rule.aggregation == 'average'
+                                    ? 'Media'
+                                    : rule.aggregation == 'sum'
+                                    ? 'Suma'
+                                    : 'Mínimos por prueba'} · mínimo por prueba ${formatMark(rule.minEachPoints)} · mínimo total ${formatMark(rule.minAggregatePoints)}',
+                        ),
+                      ],
+                      if (!widget.program.enabled) ...[
+                        const SizedBox(height: 12),
+                        OutlinedButton.icon(
+                          onPressed: _saving ? null : () => _editRule(rule),
+                          icon: const Icon(Icons.edit_outlined),
+                          label: Text(
+                            rule == null
+                                ? 'Definir calificación'
+                                : 'Editar calificación',
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               );
-            }
-            return Column(
-              children: [
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: OutlinedButton.icon(
-                    onPressed: () => context.push(
-                      '/programs/${Uri.encodeComponent(widget.program.id)}/simulation',
-                    ),
-                    icon: const Icon(Icons.calculate_outlined),
-                    label: const Text('Simular calificación'),
-                  ),
+            },
+          ),
+          const SizedBox(height: 28),
+          Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              const Text(
+                'Pruebas del programa',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+              if (!widget.program.enabled)
+                FilledButton.icon(
+                  onPressed: _saving ? null : _createTest,
+                  icon: const Icon(Icons.add),
+                  label: const Text('Añadir prueba'),
                 ),
-                for (final test in snapshot.data!)
-                  Card(
-                    child: ExpansionTile(
-                      key: PageStorageKey(
-                        'program-test-${widget.program.id}-${test.id}',
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Define cada ejercicio para H, M o ambos y sus edades. Después añade mínimos o tramos de puntuación. Un borrador incompleto no se usa para evaluar.',
+          ),
+          const SizedBox(height: 16),
+          FutureBuilder<List<AdminProgramTest>>(
+            future: _tests,
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return TextButton(
+                  onPressed: () => setState(() {
+                    _tests = widget.repository.listTests(widget.program.id);
+                    _tests.ignore();
+                  }),
+                  child: const Text(
+                    'No se pudieron cargar las pruebas. Reintentar',
+                  ),
+                );
+              }
+              if (!snapshot.hasData) return const LinearProgressIndicator();
+              if (snapshot.data!.isEmpty) {
+                return const Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Text(
+                      'Este programa todavía no tiene pruebas definidas.',
+                    ),
+                  ),
+                );
+              }
+              return Column(
+                children: [
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: OutlinedButton.icon(
+                      onPressed: () => context.push(
+                        '/programs/${Uri.encodeComponent(widget.program.id)}/simulation',
                       ),
-                      title: Text(test.name),
-                      subtitle: Text(
-                        'Ejercicio ${test.displayOrder} · ${categoryLabel(test.category)} · ${test.minAge}–${test.maxAge} años · ${_unitLabel(test.unit)}${test.distanceMeters == null ? '' : ' · ${test.distanceMeters} m'}${test.measurementProtocol == 'run_2000m_v1' ? ' · carrera 2 km' : ''} · ${test.maxAttempts == 1 ? 'un intento' : '${test.maxAttempts} intentos ${test.retryPolicy == 'invalid_only' ? 'solo tras nulo' : 'máximo'}'}',
-                      ),
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(test.protocolNotes),
-                          ),
+                      icon: const Icon(Icons.calculate_outlined),
+                      label: const Text('Simular calificación'),
+                    ),
+                  ),
+                  for (final test in snapshot.data!)
+                    Card(
+                      child: ExpansionTile(
+                        key: PageStorageKey(
+                          'program-test-${widget.program.id}-${test.id}',
                         ),
-                        ListTile(
-                          leading: const Icon(Icons.table_chart_outlined),
-                          title: Text(
-                            widget.program.enabled
-                                ? 'Ver baremo de la prueba'
-                                : 'Editar baremo de la prueba',
-                          ),
-                          subtitle: const Text(
-                            'Mínimos o puntos por columna H/M y edad',
-                          ),
-                          trailing: const Icon(Icons.chevron_right),
-                          onTap: () async {
-                            final rule = await _rule;
-                            if (!context.mounted) return;
-                            if (rule == null) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Define primero la calificación del programa.',
-                                  ),
-                                ),
-                              );
-                              return;
-                            }
-                            context.push(
-                              '/programs/${Uri.encodeComponent(widget.program.id)}/tests/${Uri.encodeComponent(test.id)}/scale',
-                            );
-                          },
+                        title: Text(test.name),
+                        subtitle: Text(
+                          'Ejercicio ${test.displayOrder} · ${categoryLabel(test.category)} · ${test.minAge}–${test.maxAge} años · ${_unitLabel(test.unit)}${test.distanceMeters == null ? '' : ' · ${test.distanceMeters} m'}${test.measurementProtocol == 'run_2000m_v1' ? ' · carrera 2 km' : ''} · ${test.maxAttempts == 1 ? 'un intento' : '${test.maxAttempts} intentos ${test.retryPolicy == 'invalid_only' ? 'solo tras nulo' : 'máximo'}'}',
                         ),
-                        if (!widget.program.enabled)
+                        children: [
                           Padding(
                             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                            child: Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: [
-                                OutlinedButton.icon(
-                                  onPressed: _saving
-                                      ? null
-                                      : () => _editTest(test),
-                                  icon: const Icon(Icons.edit_outlined),
-                                  label: const Text('Editar prueba'),
-                                ),
-                                TextButton.icon(
-                                  onPressed: _saving
-                                      ? null
-                                      : () => _deleteTest(test),
-                                  icon: const Icon(Icons.delete_outline),
-                                  label: const Text('Borrar prueba'),
-                                ),
-                              ],
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(test.protocolNotes),
                             ),
                           ),
-                      ],
-                    ),
-                  ),
-              ],
-            );
-          },
-        ),
-        const SizedBox(height: 24),
-        Text(
-          'Entrenamiento del programa',
-          key: _trainingSection,
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
-        const SizedBox(height: 8),
-        const Text('Sesiones y preparación deportiva vinculadas al programa.'),
-        const SizedBox(height: 16),
-        Card(
-          child: ListTile(
-            leading: const Icon(Icons.fitness_center),
-            title: const Text('Sesiones del programa'),
-            subtitle: const Text('Plantillas de entrenamiento'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push(
-              '/programs/${Uri.encodeComponent(widget.program.id)}/sessions',
-            ),
-          ),
-        ),
-        const SizedBox(height: 24),
-        Text(
-          'Módulos de entrenamiento',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'Vincula cada prueba con su preparación deportiva. El deportista aportará su contexto y revisará la propuesta antes de guardarla en agenda.',
-        ),
-        const SizedBox(height: 12),
-        FutureBuilder<List<AdminProgramTest>>(
-          future: _tests,
-          builder: (context, testsSnapshot) =>
-              FutureBuilder<List<AdminProgramTrainingModule>>(
-                future: _modules,
-                builder: (context, modulesSnapshot) {
-                  if (testsSnapshot.hasError || modulesSnapshot.hasError) {
-                    return TextButton(
-                      onPressed: _reloadTests,
-                      child: const Text(
-                        'No se pudieron cargar los módulos. Reintentar',
-                      ),
-                    );
-                  }
-                  if (!testsSnapshot.hasData || !modulesSnapshot.hasData) {
-                    return const LinearProgressIndicator();
-                  }
-                  final tests = testsSnapshot.data!;
-                  final modules = modulesSnapshot.data!;
-                  final compatible = tests
-                      .where(
-                        (test) =>
-                            test.unit == 'seconds' &&
-                            test.betterDirection == 'lower' &&
-                            test.distanceMeters == 2000 &&
-                            test.measurementProtocol == 'run_2000m_v1',
-                      )
-                      .toList();
-                  final eligible = compatible
-                      .where(
-                        (test) =>
-                            !modules.any((module) => module.testId == test.id),
-                      )
-                      .toList();
-                  final selected =
-                      eligible.any((test) => test.id == _selectedRunningTestId)
-                      ? _selectedRunningTestId
-                      : null;
-                  return Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          for (final module in modules)
-                            ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              leading: const Icon(Icons.directions_run),
-                              title: const Text('Preparación de carrera 2 km'),
-                              subtitle: Text(
-                                tests
-                                        .where(
-                                          (test) => test.id == module.testId,
-                                        )
-                                        .map((test) => test.name)
-                                        .firstOrNull ??
-                                    'Prueba vinculada',
-                              ),
-                              trailing: widget.program.enabled
-                                  ? null
-                                  : TextButton(
-                                      onPressed: _saving
-                                          ? null
-                                          : () => _setRunningModule(
-                                              module.testId,
-                                              enabled: false,
-                                            ),
-                                      child: const Text('Desvincular'),
-                                    ),
+                          ListTile(
+                            leading: const Icon(Icons.table_chart_outlined),
+                            title: Text(
+                              widget.program.enabled
+                                  ? 'Ver baremo de la prueba'
+                                  : 'Editar baremo de la prueba',
                             ),
-                          if (modules.isEmpty)
-                            const Text('Sin módulos vinculados.'),
-                          if (!widget.program.enabled) ...[
-                            const SizedBox(height: 12),
-                            DropdownButtonFormField<String>(
-                              key: ValueKey(selected),
-                              initialValue: selected,
-                              isExpanded: true,
-                              itemHeight: null,
-                              decoration: const InputDecoration(
-                                labelText: 'Prueba cronometrada de 2.000 m',
-                              ),
-                              items: [
-                                for (final test in eligible)
-                                  DropdownMenuItem(
-                                    value: test.id,
-                                    child: Text(test.name),
+                            subtitle: const Text(
+                              'Mínimos o puntos por columna H/M y edad',
+                            ),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () async {
+                              final rule = await _rule;
+                              if (!context.mounted) return;
+                              if (rule == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Define primero la calificación del programa.',
+                                    ),
                                   ),
-                              ],
-                              onChanged: eligible.isEmpty
-                                  ? null
-                                  : (value) => setState(
-                                      () => _selectedRunningTestId = value,
-                                    ),
-                            ),
-                            const SizedBox(height: 10),
-                            FilledButton.icon(
-                              onPressed: _saving || selected == null
-                                  ? null
-                                  : () => _setRunningModule(
-                                      selected,
-                                      enabled: true,
-                                    ),
-                              icon: const Icon(Icons.add),
-                              label: const Text('Vincular carrera 2 km'),
-                            ),
-                            if (eligible.isEmpty)
-                              Text(
-                                compatible.isEmpty
-                                    ? 'Define antes una prueba en segundos, con mejor marca baja, 2.000 m y protocolo de carrera continua.'
-                                    : 'Las pruebas compatibles de carrera de 2 km ya están vinculadas.',
+                                );
+                                return;
+                              }
+                              context.push(
+                                '/programs/${Uri.encodeComponent(widget.program.id)}/tests/${Uri.encodeComponent(test.id)}/scale',
+                              );
+                            },
+                          ),
+                          if (!widget.program.enabled)
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                              child: Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: [
+                                  OutlinedButton.icon(
+                                    onPressed: _saving
+                                        ? null
+                                        : () => _editTest(test),
+                                    icon: const Icon(Icons.edit_outlined),
+                                    label: const Text('Editar prueba'),
+                                  ),
+                                  TextButton.icon(
+                                    onPressed: _saving
+                                        ? null
+                                        : () => _deleteTest(test),
+                                    icon: const Icon(Icons.delete_outline),
+                                    label: const Text('Borrar prueba'),
+                                  ),
+                                ],
                               ),
-                          ],
+                            ),
                         ],
                       ),
                     ),
-                  );
-                },
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Entrenamiento del programa',
+            key: _trainingSection,
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Sesiones y preparación deportiva vinculadas al programa.',
+          ),
+          const SizedBox(height: 16),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.fitness_center),
+              title: const Text('Sesiones del programa'),
+              subtitle: const Text('Plantillas de entrenamiento'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push(
+                '/programs/${Uri.encodeComponent(widget.program.id)}/sessions',
               ),
-        ),
-        const SizedBox(height: 24),
-        FutureBuilder<List<AdminProgramTest>>(
-          future: _tests,
-          builder: (context, snapshot) => snapshot.hasData
-              ? AdminPerformanceStrategySection(
-                  program: widget.program,
-                  tests: snapshot.data!,
-                  repository: widget.repository,
-                )
-              : const SizedBox.shrink(),
-        ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Módulos de entrenamiento',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Vincula cada prueba con su preparación deportiva. El deportista aportará su contexto y revisará la propuesta antes de guardarla en agenda.',
+          ),
+          const SizedBox(height: 12),
+          FutureBuilder<List<AdminProgramTest>>(
+            future: _tests,
+            builder: (context, testsSnapshot) =>
+                FutureBuilder<List<AdminProgramTrainingModule>>(
+                  future: _modules,
+                  builder: (context, modulesSnapshot) {
+                    if (testsSnapshot.hasError || modulesSnapshot.hasError) {
+                      return TextButton(
+                        onPressed: _reloadTests,
+                        child: const Text(
+                          'No se pudieron cargar los módulos. Reintentar',
+                        ),
+                      );
+                    }
+                    if (!testsSnapshot.hasData || !modulesSnapshot.hasData) {
+                      return const LinearProgressIndicator();
+                    }
+                    final tests = testsSnapshot.data!;
+                    final modules = modulesSnapshot.data!;
+                    final compatible = tests
+                        .where(
+                          (test) =>
+                              test.unit == 'seconds' &&
+                              test.betterDirection == 'lower' &&
+                              test.distanceMeters == 2000 &&
+                              test.measurementProtocol == 'run_2000m_v1',
+                        )
+                        .toList();
+                    final eligible = compatible
+                        .where(
+                          (test) => !modules.any(
+                            (module) => module.testId == test.id,
+                          ),
+                        )
+                        .toList();
+                    final selected =
+                        eligible.any(
+                          (test) => test.id == _selectedRunningTestId,
+                        )
+                        ? _selectedRunningTestId
+                        : null;
+                    return Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            for (final module in modules)
+                              ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                leading: const Icon(Icons.directions_run),
+                                title: const Text(
+                                  'Preparación de carrera 2 km',
+                                ),
+                                subtitle: Text(
+                                  tests
+                                          .where(
+                                            (test) => test.id == module.testId,
+                                          )
+                                          .map((test) => test.name)
+                                          .firstOrNull ??
+                                      'Prueba vinculada',
+                                ),
+                                trailing: widget.program.enabled
+                                    ? null
+                                    : TextButton(
+                                        onPressed: _saving
+                                            ? null
+                                            : () => _setRunningModule(
+                                                module.testId,
+                                                enabled: false,
+                                              ),
+                                        child: const Text('Desvincular'),
+                                      ),
+                              ),
+                            if (modules.isEmpty)
+                              const Text('Sin módulos vinculados.'),
+                            if (!widget.program.enabled) ...[
+                              const SizedBox(height: 12),
+                              DropdownButtonFormField<String>(
+                                key: ValueKey(selected),
+                                initialValue: selected,
+                                isExpanded: true,
+                                itemHeight: null,
+                                decoration: const InputDecoration(
+                                  labelText: 'Prueba cronometrada de 2.000 m',
+                                ),
+                                items: [
+                                  for (final test in eligible)
+                                    DropdownMenuItem(
+                                      value: test.id,
+                                      child: Text(test.name),
+                                    ),
+                                ],
+                                onChanged: eligible.isEmpty
+                                    ? null
+                                    : (value) => setState(
+                                        () => _selectedRunningTestId = value,
+                                      ),
+                              ),
+                              const SizedBox(height: 10),
+                              FilledButton.icon(
+                                onPressed: _saving || selected == null
+                                    ? null
+                                    : () => _setRunningModule(
+                                        selected,
+                                        enabled: true,
+                                      ),
+                                icon: const Icon(Icons.add),
+                                label: const Text('Vincular carrera 2 km'),
+                              ),
+                              if (eligible.isEmpty)
+                                Text(
+                                  compatible.isEmpty
+                                      ? 'Define antes una prueba en segundos, con mejor marca baja, 2.000 m y protocolo de carrera continua.'
+                                      : 'Las pruebas compatibles de carrera de 2 km ya están vinculadas.',
+                                ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+          ),
+          const SizedBox(height: 24),
+          FutureBuilder<List<AdminProgramTest>>(
+            future: _tests,
+            builder: (context, snapshot) => snapshot.hasData
+                ? AdminPerformanceStrategySection(
+                    program: widget.program,
+                    tests: snapshot.data!,
+                    repository: widget.repository,
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
       ],
     ),
   );

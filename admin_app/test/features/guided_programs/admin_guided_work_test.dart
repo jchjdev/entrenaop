@@ -19,6 +19,7 @@ class _Work extends Fake implements AdminGuidedWorkRepository {
   bool loseResponse = false, fail = false, loseFinal = false;
   Completer<void>? gate;
   int finalized = 0;
+  GuidedProgram? finalProgram;
   final results = <String, String>{};
   @override
   Future<List<GuidedWork>> list() async =>
@@ -56,6 +57,7 @@ class _Work extends Fake implements AdminGuidedWorkRepository {
 
   @override
   Future<String> finalize(GuidedWork work, GuidedProgram program) async {
+    finalProgram = program;
     final result = results.putIfAbsent(work.id, () => 'program-${++finalized}');
     if (loseFinal) {
       loseFinal = false;
@@ -367,12 +369,13 @@ void main() {
         router.go(location.toString());
         await tester.pumpAndSettle();
         await tester.scrollUntilVisible(
-          find.text('Guardar en catálogo'),
+          find.text('Guardar borrador y salir'),
           250,
           scrollable: editorScrollable(),
         );
         await tester.pumpAndSettle();
-        await tester.tap(find.text('Guardar en catálogo'));
+        expect(find.text('Guardar y revisar'), findsOneWidget);
+        await tester.tap(find.text('Guardar borrador y salir'));
         await tester.pumpAndSettle();
         expect(find.text('Comprobar y reintentar guardado'), findsOneWidget);
         await tester.ensureVisible(
@@ -382,6 +385,7 @@ void main() {
         await tester.tap(find.text('Comprobar y reintentar guardado'));
         await tester.pumpAndSettle();
         expect(repo.finalized, 1);
+        expect(repo.finalProgram?.status, 'draft');
         expect(find.text('Comprobar y reintentar guardado'), findsNothing);
         expect(tester.takeException(), isNull);
       },

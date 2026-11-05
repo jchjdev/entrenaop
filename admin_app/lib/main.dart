@@ -1,3 +1,4 @@
+import 'features/programs/data/admin_builtin_program_repository.dart';
 import 'features/workouts/data/admin_workout_work_repository.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -125,6 +126,7 @@ class _AdminAppState extends State<AdminApp> {
         );
       },
       programs: SupabaseAdminProgramRepository(client),
+      builtinPrograms: SupabaseAdminBuiltinProgramRepository(client),
       workouts: SupabaseAdminWorkoutRepository(client),
       exercises: SupabaseAdminExerciseRepository(
         client,

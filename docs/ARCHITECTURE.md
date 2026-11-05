@@ -1,5 +1,7 @@
 # Arquitectura de EntrenaOP
 
+**Consulta ADMIN de catálogos integrados · 05/11/2026:** un adaptador de solo lectura consulta las tablas vigentes de FAS/Tropa y sus objetivos; el router inyecta su repositorio opcional. La ficha no confunde ausencia de filas configurables con falta de definición. No importa features del deportista ni cambia RLS/RPC o motores. No convierte estos catálogos en versiones editables. [Contrato y propuesta pendiente](audits/ADMIN_CREATORS_PREPARATIONS_2026_11_05.md).
+
 **Fronteras de preparación · 03/11/2026:** `PreparationOverview` concentra la
 elección de presentación sin cambiar `activeProgram`. Detalle y catálogo protegen
 cargas por versión y cierre; el router delimita cuenta/objetivo/semana. Un helper

@@ -242,7 +242,12 @@ Widget _app(
   _Catalog catalog,
   _Adapter adapter, {
   String key = 'editor',
+  double scale = 1,
 }) => MaterialApp(
+  builder: (context, child) => MediaQuery(
+    data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(scale)),
+    child: child!,
+  ),
   theme: EntrenaTheme.dark,
   home: GuidedProgramEditorPage(
     key: ValueKey(key),
@@ -276,6 +281,53 @@ List<Map<String, dynamic>> _sessions(_Works works) =>
         .toList();
 
 void main() {
+  for (final width in [320.0, 1100.0]) {
+    testWidgets(
+      'cancelar descarte conserva hijo pendiente con texto doble a $width',
+      (tester) async {
+        tester.view.physicalSize = Size(width, 600);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        final state = _snapshot(sessions: []);
+        final phase = (state['phases'] as List).single as Map;
+        final origin = <String, dynamic>{
+          'baseId': null,
+          'programId': null,
+          'parentWorkId': 'work',
+          'phaseId': 'phase',
+          'positionId': 'position',
+          'duplicate': false,
+        };
+        phase['phaseId'] = 'phase';
+        phase['sessionWorks'] = {'child': origin};
+        final works = _Works(state);
+        final catalog = _Catalog();
+        await tester.pumpWidget(
+          _app(works, catalog, _RecoverableAdapter(catalog, works), scale: 2),
+        );
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        await _tap(tester, find.text('Descartar trabajo'));
+        expect(
+          find.text('¿Descartar este trabajo incompleto?'),
+          findsOneWidget,
+        );
+        expect(
+          find.widgetWithText(OutlinedButton, 'Descartar trabajo'),
+          findsOneWidget,
+        );
+        expect(tester.takeException(), isNull);
+        await tester.tap(
+          find.widgetWithText(TextButton, 'Continuar trabajando'),
+        );
+        await tester.pumpAndSettle();
+        expect(find.byType(AlertDialog), findsNothing);
+        expect(_phase(works)['sessionWorks'], {'child': origin});
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   testWidgets(
     'hijo incompleto retoma la misma identidad tras recargar y enlaza segunda posición [S,S]',
     (tester) async {

@@ -1,5 +1,7 @@
 # Producto EntrenaOP
 
+**FAS y Tropa en ADMIN · 05/11/2026:** sus fichas consultan catálogo, fuente, mínimos y condiciones existentes, con secciones plegables y reintento. Se elimina la apariencia de preparación vacía. La edición de estos catálogos integrados sigue pendiente de definir su autoría versionada; los programas configurables conservan su creador. [Estado y límites](audits/ADMIN_CREATORS_PREPARATIONS_2026_11_05.md).
+
 **Preparaciones sin ciclos de consulta · 03/11/2026:** ficha y plan publicado
 conservan la semana y el retorno sin acumular pantallas. Configurar es una tarea
 propia que recupera el paso del borrador y valida marcas antes de la propuesta.

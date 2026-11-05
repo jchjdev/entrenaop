@@ -1,3 +1,5 @@
+import '../features/programs/data/admin_builtin_program_repository.dart';
+
 import 'package:workout_editor_ui/workout_editor_work.dart';
 
 import '../features/workouts/presentation/admin_session_work_editor.dart';
@@ -51,6 +53,7 @@ GoRouter createAdminRouter({
   required AdminWorkoutRepository workouts,
   required AdminExerciseRepository exercises,
   required VoidCallback onSignOut,
+  AdminBuiltinProgramRepository? builtinPrograms,
   ProgramCoverRepository? covers,
   ProgramCoverRepository? guidedCovers,
   AdminProAccessRepository? proAccess,
@@ -630,6 +633,7 @@ GoRouter createAdminRouter({
                 builder: (context, state) => programPage(
                   state,
                   (item) => AdminProgramDetailPage(
+                    builtinRepository: builtinPrograms,
                     program: item,
                     repository: programs,
                     workoutRepository: workouts,
@@ -815,7 +819,8 @@ GoRouter createAdminRouter({
                 path: 'pull-ups',
                 builder: (_, _) => load(
                   () async => true,
-                  (_) => AdminLaboratoryPage(repository: exercises, pullUps: true),
+                  (_) =>
+                      AdminLaboratoryPage(repository: exercises, pullUps: true),
                 ),
               ),
               GoRoute(
