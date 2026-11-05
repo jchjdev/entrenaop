@@ -25,6 +25,23 @@ class DevOperationsTests(unittest.TestCase):
         self.assertTrue(declared)
         self.assertEqual(declared - set(drill.BACKUP_SCHEMAS), set())
 
+    def test_extension_restore_preserves_pg_cron_without_creating_reserved_schema(self):
+        statements = ops.extension_restore_sql([
+            {"extname": "pg_cron", "schema_name": "pg_catalog"},
+            {"extname": "pgcrypto", "schema_name": "extensions"},
+        ])
+        self.assertNotIn('create schema if not exists "pg_catalog"', statements)
+        self.assertIn('create extension if not exists "pg_cron" with schema "pg_catalog";', statements)
+        self.assertIn('create schema if not exists "extensions";', statements)
+        self.assertIn('create extension if not exists "pgcrypto" with schema "extensions";', statements)
+
+    def test_extension_inventory_quotes_identifiers_and_rejects_invalid_names(self):
+        statement = ops.extension_restore_sql([{"extname": 'name";select 1;--', "schema_name": "extensions"}])
+        self.assertIn('"name"";select 1;--"', statement)
+        for value in ["", None, "x" * 64, "name\0"]:
+            with self.subTest(value=value), self.assertRaises(ops.OperationsError):
+                ops.extension_restore_sql([{"extname": value, "schema_name": "extensions"}])
+
     def test_unknown_private_schema_stops_before_export(self):
         with patch.object(ops, "sql", return_value=[{"nspname": "new_private"}]):
             with self.assertRaisesRegex(ops.OperationsError, "backup_schema_scope_incomplete"):

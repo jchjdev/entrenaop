@@ -266,6 +266,22 @@ def assert_artifact_budget(extra):
         raise OperationsError("artifact_budget_limit")
 
 
+def extension_restore_sql(rows):
+    statements = []
+    for row in rows:
+        name, schema = row["extname"], row["schema_name"]
+        if any(not isinstance(v, str) or not v or len(v.encode()) > 63 or "\0" in v for v in (name, schema)):
+            raise OperationsError("invalid_extension_inventory")
+        quoted_name = '"' + name.replace('"', '""') + '"'
+        quoted_schema = '"' + schema.replace('"', '""') + '"'
+        # pg_catalog ya existe y PostgreSQL rechaza intentar crearlo, incluso
+        # con IF NOT EXISTS. pg_cron declara precisamente ese esquema.
+        if schema != "pg_catalog":
+            statements.append("create schema if not exists " + quoted_schema + ";")
+        statements.append("create extension if not exists " + quoted_name + " with schema " + quoted_schema + ";")
+    return "\n".join(statements)
+
+
 def backup(output):
     # No exportar datos ni consumir el ensayo si la copia no podrá cifrarse.
     encryption_passphrase()
@@ -284,10 +300,10 @@ def backup(output):
                 ("schema.sql", ["--schema", schemas]),
                 ("data.sql", ["--schema", schemas, "--data-only", "--use-copy"])]:
                 command(["supabase", "db", "dump", "--project-ref", PROJECT, "--file", str(source / name), *flags])
-            extensions = sql("select format('create schema if not exists %I; create extension if not exists %I with schema %I;',"
-                "n.nspname,e.extname,n.nspname) as statement from pg_extension e join pg_namespace n on n.oid=e.extnamespace "
+            extensions = sql("select e.extname,n.nspname as schema_name "
+                "from pg_extension e join pg_namespace n on n.oid=e.extnamespace "
                 "where e.extname<>'plpgsql' order by e.extname", read_only=True)
-            (source / "extensions.sql").write_text("\n".join(e["statement"] for e in extensions), encoding="utf-8")
+            (source / "extensions.sql").write_text(extension_restore_sql(extensions), encoding="utf-8")
             # El CLI omite CREATE/ALTER de roles gestionados. El contenedor de
             # ensayo necesita su inventario para resolver owners y grants;
             # pg_roles no expone hashes de contraseñas.

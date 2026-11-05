@@ -13,7 +13,7 @@ import tempfile
 IMAGE = "supabase/postgres:17.6.1.166@sha256:b3bfedb107413abb3b8cb0d0874b0414a1dceb3d55bc0c778de6ad22d1f7dc86"
 BACKUP_SCHEMAS = ("public", "auth", "storage", "admin_ops_private", "trainer_private",
                   "editor_private", "device_private", "admin_work_private", "push_private", "profile_private",
-                  "commerce_private", "directory_private",
+                  "commerce_private", "directory_private", "builtin_assessment_private",
                   "supabase_migrations")
 
 
@@ -176,7 +176,12 @@ def self_test():
             "rolinherit": True, "rolcreaterole": False, "rolcreatedb": False,
             "rolcanlogin": True, "rolreplication": False, "rolbypassrls": False,
         }]), encoding="utf-8")
-        (source / "extensions.sql").write_text("select 1;", encoding="utf-8")
+        # Reproduce también las extensiones reales: pg_cron vive en pg_catalog,
+        # cuyo CREATE SCHEMA falló en los ensayos tras habilitarlo en Dev.
+        (source / "extensions.sql").write_text(
+            'create schema if not exists extensions; '
+            'create extension if not exists pg_stat_statements with schema extensions; '
+            'create extension if not exists pg_cron with schema pg_catalog;', encoding="utf-8")
         (source / "schema.sql").write_text("\n".join("create schema " + schema + ";" for schema in BACKUP_SCHEMAS) + """
           create table auth.users(id uuid primary key);
           create table public.recipe(id uuid primary key, owner_id uuid references auth.users(id), name text);
