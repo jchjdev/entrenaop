@@ -1,3 +1,4 @@
+import 'package:entrenaop/features/physical_assessment/data/repositories/builtin_assessment_reference_repository.dart';
 import 'package:entrenaop/features/physical_assessment/data/repositories/fas_periodic_assessment_repository.dart';
 import 'package:entrenaop/features/physical_assessment/domain/catalogs/fas_periodic_2027_reference.dart';
 import 'package:entrenaop/features/physical_assessment/domain/entities/physical_assessment.dart';
@@ -18,12 +19,14 @@ class FasPeriodicAssessmentPage extends StatefulWidget {
     required this.repository,
     required this.birthDateRepository,
     this.reference,
+    this.references,
   });
 
   final String goalId;
   final FasPeriodicAssessmentRepository repository;
   final ProfileBirthDateRepository birthDateRepository;
   final FasPeriodic2027Reference? reference;
+  final BuiltinAssessmentReferenceRepository? references;
 
   @override
   State<FasPeriodicAssessmentPage> createState() =>
@@ -35,7 +38,7 @@ class _FasPeriodicAssessmentPageState extends State<FasPeriodicAssessmentPage> {
   final _fields = <String, TextEditingController>{
     for (final test in _tests) test.id: TextEditingController(),
   };
-  late final Future<FasPeriodic2027Reference> _reference;
+  late Future<FasPeriodic2027Reference> _reference;
   late Future<List<FasPeriodicAssessmentEntry>> _history;
   late Future<DateTime?> _birthDate;
   AssessmentCategory _category = AssessmentCategory.men;
@@ -44,11 +47,19 @@ class _FasPeriodicAssessmentPageState extends State<FasPeriodicAssessmentPage> {
   @override
   void initState() {
     super.initState();
-    _reference = widget.reference == null
-        ? FasPeriodic2027Reference.load()
-        : Future.value(widget.reference);
+    _reference = _loadReference();
     _history = widget.repository.history();
     _birthDate = widget.birthDateRepository.get();
+  }
+
+  Future<FasPeriodic2027Reference> _loadReference() async {
+    if (widget.reference != null) return widget.reference!;
+    final repository = widget.references;
+    if (repository == null) return FasPeriodic2027Reference.load();
+    return (await repository.load(
+      programId: 'fas_periodic_assessment',
+      goalId: widget.goalId,
+    )).asFas();
   }
 
   Future<void> _editBirthDate(DateTime? current) async {
@@ -104,12 +115,25 @@ class _FasPeriodicAssessmentPageState extends State<FasPeriodicAssessmentPage> {
     }
     setState(() => _saving = true);
     try {
-      await widget.repository.save(
-        goalId: widget.goalId,
-        category: _category.name,
-        age: age,
-        marks: marks,
-      );
+      if (reference.revisionId != null) {
+        if (widget.references == null) {
+          throw StateError('Falta el guardado versionado.');
+        }
+        await widget.references!.record(
+          revisionId: reference.revisionId!,
+          goalId: widget.goalId,
+          category: _category.name,
+          age: age,
+          marks: marks,
+        );
+      } else {
+        await widget.repository.save(
+          goalId: widget.goalId,
+          category: _category.name,
+          age: age,
+          marks: marks,
+        );
+      }
       if (!mounted) return;
       setState(() {
         _history = widget.repository.history();
@@ -174,7 +198,20 @@ class _FasPeriodicAssessmentPageState extends State<FasPeriodicAssessmentPage> {
       future: _reference,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return const Center(child: Text('No se pudo cargar el baremo.'));
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('No se pudo cargar el baremo.'),
+                TextButton(
+                  onPressed: () => setState(() {
+                    _reference = _loadReference();
+                  }),
+                  child: const Text('Reintentar cargar el baremo'),
+                ),
+              ],
+            ),
+          );
         }
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
@@ -377,7 +414,12 @@ class _FasPeriodicAssessmentPageState extends State<FasPeriodicAssessmentPage> {
                                           },
                                         ),
                                       ),
-                                  if (age >= 45)
+                                  if (reference.passMarkFor(
+                                        testId: 'agility_speed_circuit',
+                                        category: _category,
+                                        age: age,
+                                      ) ==
+                                      null)
                                     const Padding(
                                       padding: EdgeInsets.only(top: 14),
                                       child: Text(

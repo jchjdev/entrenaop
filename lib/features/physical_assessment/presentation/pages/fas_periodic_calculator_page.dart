@@ -1,3 +1,4 @@
+import 'package:entrenaop/features/physical_assessment/data/repositories/builtin_assessment_reference_repository.dart';
 import 'package:entrenaop/features/physical_assessment/data/repositories/fas_periodic_assessment_repository.dart';
 import 'package:entrenaop/features/physical_assessment/domain/catalogs/fas_periodic_2027_reference.dart';
 import 'package:entrenaop/features/physical_assessment/domain/entities/physical_assessment.dart';
@@ -11,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class FasPeriodicCalculatorPage extends StatefulWidget {
   const FasPeriodicCalculatorPage({
@@ -18,12 +20,14 @@ class FasPeriodicCalculatorPage extends StatefulWidget {
     required this.birthDateRepository,
     required this.repository,
     this.reference,
+    this.references,
     this.today,
   });
 
   final ProfileBirthDateRepository birthDateRepository;
   final FasPeriodicAssessmentRepository repository;
   final FasPeriodic2027Reference? reference;
+  final BuiltinAssessmentReferenceRepository? references;
   final DateTime? today;
 
   @override
@@ -42,6 +46,8 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
   final Map<String, PeriodicScoreResult> _results = {};
   bool _savingBirthDate = false;
   bool _savingAssessment = false;
+  bool _referenceChanged = false;
+  bool _updatingReference = false;
   late DateTime _assessmentDate;
 
   void _dismissKeyboard() {
@@ -60,11 +66,48 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
   }
 
   // Acotar solo lecturas permite reintentar sin duplicar un test guardado.
-  Future<FasPeriodic2027Reference> _loadReference() =>
-      (widget.reference == null
-              ? FasPeriodic2027Reference.load()
-              : Future.value(widget.reference!))
-          .timeout(const Duration(seconds: 15));
+  Future<FasPeriodic2027Reference> _loadReference() async {
+    if (widget.reference != null) return widget.reference!;
+    final repository = widget.references;
+    if (repository == null) return FasPeriodic2027Reference.load();
+    return (await repository.load(programId: 'fas_periodic_assessment'))
+        .asFas();
+  }
+
+  void _updateReference() {
+    if (_updatingReference) return;
+    _dismissKeyboard();
+    setState(() {
+      _updatingReference = true;
+      _reference = _reloadReference();
+      // Un rechazo inmediato puede llegar antes de montar el nuevo FutureBuilder.
+      // El builder seguirá mostrando ese error con su acción de reintento.
+      _reference.ignore();
+    });
+  }
+
+  Future<FasPeriodic2027Reference> _reloadReference() async {
+    try {
+      final reference = await _loadReference();
+      DateTime? birthDate;
+      try {
+        birthDate = await _birthDate;
+      } catch (_) {
+        // El bloque de nacimiento conserva su propio error y su reintento.
+      }
+      if (!mounted) return reference;
+      if (birthDate != null) {
+        _recalculate(reference, ageOnDate(birthDate, _assessmentDate));
+      }
+      setState(() {
+        if (birthDate == null) _results.clear();
+        _referenceChanged = false;
+      });
+      return reference;
+    } finally {
+      if (mounted) setState(() => _updatingReference = false);
+    }
+  }
 
   Future<DateTime?> _loadBirthDate() =>
       widget.birthDateRepository.get().timeout(const Duration(seconds: 15));
@@ -101,10 +144,14 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
     }
   }
 
+  bool _applies(FasPeriodic2027Reference reference, String testId, int age) =>
+      reference.passMarkFor(testId: testId, category: _category, age: age) !=
+      null;
+
   void _recalculate(FasPeriodic2027Reference reference, int age) {
     final results = <String, PeriodicScoreResult>{};
     for (final test in _calculatorTests) {
-      if (test.id == 'agility_speed_circuit' && age >= 45) continue;
+      if (!_applies(reference, test.id, age)) continue;
       final mark = _parseMark(test.id, _controllers[test.id]!.text);
       if (mark == null) continue;
       results[test.id] = reference.scoreFor(
@@ -137,31 +184,59 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
     _recalculate(reference, ageOnDate(birthDate, chosen));
   }
 
-  Future<void> _saveAssessment(int age) async {
+  Future<void> _saveAssessment(
+    FasPeriodic2027Reference reference,
+    int age,
+  ) async {
+    if (_savingAssessment || _referenceChanged || _updatingReference) return;
     _dismissKeyboard();
     if (!_formKey.currentState!.validate()) return;
     setState(() => _savingAssessment = true);
     try {
-      await widget.repository.save(
-        category: _category.name,
-        age: age,
-        completedAt: _assessmentDate,
-        marks: {
-          for (final test in _calculatorTests)
-            if (test.id != 'agility_speed_circuit' || age < 45)
-              test.id: _parseMark(test.id, _controllers[test.id]!.text)!,
-        },
-      );
+      final marks = {
+        for (final test in _calculatorTests)
+          if (_applies(reference, test.id, age))
+            test.id: _parseMark(test.id, _controllers[test.id]!.text)!,
+      };
+      if (reference.revisionId != null) {
+        if (widget.references == null) {
+          throw StateError('Falta el guardado versionado.');
+        }
+        await widget.references!.record(
+          revisionId: reference.revisionId!,
+          category: _category.name,
+          age: age,
+          completedAt: _assessmentDate,
+          marks: marks,
+        );
+      } else {
+        await widget.repository.save(
+          category: _category.name,
+          age: age,
+          completedAt: _assessmentDate,
+          marks: marks,
+        );
+      }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Test guardado en tu historial personal.'),
         ),
       );
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
+      final changed =
+          error is PostgrestException &&
+          error.details == 'builtin_reference_changed';
+      if (changed) setState(() => _referenceChanged = true);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No se pudo guardar el test.')),
+        SnackBar(
+          content: Text(
+            changed
+                ? 'El baremo ha cambiado. Actualízalo antes de guardar; tus marcas se conservan.'
+                : 'No se pudo guardar el test.',
+          ),
+        ),
       );
     } finally {
       if (mounted) setState(() => _savingAssessment = false);
@@ -188,8 +263,7 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
               children: [
                 const Text('No se pudo cargar el baremo.'),
                 TextButton(
-                  onPressed: () =>
-                      setState(() => _reference = _loadReference()),
+                  onPressed: _updatingReference ? null : _updateReference,
                   child: const Text('Reintentar cargar el baremo'),
                 ),
               ],
@@ -207,6 +281,7 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           padding: const EdgeInsets.all(20),
           children: [
+            if (_updatingReference) const LinearProgressIndicator(),
             Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 720),
@@ -225,7 +300,9 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
                         ),
                         children: [
                           Text(
-                            'Orden DEF/15/2026 · anexo II · catálogo ${FasPeriodic2027Reference.version} · verificado ${reference.verifiedOn}.',
+                            reference.revisionId == null
+                                ? 'Orden DEF/15/2026 · anexo II · catálogo ${reference.scoringVersion} · verificado ${reference.verifiedOn}.'
+                                : 'Catálogo ${reference.scoringVersion} · vigencia ${reference.referenceEffectiveFrom} · fuente ${reference.referenceSourceUrl}',
                             style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 12,
@@ -233,9 +310,11 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
                             ),
                           ),
                           const SizedBox(height: 6),
-                          const Text(
-                            'La suma es orientativa. La aptitud general exige alcanzar al menos 20 puntos en cada prueba aplicable. La tabla II.3 contiene una secuencia no ordenada que se conserva literalmente hasta que exista una corrección oficial.',
-                            style: TextStyle(
+                          Text(
+                            reference.revisionId == null
+                                ? 'La suma es orientativa. La aptitud general exige alcanzar al menos 20 puntos en cada prueba aplicable. La tabla II.3 contiene una secuencia no ordenada que se conserva literalmente hasta que exista una corrección oficial.'
+                                : 'La suma es orientativa. La aptitud general exige alcanzar al menos 20 puntos en cada prueba aplicable. Se utiliza la revisión indicada, conservando su tabla y su criterio de redondeo.',
+                            style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 12,
                               height: 1.4,
@@ -306,7 +385,9 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
     required DateTime birthDate,
     required int age,
   }) {
-    final expectedTests = age < 45 ? 4 : 3;
+    final expectedTests = _calculatorTests
+        .where((test) => _applies(reference, test.id, age))
+        .length;
     final isComplete = _results.length == expectedTests;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -351,7 +432,7 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
             builder: (context, constraints) {
               final tests = [
                 for (final test in _calculatorTests)
-                  if (test.id != 'agility_speed_circuit' || age < 45) test,
+                  if (_applies(reference, test.id, age)) test,
               ];
               final textScale = MediaQuery.textScalerOf(context).scale(16) / 16;
               final useTwoColumns =
@@ -404,7 +485,7 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
             },
           ),
         ),
-        if (age >= 45) ...[
+        if (!_applies(reference, 'agility_speed_circuit', age)) ...[
           const SizedBox(height: 8),
           const Text(
             'Agilidad no exigible desde el día en que se cumplen 45 años.',
@@ -412,6 +493,20 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
           ),
         ],
         const SizedBox(height: 10),
+        if (_referenceChanged) ...[
+          const Text(
+            'Hay una versión nueva del baremo. Puedes actualizarla conservando tus marcas.',
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: _updatingReference ? null : _updateReference,
+            icon: const Icon(Icons.refresh),
+            label: Text(
+              _updatingReference ? 'Actualizando baremo…' : 'Actualizar baremo',
+            ),
+          ),
+          const SizedBox(height: 10),
+        ],
         Row(
           children: [
             Expanded(
@@ -426,9 +521,13 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
             const SizedBox(width: 10),
             Expanded(
               child: FilledButton(
-                onPressed: !isComplete || _savingAssessment
+                onPressed:
+                    !isComplete ||
+                        _savingAssessment ||
+                        _referenceChanged ||
+                        _updatingReference
                     ? null
-                    : () => _saveAssessment(age),
+                    : () => _saveAssessment(reference, age),
                 child: _savingAssessment
                     ? const SizedBox.square(
                         dimension: 18,

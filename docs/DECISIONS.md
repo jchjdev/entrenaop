@@ -1,5 +1,9 @@
 # Registro de decisiones vigentes
 
+**Retención de compilados Trainer · 05/11/2026.** Para desbloquear la copia cifrada de Dev, Javier autoriza la limpieza de los 106 ZIP antiguos del plan revisado y automatizar la misma regla de cinco recientes más la versión publicada. Se conserva el límite de almacenamiento; la autorización afecta a compilados Trainer, sin ampliar la eliminación a otros recursos. [Alcance y evidencia](audits/TRAINER_COMPILED_RETENTION_2026_11_05.md).
+
+**Autoría versionada de FAS/Tropa · 05/11/2026.** Javier aprueba implementar la propuesta con revisión, publicación e historial protegido. Primer bloque: presentación, fuente, vigencia y valores de baremos, con lectura/cálculo/guardado coherentes por versión en ADMIN, app y servidor. Las preparaciones existentes conservan su revisión; los nuevos resultados FAS guardan el cálculo de servidor sin reinterpretar los anteriores. Identidades, unidades, protocolos y estructura quedan protegidos; editar condiciones de entrenamiento será el siguiente bloque. [Contrato y alcance](BUILTIN_ASSESSMENT_AUTHORING.md).
+
 **Repetir la pestaña activa para volver arriba · 05/11/2026.** Javier solicita
 volver al principio de la pantalla al tocar de nuevo su destino inferior.
 La acción desplaza la vista vertical abierta en la sección. El cambio entre

@@ -1,6 +1,8 @@
 # Producto EntrenaOP
 
-**FAS y Tropa en ADMIN · 05/11/2026:** sus fichas consultan catálogo, fuente, mínimos y condiciones existentes, con secciones plegables y reintento. Se elimina la apariencia de preparación vacía. La edición de estos catálogos integrados sigue pendiente de definir su autoría versionada; los programas configurables conservan su creador. [Estado y límites](audits/ADMIN_CREATORS_PREPARATIONS_2026_11_05.md).
+**Edición FAS/Tropa desde ADMIN · 05/11/2026:** crear/retomar revisión, editar presentación/fuente/vigencia y valores de baremos, comparar, simular, revisar, publicar y retirar para nuevas preparaciones. La tabla FAS completa se trabaja por prueba/sexo/edad en páginas de 20 filas; los mínimos Tropa por hito. Se conserva configuración e historial de preparaciones existentes. Protocolos/estructura y entrenamiento permanecen protegidos. [Contrato y alcance](BUILTIN_ASSESSMENT_AUTHORING.md).
+
+**FAS y Tropa en ADMIN · 05/11/2026:** sus fichas consultan catálogo, fuente, mínimos y condiciones existentes, con secciones plegables y reintento. Se elimina la apariencia de preparación vacía. La consulta inicial se amplía mediante la autoría versionada descrita arriba; los programas configurables conservan su creador. [Estado y límites](audits/ADMIN_CREATORS_PREPARATIONS_2026_11_05.md).
 
 **Preparaciones sin ciclos de consulta · 03/11/2026:** ficha y plan publicado
 conservan la semana y el retorno sin acumular pantallas. Configurar es una tarea

@@ -1,3 +1,5 @@
+import 'package:entrenaop/features/physical_assessment/data/repositories/builtin_assessment_reference_repository.dart';
+import 'package:entrenaop/features/physical_assessment/domain/catalogs/troop_assessment_reference.dart';
 import 'package:entrenaop/features/physical_assessment/domain/catalogs/armed_forces_2026_troop_catalog.dart';
 import 'package:entrenaop/features/physical_assessment/domain/entities/physical_assessment.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/bloc/physical_assessment_cubit.dart';
@@ -12,9 +14,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class InitialAssessmentPage extends StatefulWidget {
-  const InitialAssessmentPage({super.key, this.goalId});
+  const InitialAssessmentPage({
+    super.key,
+    this.goalId,
+    this.references,
+    this.reference,
+  });
 
   final String? goalId;
+  final BuiltinAssessmentReferenceRepository? references;
+  final TroopAssessmentReference? reference;
 
   @override
   State<InitialAssessmentPage> createState() => _InitialAssessmentPageState();
@@ -27,6 +36,41 @@ class _InitialAssessmentPageState extends State<InitialAssessmentPage> {
   final _runController = TextEditingController();
   final _agilityController = TextEditingController();
   String? _savedStamp;
+  late Future<TroopAssessmentReference> _reference = _loadReference();
+  TroopAssessmentReference? _activeReference;
+
+  Future<TroopAssessmentReference> _loadReference() async {
+    final explicit = widget.reference;
+    if (explicit != null) return explicit;
+    final repository = widget.references;
+    if (repository == null) return TroopAssessmentReference.legacy();
+    return (await repository.load(
+      programId: 'armed_forces_troop_entry',
+      goalId: widget.goalId,
+    )).asTroop();
+  }
+
+  Future<void> _save() => context.read<PhysicalAssessmentCubit>().save(
+    goalId: widget.goalId,
+    saveWithRevision: _activeReference?.revisionId == null
+        ? null
+        : (report) {
+            final repository = widget.references;
+            if (repository == null) {
+              throw StateError('No hay conexión de guardado versionado.');
+            }
+            return repository.record(
+              revisionId: _activeReference!.revisionId!,
+              goalId: widget.goalId,
+              category: report.category.name,
+              milestone: 'entry',
+              marks: {
+                for (final result in report.results)
+                  result.mark.testId: result.mark.value,
+              },
+            );
+          },
+  );
   String get _draftStamp => [
     context.read<PhysicalAssessmentCubit>().state.category.name,
     _pushUpsController.text,
@@ -68,11 +112,44 @@ class _InitialAssessmentPageState extends State<InitialAssessmentPage> {
         unit: MarkUnit.milliseconds,
         value: parseSecondsToMilliseconds(_agilityController.text)!,
       ),
-    ]);
+    ], reference: _activeReference);
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FutureBuilder<TroopAssessmentReference>(
+    future: _reference,
+    builder: (context, snapshot) {
+      if (snapshot.hasError) {
+        return Scaffold(
+          appBar: AppBar(title: const Text('Evaluación física · Tropa')),
+          body: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('No se pudo cargar el baremo de esta preparación.'),
+                TextButton(
+                  onPressed: () => setState(() {
+                    _reference = _loadReference();
+                  }),
+                  child: const Text('Reintentar cargar el baremo'),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+      if (!snapshot.hasData) {
+        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      }
+      _activeReference = snapshot.data!;
+      return _buildAssessment(context, snapshot.data!);
+    },
+  );
+
+  Widget _buildAssessment(
+    BuildContext context,
+    TroopAssessmentReference reference,
+  ) {
     return BlocConsumer<PhysicalAssessmentCubit, PhysicalAssessmentState>(
       listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, state) {
@@ -127,6 +204,7 @@ class _InitialAssessmentPageState extends State<InitialAssessmentPage> {
                 child: report == null
                     ? _AssessmentForm(
                         formKey: _formKey,
+                        reference: reference,
                         state: state,
                         pushUpsController: _pushUpsController,
                         plankController: _plankController,
@@ -138,6 +216,7 @@ class _InitialAssessmentPageState extends State<InitialAssessmentPage> {
                         report: report,
                         status: state.status,
                         goalId: widget.goalId,
+                        onSave: _save,
                       ),
               ),
             ),
@@ -151,6 +230,7 @@ class _InitialAssessmentPageState extends State<InitialAssessmentPage> {
 class _AssessmentForm extends StatelessWidget {
   const _AssessmentForm({
     required this.formKey,
+    required this.reference,
     required this.state,
     required this.pushUpsController,
     required this.plankController,
@@ -160,6 +240,7 @@ class _AssessmentForm extends StatelessWidget {
   });
 
   final GlobalKey<FormState> formKey;
+  final TroopAssessmentReference reference;
   final PhysicalAssessmentState state;
   final TextEditingController pushUpsController;
   final TextEditingController plankController;
@@ -169,7 +250,7 @@ class _AssessmentForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final standards = ArmedForces2026TroopCatalog.standards
+    final standards = reference.standards
         .where(
           (standard) =>
               standard.category == state.category &&
@@ -458,8 +539,10 @@ class _AssessmentReportView extends StatelessWidget {
     required this.report,
     required this.status,
     required this.goalId,
+    this.onSave,
   });
 
+  final Future<void> Function()? onSave;
   final AssessmentReport report;
   final PhysicalAssessmentStatus status;
   final String? goalId;
@@ -521,9 +604,10 @@ class _AssessmentReportView extends StatelessWidget {
                     status == PhysicalAssessmentStatus.saving ||
                         status == PhysicalAssessmentStatus.saved
                     ? null
-                    : () => context.read<PhysicalAssessmentCubit>().save(
-                        goalId: goalId,
-                      ),
+                    : onSave ??
+                          () => context.read<PhysicalAssessmentCubit>().save(
+                            goalId: goalId,
+                          ),
                 icon: status == PhysicalAssessmentStatus.saving
                     ? const SizedBox.square(
                         dimension: 18,

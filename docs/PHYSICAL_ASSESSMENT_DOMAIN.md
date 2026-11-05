@@ -1,5 +1,7 @@
 # Dominio de evaluación física
 
+**Autoría desde ADMIN · acuerdo del 05/11/2026:** revisiones completas de FAS/Tropa, sin sobrescribir baremos usados ni recalcular históricos. Se implementan primero los valores de evaluación y su consumo coherente por versión; las condiciones de entrenamiento quedan para otro bloque. [Contrato](BUILTIN_ASSESSMENT_AUTHORING.md).
+
 Última revisión: 26 de septiembre de 2026.
 
 ## Decisión vigente

@@ -1,3 +1,4 @@
+import 'package:entrenaop/features/physical_assessment/data/repositories/builtin_assessment_reference_repository.dart';
 import 'package:entrenaop/features/physical_assessment/data/repositories/fas_periodic_assessment_repository.dart';
 import 'package:entrenaop/features/physical_assessment/domain/catalogs/fas_periodic_2027_reference.dart';
 import 'package:entrenaop/features/physical_assessment/domain/entities/physical_assessment.dart';
@@ -9,10 +10,12 @@ class FasPeriodicHistoryPage extends StatefulWidget {
     super.key,
     required this.repository,
     this.reference,
+    this.references,
   });
 
   final FasPeriodicAssessmentRepository repository;
   final FasPeriodic2027Reference? reference;
+  final BuiltinAssessmentReferenceRepository? references;
 
   @override
   State<FasPeriodicHistoryPage> createState() => _FasPeriodicHistoryPageState();
@@ -28,10 +31,19 @@ class _FasPeriodicHistoryPageState extends State<FasPeriodicHistoryPage> {
     _data = _load();
   }
 
-  Future<_HistoryData> _load() async => _HistoryData(
-    entries: await widget.repository.history(),
-    reference: widget.reference ?? await FasPeriodic2027Reference.load(),
-  );
+  Future<_HistoryData> _load() async {
+    final entries = await widget.repository.history();
+    return _HistoryData(
+      entries: entries,
+      references: await loadFasHistoryReferences(
+        versions: entries
+            .where((e) => !e.marks.every((m) => m.points != null))
+            .map((e) => e.scoringVersion),
+        repository: widget.references,
+        explicitReference: widget.reference,
+      ),
+    );
+  }
 
   Future<void> _refresh() async {
     final future = _load();
@@ -101,7 +113,7 @@ class _FasPeriodicHistoryPageState extends State<FasPeriodicHistoryPage> {
                 FasAssessmentHistoryCard(
                   key: ValueKey(entry.id),
                   entry: entry,
-                  reference: data.reference,
+                  reference: data.references[entry.scoringVersion],
                 ),
                 const SizedBox(height: 12),
               ],
@@ -121,18 +133,20 @@ class FasAssessmentHistoryCard extends StatelessWidget {
   });
 
   final FasPeriodicAssessmentEntry entry;
-  final FasPeriodic2027Reference reference;
+  final FasPeriodic2027Reference? reference;
 
   @override
   Widget build(BuildContext context) {
-    if (entry.scoringVersion != FasPeriodic2027Reference.version) {
+    final storedPoints =
+        entry.marks.isNotEmpty && entry.marks.every((m) => m.points != null);
+    if (!storedPoints && entry.scoringVersion != reference?.scoringVersion) {
       return Card(
         child: ExpansionTile(
           key: PageStorageKey('fas-assessment-${entry.id}'),
           leading: const Icon(Icons.update_outlined),
           title: Text(DateFormat('dd-MM-yyyy').format(entry.completedAt)),
           subtitle: const Text(
-            'Este test usa otra versión del baremo. Actualiza la app para consultar sus puntos.',
+            'No se han podido consultar los puntos de esta versión. Las marcas guardadas se conservan.',
           ),
           children: [
             for (final mark in entry.marks)
@@ -145,19 +159,20 @@ class FasAssessmentHistoryCard extends StatelessWidget {
       );
     }
     final category = AssessmentCategory.values.byName(entry.category);
-    final scores = <String, PeriodicScoreResult>{
+    final scores = <String, int>{
       for (final mark in entry.marks)
-        mark.testId: reference.scoreFor(
-          testId: mark.testId,
-          category: category,
-          age: entry.age,
-          mark: mark.value,
-        )!,
+        mark.testId: storedPoints
+            ? mark.points!
+            : reference!
+                  .scoreFor(
+                    testId: mark.testId,
+                    category: category,
+                    age: entry.age,
+                    mark: mark.value,
+                  )!
+                  .points,
     };
-    final total = scores.values.fold<int>(
-      0,
-      (sum, result) => sum + result.points,
-    );
+    final total = scores.values.fold<int>(0, (sum, result) => sum + result);
     return Card(
       child: ExpansionTile(
         key: PageStorageKey('fas-assessment-${entry.id}'),
@@ -176,7 +191,7 @@ class FasAssessmentHistoryCard extends StatelessWidget {
               title: Text(mark.testName),
               subtitle: Text(_formatStoredMark(mark)),
               trailing: Text(
-                '${scores[mark.testId]!.points} puntos',
+                '${scores[mark.testId]} puntos',
                 style: const TextStyle(fontWeight: FontWeight.w800),
               ),
             ),
@@ -196,8 +211,8 @@ String _formatStoredMark(FasPeriodicAssessmentMark mark) => switch (mark.unit) {
 };
 
 class _HistoryData {
-  const _HistoryData({required this.entries, required this.reference});
+  const _HistoryData({required this.entries, required this.references});
 
   final List<FasPeriodicAssessmentEntry> entries;
-  final FasPeriodic2027Reference reference;
+  final Map<String, FasPeriodic2027Reference> references;
 }

@@ -1,3 +1,4 @@
+import 'package:entrenaop/features/physical_assessment/domain/catalogs/troop_assessment_reference.dart';
 import 'package:entrenaop/features/physical_assessment/domain/catalogs/armed_forces_2026_troop_catalog.dart';
 import 'package:entrenaop/features/physical_assessment/domain/entities/physical_assessment.dart';
 import 'package:entrenaop/features/physical_assessment/domain/services/assessment_evaluator.dart';
@@ -10,6 +11,7 @@ class EvaluateInitialAssessmentUseCase {
   AssessmentReport call({
     required AssessmentCategory category,
     required List<RecordedMark> marks,
+    TroopAssessmentReference? reference,
   }) {
     // El orden es estable para que el informe siempre presente las pruebas de
     // la misma forma, aunque el cliente entregue las marcas desordenadas.
@@ -42,17 +44,19 @@ class EvaluateInitialAssessmentUseCase {
             );
           }
 
-          final standard = ArmedForces2026TroopCatalog.standardFor(
-            testId: test.id,
-            category: category,
-            milestone: AssessmentMilestone.entry,
-          );
+          final standard = (reference ?? TroopAssessmentReference.legacy())
+              .standardFor(
+                testId: test.id,
+                category: category,
+                milestone: AssessmentMilestone.entry,
+              );
           return _evaluator.evaluate(mark: mark, standard: standard);
         })
         .toList(growable: false);
 
     return AssessmentReport(
-      catalogVersion: ArmedForces2026TroopCatalog.version,
+      catalogVersion:
+          reference?.catalogVersion ?? ArmedForces2026TroopCatalog.version,
       category: category,
       milestone: AssessmentMilestone.entry,
       results: results,

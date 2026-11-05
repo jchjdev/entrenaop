@@ -22,3 +22,13 @@ nombres ajenos y revisiones que no coinciden con la ejecución de main.
 32 pruebas de herramientas Trainer y 48 ADMIN correctas antes de activar, incluido
 el aislamiento entre familias y la protección de la versión publicada. La ejecución
 real y su inventario final se acreditan al cerrar la recuperación.
+
+
+## Aplicación acreditada
+
+Commit 3f289ed8e87e24b5eaf57480376733e3d047c96a; ejecución Trainer Dev
+42088472822 con validación, despliegue y retención correctos. La nueva compilación
+hace avanzar la ventana de cinco: se retiran finalmente 107 ZIP por
+1.669.615.012 bytes bajo la misma regla aprobada. Inventario posterior: cinco
+Trainer y cinco ADMIN, 158.250.328 bytes activos. No se eliminó ninguna copia de
+datos ni se modificó una sesión, cliente o código fuente.

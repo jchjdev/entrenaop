@@ -1,4 +1,5 @@
 import '../data/admin_builtin_program_repository.dart';
+import '../data/admin_builtin_assessment_authoring_repository.dart';
 import 'admin_builtin_program_panel.dart';
 
 import 'dart:convert';
@@ -26,9 +27,11 @@ class AdminProgramDetailPage extends StatefulWidget {
     required this.workoutRepository,
     this.coverRepository,
     this.builtinRepository,
+    this.builtinAuthoring,
   });
 
   final AdminBuiltinProgramRepository? builtinRepository;
+  final AdminBuiltinAssessmentAuthoringRepository? builtinAuthoring;
   final AdminProgram program;
   final AdminProgramRepository repository;
   final AdminWorkoutRepository workoutRepository;
@@ -453,7 +456,7 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
         const SizedBox(height: 8),
         Text(
           _builtin
-              ? 'Preparación integrada · consulta del catálogo y sus condiciones'
+              ? 'Preparación integrada · baremos versionados y condiciones de entrenamiento'
               : widget.program.enabled
               ? 'Programa publicado · las pruebas existentes se conservan.'
               : 'Borrador · define sus pruebas antes de publicarlo.',
@@ -509,6 +512,7 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
             AdminBuiltinProgramPanel(
               programId: widget.program.id,
               repository: widget.builtinRepository!,
+              authoringRepository: widget.builtinAuthoring,
             )
           else
             const Text(

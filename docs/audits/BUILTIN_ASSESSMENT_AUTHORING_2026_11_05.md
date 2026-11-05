@@ -1,0 +1,78 @@
+# Autoría FAS/Tropa · auditoría del bloque · 05/11/2026
+
+## Entrega y fronteras
+
+El recorrido aprobado incorpora crear/retomar revisión, presentación/fuente/vigencia,
+mínimos Tropa y puntos FAS, comparación/simulador, revisión, publicación y retirada
+para nuevas preparaciones. Las condiciones deportivas y los editores de sesiones
+conservan sus contratos. Se fijan las preparaciones a revisiones; no se actualizan
+silenciosamente. Cambios de protocolo/estructura y actualización explícita de una
+preparación existente son siguientes capacidades, no funciones entregadas aquí.
+
+ADMIN 0.7.0+12; deportista 1.17.0+37. Sin nuevos paquetes ni dependencias. La
+retención de compilados y el arreglo de copias se guardan como infraestructura
+separada, con autorización y evidencia propias.
+
+## Implementación contrastada
+
+- Revisiones completas e inmutables tras publicación; borradores privados con
+  edición concurrente e idempotencia de creación. Escritura por RPC invoker a
+  funciones privadas, permiso administrativo y AAL2; propiedad/revisión/estado
+  comprobados al guardar evaluaciones. Sin acceso directo de escritura cliente.
+- Tropa conserva 24 referencias y cuatro pruebas. FAS importa literalmente 306
+  filas del asset; sus 64 mínimos se proyectan desde la tabla de puntuación y
+  coinciden exactamente con los originales. Se conserva la anomalía documental
+  de carrera; la publicación bloquea nuevas incoherencias de puntos.
+- Las proyecciones se insertan como catálogos nuevos. No cambian is_current legado,
+  las filas de mínimos usadas, las definiciones compartidas ni los motores. Una
+  preparación antigua mantiene semilla; las altas nuevas eligen la revisión
+  publicada vigente. Retirar no rompe el historial ni sus vínculos existentes.
+- Los nuevos resultados FAS conservan snapshot calculado en servidor, incluyendo
+  la décima de agilidad. La vista mantiene las columnas antiguas y añade snapshot
+  al final; los registros anteriores conservan su semántica. No se inventa un
+  resultado normativo agregado.
+- App, calculadora e historial leen su revisión exacta. El asset sólo representa
+  una versión antigua conocida. Los fallos de red no cambian de baremo. La
+  calculadora personal ofrece Actualizar baremo si la publicación cambió, conserva
+  las marcas y recalcula únicamente tras la acción explícita; la recarga fallida
+  se puede reintentar. Los clientes anteriores conservan semilla o reciben una
+  incompatibilidad explícita al intentar guardar en una preparación nueva.
+- ADMIN muestra una columna y 20 filas por página para la matriz FAS, protege
+  estructura/unidades/protocolos y conserva datos al fallar. La revisión queda
+  invalidada al editar. Las respuestas de otro contexto se descartan.
+
+## Validación previa a aplicar Dev
+
+- 1.872 pruebas raíz y una omisión previa; 406 ADMIN y dos omisiones previas.
+- Análisis raíz y ADMIN sin incidencias; compilaciones web exclusivamente Dev.
+- 48 pruebas de herramientas ADMIN, 32 Trainer y tres de semilla/contrato SQL.
+- Pruebas focales incluyen 320 px/texto 2×, precisión, reintentos, concurrencia,
+  recuperar/retirar, publicación durante formulario, snapshots y separación de
+  versiones. La inspección independiente del SQL no detecta otro bloqueo.
+- Migración y smoke completos ejecutados juntos en Dev con ROLLBACK; comprueban
+  publicación/retirada/legacy, 64 mínimos, permisos, propiedad, vínculos, guards y
+  señal de actualización personal. Se corrigió una ambigüedad de alias Tropa
+  detectada en el primer ensayo antes de aplicar nada definitivamente.
+
+## Aplicación y publicación
+
+La copia previa 42085037509-3 queda verified, restaurada el 05/11/2026 a las
+19:06:45 UTC y conservada cifrada (4.235.835 bytes) hasta el 12/11. La migración
+20261105180858 se aplica exclusivamente en entrenaop-dev; el historial CLI acredita
+309 migraciones coincidentes. El smoke nuevo, fas_periodic_security_smoke y
+troop_goal_assessment_smoke pasan sobre el esquema instalado, todos con ROLLBACK.
+
+Se conservan exactamente los cuatro intentos Tropa y once FAS: las huellas de
+cabeceras antiguas, marcas y resultados coinciden antes/después. Para comparar FAS
+se excluye únicamente la nueva columna nullable result_snapshot, que permanece
+vacía en los intentos anteriores. Hay dos revisiones semilla publicadas, doce
+vínculos de preparaciones y cero borradores/fixtures persistidos por el ensayo.
+
+Los asesores de seguridad no añaden errores ni advertencias: aparecen únicamente
+dos INFO RLS-sin-política para las tablas privadas creation_requests y events,
+intencionalmente cerradas y sin grants de acceso directo al cliente. Las funciones
+privadas validan permiso/AAL2 y exponen solo las operaciones autorizadas.
+
+La versión publicada HTTPS y la copia posterior al esquema nuevo se acreditan
+tras el despliegue. La aceptación física en iPhone requiere instalar el nuevo
+cliente; el ensayo web/servidor no acredita instalación nativa en ese dispositivo.

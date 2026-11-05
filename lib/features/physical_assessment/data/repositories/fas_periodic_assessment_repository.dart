@@ -10,9 +10,11 @@ class FasPeriodicAssessmentEntry {
     required this.age,
     required this.isPreEffectiveReference,
     required this.marks,
+    this.revisionId,
   });
 
   final String id;
+  final String? revisionId;
   final String? goalId;
   final String scoringVersion;
   final DateTime completedAt;
@@ -32,6 +34,9 @@ class FasPeriodicAssessmentMark {
     required this.value,
     required this.threshold,
     required this.meetsMinimum,
+    this.points,
+    this.scoredValue,
+    this.betterDirection,
   });
 
   final String testId;
@@ -40,6 +45,9 @@ class FasPeriodicAssessmentMark {
   final int value;
   final int threshold;
   final bool meetsMinimum;
+  final int? points;
+  final int? scoredValue;
+  final String? betterDirection;
 }
 
 class FasPeriodicAssessmentRepository {
@@ -60,24 +68,49 @@ class FasPeriodicAssessmentRepository {
     }
     return grouped.entries.map((item) {
       final header = item.value.first;
+      final snapshot = header['result_snapshot'];
+      final validSnapshot =
+          snapshot is Map &&
+          snapshot['scoring_version'] == header['scoring_version'] &&
+          snapshot['catalog_version'] == header['catalog_version'] &&
+          snapshot['revision_id'] is String &&
+          snapshot['results'] is List;
+      final stored = validSnapshot
+          ? {
+              for (final raw in snapshot['results'] as List)
+                if (raw is Map && raw['test_id'] is String)
+                  raw['test_id'] as String: raw,
+            }
+          : <String, dynamic>{};
       final marks =
-          item.value
-              .map(
-                (row) => FasPeriodicAssessmentMark(
-                  testId: row['test_id'] as String,
-                  testName: row['test_name'] as String,
-                  unit: row['unit'] as String,
-                  value: (row['value'] as num).toInt(),
-                  threshold: (row['threshold'] as num).toInt(),
-                  meetsMinimum: row['meets_minimum'] as bool,
-                ),
-              )
-              .toList()
-            ..sort(
-              (a, b) => _testOrder(a.testId).compareTo(_testOrder(b.testId)),
+          item.value.map((row) {
+            final saved = stored[row['test_id']];
+            final valid =
+                saved is Map &&
+                saved['mark'] == row['value'] &&
+                saved['unit'] == row['unit'] &&
+                saved['points'] is int &&
+                saved['points'] >= 0 &&
+                saved['points'] <= 100 &&
+                saved['scored_mark'] is int &&
+                ['higher', 'lower'].contains(saved['direction']);
+            return FasPeriodicAssessmentMark(
+              testId: row['test_id'] as String,
+              testName: row['test_name'] as String,
+              unit: row['unit'] as String,
+              value: (row['value'] as num).toInt(),
+              threshold: (row['threshold'] as num).toInt(),
+              meetsMinimum: row['meets_minimum'] as bool,
+              points: valid ? saved['points'] as int : null,
+              scoredValue: valid ? saved['scored_mark'] as int : null,
+              betterDirection: valid ? saved['direction'] as String : null,
             );
+          }).toList()..sort(
+            (a, b) => _testOrder(a.testId).compareTo(_testOrder(b.testId)),
+          );
       return FasPeriodicAssessmentEntry(
         id: item.key,
+        revisionId: validSnapshot ? snapshot['revision_id'] as String : null,
         goalId: header['preparation_goal_id'] as String?,
         scoringVersion: header['scoring_version'] as String,
         completedAt: DateTime.parse(header['completed_at'] as String).toLocal(),

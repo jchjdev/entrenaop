@@ -1,3 +1,5 @@
+import 'package:entrenaop/features/physical_assessment/data/repositories/builtin_assessment_reference_repository.dart';
+
 import '../../features/coach_workspace/data/supabase_coach_planning_repository.dart';
 import 'apple_watch_route.dart';
 import '../../features/apple_watch/data/apple_activity_result_repository.dart';
@@ -84,7 +86,6 @@ import 'package:entrenaop/features/physical_assessment/presentation/pages/initia
 import 'package:entrenaop/features/physical_assessment/presentation/pages/physical_assessment_history_page.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/pages/preparation_marks_page.dart';
 import 'package:entrenaop/features/physical_assessment/domain/repositories/physical_assessment_repository.dart';
-import 'package:entrenaop/features/physical_assessment/domain/catalogs/fas_periodic_2027_reference.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/pages/fas_periodic_assessment_page.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/pages/fas_periodic_calculator_page.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/pages/fas_periodic_history_page.dart';
@@ -896,8 +897,15 @@ class AppRouter {
                             _workflowRoute(
                               path: 'troop-assessment',
                               builder: (context, state) => BlocProvider(
+                                key: ValueKey(
+                                  'troop-assessment-${state.pathParameters['goalId']}',
+                                ),
                                 create: (_) => sl<PhysicalAssessmentCubit>(),
                                 child: InitialAssessmentPage(
+                                  references:
+                                      sl<
+                                        BuiltinAssessmentReferenceRepository
+                                      >(),
                                   goalId: state.pathParameters['goalId']!,
                                 ),
                               ),
@@ -924,6 +932,13 @@ class AppRouter {
                               path: 'periodic-assessment',
                               builder: (context, state) =>
                                   FasPeriodicAssessmentPage(
+                                    key: ValueKey(
+                                      'fas-assessment-${state.pathParameters['goalId']}',
+                                    ),
+                                    references:
+                                        sl<
+                                          BuiltinAssessmentReferenceRepository
+                                        >(),
                                     goalId: state.pathParameters['goalId']!,
                                     repository:
                                         sl<FasPeriodicAssessmentRepository>(),
@@ -1504,8 +1519,19 @@ class AppRouter {
                                     return PreparationMarksData(
                                       goal: goal,
                                       fas: history,
-                                      fasReference:
-                                          await FasPeriodic2027Reference.load(),
+                                      fasReferences: await loadFasHistoryReferences(
+                                        versions: history
+                                            .where(
+                                              (e) => !e.marks.every(
+                                                (m) => m.points != null,
+                                              ),
+                                            )
+                                            .map((e) => e.scoringVersion),
+                                        repository:
+                                            sl<
+                                              BuiltinAssessmentReferenceRepository
+                                            >(),
+                                      ),
                                     );
                                   }
                                   final program =
@@ -1610,6 +1636,7 @@ class AppRouter {
         materialAppRoute(
           path: '/assessment/fas-calculator',
           builder: (context, state) => FasPeriodicCalculatorPage(
+            references: sl<BuiltinAssessmentReferenceRepository>(),
             birthDateRepository: sl(),
             repository: sl(),
           ),
@@ -1787,6 +1814,7 @@ class AppRouter {
                 ? const SizedBox.shrink()
                 : FasPeriodicHistoryPage(
                     key: ValueKey('fas-history-${auth.user.id}'),
+                    references: sl<BuiltinAssessmentReferenceRepository>(),
                     repository: sl(),
                   ),
           ),

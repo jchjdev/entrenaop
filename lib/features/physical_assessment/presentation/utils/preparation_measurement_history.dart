@@ -13,6 +13,7 @@ List<MeasurementSeries> preparationMeasurementHistory({
   List<FasPeriodicAssessmentEntry> fas = const [],
   List<RunningTestResult> running = const [],
   FasPeriodic2027Reference? fasReference,
+  Map<String, FasPeriodic2027Reference> fasReferences = const {},
 }) {
   final groups = <String, _SeriesBuilder>{};
   void add({
@@ -74,42 +75,54 @@ List<MeasurementSeries> preparationMeasurementHistory({
     }
   }
 
-  if (fasReference != null) {
-    for (final entry in fas) {
-      // Las versiones oficiales antiguas no conservan un protocolo separado.
-      // Solo esta versión íntegra permite resolver la dirección y la unidad.
-      if (entry.scoringVersion != FasPeriodic2027Reference.version ||
-          !['men', 'women'].contains(entry.category)) {
-        continue;
-      }
-      for (final mark in entry.marks) {
-        try {
-          final definition = fasReference.passMarkFor(
-            testId: mark.testId,
-            category: AssessmentCategory.values.byName(entry.category),
-            age: entry.age,
-          );
-          if (definition == null || definition.unit.name != mark.unit) continue;
-          add(
-            contract: ['fas', entry.scoringVersion, entry.category],
-            test: PhysicalTestDefinition(
-              id: mark.testId,
-              name: mark.testName,
-              unit: definition.unit,
-              betterDirection: definition.betterDirection,
-            ),
-            origin: 'Evaluación FAS · ${entry.category == 'men' ? 'H' : 'M'}',
-            version: entry.scoringVersion,
-            sample: MeasurementSample(
-              id: entry.id,
-              completedAt: entry.completedAt,
-              value: mark.value,
-              context: '${entry.age} años',
-            ),
-          );
-        } on ArgumentError {
-          // Una prueba o edad ajena al catálogo no vuelve comparable el registro.
+  for (final entry in fas) {
+    final reference =
+        fasReferences[entry.scoringVersion] ??
+        (fasReference?.scoringVersion == entry.scoringVersion
+            ? fasReference
+            : null);
+    // La dirección procede de la revisión histórica exacta o de su snapshot.
+    // Nunca se resuelve una marca antigua contra el catálogo actual.
+    if (!['men', 'women'].contains(entry.category)) {
+      continue;
+    }
+    for (final mark in entry.marks) {
+      try {
+        final definition = reference?.passMarkFor(
+          testId: mark.testId,
+          category: AssessmentCategory.values.byName(entry.category),
+          age: entry.age,
+        );
+        final savedDirection = entry.revisionId != null && mark.points != null
+            ? mark.betterDirection
+            : null;
+        if (savedDirection == null &&
+            (definition == null || definition.unit.name != mark.unit)) {
+          continue;
         }
+        final unit = MarkUnit.values.byName(mark.unit);
+        final direction = savedDirection == null
+            ? definition!.betterDirection
+            : BetterDirection.values.byName(savedDirection);
+        add(
+          contract: ['fas', entry.scoringVersion, entry.category],
+          test: PhysicalTestDefinition(
+            id: mark.testId,
+            name: mark.testName,
+            unit: unit,
+            betterDirection: direction,
+          ),
+          origin: 'Evaluación FAS · ${entry.category == 'men' ? 'H' : 'M'}',
+          version: entry.scoringVersion,
+          sample: MeasurementSample(
+            id: entry.id,
+            completedAt: entry.completedAt,
+            value: mark.value,
+            context: '${entry.age} años',
+          ),
+        );
+      } on ArgumentError {
+        // Una prueba o edad ajena al catálogo no vuelve comparable el registro.
       }
     }
   }

@@ -210,7 +210,12 @@ void main() {
     await mount(t, (_) async => data, id: 'fas');
     expect(find.byTooltip('Versión: baremo-desconocido'), findsOneWidget);
     expect(find.text('Baremo guardado · Otra versión'), findsOneWidget);
-    expect(find.textContaining('Este test usa otra versión'), findsOneWidget);
+    expect(
+      find.textContaining(
+        'No se han podido consultar los puntos de esta versión',
+      ),
+      findsOneWidget,
+    );
     expect(find.textContaining('puntos totales'), findsNothing);
     await t.tap(find.text('05-10-2026'));
     await t.pumpAndSettle();

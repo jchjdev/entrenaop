@@ -23,6 +23,7 @@ class PreparationMarksData {
     this.program = const [],
     this.running = const [],
     this.fasReference,
+    this.fasReferences = const {},
   });
   final PreparationGoal goal;
   final List<PhysicalAssessmentHistoryEntry> troop;
@@ -30,6 +31,10 @@ class PreparationMarksData {
   final List<ProgramAssessmentAttempt> program;
   final List<RunningTestResult> running;
   final FasPeriodic2027Reference? fasReference;
+  final Map<String, FasPeriodic2027Reference> fasReferences;
+  FasPeriodic2027Reference? referenceFor(String version) =>
+      fasReferences[version] ??
+      (fasReference?.scoringVersion == version ? fasReference : null);
   bool get isEmpty =>
       troop.isEmpty && fas.isEmpty && program.isEmpty && running.isEmpty;
 }
@@ -212,6 +217,7 @@ class _PreparationMarksPageState extends State<PreparationMarksPage> {
                             fas: data.fas,
                             running: data.running,
                             fasReference: data.fasReference,
+                            fasReferences: data.fasReferences,
                           ),
                         ),
                         if (data.program.isNotEmpty)
@@ -223,8 +229,8 @@ class _PreparationMarksPageState extends State<PreparationMarksPage> {
                           ),
                         if (data.fas.any(
                           (e) =>
-                              e.scoringVersion !=
-                              FasPeriodic2027Reference.version,
+                              data.referenceFor(e.scoringVersion) == null &&
+                              !e.marks.every((m) => m.points != null),
                         ))
                           const Padding(
                             padding: EdgeInsets.symmetric(vertical: 12),
@@ -267,9 +273,9 @@ class _PreparationMarksPageState extends State<PreparationMarksPage> {
                         Tooltip(
                           message: 'Versión: ${entry.scoringVersion}',
                           child: Text(
-                            entry.scoringVersion ==
-                                    FasPeriodic2027Reference.version
-                                ? 'Baremo FAS 2027'
+                            data.referenceFor(entry.scoringVersion) != null ||
+                                    entry.marks.every((m) => m.points != null)
+                                ? 'Baremo FAS · versión guardada'
                                 : 'Baremo guardado · Otra versión',
                           ),
                         ),
@@ -277,12 +283,11 @@ class _PreparationMarksPageState extends State<PreparationMarksPage> {
                           const Text(
                             'Test de referencia anterior a la vigencia del baremo.',
                           ),
-                        if (data.fasReference != null)
-                          FasAssessmentHistoryCard(
-                            key: ValueKey('fas-${entry.id}'),
-                            entry: entry,
-                            reference: data.fasReference!,
-                          ),
+                        FasAssessmentHistoryCard(
+                          key: ValueKey('fas-${entry.id}'),
+                          entry: entry,
+                          reference: data.referenceFor(entry.scoringVersion),
+                        ),
                       ],
                       for (final attempt in data.program)
                         _ProgramResultCard(

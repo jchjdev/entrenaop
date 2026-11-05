@@ -1,3 +1,5 @@
+import 'package:entrenaop/features/physical_assessment/data/repositories/builtin_assessment_reference_repository.dart';
+
 import '../../features/workouts/data/repositories/workout_effort_repository.dart';
 import '../../features/preparation_goal/domain/repositories/preparation_setup_progress_store.dart';
 import '../../features/preparation_goal/data/repositories/shared_preferences_preparation_setup_progress_store.dart';
@@ -258,6 +260,9 @@ Future<void> initDependencies() async {
     () => PhysicalAssessmentRepositoryImpl(remoteDataSource: sl()),
   );
   sl.registerLazySingleton(() => FasPeriodicAssessmentRepository(sl()));
+  sl.registerLazySingleton<BuiltinAssessmentReferenceRepository>(
+    () => SupabaseBuiltinAssessmentReferenceRepository(sl()),
+  );
   sl.registerLazySingleton(() => ProfileBirthDateRepository(sl()));
   sl.registerLazySingleton(() => ProfileNameRepository(sl()));
   sl.registerFactory<ProfilePhotoRepository>(() {

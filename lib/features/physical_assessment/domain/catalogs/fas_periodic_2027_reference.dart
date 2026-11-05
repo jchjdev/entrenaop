@@ -9,7 +9,12 @@ import 'package:flutter/services.dart';
 /// El registro histórico conserva su versión de mínimos en PostgreSQL. Este
 /// catálogo local se usa para calcular puntos sin guardar ni alterar intentos.
 class FasPeriodic2027Reference {
-  FasPeriodic2027Reference._(this._data, this._tables);
+  FasPeriodic2027Reference._(
+    this._data,
+    this._tables, {
+    this.revisionId,
+    String? catalogVersion,
+  }) : catalogVersion = catalogVersion ?? 'es_def_15_2026_periodic_2027_v1';
 
   static const version = 'es_def_15_2026_periodic_2027_v2_full_scores';
   static const assetPath =
@@ -19,18 +24,47 @@ class FasPeriodic2027Reference {
 
   final Map<String, dynamic> _data;
   final Map<String, _ScoreTable> _tables;
+  final String? revisionId;
+  final String catalogVersion;
+  String get scoringVersion => _data['version'] as String;
+  String get referenceSourceUrl => _data['sourceUrl'] as String;
+  String get referenceEffectiveFrom => _data['effectiveFrom'] as String;
+  int get minimumPointsPerTest => _data['minimumPointsPerTest'] as int;
 
   static Future<FasPeriodic2027Reference> load() async {
     final raw = await rootBundle.loadString(assetPath);
     return fromJson(jsonDecode(raw) as Map<String, dynamic>);
   }
 
-  static FasPeriodic2027Reference fromJson(Map<String, dynamic> data) {
-    if (data['version'] != version ||
+  static FasPeriodic2027Reference fromJson(Map<String, dynamic> data) =>
+      _decode(data, legacy: true);
+
+  static FasPeriodic2027Reference fromPublished(
+    Map<String, dynamic> data, {
+    required String revisionId,
+    required String catalogVersion,
+  }) => _decode(
+    data,
+    legacy: false,
+    revisionId: revisionId,
+    catalogVersion: catalogVersion,
+  );
+
+  static FasPeriodic2027Reference _decode(
+    Map<String, dynamic> data, {
+    required bool legacy,
+    String? revisionId,
+    String? catalogVersion,
+  }) {
+    if ((legacy && data['version'] != version) ||
+        data['version'] is! String ||
+        (data['version'] as String).trim().isEmpty ||
         data['programId'] != 'fas_periodic_assessment' ||
-        data['status'] != 'future_reference' ||
-        data['effectiveFrom'] != effectiveFrom ||
-        data['sourceUrl'] != sourceUrl ||
+        (legacy && data['status'] != 'future_reference') ||
+        (legacy && data['effectiveFrom'] != effectiveFrom) ||
+        (legacy && data['sourceUrl'] != sourceUrl) ||
+        data['sourceUrl'] is! String ||
+        DateTime.tryParse(data['effectiveFrom']?.toString() ?? '') == null ||
         data['minimumPointsPerTest'] != 20) {
       throw const FormatException('Catálogo periódico no válido.');
     }
@@ -64,7 +98,8 @@ class FasPeriodic2027Reference {
           testBands.length * (categoriesPerBand == true ? 2 : 1);
       if (categoriesPerBand == null ||
           rows == null ||
-          rows.length != expectedRows) {
+          (legacy && rows.length != expectedRows) ||
+          rows.isEmpty) {
         throw const FormatException('Tabla de puntos incompleta.');
       }
 
@@ -102,7 +137,12 @@ class FasPeriodic2027Reference {
         rows: parsedRows,
       );
     }
-    return FasPeriodic2027Reference._(data, tables);
+    return FasPeriodic2027Reference._(
+      data,
+      tables,
+      revisionId: revisionId,
+      catalogVersion: catalogVersion,
+    );
   }
 
   String get verifiedOn => _data['verifiedOn'] as String;
@@ -139,7 +179,7 @@ class FasPeriodic2027Reference {
       scoredMark: calculation.scoredMark,
       points: calculation.points,
       unit: table.unit,
-      meetsMinimum: calculation.points >= 20,
+      meetsMinimum: calculation.points >= minimumPointsPerTest,
     );
   }
 
@@ -154,7 +194,7 @@ class FasPeriodic2027Reference {
     final column = table.columnFor(band.id, category);
     final passing = [
       for (final row in table.rows)
-        if (row.scores[column] >= 20) row.mark,
+        if (row.scores[column] >= minimumPointsPerTest) row.mark,
     ];
     final threshold = table.direction == BetterDirection.higher
         ? passing.reduce((a, b) => a < b ? a : b)

@@ -314,3 +314,24 @@ también pasa validación, compilación, FTPS, comprobación HTTPS y retención.
 Los reintentos nuevos cubren transferencias temporales previas a activación;
 no prueban una causa concreta para los `OSError` históricos de Hostinger.
 No se cambia la preferencia de correos de GitHub ni se ocultan fallos futuros.
+
+
+## Comprobación y ampliación del 05/11/2026
+
+Al preparar la autoría FAS/Tropa se detecta que los ensayos reales de copia
+fallan al crear el esquema reservado pg_catalog para pg_cron. Se corrige la
+preparación de extensiones y se amplía el ensayo aislado con la extensión real;
+la ejecución 42084320986 lo acredita. El intento 2 de 42085037509 supera
+restauración y cifrado y se detiene después por artifact_budget_limit.
+
+El inventario contiene 111 ZIP Trainer acumulados. Javier autoriza expresamente
+conservar los cinco más recientes y siempre la versión publicada, y retirar
+los 106 antiguos del plan revisado (1.653.961.869 bytes), también tras futuros
+despliegues correctos de Trainer Dev. Se mantiene el límite conservador de
+400 MiB. La retención Trainer tiene script y job propios, validación de identidad
+HTTPS y del artefacto antes de cada eliminación, sin credenciales de Supabase o
+Hostinger ni reintentos de DELETE. No altera la regla ADMIN existente.
+[Arreglo de extensiones](audits/DEV_BACKUP_EXTENSIONS_2026_11_05.md) y
+[autorización/alcance de retención](audits/TRAINER_COMPILED_RETENTION_2026_11_05.md).
+El nuevo esquema builtin_assessment_private se incluye en copia y recuperación.
+La limpieza aplicada y la copia almacenada se acreditan al cerrar el bloque.

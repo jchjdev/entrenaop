@@ -1,3 +1,5 @@
+import 'package:entrenaop/features/physical_assessment/data/repositories/builtin_assessment_reference_repository.dart';
+
 import 'dart:async';
 
 import 'package:entrenaop/core/di/injection_container.dart';
@@ -27,6 +29,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers/evolution_fixtures.dart';
+import '../../helpers/builtin_assessment_fixtures.dart';
 
 void main() {
   late _Auth auth;
@@ -57,6 +60,9 @@ void main() {
       )..load(),
     );
     sl.registerSingleton<FasPeriodicAssessmentRepository>(_Fas(auth));
+    sl.registerSingleton<BuiltinAssessmentReferenceRepository>(
+      MemoryBuiltinReferences(troopRevision()),
+    );
     sl.registerFactory<WorkoutHistoryCubit>(() {
       final source = _Sessions(auth.userId);
       sources.add(source);

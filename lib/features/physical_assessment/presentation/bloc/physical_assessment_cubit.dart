@@ -1,3 +1,4 @@
+import 'package:entrenaop/features/physical_assessment/domain/catalogs/troop_assessment_reference.dart';
 import 'package:bloc/bloc.dart';
 import 'package:entrenaop/features/physical_assessment/domain/entities/physical_assessment.dart';
 import 'package:entrenaop/features/physical_assessment/domain/usecases/evaluate_initial_assessment_usecase.dart';
@@ -29,10 +30,14 @@ class PhysicalAssessmentCubit extends Cubit<PhysicalAssessmentState> {
     );
   }
 
-  void evaluate(List<RecordedMark> marks) {
+  void evaluate(
+    List<RecordedMark> marks, {
+    TroopAssessmentReference? reference,
+  }) {
     final report = _evaluateInitialAssessment(
       category: state.category,
       marks: marks,
+      reference: reference,
     );
     emit(
       state.copyWith(
@@ -44,7 +49,10 @@ class PhysicalAssessmentCubit extends Cubit<PhysicalAssessmentState> {
     );
   }
 
-  Future<void> save({String? goalId}) async {
+  Future<void> save({
+    String? goalId,
+    Future<String> Function(AssessmentReport report)? saveWithRevision,
+  }) async {
     final report = state.report;
     if (report == null || state.status == PhysicalAssessmentStatus.saving) {
       return;
@@ -55,10 +63,9 @@ class PhysicalAssessmentCubit extends Cubit<PhysicalAssessmentState> {
     );
 
     try {
-      final assessmentId = await _savePhysicalAssessment(
-        report,
-        goalId: goalId,
-      );
+      final assessmentId = saveWithRevision != null
+          ? await saveWithRevision(report)
+          : await _savePhysicalAssessment(report, goalId: goalId);
       emit(
         state.copyWith(
           status: PhysicalAssessmentStatus.saved,

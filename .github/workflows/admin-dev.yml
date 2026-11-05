@@ -106,6 +106,8 @@ jobs:
           flutter test
       - name: Probar el publicador
         run: python3 -m unittest discover -s admin_app/tool/tests -v
+      - name: Comprobar la referencia histórica de FAS y la semilla nativa
+        run: python3 -m unittest discover -s supabase/tests -p test_builtin_assessment_seed.py -v
       - name: Probar el paquete profesional
         run: python3 -m unittest discover -s trainer_app/tool/tests -v
       - name: Compilar ADMIN exclusivamente con Dev
