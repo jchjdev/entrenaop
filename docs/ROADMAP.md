@@ -97,6 +97,10 @@ en vigor el 1 de enero de 2027. Ya existe el programa estable
 versionado con la tabla íntegra de 0–100 puntos por prueba, columna H/M y edad
 del anexo II. La calculadora gratuita está visible en Inicio, no requiere una
 preparación activa y calcula en directo al escribir o mover sus deslizadores.
+La edad del cálculo se puede escribir o ajustar con un deslizador sin modificar
+el perfil; la calculadora funciona también sin fecha de nacimiento. Al guardar
+se comprueba la edad propia en la fecha del test y, si difiere de la simulada,
+se ofrece recalcular para revisar el resultado antes de registrarlo.
 Solo guarda un test cuando el usuario lo confirma. Muestra cada puntuación y el
 mínimo general de 20 puntos, sin presentar la suma como resultado normativo ni
 certificar aptitud oficial. Sí ofrece una suma matemática visible, rotulada como
@@ -116,11 +120,16 @@ El siguiente tramo ejecutable será:
    la tabla íntegra de 0–100 puntos y su cálculo local auditable. El BOE no
    define una suma total y contiene una secuencia anómala no corregida en II.3;
    se conserva literalmente y se mantiene como limitación conocida.
+   La revisión contra el BOE también detecta valores no monótonos en II.4:
+   el criterio actual de mejor umbral alcanzado no reproduce 14 celdas exactas
+   de esas zonas anómalas (12 de carrera y 2 de agilidad). Queda pendiente
+   acordar su tratamiento sin inventar una corrección del baremo oficial.
    La fecha de nacimiento se recoge en el perfil; la edad se calcula para
    cada intento y el servidor comprueba que coincide. El circuito deja de
    exigirse al cumplir 45 años.
 2. **Calculadora gratuita de puntos completada** para la evaluación periódica
-   FAS 2027: usa la fecha de nacimiento del perfil, permite elegir explícitamente
+   FAS 2027: propone la edad del perfil y permite simular otra libremente con
+   entrada manual o deslizador; permite elegir explícitamente
    H/M, acepta entradas móviles de repeticiones y tiempos, muestra puntos por
    prueba, versión y fuente, permite guardar con fecha en un historial personal
    independiente y mantiene las simulaciones fuera de ese historial. Próxima

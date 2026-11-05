@@ -7,6 +7,7 @@ import 'package:entrenaop/features/profile/domain/age_on_date.dart';
 import 'package:entrenaop/features/profile/presentation/choose_birth_date.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/duration_input_formatter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
@@ -35,11 +36,14 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
     for (final test in _calculatorTests) test.id: TextEditingController(),
   };
   late final Future<FasPeriodic2027Reference> _reference;
-  late Future<DateTime?> _birthDate;
+  DateTime? _profileBirthDate;
+  final _ageController = TextEditingController(text: '25');
+  int _age = 25;
+  bool _ageEdited = false;
   AssessmentCategory _category = AssessmentCategory.men;
   final Map<String, PeriodicScoreResult> _results = {};
-  bool _savingBirthDate = false;
   bool _savingAssessment = false;
+  bool _writingAssessment = false;
   late DateTime _assessmentDate;
 
   DateTime get _calculationDate => widget.today ?? DateTime.now();
@@ -51,38 +55,47 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
     _reference = widget.reference == null
         ? FasPeriodic2027Reference.load()
         : Future.value(widget.reference);
-    _birthDate = widget.birthDateRepository.get();
+    _loadProfileAge();
+  }
+
+  bool get _validAgeInput {
+    final age = int.tryParse(_ageController.text);
+    return age != null && age >= 17 && age <= 120;
+  }
+
+  Future<void> _loadProfileAge() async {
+    try {
+      final birthDate = await widget.birthDateRepository.get();
+      final reference = await _reference;
+      if (!mounted) return;
+      _profileBirthDate = birthDate;
+      if (!_ageEdited && birthDate != null) {
+        final age = ageOnDate(birthDate, _assessmentDate);
+        if (age >= 17 && age <= 120) _setAge(age, reference, edited: false);
+      }
+    } catch (_) {
+      // El perfil es opcional para simular; se vuelve a comprobar al guardar.
+    }
+  }
+
+  void _setAge(
+    int age,
+    FasPeriodic2027Reference reference, {
+    bool edited = true,
+  }) {
+    _age = age;
+    _ageEdited = edited;
+    _ageController.text = '$age';
+    _recalculate(reference, age);
   }
 
   @override
   void dispose() {
+    _ageController.dispose();
     for (final controller in _controllers.values) {
       controller.dispose();
     }
     super.dispose();
-  }
-
-  Future<void> _editBirthDate(DateTime? current) async {
-    final chosen = await chooseBirthDate(context, current: current);
-    if (chosen == null || !mounted) return;
-    setState(() => _savingBirthDate = true);
-    try {
-      await widget.birthDateRepository.save(chosen);
-      if (!mounted) return;
-      setState(() {
-        _birthDate = widget.birthDateRepository.get();
-        _results.clear();
-      });
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No se pudo guardar la fecha de nacimiento.'),
-        ),
-      );
-    } finally {
-      if (mounted) setState(() => _savingBirthDate = false);
-    }
   }
 
   void _recalculate(FasPeriodic2027Reference reference, int age) {
@@ -105,10 +118,7 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
     });
   }
 
-  Future<void> _chooseAssessmentDate(
-    FasPeriodic2027Reference reference,
-    DateTime birthDate,
-  ) async {
+  Future<void> _chooseAssessmentDate(FasPeriodic2027Reference reference) async {
     final chosen = await showDatePicker(
       context: context,
       initialDate: _assessmentDate,
@@ -117,13 +127,90 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
     );
     if (chosen == null || !mounted) return;
     _assessmentDate = chosen;
-    _recalculate(reference, ageOnDate(birthDate, chosen));
+    final birthDate = _profileBirthDate;
+    final profileAge = birthDate == null ? null : ageOnDate(birthDate, chosen);
+    if (!_ageEdited &&
+        profileAge != null &&
+        profileAge >= 17 &&
+        profileAge <= 120) {
+      _setAge(profileAge, reference, edited: false);
+    } else {
+      _recalculate(reference, _age);
+    }
   }
 
-  Future<void> _saveAssessment(int age) async {
+  Future<void> _saveAssessment(FasPeriodic2027Reference reference) async {
+    if (_savingAssessment || !_validAgeInput) return;
     if (!_formKey.currentState!.validate()) return;
     setState(() => _savingAssessment = true);
     try {
+      var birthDate = await widget.birthDateRepository.get();
+      if (!mounted) return;
+      if (birthDate == null) {
+        final completeProfile = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Guardar en tu historial'),
+            content: const Text(
+              'Para registrar un test propio necesitamos tu fecha de nacimiento. Puedes seguir calculando sin completarla.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Seguir calculando'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Completar perfil'),
+              ),
+            ],
+          ),
+        );
+        if (completeProfile != true || !mounted) return;
+        final chosen = await chooseBirthDate(context);
+        if (chosen == null || !mounted) return;
+        await widget.birthDateRepository.save(chosen);
+        birthDate = await widget.birthDateRepository.get();
+        if (!mounted || birthDate == null) return;
+      }
+      _profileBirthDate = birthDate;
+      final age = ageOnDate(birthDate, _assessmentDate);
+      if (age < 17 || age > 120) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Tu edad en la fecha del test queda fuera del baremo (17–120 años).',
+            ),
+          ),
+        );
+        return;
+      }
+      if (age != _age) {
+        final recalculate = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Estás simulando otra edad'),
+            content: Text(
+              'En la fecha del test tienes $age años según tu perfil. Para guardarlo en tu historial, recalcula primero con esa edad y revisa el resultado.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Seguir simulando'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Usar mi edad'),
+              ),
+            ],
+          ),
+        );
+        if (recalculate == true && mounted) {
+          _setAge(age, reference, edited: false);
+        }
+        return;
+      }
+      setState(() => _writingAssessment = true);
       await widget.repository.save(
         category: _category.name,
         age: age,
@@ -146,7 +233,12 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
         const SnackBar(content: Text('No se pudo guardar el test.')),
       );
     } finally {
-      if (mounted) setState(() => _savingAssessment = false);
+      if (mounted) {
+        setState(() {
+          _savingAssessment = false;
+          _writingAssessment = false;
+        });
+      }
     }
   }
 
@@ -205,51 +297,9 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    FutureBuilder<DateTime?>(
-                      future: _birthDate,
-                      builder: (context, birthSnapshot) {
-                        if (birthSnapshot.hasError) {
-                          return _BirthDateCard(
-                            title: 'No se pudo cargar tu fecha de nacimiento',
-                            subtitle: 'Toca para volver a intentarlo.',
-                            icon: Icons.refresh,
-                            onTap: () => setState(() {
-                              _birthDate = widget.birthDateRepository.get();
-                            }),
-                          );
-                        }
-                        if (birthSnapshot.connectionState !=
-                            ConnectionState.done) {
-                          return const LinearProgressIndicator();
-                        }
-                        final birthDate = birthSnapshot.data;
-                        if (birthDate == null) {
-                          return _BirthDateCard(
-                            title: 'Completa tu fecha de nacimiento',
-                            subtitle: 'La necesitamos para elegir el tramo de edad correcto.',
-                            icon: Icons.calendar_month_outlined,
-                            onTap: _savingBirthDate
-                                ? null
-                                : () => _editBirthDate(null),
-                          );
-                        }
-                        final age = ageOnDate(birthDate, _assessmentDate);
-                        if (age < 17 || age > 120) {
-                          return _BirthDateCard(
-                            title: 'Revisa tu fecha de nacimiento',
-                            subtitle: 'El baremo comienza a los 17 años.',
-                            icon: Icons.edit_outlined,
-                            onTap: _savingBirthDate
-                                ? null
-                                : () => _editBirthDate(birthDate),
-                          );
-                        }
-                        return _calculator(
-                          reference: reference,
-                          birthDate: birthDate,
-                          age: age,
-                        );
-                      },
+                    AbsorbPointer(
+                      absorbing: _savingAssessment,
+                      child: _calculator(reference: reference, age: _age),
                     ),
                   ],
                 ),
@@ -263,7 +313,6 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
 
   Widget _calculator({
     required FasPeriodic2027Reference reference,
-    required DateTime birthDate,
     required int age,
   }) {
     final expectedTests = age < 45 ? 4 : 3;
@@ -273,13 +322,21 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
       children: [
         _AssessmentContext(
           age: age,
-          birthDate: birthDate,
+          ageController: _ageController,
+          validAge: _validAgeInput,
+          onAgeChanged: (value) {
+            _ageEdited = true;
+            final parsed = int.tryParse(value);
+            if (parsed != null && parsed >= 17 && parsed <= 120) {
+              _age = parsed;
+              _recalculate(reference, parsed);
+            } else {
+              setState(() {});
+            }
+          },
+          onSliderChanged: (value) => _setAge(value.round(), reference),
           assessmentDate: _assessmentDate,
-          onEditBirthDate: _savingBirthDate
-              ? null
-              : () => _editBirthDate(birthDate),
-          onEditAssessmentDate: () =>
-              _chooseAssessmentDate(reference, birthDate),
+          onEditAssessmentDate: () => _chooseAssessmentDate(reference),
         ),
         const SizedBox(height: 10),
         SegmentedButton<AssessmentCategory>(
@@ -371,10 +428,10 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
             const SizedBox(width: 10),
             Expanded(
               child: FilledButton(
-                onPressed: !isComplete || _savingAssessment
+                onPressed: !isComplete || _savingAssessment || !_validAgeInput
                     ? null
-                    : () => _saveAssessment(age),
-                child: _savingAssessment
+                    : () => _saveAssessment(reference),
+                child: _writingAssessment
                     ? const SizedBox.square(
                         dimension: 18,
                         child: CircularProgressIndicator(strokeWidth: 2),
@@ -537,16 +594,20 @@ class _MarkControl extends StatelessWidget {
 class _AssessmentContext extends StatelessWidget {
   const _AssessmentContext({
     required this.age,
-    required this.birthDate,
+    required this.ageController,
+    required this.validAge,
+    required this.onAgeChanged,
+    required this.onSliderChanged,
     required this.assessmentDate,
-    required this.onEditBirthDate,
     required this.onEditAssessmentDate,
   });
 
   final int age;
-  final DateTime birthDate;
+  final TextEditingController ageController;
+  final bool validAge;
+  final ValueChanged<String> onAgeChanged;
+  final ValueChanged<double> onSliderChanged;
   final DateTime assessmentDate;
-  final VoidCallback? onEditBirthDate;
   final VoidCallback onEditAssessmentDate;
 
   @override
@@ -555,67 +616,53 @@ class _AssessmentContext extends StatelessWidget {
     margin: EdgeInsets.zero,
     child: Padding(
       padding: const EdgeInsets.fromLTRB(14, 10, 8, 10),
-      child: Row(
+      child: Column(
         children: [
-          Expanded(
-            child: InkWell(
-              onTap: onEditBirthDate,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '$age años',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    Text(
-                      'Nacimiento ${DateFormat('dd/MM/yyyy').format(birthDate)}',
-                      style: const TextStyle(
-                        color: Colors.white60,
-                        fontSize: 12,
-                      ),
-                    ),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  key: const ValueKey('fas-calculation-age'),
+                  controller: ageController,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(3),
                   ],
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                  ),
+                  decoration: InputDecoration(
+                    isDense: true,
+                    labelText: 'Edad del cálculo',
+                    suffixText: 'años',
+                    errorText: validAge ? null : 'Entre 17 y 120 años',
+                  ),
+                  onChanged: onAgeChanged,
                 ),
               ),
-            ),
+              const SizedBox(width: 12),
+              TextButton(
+                onPressed: onEditAssessmentDate,
+                child: Text(
+                  'Test ${DateFormat('dd/MM/yyyy').format(assessmentDate)}',
+                ),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: onEditAssessmentDate,
-            child: Text(
-              'Test ${DateFormat('dd/MM/yyyy').format(assessmentDate)}',
-            ),
+          Slider(
+            key: const ValueKey('fas-age-slider'),
+            value: age.toDouble(),
+            min: 17,
+            max: 120,
+            divisions: 103,
+            label: '$age años',
+            semanticFormatterCallback: (value) => '${value.round()} años',
+            onChanged: onSliderChanged,
           ),
         ],
       ),
-    ),
-  );
-}
-
-class _BirthDateCard extends StatelessWidget {
-  const _BirthDateCard({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.onTap,
-  });
-
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) => Card(
-    child: ListTile(
-      title: Text(title),
-      subtitle: Text(subtitle),
-      trailing: Icon(icon),
-      onTap: onTap,
     ),
   );
 }
