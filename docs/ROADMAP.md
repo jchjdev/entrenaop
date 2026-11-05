@@ -1,5 +1,12 @@
 # Roadmap de EntrenaOP
 
+**Google Play · alta personal realizada · 05/11/2026:** Javier paga y completa
+el registro. Consulta directa de la consola: pendientes identidad, estado de
+operador, Android físico y teléfono; todavía no permite crear aplicaciones.
+Siguiente paso de preparación: completar las verificaciones. No se crea ficha,
+sube AAB ni inicia distribución; el cierre deportivo conserva su prioridad.
+[Estado y circuito](STORE_LAUNCH.md#alta-personal-realizada--05112026).
+
 **Preparación de tiendas · 05/11/2026:** Javier pospone la subida hasta cerrar
 sesiones, programas y preparaciones y pide preparar el terreno. Google Play
 es la primera opción preferida. Se registra una secuencia de cierre deportivo,

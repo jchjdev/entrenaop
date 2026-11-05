@@ -1,5 +1,13 @@
 # Registro de decisiones vigentes
 
+**Google Play · cuenta personal creada · 05/11/2026.** Javier completa y paga
+el alta personal. La consola confirma la cuenta, con verificaciones pendientes
+de identidad, operador, dispositivo Android y teléfono; Crear aplicación aún
+está deshabilitado. Solicita conocer el circuito de subida, sin declarar cerrado
+el núcleo deportivo ni activar distribución o ventas. El alta posterior actualiza
+el límite inicial de no registrar cuentas de pago de esta preparación.
+[Estado y siguiente paso](STORE_LAUNCH.md#alta-personal-realizada--05112026).
+
 **Tiendas · preparar sin desplegar · 05/11/2026.** Javier aclara que no quiere
 subir la app todavía: quiere preparar la salida para cuando estén cerrados
 sesiones, programas y preparaciones. Google Play es la primera opción preferida.

@@ -1,15 +1,32 @@
 # Preparación del lanzamiento en tiendas
 
+## Alta personal realizada · 05/11/2026
+
+Javier completa y paga el registro de una cuenta personal de Google Play.
+La consulta de la consola confirma la cuenta creada y cuatro verificaciones
+pendientes: identidad, estado de operador, acceso a un dispositivo Android y
+teléfono de contacto. Crear aplicación permanece deshabilitado hasta completar
+las verificaciones. El pago no acredita que la cuenta esté lista para publicar.
+La declaración de operador se completa según la actividad real; no se deduce
+del tipo personal de cuenta ni se decide automáticamente en este documento.
+
+Javier solicita entender el circuito de subida. El siguiente paso es completar
+esas verificaciones; después se podrá preparar la ficha y una candidata AAB
+firmada para prueba interna. No se ha creado una aplicación, subido un binario
+ni iniciado una distribución desde esta revisión. Se mantiene el cierre deportivo
+como condición acordada para la futura subida. No se habilitan ventas.
+
 ## Alcance confirmado · 05/11/2026
 
 Javier quiere preparar el terreno y posponer la subida hasta cerrar sesiones,
-programas y preparaciones. Esta tarea no autoriza altas de pago, envío de
-binarios, activación de compras ni despliegues de producción. Google Play es
+programas y preparaciones. El alcance inicial no autorizaba altas de pago;
+Javier realiza posteriormente el alta descrita arriba. La preparación no
+autoriza envío de binarios, activación de compras ni despliegues de producción. Google Play es
 la primera opción preferida; App Store se prepara después sobre el mismo cierre
 del producto. Se mantiene el circuito privado de APK y las pruebas iOS con Xcode.
 
 Este documento organiza la preparación; no acredita una auditoría completa,
-el cierre del núcleo deportivo ni la disponibilidad de cuentas de tienda.
+el cierre del núcleo deportivo ni la disponibilidad de una cuenta Apple.
 La recomendación es fijar una primera versión publicable con criterios finitos,
 en lugar de condicionar la salida a todas las ampliaciones futuras.
 
