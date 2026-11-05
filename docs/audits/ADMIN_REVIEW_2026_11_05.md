@@ -41,3 +41,15 @@ y [escritorio](../visual-audit/admin-review-2026-11-05/admin-performance-series-
 Único siguiente tramo recomendado: proponer y validar paginación completa de
 catálogos/metadatos sin perder resultados ni filtros. No se aplica un rediseño
 ni se activan estrategias deportivas experimentales como parte de esta revisión.
+
+## Publicación comprobada
+
+ADMIN Dev sirve `0.5.1+10` desde el commit
+`6e5c3558042f2a94e2ce3967043b2c8d66654a45`, release
+`6e5c3558042f2a94e2ce3967043b2c8d66654a45-42008325705-1`.
+La [CI de publicación](https://github.com/jchjdev/entrenaop/actions/runs/42008325705)
+validó y compiló el paquete. La comprobación HTTPS contrasta manifiesto,
+version.json (0.5.1/10), SHA-256 del JavaScript, entrada de la release y cabeceras
+DENY/no-store. El destino declara development y el proyecto Dev autorizado.
+La comprobación visual es de widgets con datos ficticios; no se declara una
+revisión autenticada de todos los recorridos ni una auditoría exhaustiva de ADMIN.

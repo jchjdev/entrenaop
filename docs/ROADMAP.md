@@ -1,6 +1,6 @@
 # Roadmap de EntrenaOP
 
-**ADMIN · 05/11/2026 · estabilidad visual y consultas:** se corrigen campos sin área editable y desbordamiento de registro en laboratorio, cálculos repetidos al consultar semanas y consultas/avisos desactualizados al volver de editores. Versión 0.5.1+10. Sin cambios deportivos, de servidor o de creadores compartidos. Verificación y límites en [la revisión](audits/ADMIN_REVIEW_2026_11_05.md). Siguiente tramo recomendado: propuesta de paginación completa de catálogos y metadatos.
+**ADMIN · 05/11/2026 · estabilidad visual y consultas:** se corrigen campos sin área editable y desbordamiento de registro en laboratorio, cálculos repetidos al consultar semanas y consultas/avisos desactualizados al volver de editores. Versión 0.5.1+10 publicada en Dev y verificada por HTTPS. Sin cambios deportivos, de servidor o de creadores compartidos. Verificación y límites en [la revisión](audits/ADMIN_REVIEW_2026_11_05.md). Siguiente tramo recomendado: propuesta de paginación completa de catálogos y metadatos.
 
 **Laboratorio comparativo de australianas · 05/11/2026.** Cerrado el ensayo
 de 26 y 52 semanas con 840 escenarios por brazo y horizonte. Admin presenta
