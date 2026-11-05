@@ -39,6 +39,11 @@ con una omisión previa. Las 38 comprobaciones dirigidas incluyen las
 portadas reales, cambio de sección, recuperación de caras interiores,
 retorno desde detalle y reducción de animaciones.
 
+La corrección `1.16.1+36` aplica el gesto a Resumen, Agenda, Alumnos y Mensajes
+del espacio profesional. Las dos barras usan el mismo controlador de
+navegación. Cada espacio registra sus vistas visibles y conserva su estado
+al cambiar de sección.
+
 ## Preparación, configuración y consulta · 03/11/2026
 
 Implementación UI-067, autorizada tras la [revisión del vídeo y sus fronteras](audits/preparation-flow-review-2026-11-03.md).

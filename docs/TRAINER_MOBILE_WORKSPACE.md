@@ -1,5 +1,17 @@
 # Consulta profesional en la app · TRN-036 · 28/10/2026
 
+**Volver arriba desde la barra · 05/11/2026.** Repetir Resumen, Agenda,
+Alumnos o Mensajes lleva al principio su portada con una animación breve.
+Cambiar de sección recupera su posición. Repetir el destino desde una ficha
+o conversación vuelve a la portada y la lleva arriba mediante el recorrido
+de salida existente. La fecha y la vista de Agenda, las búsquedas y los
+filtros conservan su estado. El gesto usa el mismo controlador de navegación
+que Pulso y respeta la preferencia de reducir movimiento. App `1.16.1+36`.
+
+Validación: análisis limpio y 1.856 pruebas raíz correctas, con una omisión
+previa. Las 46 comprobaciones dirigidas cubren ambas barras, los filtros y
+la búsqueda profesional, Agenda, la vuelta desde ficha y la salida del chat.
+
 TRN-037 incorpora los avisos nativos de mensajes y vídeos desde Resumen, con
 consentimiento independiente y categorías. [Reglas y prueba física pendiente](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md).
 
