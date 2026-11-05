@@ -1,5 +1,13 @@
 # Roadmap de EntrenaOP
 
+**Calculadora FAS · 05/11/2026 · edad libre, app 1.18.0+38:** edad editable
+con número y deslizador sin modificar el perfil al simular. El guardado exige
+la edad propia en la fecha del test y ofrece recalcular antes de registrarlo.
+Se conservan tarjetas, resumen, formatos/cierre de teclado de iPhone y el
+contrato de baremos versionados publicado. Análisis raíz limpio y 1.879 pruebas
+correctas (una omisión preexistente); 28 dirigidas de calculadora y versiones.
+Límite: pendiente de aceptación física en iPhone. [Recorrido](PHYSICAL_ASSESSMENT_DOMAIN.md#edad-libre-en-la-calculadora-fas).
+
 **ADMIN y evaluaciones · 05/11/2026 · autoría FAS/Tropa publicada en Dev:** cerrado el recorrido de edición versionada de baremos, revisión/simulación y publicación con historial protegido. ADMIN 0.7.0+12, revisión f3d8e03e, destino Dev e integridad del código comprobados por HTTPS. Calculadora, app y servidor consumen la misma revisión; 1.872 pruebas raíz y 406 ADMIN correctas, análisis/compilaciones web Dev y tres contratos SQL con ROLLBACK correctos, huellas de 15 intentos previos conservadas. Copias previa y posterior restauradas/cifradas y almacenadas como verified; retención Trainer autorizada y aplicada. [Contrato](BUILTIN_ASSESSMENT_AUTHORING.md) y [auditoría/límites](audits/BUILTIN_ASSESSMENT_AUTHORING_2026_11_05.md). Límite: cliente nuevo validado, pendiente de instalación/aceptación física en iPhone. Único siguiente bloque recomendado: propuesta de condiciones de entrenamiento editables de forma versionada.
 
 **ADMIN · 05/11/2026 · creadores y consulta de preparaciones integradas:** versión 0.6.0+11 publicada en Dev y verificada por HTTPS; incorpora datos reales de FAS/Tropa, fuente y condiciones en consulta; corrige vacío aparente, clonación inerte, diálogo de descarte y rótulo de borrador. Sin cambios deportivos ni de servidor. [Validación y límites](audits/ADMIN_CREATORS_PREPARATIONS_2026_11_05.md). Único siguiente tramo recomendado: concretar la propuesta de autoría versionada de los dos catálogos integrados antes de habilitar su edición.

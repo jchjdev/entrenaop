@@ -9,11 +9,14 @@ import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
+
+import '../../../helpers/builtin_assessment_fixtures.dart';
 
 void main() {
   late FasPeriodic2027Reference reference;
   testWidgets(
-    'la carga inicial lenta acaba en reintento y una respuesta vieja no reemplaza la nueva',
+    'la carga lenta del perfil no bloquea ni reemplaza una edad elegida',
     (tester) async {
       final profile = _BirthDateRepository(DateTime(2001, 1, 1));
       final oldRequest = Completer<DateTime?>();
@@ -28,18 +31,11 @@ void main() {
           ),
         ),
       );
-      await tester.pump();
-      expect(find.byType(LinearProgressIndicator), findsOneWidget);
-      await tester.pump(const Duration(seconds: 16));
-      await tester.pump();
-      expect(
-        find.text('No se pudo cargar tu fecha de nacimiento'),
-        findsOneWidget,
-      );
-      expect(find.byType(LinearProgressIndicator), findsNothing);
-      profile.loader = null;
-      await tester.tap(find.text('No se pudo cargar tu fecha de nacimiento'));
       await tester.pumpAndSettle();
+      final age = find.byKey(const ValueKey('fas-calculation-age'));
+      expect(age, findsOneWidget);
+      await tester.enterText(age, '42');
+      await tester.pump();
       final field = find.byKey(
         const ValueKey('fas-mark-upper_body_push_ups_2_min'),
       );
@@ -51,10 +47,12 @@ void main() {
         findsOneWidget,
       );
       expect(tester.widget<TextFormField>(field).controller!.text, '14');
+      expect(tester.widget<TextField>(age).controller!.text, '42');
+      expect(profile.saveCalls, 0);
       expect(tester.takeException(), isNull);
     },
   );
-  testWidgets('un error inmediato al abrir FAS permite volver a cargar', (
+  testWidgets('un error del perfil permite calcular sin guardar ni editarlo', (
     tester,
   ) async {
     final profile = _BirthDateRepository(DateTime(2001, 1, 1))
@@ -69,18 +67,274 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(
-      find.text('No se pudo cargar tu fecha de nacimiento'),
-      findsOneWidget,
-    );
-    profile.loader = null;
-    await tester.tap(find.text('No se pudo cargar tu fecha de nacimiento'));
-    await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('fas-mark-run_2000_m')), findsOneWidget);
+    await tester.enterText(
+      find.byKey(const ValueKey('fas-mark-upper_body_push_ups_2_min')),
+      '14',
+    );
+    await tester.pump();
+    expect(find.text('20 pt'), findsOneWidget);
+    expect(profile.saveCalls, 0);
     expect(tester.takeException(), isNull);
   });
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(() async => reference = await FasPeriodic2027Reference.load());
+
+  testWidgets('calcula sin fecha de nacimiento y sin escribir datos', (
+    tester,
+  ) async {
+    final profile = _BirthDateRepository(null);
+    final repository = _Repository();
+    await _showCalculator(tester, reference, profile, repository);
+    await _enterMarks(tester);
+    expect(find.text('80 puntos'), findsOneWidget);
+    expect(profile.saveCalls, 0);
+    expect(repository.saveCalls, 0);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('sincroniza edad escrita y slider sin editar el perfil', (
+    tester,
+  ) async {
+    final profile = _BirthDateRepository(DateTime(2001, 1, 1));
+    final repository = _Repository();
+    await _showCalculator(tester, reference, profile, repository);
+    final field = find.byKey(const ValueKey('fas-calculation-age'));
+    await tester.enterText(field, '42');
+    await tester.pump();
+    final slider = find.byKey(const ValueKey('fas-age-slider'));
+    expect(tester.widget<Slider>(slider).value, 42);
+    await tester.drag(slider, const Offset(800, 0));
+    await tester.pumpAndSettle();
+    final value = tester.widget<Slider>(slider).value.round();
+    expect(value, greaterThan(42));
+    expect(tester.widget<TextField>(field).controller!.text, '$value');
+    expect(profile.value, DateTime(2001, 1, 1));
+    expect(profile.saveCalls, 0);
+    expect(repository.saveCalls, 0);
+  });
+
+  testWidgets(
+    'cambiar 44 a 45 y volver conserva agilidad y recalcula la suma',
+    (tester) async {
+      await _showCalculator(
+        tester,
+        reference,
+        _BirthDateRepository(null),
+        _Repository(),
+      );
+      final age = find.byKey(const ValueKey('fas-calculation-age'));
+      final agility = find.byKey(
+        const ValueKey('fas-mark-agility_speed_circuit'),
+      );
+      await tester.enterText(age, '44');
+      await tester.pump();
+      await _enterMarks(tester);
+      final summary = find.byKey(const ValueKey('fas-score-summary'));
+      final total = tester
+          .widget<Text>(
+            find
+                .descendant(
+                  of: summary,
+                  matching: find.textContaining('puntos'),
+                )
+                .first,
+          )
+          .data!;
+
+      await tester.enterText(age, '45');
+      await tester.pump();
+      expect(agility, findsNothing);
+      expect(find.text('3/3 mínimos alcanzados'), findsOneWidget);
+      expect(find.text(total), findsNothing);
+      await tester.enterText(age, '44');
+      await tester.pump();
+      expect(tester.widget<TextFormField>(agility).controller!.text, '15,29');
+      expect(find.text(total), findsOneWidget);
+      expect(find.text('4/4 mínimos alcanzados'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'recalcula con la edad propia antes de guardar sin auto guardado',
+    (tester) async {
+      final profile = _BirthDateRepository(DateTime(1982, 2, 3));
+      final repository = _Repository();
+      await _showCalculator(tester, reference, profile, repository);
+      await tester.enterText(
+        find.byKey(const ValueKey('fas-calculation-age')),
+        '44',
+      );
+      await tester.pump();
+      await _enterMarks(tester);
+      await tester.tap(find.text('Guardar test'));
+      await tester.pumpAndSettle();
+      expect(find.text('Usar mi edad'), findsOneWidget);
+      expect(repository.saveCalls, 0);
+      await tester.tap(find.text('Seguir simulando'));
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<Slider>(find.byKey(const ValueKey('fas-age-slider')))
+            .value,
+        44,
+      );
+      expect(repository.saveCalls, 0);
+      await tester.tap(find.text('Guardar test'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Usar mi edad'));
+      await tester.pumpAndSettle();
+      expect(repository.saveCalls, 0);
+      expect(
+        tester
+            .widget<Slider>(find.byKey(const ValueKey('fas-age-slider')))
+            .value,
+        45,
+      );
+      expect(find.text('3/3 mínimos alcanzados'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('fas-mark-agility_speed_circuit')),
+        findsNothing,
+      );
+      await tester.tap(find.text('Guardar test'));
+      await tester.pumpAndSettle();
+      expect(repository.saveCalls, 1);
+      expect(repository.savedAge, 45);
+      expect(repository.savedMarks, hasLength(3));
+      expect(repository.savedMarks, isNot(contains('agility_speed_circuit')));
+      expect(profile.saveCalls, 0);
+    },
+  );
+
+  testWidgets('cancelar el guardado sin nacimiento permite seguir calculando', (
+    tester,
+  ) async {
+    final profile = _BirthDateRepository(null);
+    final repository = _Repository();
+    await _showCalculator(tester, reference, profile, repository);
+    await _enterMarks(tester);
+    await tester.tap(find.text('Guardar test'));
+    await tester.pumpAndSettle();
+    expect(find.text('Completar perfil'), findsOneWidget);
+    await tester.tap(find.text('Seguir calculando'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('fas-calculation-age')),
+      '42',
+    );
+    await tester.pump();
+    expect(
+      tester.widget<Slider>(find.byKey(const ValueKey('fas-age-slider'))).value,
+      42,
+    );
+    expect(profile.saveCalls, 0);
+    expect(repository.saveCalls, 0);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('recalcular la edad conserva la revisión publicada al guardar', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final published = (await tester.runAsync(() => fasRevision()))!;
+    final references = MemoryBuiltinReferences(published);
+    final profile = _BirthDateRepository(DateTime(2001, 1, 1));
+    final legacy = _Repository();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: FasPeriodicCalculatorPage(
+          birthDateRepository: profile,
+          repository: legacy,
+          references: references,
+          today: DateTime(2026, 11, 5),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('fas-calculation-age')),
+      '44',
+    );
+    await tester.pump();
+    await _enterMarks(tester);
+    await tester.tap(find.text('Guardar test'));
+    await tester.pumpAndSettle();
+    expect(references.records, isEmpty);
+    await tester.tap(find.text('Usar mi edad'));
+    await tester.pumpAndSettle();
+    expect(references.records, isEmpty);
+    await tester.tap(find.text('Guardar test'));
+    await tester.pumpAndSettle();
+    expect(references.records.single['revisionId'], 'fas-revision-1');
+    expect(references.records.single['age'], 25);
+    expect(references.records.single['goalId'], isNull);
+    expect(references.reads, 1);
+    expect(legacy.saveCalls, 0);
+    expect(profile.saveCalls, 0);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('actualizar el baremo conserva la edad simulada y las marcas', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final first = (await tester.runAsync(() => fasRevision()))!;
+    final next = (await tester.runAsync(
+      () => fasRevision(id: 'fas-2', version: 'fas-2'),
+    ))!;
+    final references = MemoryBuiltinReferences(first);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: FasPeriodicCalculatorPage(
+          birthDateRepository: _BirthDateRepository(DateTime(2001, 1, 1)),
+          repository: _Repository(),
+          references: references,
+          today: DateTime(2026, 11, 5),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _enterMarks(tester);
+    references.current = next;
+    references.recordError = const PostgrestException(
+      message: 'Recarga antes de guardar.',
+      code: '22023',
+      details: 'builtin_reference_changed',
+    );
+    await tester.tap(find.text('Guardar test'));
+    await tester.pumpAndSettle();
+    expect(find.text('Actualizar baremo'), findsOneWidget);
+    final age = find.byKey(const ValueKey('fas-calculation-age'));
+    await tester.enterText(age, '44');
+    await tester.pump();
+    await tester.tap(find.text('Actualizar baremo'));
+    await tester.pumpAndSettle();
+    expect(references.reads, 2);
+    expect(find.text('Actualizar baremo'), findsNothing);
+    expect(tester.widget<TextField>(age).controller!.text, '44');
+    expect(
+      tester.widget<Slider>(find.byKey(const ValueKey('fas-age-slider'))).value,
+      44,
+    );
+    expect(
+      tester
+          .widget<TextFormField>(
+            find.byKey(const ValueKey('fas-mark-agility_speed_circuit')),
+          )
+          .controller!
+          .text,
+      '15,29',
+    );
+    expect(references.records, hasLength(1));
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('calcula cuatro puntuaciones sin guardar un intento', (
     tester,
@@ -426,6 +680,8 @@ class _Repository implements FasPeriodicAssessmentRepository {
   String? savedGoalId;
   int? savedAge;
   DateTime? savedAt;
+  int saveCalls = 0;
+  Map<String, int>? savedMarks;
 
   @override
   Future<void> linkRecentToGoal({
@@ -445,11 +701,51 @@ class _Repository implements FasPeriodicAssessmentRepository {
     required Map<String, int> marks,
     DateTime? completedAt,
   }) async {
+    saveCalls++;
+    savedMarks = Map.of(marks);
     savedGoalId = goalId;
     savedAge = age;
     savedAt = completedAt;
     return 'saved';
   }
+}
+
+Future<void> _showCalculator(
+  WidgetTester tester,
+  FasPeriodic2027Reference reference,
+  _BirthDateRepository profile,
+  _Repository repository,
+) async {
+  tester.view.physicalSize = const Size(800, 2400);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+  await tester.pumpWidget(
+    MaterialApp(
+      home: FasPeriodicCalculatorPage(
+        birthDateRepository: profile,
+        repository: repository,
+        reference: reference,
+        today: DateTime(2027, 2, 3),
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
+
+Future<void> _enterMarks(WidgetTester tester) async {
+  for (final entry in {
+    'upper_body_push_ups_2_min': '14',
+    'abdominal_plank': '40',
+    'run_2000_m': '1146',
+    'agility_speed_circuit': '15,29',
+  }.entries) {
+    await tester.enterText(
+      find.byKey(ValueKey('fas-mark-${entry.key}')),
+      entry.value,
+    );
+  }
+  await tester.pump();
 }
 
 class _BirthDateRepository implements ProfileBirthDateRepository {

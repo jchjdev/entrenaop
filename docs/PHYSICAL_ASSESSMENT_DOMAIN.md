@@ -367,7 +367,7 @@ conserva literalmente esas filas y no las sustituye por una progresión
 inferida mientras no exista corrección oficial.
 
 La calculadora gratuita está separada del registro: no requiere una
-preparación activa, no guarda marcas ni altera el historial y está disponible
+preparación activa, no guarda marcas automáticamente ni altera el historial al simular y está disponible
 en los accesos rápidos de Inicio. Muestra puntos por prueba, el cumplimiento
 orientativo del mínimo general de 20 puntos y la fuente/versión. No suma ni
 promedia las pruebas como calificación normativa. Para evitar cálculos manuales,
@@ -375,6 +375,24 @@ muestra además una suma matemática grande y claramente rotulada como
 orientativa; la orden no define esa suma como resultado oficial. Antes de 2027
 etiqueta el resultado como referencia futura y nunca lo presenta como
 calificación oficial.
+
+### Edad libre en la calculadora FAS
+
+La calculadora permite escribir la edad o ajustarla con un deslizador sin
+modificar el perfil. Propone la edad del perfil cuando está disponible, pero
+funciona también sin fecha de nacimiento o si su lectura falla, con 25 años
+como punto inicial editable. Una respuesta tardía no sustituye la edad elegida.
+Las marcas se conservan al cambiar de tramo, incluida la agilidad al cruzar los
+45 años. Se mantiene el diseño de tarjetas y resumen, los formatos móviles y
+la lectura de baremos versionados.
+
+Guardar es una acción explícita: se vuelve a leer el nacimiento y se calcula
+la edad propia para la fecha del test. Si falta, se ofrece completar el perfil;
+cancelar permite seguir calculando sin escrituras. Si la edad difiere, se ofrece
+recalcular con la propia sin guardar automáticamente, para revisar el resultado
+y volver a pulsar Guardar test. Se mantiene la misma revisión de baremo y la
+validación de integridad del servidor; esta adaptación no cambia reglas SQL ni
+el algoritmo de puntuación.
 
 La migración
 `20260923006000_fas_periodic_assessments.sql` guarda cada intento fechado en

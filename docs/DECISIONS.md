@@ -1,5 +1,13 @@
 # Registro de decisiones vigentes
 
+**Edad libre en la calculadora FAS · 05/11/2026.** Javier confirma conservar
+el diseño actual y permitir simular otra edad con entrada manual o deslizador,
+sin modificar el perfil ni registrar automáticamente. La edad del perfil solo
+propone el valor inicial. Al guardar se vuelve a comprobar la edad propia en
+la fecha del test; una diferencia requiere recalcular, revisar y volver a
+confirmar el guardado. Se conserva la lectura y escritura de la revisión de
+baremo publicada. [Recorrido](PHYSICAL_ASSESSMENT_DOMAIN.md#edad-libre-en-la-calculadora-fas).
+
 **Retención de compilados Trainer · 05/11/2026.** Para desbloquear la copia cifrada de Dev, Javier autoriza la limpieza de los 106 ZIP antiguos del plan revisado y automatizar la misma regla de cinco recientes más la versión publicada. Se conserva el límite de almacenamiento; la autorización afecta a compilados Trainer, sin ampliar la eliminación a otros recursos. [Alcance y evidencia](audits/TRAINER_COMPILED_RETENTION_2026_11_05.md).
 
 **Autoría versionada de FAS/Tropa · 05/11/2026.** Javier aprueba implementar la propuesta con revisión, publicación e historial protegido. Primer bloque: presentación, fuente, vigencia y valores de baremos, con lectura/cálculo/guardado coherentes por versión en ADMIN, app y servidor. Las preparaciones existentes conservan su revisión; los nuevos resultados FAS guardan el cálculo de servidor sin reinterpretar los anteriores. Identidades, unidades, protocolos y estructura quedan protegidos; editar condiciones de entrenamiento será el siguiente bloque. [Contrato y alcance](BUILTIN_ASSESSMENT_AUTHORING.md).
