@@ -47,8 +47,7 @@ compartido conforme a la matriz del repositorio.
 98 pruebas dirigidas revisan autoría, recuperación, guardado, revisión, Compacto,
 catálogo y tamaños 320/390/1100 con texto ampliado. El paquete común pasa 250;
 la app del deportista 1.844 y una omisión previa. ADMIN pasa 397 con dos
-omisiones previas. Análisis de raíz y ADMIN sin incidencias. La publicación
-Dev se acredita por separado después de completar el despliegue automático.
+omisiones previas. Análisis de raíz y ADMIN sin incidencias.
 
 La consulta real de catálogos, definiciones, mínimos y seis objetivos se verificó
 con rol authenticated mediante BEGIN/DO/ROLLBACK, sin datos nuevos ni cambios de
@@ -77,3 +76,14 @@ validar su representación y probar las RPC/versiones con historial existente.
 No se implementa esa conversión ni se presenta como aprobada por pedir una revisión.
 Los planes nuevos creados con el editor configurable siguen su autoría actual;
 una futura preparación integrada directamente necesita declarar su adaptador.
+
+## Publicación verificada
+
+El commit `1c095c996725016f910523c8846e46f002957f4f` está en main. La ejecución
+[ADMIN Dev 42013395095](https://github.com/jchjdev/entrenaop/actions/runs/42013395095)
+terminó correctamente en validación, despliegue y retención. Se comprobó por
+HTTPS el 05/11/2026: versión 0.6.0, compilación 11, entorno development, proyecto
+`sxbxfjqgoddzhtcyhalw`, revisión y base de recursos de esa ejecución, SHA-256 de
+main.dart.js coincidente, X-Frame-Options DENY y Cache-Control no-store. Esto
+acredita publicación y destino; la aceptación autenticada con la cuenta de Javier
+queda como comprobación de uso posterior.
