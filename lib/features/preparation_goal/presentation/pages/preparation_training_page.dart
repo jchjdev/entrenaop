@@ -1464,6 +1464,7 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
                   ),
                   if (_plan != null && !_paused)
                     ExpansionTile(
+                      key: const PageStorageKey('preparation-pending-sessions'),
                       title: Text(
                         _data!.pendingSessions.isEmpty
                             ? 'Entrenamientos y motivos de la pauta'
@@ -1476,6 +1477,7 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
                       !_paused &&
                       _data!.calibrationOptions.isNotEmpty)
                     ExpansionTile(
+                      key: const PageStorageKey('preparation-calibration'),
                       leading: const Icon(Icons.add_task),
                       title: const Text('¿Ya has practicado algún apoyo?'),
                       subtitle: const Text(
@@ -1644,9 +1646,13 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
                   ? null
                   : () async {
                       final date = move['from_date'] as String;
-                      final id = Uri.encodeQueryComponent(move['scheduled_id'] as String);
+                      final id = Uri.encodeQueryComponent(
+                        move['scheduled_id'] as String,
+                      );
                       await context.push('/plan/week?date=$date&session=$id');
-                      if (mounted) await _calculate(revise: p['revision'] != null);
+                      if (mounted) {
+                        await _calculate(revise: p['revision'] != null);
+                      }
                     },
             ),
         if (!published && p['status'] != 'ready') ...[
@@ -1768,6 +1774,11 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
                     else if (s['warm_up_instructions']
                         case final String instructions)
                       ExpansionTile(
+                        key: PageStorageKey((
+                          'preparation-warmup',
+                          s['date'],
+                          s['session_order'],
+                        )),
                         title: Text(
                           'Preparación · ${formatPerformanceTime(s['warm_up_seconds'] as num? ?? 420)} min${s['combined'] == true ? ' + activación compartida con carrera' : ''}',
                         ),
@@ -1792,6 +1803,12 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
                         if (work['stimulus'] is Map)
                           Text((work['stimulus'] as Map)['name'] as String),
                         ExpansionTile(
+                          key: PageStorageKey((
+                            'preparation-reason',
+                            s['date'],
+                            s['session_order'],
+                            work['name'],
+                          )),
                           title: const Text('Por qué este trabajo'),
                           children: [Text(work['reason'] as String)],
                         ),
@@ -1945,19 +1962,36 @@ class _StrengthScheduleAlternative extends StatelessWidget {
 
   String _day(String value) {
     final date = DateTime.parse(value);
-    const names = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
+    const names = [
+      'lunes',
+      'martes',
+      'miércoles',
+      'jueves',
+      'viernes',
+      'sábado',
+      'domingo',
+    ];
     return '${names[date.weekday - 1]} ${DateFormat('d/M').format(date)}';
   }
 
   @override
   Widget build(BuildContext context) {
-    final rows = [
-      ...move['agenda'] as List,
-      ...move['running'] as List,
-      ...move['performance'] as List,
-    ].cast<Map>()..sort((a, b) => (a['date'] as String).compareTo(b['date'] as String));
+    final rows =
+        [
+          ...move['agenda'] as List,
+          ...move['running'] as List,
+          ...move['performance'] as List,
+        ].cast<Map>()..sort(
+          (a, b) => (a['date'] as String).compareTo(b['date'] as String),
+        );
     return Card(
       child: ExpansionTile(
+        key: PageStorageKey((
+          'preparation-agenda-move',
+          move['from_date'],
+          move['to_date'],
+          move['name'],
+        )),
         initiallyExpanded: true,
         leading: const Icon(Icons.event_repeat_rounded),
         title: const Text('Un cambio de agenda deja hueco para las series'),
@@ -1968,7 +2002,10 @@ class _StrengthScheduleAlternative extends StatelessWidget {
         childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
         expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Así quedaría la semana', style: Theme.of(context).textTheme.titleSmall),
+          Text(
+            'Así quedaría la semana',
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
           const SizedBox(height: 8),
           for (final row in rows)
             Padding(

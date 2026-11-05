@@ -131,6 +131,7 @@ class TrainingAvailabilityFields extends StatelessWidget {
           ],
         ),
         ExpansionTile(
+          key: const PageStorageKey('training-day-minutes'),
           tilePadding: EdgeInsets.zero,
           title: const Text('Ajustar minutos de un día concreto'),
           children: [

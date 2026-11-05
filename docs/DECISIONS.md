@@ -1,5 +1,7 @@
 # Registro de decisiones vigentes
 
+**Estado independiente de desplegables · 05/11/2026.** Javier pide revisar y corregir la colisión de estado detectada en FAS/Tropa también en ADMIN, Trainer, los creadores compartidos y el deportista. Se conserva el diseño: plegado y desplazamiento de cada control tienen identidades distintas; restaurar un apartado no puede ejecutar setState durante build. [Alcance y comprobación](audits/EXPANSION_STORAGE_2026_11_05.md).
+
 **Google Play · cuenta personal creada · 05/11/2026.** Javier completa y paga
 el alta personal. La consola confirma la cuenta, con verificaciones pendientes
 de identidad, operador, dispositivo Android y teléfono; Crear aplicación aún

@@ -185,6 +185,7 @@ class _CueSettingsDialogState extends State<_CueSettingsDialog> {
         ),
         const SizedBox(height: 8),
         ExpansionTile(
+          key: const PageStorageKey('workout-cue-help'),
           tilePadding: EdgeInsets.zero,
           childrenPadding: const EdgeInsets.only(bottom: 12),
           title: const Text('Cómo funcionan los avisos'),

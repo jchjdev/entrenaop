@@ -300,6 +300,7 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
         for (final invitation in pending) _invitation(invitation),
         if (history.isNotEmpty)
           ExpansionTile(
+            key: const PageStorageKey('trainer-invitation-history'),
             tilePadding: EdgeInsets.zero,
             title: const Text('Historial de invitaciones'),
             subtitle: const Text('Aceptadas, canceladas y caducadas'),
@@ -523,11 +524,13 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
                         ],
                       ),
                       ExpansionTile(
+                        key: const PageStorageKey('trainer-invitation-backup'),
                         tilePadding: EdgeInsets.zero,
                         title: const Text('Código de respaldo'),
                         children: [
                           SelectableText(
                             _draft!.secret,
+                            key: const PageStorageKey('invitation-backup-code'),
                             style: const TextStyle(fontFamily: 'monospace'),
                           ),
                           TextButton.icon(

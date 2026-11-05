@@ -98,6 +98,7 @@ class _TrainingSyncPanelState extends State<TrainingSyncPanel> {
               'Después, Garmin Connect debe sincronizar con el reloj. Enviado a Garmin no significa recibido en el reloj.',
             ),
             ExpansionTile(
+              key: const PageStorageKey('training-sync-help'),
               tilePadding: EdgeInsets.zero,
               title: const Text('Cómo funciona'),
               children: const [

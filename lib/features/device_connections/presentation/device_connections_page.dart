@@ -171,6 +171,7 @@ class _DeviceConnectionsPageState extends State<DeviceConnectionsPage> {
                     if (widget.showPlannedProviders) ...[
                       const SizedBox(height: 16),
                       ExpansionTile(
+                        key: const PageStorageKey('device-more-brands'),
                         tilePadding: const EdgeInsets.symmetric(horizontal: 4),
                         title: const Text('Más marcas'),
                         subtitle: const Text('Conexiones en estudio'),

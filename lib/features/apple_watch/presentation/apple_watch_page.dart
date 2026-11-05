@@ -111,6 +111,9 @@ class _AppleWatchPageState extends State<AppleWatchPage> {
             for (final entry in preview.prescription.steps.indexed)
               Card(
                 child: ExpansionTile(
+                  key: PageStorageKey(
+                    'apple-preview-${candidate.id}-${entry.$1}',
+                  ),
                   leading: CircleAvatar(child: Text('${entry.$1 + 1}')),
                   title: Text(entry.$2.description),
                   subtitle: Text(_goal(entry.$2)),
@@ -356,6 +359,7 @@ class _AppleWatchPageState extends State<AppleWatchPage> {
             for (final receipt in _catalog?.receipts ?? <AppleReceipt>[])
               Card(
                 child: ExpansionTile(
+                  key: PageStorageKey('apple-receipt-${receipt.id}'),
                   leading: Icon(
                     receipt.needsRemoval
                         ? Icons.sync_problem

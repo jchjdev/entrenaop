@@ -136,6 +136,7 @@ class _TrainingDeliveryPageState extends State<TrainingDeliveryPage> {
                   ),
                 if (catalog != null && catalog.progress.isNotEmpty)
                   ExpansionTile(
+                    key: const PageStorageKey('training-delivery-status'),
                     title: const Text('Estado de tus sesiones'),
                     subtitle: Text(
                       '${catalog.progress.length} citas consultadas',

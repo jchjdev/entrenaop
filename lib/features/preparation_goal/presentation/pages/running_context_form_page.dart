@@ -428,6 +428,7 @@ class _RunningContextFormPageState extends State<RunningContextFormPage> {
                 ),
                 if (_available.isNotEmpty)
                   ExpansionTile(
+                    key: const PageStorageKey('running-concrete-days'),
                     title: const Text(
                       'Ajustar días concretos o reservar fuerza',
                     ),
@@ -626,6 +627,7 @@ class _RunningContextFormPageState extends State<RunningContextFormPage> {
           children: [
             TextField(
               controller: _minutesByDay[day - 1],
+              key: PageStorageKey('running-minutes-$day'),
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 labelText: 'Minutos',

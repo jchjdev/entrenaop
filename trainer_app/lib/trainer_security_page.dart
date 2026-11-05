@@ -134,9 +134,13 @@ class _TrainerSecurityPageState extends State<TrainerSecurityPage> {
               Center(child: totpQr(setup.qr)),
               const SizedBox(height: 16),
               ExpansionTile(
+                key: const PageStorageKey('trainer-totp-manual'),
                 title: const Text('Introducir la clave manualmente'),
                 children: [
-                  SelectableText(setup.secret),
+                  SelectableText(
+                    setup.secret,
+                    key: const PageStorageKey('totp-manual-secret'),
+                  ),
                   TextButton(
                     onPressed: () => _run(() async {
                       await Clipboard.setData(

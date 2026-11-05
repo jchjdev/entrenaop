@@ -471,6 +471,9 @@ class _FasPeriodicAssessmentPageState extends State<FasPeriodicAssessmentPage> {
                             for (final entry in snapshot.data!)
                               Card(
                                 child: ExpansionTile(
+                                  key: PageStorageKey(
+                                    'fas-page-history-${entry.id}',
+                                  ),
                                   title: Text(
                                     DateFormat('dd-MM-yyyy · HH:mm')
                                         .format(entry.completedAt),

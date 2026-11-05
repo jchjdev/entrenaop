@@ -392,14 +392,24 @@ class _AdminGuidedReviewPageState extends State<AdminGuidedReviewPage> {
     final source = review.sessionById[session.templateId];
     final warmup = review.warmupById[session.warmupId];
     final expansion = '$phase-$index';
+    final generation = _generation;
     return Card(
       child: ExpansionTile(
         expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
         enabled: !_busy,
-        onExpansionChanged: (open) => setState(() {
-          open ? _expanded.add(expansion) : _expanded.remove(expansion);
-        }),
-        key: ValueKey('${widget.programId}-$phase-$index-${review.signature}'),
+        onExpansionChanged: (open) {
+          // Restaurar el plegado puede notificar mientras Flutter construye
+          // la ficha; las cargas y el setState esperan al siguiente frame.
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted || generation != _generation) return;
+            setState(() {
+              open ? _expanded.add(expansion) : _expanded.remove(expansion);
+            });
+          });
+        },
+        key: PageStorageKey(
+          '${widget.programId}-$phase-$index-${review.signature}',
+        ),
         title: Text('${index + 1}. ${session.name}'),
         subtitle: Text(
           source == null

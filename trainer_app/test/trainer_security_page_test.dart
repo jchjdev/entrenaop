@@ -28,6 +28,42 @@ class SecurityFake implements TrainerSecurity {
 
 void main() {
   testWidgets(
+    'clave manual se despliega bajo scroll persistente sin interferir con OTP',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(900, 1100));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final security = SecurityFake()..existing = [];
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: EntrenaTheme.dark,
+          home: KeyedSubtree(
+            key: const PageStorageKey('security-page-scroll'),
+            child: TrainerSecurityPage(
+              repository: security,
+              onComplete: () {},
+              onSignOut: () async {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Configurar autenticador'));
+      await tester.pumpAndSettle();
+      final manual = find.text('Introducir la clave manualmente');
+      await tester.ensureVisible(manual);
+      await tester.tap(manual);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      expect(find.text('manual-key'), findsOneWidget);
+      await tester.ensureVisible(find.byType(TextField));
+      await tester.enterText(find.byType(TextField), '123456');
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      expect(security.calls, 0);
+    },
+  );
+
+  testWidgets(
     'un OTP confirmado no se vuelve a consumir al fallar la consulta final',
     (tester) async {
       final security = SecurityFake()..serverAssured = false;

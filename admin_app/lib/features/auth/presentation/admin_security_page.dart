@@ -189,6 +189,7 @@ class _AdminSecurityPageState extends State<AdminSecurityPage> {
     bool repeat = false,
     bool current = false,
   }) => Padding(
+    key: PageStorageKey(controller),
     padding: const EdgeInsets.only(bottom: 16),
     child: TextFormField(
       controller: controller,
@@ -391,7 +392,7 @@ class _AdminSecurityPageState extends State<AdminSecurityPage> {
                             _setup == null &&
                             _factors.isEmpty)
                           ExpansionTile(
-                            key: const ValueKey('admin-password-option'),
+                            key: const PageStorageKey('admin-password-option'),
                             title: const Text('Cambiar contraseña (opcional)'),
                             subtitle: const Text(
                               'Solo si todavía necesitas actualizarla.',

@@ -99,6 +99,7 @@ class _PrototypeSession extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ExpansionTile(
+      key: PageStorageKey('running-prototype-${session.id}'),
       tilePadding: EdgeInsets.zero,
       childrenPadding: const EdgeInsets.only(bottom: 12),
       leading: CircleAvatar(

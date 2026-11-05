@@ -483,6 +483,12 @@ class _PublishedSessionCard extends StatelessWidget {
         (running ? 'Carrera' : 'Fuerza y rendimiento');
     return EntrenaCard(
       child: ExpansionTile(
+        key: PageStorageKey((
+          'adaptive-session',
+          session['date'],
+          session['kind'],
+          session['session_order'],
+        )),
         tilePadding: EdgeInsets.zero,
         childrenPadding: const EdgeInsets.only(top: 12),
         expandedCrossAxisAlignment: CrossAxisAlignment.stretch,

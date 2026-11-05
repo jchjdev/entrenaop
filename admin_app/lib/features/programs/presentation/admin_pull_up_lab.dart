@@ -169,6 +169,7 @@ class _AdminPullUpLabState extends State<AdminPullUpLab> {
         ),
         const SizedBox(height: 12),
         const ExpansionTile(
+          key: PageStorageKey('pull-up-lab-evidence'),
           title: Text('Qué respalda la ciencia'),
           childrenPadding: EdgeInsets.all(16),
           children: [
@@ -182,6 +183,7 @@ class _AdminPullUpLabState extends State<AdminPullUpLab> {
           ],
         ),
         const ExpansionTile(
+          key: PageStorageKey('pull-up-lab-preparation'),
           title: Text('Cómo usar estas estrategias en una preparación'),
           childrenPadding: EdgeInsets.all(16),
           children: [

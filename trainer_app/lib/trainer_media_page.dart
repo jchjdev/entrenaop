@@ -313,6 +313,7 @@ class _TrainerMediaPageState extends State<TrainerMediaPage> {
           ),
           const SizedBox(height: 8),
           ExpansionTile(
+            key: const PageStorageKey('trainer-media-limits'),
             tilePadding: EdgeInsets.zero,
             title: const Text('Almacenamiento y límites'),
             subtitle: const Text(

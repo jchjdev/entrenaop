@@ -34,7 +34,16 @@ class _InboxState extends State<TrainerDeviceActivityInboxPanel> {
       title: const Text('Mis actividades recibidas'),
       subtitle: const Text('Garmin · Pendientes de incorporar al historial'),
       onExpansionChanged: (open) {
-        if (open && _results == null) _load();
+        if (open && _results == null) {
+          final repository = widget.repository;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted &&
+                widget.repository == repository &&
+                _results == null) {
+              _load();
+            }
+          });
+        }
       },
       childrenPadding: const EdgeInsets.all(12),
       children: [

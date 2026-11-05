@@ -1,5 +1,7 @@
 # Roadmap de EntrenaOP
 
+**Desplegables · revisión transversal · 05/11/2026:** revisión de 73 ExpansionTile en ADMIN, Trainer, deportista y paquetes compartidos. Se separan plegado, scroll y controles interiores; la restauración no ejecuta setState durante build. 2.992 pruebas correctas, análisis limpios y release web del deportista Dev correcto; ADMIN 0.7.2+14 y Trainer 0.3.3+9 preparados para publicación automática. Se conserva el diseño y los contratos deportivos. [Alcance, evidencia y límites](audits/EXPANSION_STORAGE_2026_11_05.md).
+
 **Google Play · alta personal realizada · 05/11/2026:** Javier paga y completa
 el registro. Consulta directa de la consola: pendientes identidad, estado de
 operador, Android físico y teléfono; todavía no permite crear aplicaciones.

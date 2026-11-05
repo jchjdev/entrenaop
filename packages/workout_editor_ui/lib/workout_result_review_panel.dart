@@ -233,6 +233,13 @@ class _WorkoutSessionComparisonState extends State<WorkoutSessionComparison> {
                   for (final group in groups.values)
                     Card(
                       child: ExpansionTile(
+                        key: PageStorageKey((
+                          'workout-review-exercise',
+                          group.first.current.block,
+                          group.first.current.item,
+                          group.first.current.exerciseId,
+                          group.first.current.format,
+                        )),
                         title: Text(group.first.current.exerciseName),
                         subtitle: Text(
                           '${group.first.current.blockName} · ${group.length} ${group.first.current.format == 'running' ? 'tramos' : 'series'}',

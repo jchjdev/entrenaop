@@ -34,6 +34,33 @@ DeviceActivitySummary activity(String name) => DeviceActivitySummary(
 );
 
 void main() {
+  testWidgets('restaurar la bandeja abierta carga sin setState durante build', (
+    tester,
+  ) async {
+    final first = InboxFixture()..pending.complete([]);
+    final second = InboxFixture()
+      ..pending.complete([activity('Actividad restaurada')]);
+    Widget page(InboxFixture repo, String instance) => MaterialApp(
+      home: Scaffold(
+        body: SingleChildScrollView(
+          child: TrainerDeviceActivityInboxPanel(
+            key: ValueKey(instance),
+            repository: repo,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpWidget(page(first, 'first'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Mis actividades recibidas'));
+    await tester.pumpAndSettle();
+    expect(first.calls, 1);
+    await tester.pumpWidget(page(second, 'second'));
+    await tester.pumpAndSettle();
+    expect(second.calls, 1);
+    expect(find.text('Actividad restaurada'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
   testWidgets(
     'distingue pauta identificada de actividad sin asociar, sin inventar cierre',
     (tester) async {

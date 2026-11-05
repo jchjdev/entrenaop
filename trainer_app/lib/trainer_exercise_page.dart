@@ -286,6 +286,7 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               const ExpansionTile(
+                key: PageStorageKey('trainer-exercise-storage-help'),
                 tilePadding: EdgeInsets.zero,
                 title: Text('Límites y conservación'),
                 children: [

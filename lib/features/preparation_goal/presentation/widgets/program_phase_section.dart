@@ -81,6 +81,7 @@ class _ProgramPhaseSectionState extends State<ProgramPhaseSection> {
           for (final stage in path.stages)
             Card(
               child: ExpansionTile(
+                key: PageStorageKey('program-stage-${stage.code}'),
                 leading: Icon(
                   path.objectives.any((o) => o.code == stage.code)
                       ? Icons.my_location

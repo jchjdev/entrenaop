@@ -281,6 +281,35 @@ List<Map<String, dynamic>> _sessions(_Works works) =>
         .toList();
 
 void main() {
+  testWidgets(
+    'metadatos del programa vuelven a abrirse con almacenamiento de página',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(1600, 1100));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final works = _Works(_snapshot(sessions: []));
+      final catalog = _Catalog();
+      final adapter = _Adapter(catalog);
+      Future<void> mount(String key) async {
+        await tester.pumpWidget(
+          ProfessionalWorkspaceScope(
+            desktop: true,
+            child: _app(works, catalog, adapter, key: key),
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
+
+      await mount('first');
+      await _tap(tester, find.text('Objetivo, destinatarios y material'));
+      await mount('second');
+      expect(tester.takeException(), isNull);
+      expect(
+        find.byKey(const ValueKey('program-field-Objetivo e indicaciones')),
+        findsOneWidget,
+      );
+    },
+  );
+
   for (final width in [320.0, 1100.0]) {
     testWidgets(
       'cancelar descarte conserva hijo pendiente con texto doble a $width',

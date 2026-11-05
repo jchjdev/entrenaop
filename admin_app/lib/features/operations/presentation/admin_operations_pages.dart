@@ -637,12 +637,23 @@ class _AdminAccountSupportState extends State<AdminAccountSupport> {
   Future<Map<String, dynamic>>? _support;
   @override
   Widget build(BuildContext context) => ExpansionTile(
+    key: PageStorageKey('admin-support-${widget.userId}'),
     title: const Text('Diagnóstico de acceso y programas'),
     subtitle: const Text('Consulta de soporte · no modifica la cuenta'),
     onExpansionChanged: (open) {
       if (open && _support == null) {
-        setState(() {
-          _support = widget.repository.support(widget.userId);
+        final userId = widget.userId;
+        final repository = widget.repository;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted ||
+              widget.userId != userId ||
+              widget.repository != repository ||
+              _support != null) {
+            return;
+          }
+          setState(() {
+            _support = repository.support(userId);
+          });
         });
       }
     },

@@ -202,6 +202,31 @@ Future<void> _tap(WidgetTester tester, Finder target) async {
 }
 
 void main() {
+  testWidgets(
+    'restaurar soporte abierto consulta después de construir la ficha',
+    (tester) async {
+      final repo = _Operations();
+      Widget page(String instance) => MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: AdminAccountSupport(
+              key: ValueKey(instance),
+              repository: repo,
+              userId: 'user',
+            ),
+          ),
+        ),
+      );
+      await tester.pumpWidget(page('first'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Diagnóstico de acceso y programas'));
+      await tester.pumpAndSettle();
+      await tester.pumpWidget(page('second'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Programa de user'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
   setUpAll(() => loadReviewFont(always: true));
   testWidgets('actualizar calidad conserva la búsqueda durante la espera', (
     tester,

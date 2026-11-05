@@ -34,6 +34,7 @@ class PreparationGoalReviewPanel extends StatelessWidget {
     if (reviews.isEmpty) return const SizedBox.shrink();
     return Card(
       child: ExpansionTile(
+        key: const PageStorageKey('preparation-goal-controls'),
         title: const Text('Objetivos y controles'),
         subtitle: const Text('Datos usados al preparar esta semana'),
         childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),

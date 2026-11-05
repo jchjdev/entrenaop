@@ -822,7 +822,11 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
           ),
         ),
         const SizedBox(height: 6),
-        Semantics(label: label, child: control),
+        Semantics(
+          key: PageStorageKey('program-control-$label'),
+          label: label,
+          child: control,
+        ),
       ],
     ),
   );
@@ -1048,6 +1052,9 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
                                   context,
                                 ))
                                   ExpansionTile(
+                                    key: const PageStorageKey(
+                                      'program-classification',
+                                    ),
                                     tilePadding: EdgeInsets.zero,
                                     maintainState: true,
                                     title: const Text(
@@ -1609,7 +1616,7 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
             ),
             if (ProfessionalWorkspaceScope.isDesktop(context))
               ExpansionTile(
-                key: ValueKey(
+                key: PageStorageKey(
                   'phase-metadata-${p.phaseId}-${p.validationReveal}',
                 ),
                 maintainState: true,
@@ -1933,9 +1940,13 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
               _sessionContent(s.id, collapsed: !expanded),
             if (!widget.adapter.professional)
               ExpansionTile(
+                key: PageStorageKey('program-session-settings-${s.id}'),
                 initiallyExpanded: s.settingsExpanded,
-                onExpansionChanged: (expanded) =>
-                    setState(() => s.settingsExpanded = expanded),
+                onExpansionChanged: (expanded) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) setState(() => s.settingsExpanded = expanded);
+                  });
+                },
                 tilePadding: EdgeInsets.zero,
                 title: const Text('Calentamiento y ajustes'),
                 subtitle: Text(

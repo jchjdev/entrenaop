@@ -148,6 +148,7 @@ class _StudentPushSettingsState extends State<StudentPushSettings> {
             ),
           if (push.busy) const LinearProgressIndicator(),
           ExpansionTile(
+            key: PageStorageKey('push-quiet-hours-${widget.professional}'),
             tilePadding: EdgeInsets.zero,
             title: Text(
               widget.professional
@@ -224,7 +225,7 @@ class _StudentPushSettingsState extends State<StudentPushSettings> {
               const SizedBox(height: 12),
               if (_zones.isNotEmpty)
                 DropdownMenu<String>(
-                  key: ValueKey('zone-$_owner-${value.timezone}'),
+                  key: PageStorageKey('zone-$_owner-${value.timezone}'),
                   initialSelection: value.timezone,
                   expandedInsets: EdgeInsets.zero,
                   enableFilter: true,

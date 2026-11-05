@@ -98,12 +98,11 @@ class _WorkoutSessionRecordsState extends State<WorkoutSessionRecords> {
     final first = sets.first;
     final result = execution.amrapResultFor(first.blockOrder);
     return ExpansionTile(
-      key: sets.any((s) => s.id == _initialSetId)
-          ? _initialRecordKey
-          : PageStorageKey('records-amrap-${first.blockOrder}'),
+      key: PageStorageKey('records-amrap-${first.blockOrder}'),
       initiallyExpanded: result == null,
       title: Text(
         '${first.blockName} · AMRAP',
+        key: sets.any((s) => s.id == _initialSetId) ? _initialRecordKey : null,
         style: const TextStyle(fontWeight: FontWeight.w700),
       ),
       subtitle: Text(

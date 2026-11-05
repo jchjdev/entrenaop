@@ -91,6 +91,7 @@ class _TrainerInvitationLandingState extends State<TrainerInvitationLanding> {
               ),
               const SizedBox(height: 12),
               ExpansionTile(
+                key: const PageStorageKey('invitation-link-help'),
                 tilePadding: EdgeInsets.zero,
                 title: const Text('Si tu versión no abre el enlace'),
                 children: [

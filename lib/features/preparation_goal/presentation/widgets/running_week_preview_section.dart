@@ -162,6 +162,7 @@ class _RunningWeekPreviewSectionState extends State<RunningWeekPreviewSection> {
                   ),
                 if (sessions.any((s) => s['segments'] != null))
                   ExpansionTile(
+                    key: const PageStorageKey('running-week-effort'),
                     title: const Text('Ver tramos y orientación de esfuerzo'),
                     children: [
                       for (final session in sessions)

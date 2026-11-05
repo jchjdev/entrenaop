@@ -570,6 +570,7 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
         ? 'Carrera regenerativa · contenido pendiente'
         : template?.title ?? 'Carrera · contenido pendiente';
     return ExpansionTile(
+      key: PageStorageKey('running-simulator-${kind.name}'),
       title: Text(title),
       subtitle: const Text('Carrera · sin día ni ritmo fijado'),
       children: [
@@ -589,6 +590,7 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
         .where((item) => item.id == 'strength')
         .firstOrNull;
     return ExpansionTile(
+      key: const PageStorageKey('running-simulator-strength'),
       title: Text(
         'Fuerza · $days ${days == 1 ? 'día reservado' : 'días reservados'}',
       ),

@@ -102,6 +102,7 @@ class _TrainerAssessmentsPageState extends State<TrainerAssessmentsPage> {
                 'Se registran marcas de entrenamiento; no se calculan puntos ni aptitud oficial.',
               ),
               ExpansionTile(
+                key: const PageStorageKey('trainer-assessment-help'),
                 tilePadding: EdgeInsets.zero,
                 title: const Text('Cómo usar las pruebas'),
                 children: const [

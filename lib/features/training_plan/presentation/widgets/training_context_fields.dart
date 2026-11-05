@@ -118,11 +118,14 @@ class _EquipmentPickerState extends State<_EquipmentPicker> {
               .contains(_query.toLowerCase()),
     );
     return ExpansionTile(
+      key: const PageStorageKey('training-equipment-picker'),
+      maintainState: true,
       tilePadding: EdgeInsets.zero,
       title: const Text('Añadir o cambiar material'),
       childrenPadding: const EdgeInsets.only(bottom: 12),
       children: [
         TextField(
+          key: const PageStorageKey('equipment-query'),
           enabled: widget.enabled,
           decoration: const InputDecoration(
             labelText: 'Buscar material',

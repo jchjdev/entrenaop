@@ -1125,6 +1125,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
             title: const Text('Indicaciones y duración'),
             children: [
               TextField(
+                key: const PageStorageKey('workout-description'),
                 controller: _description,
                 maxLength: 500,
                 maxLines: 2,
@@ -1266,7 +1267,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
       children: [
         if (block != null) ...[
           ExpansionTile(
-            key: ValueKey('block-properties-${identityHashCode(block)}'),
+            key: PageStorageKey('block-properties-${identityHashCode(block)}'),
             tilePadding: EdgeInsets.zero,
             maintainState: true,
             initiallyExpanded: true,
@@ -3150,6 +3151,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     final minimumWidth = painter.width + 24;
     painter.dispose();
     return SizedBox(
+      // El texto puede vivir dentro de un desplegable con estado persistente.
+      key: PageStorageKey(controller),
       width: width < minimumWidth ? minimumWidth : width,
       child: Padding(
         padding: EdgeInsets.only(

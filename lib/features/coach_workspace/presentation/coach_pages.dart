@@ -320,6 +320,7 @@ class CoachSummaryPage extends StatelessWidget {
               if (scope.notifications case final notifications?) ...[
                 const SizedBox(height: 12),
                 ExpansionTile(
+                  key: const PageStorageKey('coach-client-notices'),
                   leading: const Icon(Icons.notifications_outlined),
                   title: const Text('Avisos de mis alumnos'),
                   tilePadding: const EdgeInsets.symmetric(horizontal: 12),

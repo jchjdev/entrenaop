@@ -240,6 +240,7 @@ class _GuidedProgramPageState extends State<GuidedProgramPage> {
                       if (d.program.description.isNotEmpty)
                         Text(d.program.description),
                       ExpansionTile(
+                        key: const PageStorageKey('guided-program-information'),
                         tilePadding: EdgeInsets.zero,
                         title: const Text('Información y material'),
                         children: [

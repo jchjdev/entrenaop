@@ -375,6 +375,7 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
                     Card(
                       key: const ValueKey('fas-official-criteria'),
                       child: ExpansionTile(
+                        key: const PageStorageKey('fas-calculator-source'),
                         title: const Text('Fuente y criterio oficial'),
                         childrenPadding: const EdgeInsets.fromLTRB(
                           16,

@@ -65,6 +65,7 @@ Widget _app({
   required ValueChanged<String> saved,
   WorkflowExitController? exit,
   String stamp = '',
+  String instance = 'editor',
   Widget? additionalFields,
   Future<List<WorkoutEditorExercise>> Function()? load,
   Future<WorkoutEditorExercise?> Function(BuildContext)? create,
@@ -84,6 +85,7 @@ Widget _app({
     home: WorkflowExitScope(
       controller: exit ?? WorkflowExitController(),
       child: WorkoutEditorPage(
+        key: ValueKey(instance),
         loadExercises: load ?? () async => _catalog,
         loadWarmups: warmups,
         onCreateExercise: create,
@@ -155,6 +157,50 @@ Future<void> _setField(WidgetTester tester, Finder field, String text) async {
 }
 
 void main() {
+  testWidgets(
+    'metadatos de sesión conservan texto y se restauran sin colisión de scroll',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(1600, 1100));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      Future<void> mount(String instance) async {
+        await tester.pumpWidget(
+          ProfessionalWorkspaceScope(
+            desktop: true,
+            child: _app(
+              instance: instance,
+              save: (_) async => 'saved',
+              saved: (_) {},
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
+
+      await mount('first');
+      final metadata = find.text('Indicaciones y duración');
+      await tester.ensureVisible(metadata);
+      await tester.tap(metadata);
+      await tester.pumpAndSettle();
+      final description = find.widgetWithText(
+        TextField,
+        'Indicaciones (opcional)',
+      );
+      await tester.enterText(description, 'Indicaciones conservadas');
+      await tester.ensureVisible(metadata);
+      await tester.tap(metadata);
+      await tester.pumpAndSettle();
+      await tester.tap(metadata);
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<TextField>(description).controller!.text,
+        'Indicaciones conservadas',
+      );
+      await mount('second');
+      expect(tester.takeException(), isNull);
+      expect(find.text('Indicaciones de la receta'), findsOneWidget);
+    },
+  );
+
   testWidgets(
     'la fila vacía abre directamente el selector y el bloque muestra su configuración',
     (t) async {

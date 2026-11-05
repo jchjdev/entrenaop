@@ -1,5 +1,7 @@
 # Arquitectura de EntrenaOP
 
+**Estado visual persistente · 05/11/2026:** ExpansionTile y los controles desplazables interiores usan identidades PageStorage distintas. ValueKey/GlobalKey conservan identidad/enfoque de widgets, pero no sustituyen ese aislamiento. Las cargas por expansión que pueden restaurarse durante build se difieren al siguiente frame y validan contexto vigente. Sin nuevo wrapper ni paquete. [Revisión transversal](audits/EXPANSION_STORAGE_2026_11_05.md).
+
 **Autoría nativa versionada · 05/11/2026:** ADMIN y deportista consumen revisiones completas de baremos FAS/Tropa. El servidor fija cada preparación a su revisión; las RPC administrativas validan permiso/AAL2, concurrencia y publicación atómica. Las proyecciones de mínimos mantienen los adaptadores deportivos existentes; los nuevos resultados FAS guardan snapshot calculado. Los recursos publicados son inmutables y los clientes anteriores conservan semilla o reciben incompatibilidad explícita. [Contrato y comprobación](BUILTIN_ASSESSMENT_AUTHORING.md).
 
 **Consulta ADMIN de catálogos integrados · 05/11/2026:** un adaptador de solo lectura consulta las tablas vigentes de FAS/Tropa y sus objetivos; el router inyecta su repositorio opcional. La ficha no confunde ausencia de filas configurables con falta de definición. No importa features del deportista ni cambia RLS/RPC o motores. Esta primera consulta queda como adaptador de lectura dentro de la autoría versionada descrita arriba. [Contrato y propuesta pendiente](audits/ADMIN_CREATORS_PREPARATIONS_2026_11_05.md).

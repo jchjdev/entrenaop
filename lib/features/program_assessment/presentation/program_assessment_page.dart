@@ -576,6 +576,7 @@ class _ProgramAssessmentPageState extends State<ProgramAssessmentPage> {
                     for (final attempt in _history)
                       Card(
                         child: ExpansionTile(
+                          key: PageStorageKey('program-history-${attempt.id}'),
                           title: Text(
                             '${DateFormat('dd-MM-yyyy').format(attempt.assessedOn)} · ${attempt.result.passed ? 'Apto' : 'No apto'}',
                           ),

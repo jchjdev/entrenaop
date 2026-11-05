@@ -510,7 +510,8 @@ class _AdminPerformanceProgressionLabState
                 : 'Introduce las repeticiones realizadas en cada serie dejando unas 3 más posibles con buena técnica (RIR 3). Aquí la referencia se simula.',
           ),
           if (!isDuration)
-            const ExpansionTile(
+            ExpansionTile(
+              key: PageStorageKey('performance-lab-rir-${spec.id}'),
               tilePadding: EdgeInsets.zero,
               title: Text('Cómo entender el margen de repeticiones (RIR)'),
               childrenPadding: EdgeInsets.only(bottom: 12),

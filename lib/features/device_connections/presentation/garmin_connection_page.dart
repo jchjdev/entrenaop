@@ -167,6 +167,7 @@ class _GarminConnectionPageState extends State<GarminConnectionPage>
                     label: const Text('Envío manual y estado de sesiones'),
                   ),
                 ExpansionTile(
+                  key: const PageStorageKey('garmin-permissions'),
                   tilePadding: EdgeInsets.zero,
                   title: const Text('Permisos de Garmin'),
                   children: [
