@@ -138,3 +138,23 @@ jobs:
         run: python3 trainer_app/tool/trainer_release.py deploy --output trainer_app/build/trainer-release
       - name: Resultado
         run: echo 'Trainer Dev publicado y verificado en https://trainer.entrenaop.es/' >> "$GITHUB_STEP_SUMMARY"
+
+  retain-packages:
+    needs: deploy
+    # Javier autoriza el 05/11/2026 conservar cinco ZIP y siempre el publicado.
+    # La limpieza se ejecuta únicamente después de verificar el despliegue Dev.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    # Job separado, sin secretos de Hostinger ni de Supabase.
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - name: Conservar cinco compilados recientes y la versión publicada
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 trainer_app/tool/trainer_artifact_retention.py --apply
