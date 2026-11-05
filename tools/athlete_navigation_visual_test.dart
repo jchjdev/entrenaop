@@ -344,6 +344,18 @@ void main() {
         final action = find.text(lastAction);
         expect(action.hitTestable(), findsOneWidget);
         expect(tester.getBottomLeft(action).dy, lessThan(nav.top));
+        final bar = tester.widget<NavigationBar>(find.byType(NavigationBar));
+        final active =
+            bar.destinations[bar.selectedIndex] as NavigationDestination;
+        await tester.tap(
+          find.descendant(
+            of: find.byType(NavigationBar),
+            matching: find.text(active.label),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(position.pixels, closeTo(position.minScrollExtent, .1));
+        expect(router.state.uri.toString(), location);
       }
       if (screen == 'perfil-profesional-accesible') {
         await tester.ensureVisible(find.text('Entrar como preparador'));

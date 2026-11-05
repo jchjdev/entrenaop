@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../../features/coach_workspace/presentation/coach_workspace_scope.dart';
 import '../../features/coach_workspace/presentation/coach_mobile_style.dart';
 import '../../features/trainers/presentation/student_navigation.dart';
@@ -9,18 +11,89 @@ import 'package:go_router/go_router.dart';
 
 import 'workspace_navigation_scope.dart';
 
-class AppShell extends StatelessWidget {
+class AppShell extends StatefulWidget {
   const AppShell({required this.navigationShell, super.key});
 
   final StatefulNavigationShell navigationShell;
 
+  @override
+  State<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends State<AppShell> {
+  final _scrollables = <ScrollableState, int>{};
+  StatefulNavigationShell get navigationShell => widget.navigationShell;
+
+  bool _observeScroll(Notification notification) {
+    final data = switch (notification) {
+      ScrollNotification n => (n.metrics, n.context, n.depth),
+      ScrollMetricsNotification n => (n.metrics, n.context, n.depth),
+      _ => null,
+    };
+    if (data == null) return false;
+    final (metrics, source, depth) = data;
+    if (metrics.axis != Axis.vertical ||
+        source == null ||
+        !TickerMode.valuesOf(source).enabled ||
+        !_pulsoOverlayRoutes.contains(GoRouter.of(context).state.uri.path)) {
+      return false;
+    }
+    final scrollable = Scrollable.maybeOf(source);
+    if (scrollable != null) {
+      _scrollables.removeWhere((scrollable, _) => !scrollable.mounted);
+      _scrollables[scrollable] = depth;
+    }
+    return false;
+  }
+
+  void _scrollToTop() {
+    _scrollables.removeWhere((scrollable, _) => !scrollable.mounted);
+    final shell = context.findRenderObject() as RenderBox;
+    final bounds = Offset.zero & shell.size;
+    // Las ramas y pestañas interiores conservan sus scrolls. Solo responde el
+    // viewport vertical visible, priorizando el exterior si hay listas anidadas.
+    final visible = _scrollables.entries.where((entry) {
+      final scrollable = entry.key;
+      final viewport = scrollable.context.findRenderObject();
+      return TickerMode.valuesOf(scrollable.context).enabled &&
+          ModalRoute.of(scrollable.context)?.isCurrent == true &&
+          viewport is RenderBox &&
+          viewport.attached &&
+          bounds.contains(
+            viewport.localToGlobal(
+              viewport.size.center(Offset.zero),
+              ancestor: shell,
+            ),
+          );
+    }).toList()..sort((a, b) => a.value.compareTo(b.value));
+    if (visible.isEmpty) return;
+    final position = visible.first.key.position;
+    if (MediaQuery.disableAnimationsOf(context)) {
+      position.jumpTo(position.minScrollExtent);
+    } else {
+      unawaited(
+        position.animateTo(
+          position.minScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutCubic,
+        ),
+      );
+    }
+  }
+
   void _selectDestination(int index) {
-    navigationShell.goBranch(
-      index,
-      // Cambiar de sección conserva su pantalla; volver a pulsar la pestaña
-      // activa regresa a su raíz. Las tareas de edición requieren otra frontera.
-      initialLocation: index == navigationShell.currentIndex,
-    );
+    if (index != navigationShell.currentIndex) {
+      navigationShell.goBranch(index);
+      return;
+    }
+    if (_pulsoOverlayRoutes.contains(GoRouter.of(context).state.uri.path)) {
+      _scrollToTop();
+      return;
+    }
+    navigationShell.goBranch(index, initialLocation: true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && navigationShell.currentIndex == index) _scrollToTop();
+    });
   }
 
   @override
@@ -40,7 +113,10 @@ class AppShell extends StatelessWidget {
       },
       returnToAthlete: () =>
           navigationShell.goBranch(workspace?.athleteIndex ?? 3),
-      child: child,
+      child: NotificationListener<Notification>(
+        onNotification: _observeScroll,
+        child: child,
+      ),
     );
 
     if (professional) {

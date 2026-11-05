@@ -27,6 +27,18 @@ la barra mate. El margen inferior forma parte del desplazamiento para que la
 contorno naranja. Los detalles dentro de cada sección reservan el pie de
 pantalla para sus acciones.
 
+En `1.16.0+35`, repetir el destino activo lleva arriba la vista vertical
+abierta en la portada. Se conserva la cara elegida dentro de Entrena o
+Biblioteca. La animación dura 300 ms y se respeta la preferencia de reducir
+movimiento. Cambiar de sección recupera la posición que tenía. Desde un
+detalle, el destino activo vuelve primero a la portada y la lleva arriba.
+El mismo gesto está disponible en el rail de las pantallas amplias.
+
+Verificación del 05/11: análisis limpio y 1.849 pruebas de raíz correctas,
+con una omisión previa. Las 38 comprobaciones dirigidas incluyen las
+portadas reales, cambio de sección, recuperación de caras interiores,
+retorno desde detalle y reducción de animaciones.
+
 ## Preparación, configuración y consulta · 03/11/2026
 
 Implementación UI-067, autorizada tras la [revisión del vídeo y sus fronteras](audits/preparation-flow-review-2026-11-03.md).

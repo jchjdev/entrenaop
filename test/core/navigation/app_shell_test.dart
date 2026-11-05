@@ -285,6 +285,40 @@ void main() {
     expect(find.byType(NavigationBar), findsNothing);
   });
   for (final width in [390.0, 1000.0]) {
+    testWidgets(
+      'repetir destino sube al inicio y cambiar conserva el scroll: $width',
+      (tester) async {
+        tester.view.physicalSize = Size(width, 844);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        final router = _createRouter(scrollable: true);
+        addTearDown(router.dispose);
+        await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+        await tester.pumpAndSettle();
+        final home = _visibleVerticalPosition(tester);
+        home.jumpTo(420);
+        await tester.pumpAndSettle();
+        await _tapSection(tester, 'Biblioteca');
+        await tester.pumpAndSettle();
+        final library = _visibleVerticalPosition(tester);
+        library.jumpTo(610);
+        await tester.pumpAndSettle();
+        await _tapSection(tester, 'Inicio');
+        await tester.pumpAndSettle();
+        expect(_visibleVerticalPosition(tester).pixels, closeTo(420, .1));
+        await _tapSection(tester, 'Inicio');
+        await tester.pumpAndSettle();
+        expect(_visibleVerticalPosition(tester).pixels, closeTo(0, .1));
+        await _tapSection(tester, 'Biblioteca');
+        await tester.pumpAndSettle();
+        expect(_visibleVerticalPosition(tester).pixels, closeTo(610, .1));
+        await _tapSection(tester, 'Biblioteca');
+        await tester.pumpAndSettle();
+        expect(_visibleVerticalPosition(tester).pixels, closeTo(0, .1));
+        expect(tester.takeException(), isNull);
+      },
+    );
+
     testWidgets('conserva sección y segundo toque vuelve a raíz: $width', (
       tester,
     ) async {
@@ -315,9 +349,115 @@ void main() {
       expect(find.text('Detalle de Preparador'), findsNothing);
     });
   }
+
+  testWidgets('sube la cara visible y conserva la otra al recuperarla', (
+    tester,
+  ) async {
+    final router = _createRouter(scrollable: true);
+    addTearDown(router.dispose);
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    router.go('/library?tab=programs');
+    await tester.pumpAndSettle();
+    _visibleVerticalPosition(tester).jumpTo(450);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Segunda'));
+    await tester.pumpAndSettle();
+    _visibleVerticalPosition(tester).jumpTo(680);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Primera'));
+    await tester.pumpAndSettle();
+    expect(_visibleVerticalPosition(tester).pixels, closeTo(450, .1));
+    await tester.tap(find.text('Biblioteca'));
+    await tester.pumpAndSettle();
+    expect(_visibleVerticalPosition(tester).pixels, closeTo(0, .1));
+    expect(router.state.uri.toString(), '/library?tab=programs');
+    await tester.tap(find.text('Segunda'));
+    await tester.pumpAndSettle();
+    expect(_visibleVerticalPosition(tester).pixels, closeTo(680, .1));
+    await tester.tap(find.text('Biblioteca'));
+    await tester.pumpAndSettle();
+    expect(_visibleVerticalPosition(tester).pixels, closeTo(0, .1));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('desde un detalle vuelve a portada y la lleva arriba', (
+    tester,
+  ) async {
+    final router = _createRouter(scrollable: true);
+    addTearDown(router.dispose);
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+    _visibleVerticalPosition(tester).jumpTo(570);
+    await tester.pumpAndSettle();
+    router.push('/home/detail');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Inicio'));
+    await tester.pumpAndSettle();
+    expect(router.state.uri.path, '/home');
+    expect(_visibleVerticalPosition(tester).pixels, closeTo(0, .1));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('respeta la preferencia de reducir animaciones', (tester) async {
+    final router = _createRouter(scrollable: true);
+    addTearDown(router.dispose);
+    await tester.pumpWidget(
+      MaterialApp.router(
+        routerConfig: router,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(disableAnimations: true),
+          child: child!,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final position = _visibleVerticalPosition(tester);
+    position.jumpTo(570);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Inicio'));
+    expect(position.pixels, closeTo(0, .1));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+  });
 }
 
-GoRouter _createRouter({bool hasTrainer = true, int unread = 0}) {
+ScrollPosition _visibleVerticalPosition(WidgetTester tester) => tester
+    .state<ScrollableState>(
+      find
+          .byWidgetPredicate(
+            (widget) =>
+                widget is Scrollable &&
+                widget.axisDirection == AxisDirection.down,
+          )
+          .hitTestable(),
+    )
+    .position;
+
+Future<void> _tapSection(WidgetTester tester, String label) async {
+  final rails = find.byType(NavigationRail);
+  if (rails.evaluate().isEmpty) {
+    await tester.tap(find.text(label));
+    return;
+  }
+  final rail = tester.widget<NavigationRail>(rails);
+  final index = rail.destinations.indexWhere(
+    (destination) => (destination.label as Text).data == label,
+  );
+  final destination = rail.destinations[index];
+  await tester.tap(
+    find.byWidget(
+      index == rail.selectedIndex
+          ? destination.selectedIcon
+          : destination.icon,
+    ),
+  );
+}
+
+GoRouter _createRouter({
+  bool hasTrainer = true,
+  int unread = 0,
+  bool scrollable = false,
+}) {
   final controller = StudentNavigationController(
     loadSnapshot: () async => const StudentNoticeSnapshot(
       items: [],
@@ -345,9 +485,9 @@ GoRouter _createRouter({bool hasTrainer = true, int unread = 0}) {
           child: AppShell(navigationShell: navigationShell),
         ),
         branches: [
-          _branch('/home', 'Inicio'),
+          _branch('/home', 'Inicio', scrollable: scrollable),
           _branch('/plan', 'Entrenar'),
-          _branch('/library', 'Biblioteca'),
+          _branch('/library', 'Biblioteca', scrollable: scrollable),
           StatefulShellBranch(
             initialLocation: '/profile',
             routes: [
@@ -362,14 +502,46 @@ GoRouter _createRouter({bool hasTrainer = true, int unread = 0}) {
   );
 }
 
-StatefulShellBranch _branch(String path, String name) {
+StatefulShellBranch _branch(
+  String path,
+  String name, {
+  bool scrollable = false,
+}) {
   return StatefulShellBranch(
     routes: [
       GoRoute(
         path: path,
         builder: (context, state) => Scaffold(
           appBar: AppBar(),
-          body: Center(child: Text('Contenido de $name')),
+          body: scrollable
+              ? DefaultTabController(
+                  length: 2,
+                  child: Column(
+                    children: [
+                      const TabBar(
+                        tabs: [
+                          Tab(text: 'Primera'),
+                          Tab(text: 'Segunda'),
+                        ],
+                      ),
+                      Expanded(
+                        child: TabBarView(
+                          children: [
+                            for (var tab = 0; tab < 2; tab++)
+                              ListView.builder(
+                                key: PageStorageKey('$name-$tab'),
+                                itemCount: 40,
+                                itemExtent: 80,
+                                itemBuilder: (_, index) =>
+                                    Text('$name-$tab-$index'),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : Center(child: Text('Contenido de $name')),
         ),
         routes: [
           GoRoute(

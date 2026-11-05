@@ -1,5 +1,11 @@
 # Registro de decisiones vigentes
 
+**Repetir la pestaña activa para volver arriba · 05/11/2026.** Javier solicita
+volver al principio de la pantalla al tocar de nuevo su destino inferior.
+La acción desplaza la vista vertical abierta en la sección. El cambio entre
+secciones recupera su posición anterior.
+[Recorrido de Pulso](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md#barra-pulso-del-deportista--04112026).
+
 **Consulta de FAS/Tropa y revisión de creadores · 05/11/2026.** Javier señala fichas que parecen vacías y pide revisar creadores. Se confirma que los dos planes usan catálogos integrados distintos del creador configurable. ADMIN incorpora consulta de sus datos existentes y elimina mensajes/acciones equivocados, sin alterar su autoría ni sus versiones. Hacerlos editables requiere acordar una autoría versionada completa; la conversión sigue siendo propuesta. [Diagnóstico y alcance](audits/ADMIN_CREATORS_PREPARATIONS_2026_11_05.md).
 
 **Revisión visual de ADMIN · 05/11/2026.** Javier pide revisar con varios agentes los colapsos de laboratorio y la eficiencia de ADMIN, y aclara que son solapamientos. Se corrigen fallos reproducidos conservando diseño y reglas deportivas; paginación y otros cambios importantes se presentan como propuesta antes de aplicarse. [Alcance y resultados](audits/ADMIN_REVIEW_2026_11_05.md).
