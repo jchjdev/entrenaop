@@ -266,6 +266,7 @@ Future<void> mount(
       ),
       home: Scaffold(
         body: SingleChildScrollView(
+          key: const PageStorageKey('program-sections-regression'),
           child: AdminBuiltinAssessmentAuthoringPanel(
             programId: repo.fas
                 ? 'fas_periodic_assessment'
@@ -378,7 +379,7 @@ void main() {
     final repo = Repository();
     await mount(t, repo);
     await tapText(t, 'Simular y comparar resultados');
-    final field = find.byKey(const ValueKey('builtin-preview-push'));
+    final field = find.byKey(const PageStorageKey('builtin-preview-push'));
     await t.ensureVisible(field);
     await t.enterText(field, '12');
     await tapText(t, 'Simular estas marcas');
@@ -455,6 +456,7 @@ void main() {
             controller: exit,
             child: Scaffold(
               body: SingleChildScrollView(
+                key: const PageStorageKey('program-sections-regression'),
                 child: AdminBuiltinAssessmentAuthoringPanel(
                   programId: 'armed_forces_troop_entry',
                   repository: repo,
@@ -501,7 +503,7 @@ void main() {
     await mount(t, repo);
     await tapText(t, 'Simular y comparar resultados');
     final field = find.byKey(
-      const ValueKey('builtin-preview-agility_speed_circuit'),
+      const PageStorageKey('builtin-preview-agility_speed_circuit'),
     );
     await t.ensureVisible(field);
     await t.enterText(field, '13,259');

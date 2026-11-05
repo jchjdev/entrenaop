@@ -130,6 +130,7 @@ class _AdminBuiltinAssessmentPreviewState
 
   @override
   Widget build(BuildContext context) => ExpansionTile(
+    key: PageStorageKey('builtin-simulation-${widget.revision.id}'),
     title: const Text('Simular y comparar resultados'),
     subtitle: const Text('No guarda evaluaciones ni modifica preparaciones.'),
     childrenPadding: const EdgeInsets.all(16),
@@ -163,6 +164,7 @@ class _AdminBuiltinAssessmentPreviewState
             const SizedBox(height: 12),
             if (widget.revision.isFas)
               TextFormField(
+                key: const PageStorageKey('builtin-preview-age'),
                 controller: _age,
                 decoration: const InputDecoration(
                   labelText: 'Edad en la evaluación',
@@ -210,7 +212,7 @@ class _AdminBuiltinAssessmentPreviewState
               Text(test['name'] as String),
               const SizedBox(height: 4),
               TextFormField(
-                key: ValueKey('builtin-preview-${test['id']}'),
+                key: PageStorageKey('builtin-preview-${test['id']}'),
                 controller: _marks.putIfAbsent(
                   test['id'] as String,
                   TextEditingController.new,

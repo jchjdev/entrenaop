@@ -626,6 +626,7 @@ class _AdminBuiltinAssessmentAuthoringPanelState
   }
 
   Widget _history() => ExpansionTile(
+    key: PageStorageKey('builtin-history-${widget.programId}'),
     title: const Text('Versiones e historial'),
     subtitle: Text('${_workspace!.revisions.length} revisiones conservadas'),
     children: [
@@ -670,6 +671,7 @@ class _AdminBuiltinAssessmentAuthoringPanelState
     if (base == null) return const SizedBox.shrink();
     final diffs = editorialDifferences(base.definition, _definition);
     return ExpansionTile(
+      key: PageStorageKey('builtin-comparison-${_selected!.id}'),
       title: const Text('Comparar con la versión de origen'),
       subtitle: Text(
         'Origen: revisión ${base.revision}${_dirty ? ' · incluye cambios sin guardar' : ''}',

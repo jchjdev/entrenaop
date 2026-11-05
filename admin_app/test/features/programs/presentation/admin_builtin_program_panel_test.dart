@@ -9,6 +9,8 @@ import 'package:http/testing.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class Repository extends Fake implements AdminBuiltinProgramRepository {
+  Repository({this.secondObjective = false});
+  final bool secondObjective;
   int calls = 0;
   bool fail = false;
   @override
@@ -34,6 +36,7 @@ class Repository extends Fake implements AdminBuiltinProgramRepository {
       ],
       objectives: [
         {
+          'objective_key': 'circuit',
           'name': 'Circuito con condiciones',
           'instructions':
               'Mantener las condiciones oficiales al ejecutar el circuito.',
@@ -46,6 +49,17 @@ class Repository extends Fake implements AdminBuiltinProgramRepository {
             'condition': 'un_valor_largo_para_comprobar_el_ajuste_de_condiciones_sin_solapamientos',
           },
         },
+        if (secondObjective)
+          {
+            'objective_key': 'plank',
+            'name': 'Plancha abdominal',
+            'instructions': 'Mantener la postura.',
+            'profile_code': 'front_plank',
+            'profile_version': 1,
+            'protocol_key': 'plank_protocol',
+            'protocol_version': 2,
+            'parameters': <String, dynamic>{},
+          },
       ],
     );
   }
@@ -75,6 +89,7 @@ void main() {
         MaterialApp(
           home: Scaffold(
             body: SingleChildScrollView(
+              key: const PageStorageKey('program-sections-regression'),
               child: AdminBuiltinProgramPanel(
                 programId: 'fas_periodic_assessment',
                 repository: repo,
@@ -116,6 +131,7 @@ void main() {
         ),
         home: Scaffold(
           body: SingleChildScrollView(
+            key: const PageStorageKey('program-sections-regression'),
             child: AdminBuiltinProgramPanel(
               programId: 'armed_forces_troop_entry',
               repository: Repository(),
@@ -135,6 +151,47 @@ void main() {
       findsOneWidget,
     );
   });
+  for (final id in ['armed_forces_troop_entry', 'fas_periodic_assessment']) {
+    testWidgets(
+      '$id despliega condiciones con scroll persistente sin mezclar estados',
+      (t) async {
+        await t.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SingleChildScrollView(
+                key: PageStorageKey('program-sections-$id'),
+                child: AdminBuiltinProgramPanel(
+                  programId: id,
+                  repository: Repository(secondObjective: true),
+                ),
+              ),
+            ),
+          ),
+        );
+        await t.pumpAndSettle();
+        Future<void> toggle(String title) async {
+          await t.ensureVisible(find.text(title));
+          await t.tap(find.text(title));
+          await t.pumpAndSettle();
+          expect(t.takeException(), isNull);
+        }
+
+        await toggle('Circuito con condiciones');
+        expect(find.text('Perfil slalom_ball_course_16m · v1'), findsOneWidget);
+        expect(find.text('Perfil front_plank · v1'), findsNothing);
+        await toggle('Plancha abdominal');
+        expect(find.text('Perfil front_plank · v1'), findsOneWidget);
+        expect(find.text('Perfil slalom_ball_course_16m · v1'), findsOneWidget);
+        await toggle('Circuito con condiciones');
+        expect(find.text('Perfil slalom_ball_course_16m · v1'), findsNothing);
+        expect(find.text('Perfil front_plank · v1'), findsOneWidget);
+        await toggle('Circuito con condiciones');
+        expect(find.text('Protocolo def_15_2026_agility · v1'), findsOneWidget);
+        expect(find.text('Protocolo plank_protocol · v2'), findsOneWidget);
+        expect(find.textContaining('un_valor_largo'), findsOneWidget);
+      },
+    );
+  }
   for (final fas in [false, true]) {
     test('repo consulta catálogo propio y pagina con orden estable, FAS $fas', () async {
       final reads = <Uri>[];

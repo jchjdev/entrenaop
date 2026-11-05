@@ -88,3 +88,26 @@ SHA-256 de main.dart.js, X-Frame-Options DENY y Cache-Control no-store. CI repit
 42091933173 y ensayo de Salud 42091933283 también terminan correctamente.
 
 La aceptación física en iPhone requiere instalar el nuevo cliente; el ensayo web/servidor no acredita instalación nativa en ese dispositivo.
+
+
+## Regresión al desplegar condiciones · 05/11/2026
+
+La grabación 20261105-1948-14.2996569 y la reproducción autenticada en Chrome
+muestran bloques grises al abrir objetivos de Tropa/FAS. La consola y una prueba
+local reproducen exactamente bool no es double en ScrollPosition.restoreScrollOffset.
+La ficha real tiene un PageStorageKey para recordar el desplazamiento. Los
+ExpansionTile sin clave propia escribían su booleano en ese mismo identificador;
+los SelectableText interiores lo leían como desplazamiento numérico. Las pruebas
+anteriores del panel aislado omitían la clave de la ficha y no ejercitaban ese contexto.
+
+ADMIN 0.7.1+13 separa claves estables de historial, comparación, simulador y cada
+objetivo, así como textos seleccionables y campos internos del simulador. Se
+conservan diseño, selección/copia del texto, datos introducidos y reglas de negocio.
+No cambia servidor, base de datos, baremos, app del deportista ni Trainer.
+
+Las pruebas existentes pasan a utilizar scroll persistente como la ficha real.
+Dos regresiones adicionales recorren ambos programas, abren varios objetivos,
+pliegan uno sin afectar al otro y vuelven a abrir manteniendo metadatos. Las 16
+pruebas focales pasan; batería ADMIN completa: 408 correctas y dos omisiones
+previas. Análisis sin incidencias. La compilación y publicación de esta corrección
+se acreditan con su ejecución y comprobación autenticada posterior.

@@ -168,6 +168,11 @@ class _AdminBuiltinProgramPanelState extends State<AdminBuiltinProgramPanel> {
           for (final row in data.objectives)
             Card(
               child: ExpansionTile(
+                // El plegado no comparte estado con el scroll de la ficha ni
+                // con el desplazamiento interno de los textos seleccionables.
+                key: PageStorageKey(
+                  'builtin-objective-${data.programId}-${row['objective_key']}',
+                ),
                 title: Text(row['name'] as String),
                 childrenPadding: const EdgeInsets.all(16),
                 children: [
@@ -182,13 +187,16 @@ class _AdminBuiltinProgramPanelState extends State<AdminBuiltinProgramPanel> {
                   const SizedBox(height: 8),
                   SelectableText(
                     'Perfil ${row['profile_code']} · v${row['profile_version']}',
+                    key: const PageStorageKey('objective-profile'),
                   ),
                   SelectableText(
                     'Protocolo ${row['protocol_key']} · v${row['protocol_version']}',
+                    key: const PageStorageKey('objective-protocol'),
                   ),
                   if ((row['parameters'] as Map).isNotEmpty)
                     SelectableText(
                       'Condiciones: ${jsonEncode(row['parameters'])}',
+                      key: const PageStorageKey('objective-parameters'),
                     ),
                 ],
               ),
