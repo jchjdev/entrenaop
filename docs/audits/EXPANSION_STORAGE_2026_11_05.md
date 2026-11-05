@@ -54,9 +54,29 @@ Análisis de raíz, ADMIN, Trainer y workout_editor_ui sin incidencias. Las bate
 completas terminan con 1.880 pruebas raíz y una omisión previa; 409 ADMIN y dos
 omisiones previas; 451 Trainer y 252 del creador compartido. Total: 2.992 correctas.
 La compilación web release del deportista exclusivamente contra Dev es correcta.
-No cambian los lockfiles. La publicación Dev de los portales se acredita con CI
-y comprobación independiente al terminar. Una compilación web y una prueba de
-widgets no acreditan instalación/aceptación física del nuevo cliente en iPhone.
+No cambian los lockfiles. Una compilación web y una prueba de widgets no
+acreditan instalación/aceptación física del nuevo cliente en iPhone.
+
+## Publicación acreditada
+
+Commit funcional a51045140b02832c69d0e51a6f5c23ba497dc0e4. ADMIN Dev 42113739020
+y Trainer Dev 42113739226 completan validación, compilación, despliegue HTTPS y
+retención. Las comprobaciones de Salud 42113738836 y Garmin 42113738962 también
+terminan correctamente. CI repite 1.880 pruebas raíz, 409 ADMIN y 451 Trainer.
+
+La consulta HTTPS independiente de admin.entrenaop.es y trainer.entrenaop.es
+confirma la misma revisión, versiones 0.7.2+14 y 0.3.3+9, sourceTreeDirty=false,
+entorno development y proyecto sxbxfjqgoddzhtcyhalw. Se comprueban version.json,
+base del índice, SHA-256 de main.dart.js, Cache-Control no-store y
+X-Frame-Options DENY. Producción y tiendas no se publican.
+
+Trainer conserva sesión en el navegador integrado: se comprueban biblioteca,
+cuenta y Para mí; la bandeja de actividades recibidas carga, pliega y reabre sin
+bloque gris y sin errores nuevos de esta revisión en consola. No se crea una
+sesión para verificar el editor: la revisión automática rechaza ese clic por
+su posible creación de borrador. Los metadatos del creador se acreditan mediante
+sus pruebas de ciclo de vida. ADMIN solicita iniciar sesión y se contrasta por
+HTTPS y sus pruebas; no se declara una nueva aceptación autenticada global.
 
 El control automático rechazó una edición posicional en lote por riesgo de
 inserciones fuera de su constructor. Se resolvió mediante parches por archivo,
