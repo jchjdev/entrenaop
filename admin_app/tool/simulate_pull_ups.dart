@@ -4,58 +4,99 @@ import 'dart:io';
 import 'package:entrenaop_admin/features/programs/domain/pull_up_lab.dart';
 
 void main() {
-  final totals = {26: _Totals(), 52: _Totals()};
+  final totals = {
+    for (final weeks in [26, 52])
+      weeks: {for (final approach in PullApproach.values) approach: _Totals()},
+  };
   final examples = <Map<String, Object?>>[];
+  var pairedWeeks = 0;
   for (final weeks in totals.keys) {
     for (final mark in <int?>[null, 0, 1, 5, 12, 18, 25]) {
       for (final gear in PullGear.values) {
         for (final calendar in PullCalendar.values) {
           for (final response in PullResponse.values) {
-            final trace = simulatePullUps(
-              startingMark: mark,
-              gear: gear,
-              calendar: calendar,
-              response: response,
-              weeks: weeks,
-            );
-            totals[weeks]!.add(trace, mark, gear, calendar, response);
-            if (weeks == 52 &&
-                response == PullResponse.favorable &&
-                calendar == PullCalendar.combined &&
-                ((mark == 0 &&
+            List<PullWeek>? baseline;
+            for (final approach in PullApproach.values) {
+              final trace = simulatePullUps(
+                startingMark: mark,
+                gear: gear,
+                calendar: calendar,
+                response: response,
+                weeks: weeks,
+                approach: approach,
+              );
+              totals[weeks]![approach]!.add(
+                trace,
+                mark,
+                gear,
+                calendar,
+                response,
+              );
+              if (approach == PullApproach.current) {
+                baseline = trace;
+              } else {
+                for (var i = 0; i < weeks; i++) {
+                  final original = baseline![i];
+                  final candidate = trace[i];
+                  if (original.runs.toString() != candidate.runs.toString() ||
+                      original.mark != candidate.mark ||
+                      (gear != PullGear.rows &&
+                          jsonEncode(_primary(original)) !=
+                              jsonEncode(_primary(candidate)))) {
+                    throw StateError(
+                      'La propuesta alteró carrera, controles o trabajo vertical.',
+                    );
+                  }
+                  pairedWeeks++;
+                }
+              }
+              if (weeks == 52 &&
+                  response == PullResponse.favorable &&
+                  calendar == PullCalendar.combined &&
+                  ((mark == 0 &&
+                          {
+                            PullGear.bands,
+                            PullGear.rows,
+                            PullGear.step,
+                            PullGear.bandsAndRows,
+                            PullGear.feet,
+                          }.contains(gear)) ||
+                      (mark == 18 && gear == PullGear.bandsAndRows))) {
+                examples.add({
+                  'approach': approach.name,
+                  'initial': mark,
+                  'material': gear.name,
+                  'mark26': trace[25].mark,
+                  'mark52': trace[51].mark,
+                  'weeks': [
+                    for (final w in trace)
+                      if ({1, 2, 6, 13, 26, 52}.contains(w.number) ||
+                          w.sessions.any(
+                            (s) =>
+                                s.decision == PullDecision.test ||
+                                s.reason.contains('menos de ayuda'),
+                          ))
                         {
-                          PullGear.bands,
-                          PullGear.rows,
-                          PullGear.step,
-                        }.contains(gear)) ||
-                    (mark == 18 && gear == PullGear.bar))) {
-              examples.add({
-                'initial': mark,
-                'material': gear.name,
-                'mark26': trace[25].mark,
-                'mark52': trace[51].mark,
-                'weeks': [
-                  for (final w in trace)
-                    if ({1, 2, 6, 13, 26, 52}.contains(w.number) ||
-                        w.sessions.any(
-                          (s) =>
-                              s.decision == PullDecision.test ||
-                              s.reason.contains('menos de ayuda'),
-                        ))
-                      {
-                        'week': w.number,
-                        'mark': w.mark,
-                        'training': [
-                          for (final s in w.sessions)
-                            {
-                              'day': s.day,
-                              'dose': s.dose?.label,
-                              'action': s.decision.name,
-                            },
-                        ],
-                      },
-                ],
-              });
+                          'week': w.number,
+                          'mark': w.mark,
+                          'training': [
+                            for (final s in w.sessions)
+                              {
+                                'day': s.day,
+                                'dose': s.dose?.label,
+                                'action': s.decision.name,
+                                'reason': s.reason,
+                                'minutes': s.minutes,
+                                'rest_seconds': s.dose?.restSeconds,
+                                'support': s.supportDose?.label,
+                                'support_action': s.supportDecision?.name,
+                                'support_reason': s.supportReason,
+                              },
+                          ],
+                        },
+                  ],
+                });
+              }
             }
           }
         }
@@ -64,16 +105,27 @@ void main() {
   }
   stdout.writeln(
     const JsonEncoder.withIndent('  ').convert({
-      'engine': 'pull_up_lab_v1',
+      'engine': 'pull_up_lab_v2_comparison',
       'assumption':
           'Resultados de entrada ficticios. Agenda de carrera de ejemplo.',
       'totals': {
-        for (final entry in totals.entries) '${entry.key}': entry.value.json,
+        for (final entry in totals.entries)
+          '${entry.key}': {
+            for (final approach in entry.value.entries)
+              approach.key.name: approach.value.json,
+          },
       },
+      'paired_weeks_verified': pairedWeeks,
       'examples': examples,
     }),
   );
 }
+
+List<Object?> _primary(PullWeek week) => [
+  week.unplaced,
+  for (final s in week.sessions)
+    [s.day, s.lane, s.dose?.signature, s.decision.name, s.reason],
+];
 
 class _Totals {
   int scenarios = 0;
@@ -85,6 +137,9 @@ class _Totals {
   int atTarget = 0;
   int reachedDuringTrial = 0;
   int firstStrict = 0;
+  int circuits = 0;
+  int supportCircuits = 0;
+  int deferredSupports = 0;
   final actions = <String, int>{};
   final byCalendar = <String, Map<String, int>>{};
 
@@ -111,6 +166,7 @@ class _Totals {
       running += week.runs.length;
       pulling += week.sessions.length;
       deferred += week.unplaced;
+      deferredSupports += week.deferredSupports;
       calendarTotals.update('sessions', (n) => n + week.sessions.length);
       calendarTotals.update('deferred', (n) => n + week.unplaced);
       final available = switch (calendar) {
@@ -140,6 +196,35 @@ class _Totals {
         lastControl = week.number;
       }
       for (final session in week.sessions) {
+        if (session.dose?.isCircuit ?? false) circuits++;
+        if (session.supportDose != null) {
+          supportCircuits++;
+          actions.update(
+            'support_${session.supportDecision!.name}',
+            (n) => n + 1,
+            ifAbsent: () => 1,
+          );
+        }
+        final currentGear =
+            response == PullResponse.interrupted &&
+                week.number >= 16 &&
+                (gear == PullGear.bands || gear == PullGear.bandsAndRows)
+            ? PullGear.feet
+            : gear;
+        for (final dose in [
+          session.dose,
+          session.supportDose,
+        ].whereType<PullDose>()) {
+          if (dose.isCircuit &&
+              (!currentGear.hasRows ||
+                  dose.variant != PullVariant.australian ||
+                  dose.widths.length != dose.reps.length ||
+                  dose.reps.any((n) => n < 1 || n > 5) ||
+                  dose.holdSeconds < 1 ||
+                  dose.holdSeconds > 5)) {
+            throw StateError('Circuito incompatible con material o dosis.');
+          }
+        }
         actions.update(session.decision.name, (n) => n + 1, ifAbsent: () => 1);
         final day = week.number * 7 + session.day;
         final runs = week.runs.where((r) => r.day == session.day);
@@ -185,6 +270,9 @@ class _Totals {
     'pull_sessions': pulling,
     'same_day_as_easy_run': mixed,
     'deferred': deferred,
+    'primary_circuits': circuits,
+    'support_circuits': supportCircuits,
+    'deferred_supports': deferredSupports,
     'zero_to_first_observed': firstStrict,
     'at_target': atTarget,
     'reached_during_trial': reachedDuringTrial,

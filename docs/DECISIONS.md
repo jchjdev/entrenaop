@@ -1,5 +1,14 @@
 # Registro de decisiones vigentes
 
+**Comparación de australianas en laboratorio · 05/11/2026.** Javier pide
+comparar su circuito supino con la progresión de referencia a 26 y 52 semanas,
+con niveles y material distintos, y revisar sesiones, adaptación y evidencia
+antes de activarlo. El circuito conserva datos propios por ancho y segundos
+de hold. Se ensaya como apoyo final cuando existe material y tiempo, y como
+principal cuando solo hay barra baja. El uso en preparaciones requiere validar
+su integración con registros y publicación en servidor.
+[Comparación y uso desde Admin](ESTRATEGIA_DOMINADAS_PROPUESTA.md#comparación-de-australianas--05112026).
+
 **Pulso en la navegación del deportista · 04/11/2026.** Javier elige Pulso
 para móvil y confirma «Entrena» en el centro con la silueta del OP del
 logotipo original. La selección abre la rama de entrenamiento existente.

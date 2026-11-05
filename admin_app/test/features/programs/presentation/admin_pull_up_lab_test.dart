@@ -77,6 +77,12 @@ void main() {
         ),
       );
       expect(find.text('Dominadas estrictas · meta de 25'), findsOneWidget);
+      expect(find.text('Progresión actual del laboratorio'), findsOneWidget);
+      expect(find.text('Propuesta de australianas'), findsOneWidget);
+      expect(
+        find.textContaining('2 normales + 2 cerradas + 2 s de hold cerrado'),
+        findsOneWidget,
+      );
       await t.tap(find.text('6 meses · 26 semanas').hitTestable());
       await t.pumpAndSettle();
       await t.tap(find.text('12 meses · 52 semanas').last);
@@ -89,6 +95,11 @@ void main() {
       await t.tap(find.text('Semana 52').last);
       await t.pumpAndSettle();
       expect(find.text('Semana 52'), findsOneWidget);
+      await t.tap(find.text('12 meses · 52 semanas').hitTestable());
+      await t.pumpAndSettle();
+      await t.tap(find.text('6 meses · 26 semanas').last);
+      await t.pumpAndSettle();
+      expect(find.text('Semana 26'), findsOneWidget);
       expect(t.takeException(), isNull);
     },
   );

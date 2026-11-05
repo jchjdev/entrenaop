@@ -14,7 +14,7 @@ class _AdminPullUpLabState extends State<AdminPullUpLab> {
   int _mark = 0;
   int _weeks = 26;
   int _selectedWeek = 1;
-  PullGear _gear = PullGear.bands;
+  PullGear _gear = PullGear.bandsAndRows;
   PullCalendar _calendar = PullCalendar.combined;
   PullResponse _response = PullResponse.favorable;
 
@@ -56,12 +56,14 @@ class _AdminPullUpLabState extends State<AdminPullUpLab> {
       response: _response,
       weeks: _weeks,
     );
-    final week = trace[_selectedWeek - 1];
-    final controls = trace
-        .expand((w) => w.sessions)
-        .where((s) => s.decision == PullDecision.test)
-        .length;
-    final deferred = trace.fold(0, (sum, w) => sum + w.unplaced);
+    final candidate = simulatePullUps(
+      startingMark: _mark < 0 ? null : _mark,
+      gear: _gear,
+      calendar: _calendar,
+      response: _response,
+      weeks: _weeks,
+      approach: PullApproach.australian,
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -71,6 +73,13 @@ class _AdminPullUpLabState extends State<AdminPullUpLab> {
         ),
         const Text(
           'Ensayo de decisiones con carrera de ejemplo y resultados ficticios. Las marcas del guion solo entran al realizar un control.',
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Compara las dos propuestas con el mismo nivel, material, agenda y respuesta. '
+          'La segunda ensaya un circuito supino de 5 normales + 5 cerradas + 5 s de hold '
+          'y otro de 5 abiertas + 5 normales + 5 cerradas + 5 s de hold. '
+          'Cada circuito empieza con una calibración propia y se acerca a esa receta según la respuesta.',
         ),
         const SizedBox(height: 12),
         Wrap(
@@ -125,40 +134,139 @@ class _AdminPullUpLabState extends State<AdminPullUpLab> {
           ],
         ),
         const SizedBox(height: 16),
-        Text(
-          '$controls controles · $deferred exposiciones aplazadas · última marca observada en el guion: ${trace.last.mark ?? 'sin medir'}',
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final width = constraints.maxWidth >= 780
+                ? (constraints.maxWidth - 16) / 2
+                : constraints.maxWidth;
+            return Wrap(
+              spacing: 16,
+              runSpacing: 16,
+              children: [
+                SizedBox(
+                  width: width,
+                  child: _weekView(PullApproach.current, trace),
+                ),
+                SizedBox(
+                  width: width,
+                  child: _weekView(PullApproach.australian, candidate),
+                ),
+              ],
+            );
+          },
         ),
-        const SizedBox(height: 8),
-        if (week.note.isNotEmpty) Text(week.note),
-        for (final day in {
-          ...week.runs.map((r) => r.day),
-          ...week.sessions.map((s) => s.day),
-        }.toList()..sort()) ...[
-          const Divider(),
-          Text(
-            const [
-              'Lunes',
-              'Martes',
-              'Miércoles',
-              'Jueves',
-              'Viernes',
-              'Sábado',
-              'Domingo',
-            ][day - 1],
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          for (final run in week.runs.where((r) => r.day == day))
-            Text('${run.name} · ${run.minutes} min'),
-          for (final session in week.sessions.where((s) => s.day == day)) ...[
+        const SizedBox(height: 12),
+        const ExpansionTile(
+          title: Text('Qué respalda la ciencia'),
+          childrenPadding: EdgeInsets.all(16),
+          children: [
             Text(
-              '${session.dose?.label ?? 'Control de dominadas estrictas'} · ${session.minutes} min',
+              'El remo invertido permite practicar tirón con un montaje graduable. '
+              'Youdas y colaboradores (2016) midieron activación muscular con agarres prono y supino. '
+              'Ese estudio no probó esta secuencia de anchos ni su transferencia a una marca de dominadas. '
+              'Los 5 s, la dosis inicial y los dos días comparables son parámetros de este ensayo. '
+              'Las simulaciones comprueban las decisiones y la agenda. La eficacia necesita resultados reales.',
             ),
-            if (session.dose case final dose? when dose.reps.length > 1)
-              Text('Pausa entre series: ${dose.restSeconds} s'),
-            Text(session.reason),
           ],
-        ],
+        ),
+        const ExpansionTile(
+          title: Text('Cómo usar estas estrategias en una preparación'),
+          childrenPadding: EdgeInsets.all(16),
+          children: [
+            Text(
+              'Aquí puedes comparar sesiones y decisiones. En Programas, abre una versión en borrador '
+              'y entra en «Cómo se prepara cada prueba» para configurar la tarea y sus condiciones. '
+              'La estrategia disponible elige trabajo y dosis con los registros del deportista. '
+              'El coordinador organiza el conjunto con carrera, prioridades y minutos disponibles. '
+              'La propuesta de australianas está en fase de laboratorio. Su incorporación requiere '
+              'validar primero el registro y la publicación de la siguiente semana en desarrollo.',
+            ),
+          ],
+        ),
       ],
+    );
+  }
+
+  Widget _weekView(PullApproach approach, List<PullWeek> trace) {
+    final week = trace[_selectedWeek - 1];
+    final controls = trace
+        .expand((w) => w.sessions)
+        .where((s) => s.decision == PullDecision.test)
+        .length;
+    final deferred = trace.fold(0, (sum, w) => sum + w.unplaced);
+    final supports = trace
+        .expand((w) => w.sessions)
+        .where((s) => s.supportDose != null)
+        .length;
+    final deferredSupports = trace.fold(
+      0,
+      (sum, w) => sum + w.deferredSupports,
+    );
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              approach.label,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            Text('$controls controles · $deferred exposiciones aplazadas'),
+            if (approach == PullApproach.australian)
+              Text(
+                '$supports circuitos de apoyo colocados · $deferredSupports aplazados por agenda',
+              ),
+            Text(
+              'Última marca ficticia observada ${trace.last.mark ?? 'sin medir'}',
+            ),
+            if (week.note.isNotEmpty) Text(week.note),
+            for (final day in {
+              ...week.runs.map((r) => r.day),
+              ...week.sessions.map((s) => s.day),
+            }.toList()..sort()) ...[
+              const Divider(),
+              Text(
+                const [
+                  'Lunes',
+                  'Martes',
+                  'Miércoles',
+                  'Jueves',
+                  'Viernes',
+                  'Sábado',
+                  'Domingo',
+                ][day - 1],
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              for (final run in week.runs.where((r) => r.day == day))
+                Text('${run.name} · ${run.minutes} min'),
+              for (final session in week.sessions.where(
+                (s) => s.day == day,
+              )) ...[
+                Text(
+                  '${session.dose?.label ?? 'Control de dominadas estrictas'} · ${session.minutes} min',
+                ),
+                if (session.dose case final dose?
+                    when dose.reps.length > 1 && !dose.isCircuit)
+                  Text('Pausa entre series ${dose.restSeconds} s'),
+                if (session.dose?.isCircuit ?? false)
+                  const Text(
+                    'Un circuito. Hasta 10 s para recolocar manos entre anchos.',
+                  ),
+                Text(session.reason),
+                if (session.supportDose case final support?) ...[
+                  Text('Apoyo al final · ${support.label}'),
+                  const Text(
+                    'Pausa previa 120 s. Un circuito. Hasta 10 s para recolocar manos entre anchos.',
+                  ),
+                ],
+                if (session.supportReason.isNotEmpty)
+                  Text(session.supportReason),
+              ],
+            ],
+          ],
+        ),
+      ),
     );
   }
 }

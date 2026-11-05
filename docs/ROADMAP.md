@@ -1,5 +1,17 @@
 # Roadmap de EntrenaOP
 
+**Laboratorio comparativo de australianas · 05/11/2026.** Cerrado el ensayo
+de 26 y 52 semanas con 840 escenarios por brazo y horizonte. Admin presenta
+la progresión de referencia y los circuitos supinos A/B, sus calibraciones,
+adaptaciones y aplazamientos. Pasan el análisis y 382 pruebas de Admin con
+dos omisiones previas, y el análisis y 1.844 pruebas de raíz con una omisión
+previa. Admin `0.5.0+9`, versión raíz `1.15.0+34`. La comparación de 1.176
+trazados históricos conserva el brazo anterior. El alcance es de laboratorio
+con respuestas ficticias y carrera de ejemplo. El siguiente bloque recomendado
+es validar registro de tramos/hold y publicación por RPC en Dev antes de
+plantear su activación.
+[Sesiones, comparación y uso en Admin](ESTRATEGIA_DOMINADAS_PROPUESTA.md#comparación-de-australianas--05112026).
+
 **PLAN-032 · Desviaciones leves de ritmo · 04/11/2026.** La pauta de
 3:40–3:50/km acredita los parciales de 3:38 y 3:53 si la ejecución es
 compatible. V6 compara la caída con el margen lento de la receta. El historial

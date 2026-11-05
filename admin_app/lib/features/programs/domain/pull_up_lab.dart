@@ -7,13 +7,35 @@ enum PullGear {
   rows('Barra baja solo para australianas'),
   step('Barra y escalón estable'),
   bar('Solo barra alta'),
+  bandsAndRows('Barra, gomas y barra baja'),
+  machineAndRows('Barra, máquina asistida y barra baja'),
+  stepAndRows('Barra, escalón y barra baja'),
   none('Sin material');
 
   const PullGear(this.label);
   final String label;
 
   bool get canTest => this != rows && this != none;
-  bool get hasAssistance => this == bands || this == machine || this == feet;
+  bool get hasAssistance =>
+      this == bands ||
+      this == bandsAndRows ||
+      this == machine ||
+      this == machineAndRows ||
+      this == feet;
+  bool get hasRows =>
+      this == rows ||
+      this == feet ||
+      this == bandsAndRows ||
+      this == machineAndRows ||
+      this == stepAndRows;
+}
+
+enum PullApproach {
+  current('Progresión actual del laboratorio'),
+  australian('Propuesta de australianas');
+
+  const PullApproach(this.label);
+  final String label;
 }
 
 enum PullCalendar {
@@ -51,35 +73,82 @@ enum PullSignal { tolerated, difficulty, unknown }
 enum PullDecision { calibrate, maintain, progress, reduce, test }
 
 class PullDose {
-  const PullDose(this.variant, this.setup, this.reps, this.restSeconds);
+  const PullDose(
+    this.variant,
+    this.setup,
+    this.reps,
+    this.restSeconds, {
+    this.widths = const [],
+    this.holdSeconds = 0,
+  });
 
   final PullVariant variant;
   final String setup;
   final List<int> reps;
   final int restSeconds;
+  final List<String> widths;
+  final int holdSeconds;
+
+  bool get isCircuit => widths.isNotEmpty;
 
   String get signature =>
-      '${variant.name}|$setup|${reps.join(',')}|$restSeconds';
-  String get label => '${variant.label} · $setup · ${reps.join(' + ')}';
-  int get minutes =>
-      7 +
-      ((reps.reduce((a, b) => a + b) * 6 + (reps.length - 1) * restSeconds) /
-              60)
-          .ceil();
+      '${variant.name}|$setup|${reps.join(',')}|$restSeconds'
+      '${isCircuit ? '|${widths.join(',')}|$holdSeconds' : ''}';
+  String get label => isCircuit
+      ? 'Australianas supinas · $setup · '
+            '${List.generate(reps.length, (i) => '${reps[i]} ${widths[i]}').join(' + ')}'
+            ' + $holdSeconds s de hold cerrado'
+      : '${variant.label} · $setup · ${reps.join(' + ')}';
+  int get minutes => isCircuit
+      // Un circuito continuo. Los cambios de ancho y el hold tienen coste propio.
+      ? 3 +
+            ((reps.reduce((a, b) => a + b) * 6 +
+                        (reps.length - 1) * 10 +
+                        holdSeconds) /
+                    60)
+                .ceil()
+      : 7 +
+            ((reps.reduce((a, b) => a + b) * 6 +
+                        (reps.length - 1) * restSeconds) /
+                    60)
+                .ceil();
 
-  PullDose withReps(List<int> values) =>
-      PullDose(variant, setup, values, restSeconds);
+  PullDose withReps(List<int> values) => PullDose(
+    variant,
+    setup,
+    values,
+    restSeconds,
+    widths: widths,
+    holdSeconds: holdSeconds,
+  );
 }
 
 typedef PullRun = ({int day, int minutes, String name, bool quality});
-typedef PullSession = ({
-  int day,
-  String lane,
-  PullDose? dose,
-  PullDecision decision,
-  String reason,
-  int minutes,
-});
+
+class PullSession {
+  const PullSession({
+    required this.day,
+    required this.lane,
+    required this.dose,
+    required this.decision,
+    required this.reason,
+    required this.minutes,
+    this.supportDose,
+    this.supportDecision,
+    this.supportReason = '',
+  });
+
+  final int day;
+  final String lane;
+  final PullDose? dose;
+  final PullDecision decision;
+  final String reason;
+  final int minutes;
+  final PullDose? supportDose;
+  final PullDecision? supportDecision;
+  final String supportReason;
+}
+
 typedef _Observation = ({int day, String signature, PullSignal signal});
 
 class PullWeek {
@@ -89,8 +158,9 @@ class PullWeek {
     this.sessions,
     this.unplaced,
     this.mark,
-    this.note,
-  );
+    this.note, {
+    this.deferredSupports = 0,
+  });
 
   final int number;
   final List<PullRun> runs;
@@ -98,6 +168,7 @@ class PullWeek {
   final int unplaced;
   final int? mark;
   final String note;
+  final int deferredSupports;
 }
 
 /// Ensayo de decisiones. La respuesta ficticia vive aparte de la política.
@@ -107,9 +178,11 @@ List<PullWeek> simulatePullUps({
   required PullCalendar calendar,
   required PullResponse response,
   required int weeks,
+  PullApproach approach = PullApproach.current,
 }) {
   assert(weeks == 26 || weeks == 52);
   final policy = _PullPolicy(startingMark);
+  final circuits = PullCircuitPolicy();
   final results = <PullWeek>[];
   final availability = switch (calendar) {
     PullCalendar.strength => {1: 45, 3: 45, 5: 45},
@@ -124,12 +197,14 @@ List<PullWeek> simulatePullUps({
         ? PullGear.none
         : response == PullResponse.interrupted &&
               week >= 16 &&
-              gear == PullGear.bands
+              (gear == PullGear.bands || gear == PullGear.bandsAndRows)
         ? PullGear.feet
         : gear;
     final paused =
         response == PullResponse.interrupted && (week == 31 || week == 32);
     if (paused) policy.interrupt(week);
+    if (paused) circuits.reset();
+    circuits.useGear(currentGear);
     List<PullSession> place(List<PullSession> requests) {
       final sessions = <PullSession>[];
       for (final request in requests) {
@@ -141,12 +216,20 @@ List<PullWeek> simulatePullUps({
             continue;
           }
           final runsToday = runs.where((r) => r.day == day);
+          final runningMinutes = runsToday.fold<int>(
+            0,
+            (sum, r) => sum + r.minutes,
+          );
+          final includeSupport =
+              request.supportDose != null &&
+              request.minutes + runningMinutes <= entry.value;
+          final minutes =
+              request.minutes -
+              (request.supportDose != null && !includeSupport
+                  ? request.supportDose!.minutes + 2
+                  : 0);
           if (runsToday.any((r) => r.quality) ||
-              runsToday.fold<int>(
-                    request.minutes,
-                    (sum, r) => sum + r.minutes,
-                  ) >
-                  entry.value) {
+              minutes + runningMinutes > entry.value) {
             continue;
           }
           if (request.decision == PullDecision.test &&
@@ -154,26 +237,65 @@ List<PullWeek> simulatePullUps({
                   runs.any((r) => r.quality && (r.day - day).abs() < 2))) {
             continue;
           }
-          sessions.add((
-            day: day,
-            lane: request.lane,
-            dose: request.dose,
-            decision: request.decision,
-            reason: request.reason,
-            minutes: request.minutes,
-          ));
+          sessions.add(
+            PullSession(
+              day: day,
+              lane: request.lane,
+              dose: request.dose,
+              decision: request.decision,
+              reason: request.reason,
+              minutes: minutes,
+              supportDose: includeSupport ? request.supportDose : null,
+              supportDecision: includeSupport ? request.supportDecision : null,
+              supportReason: includeSupport
+                  ? request.supportReason
+                  : request.supportDose != null
+                  ? 'Australianas aplazadas por tiempo. Se conserva el trabajo principal.'
+                  : request.supportReason,
+            ),
+          );
           break;
         }
       }
       return sessions..sort((a, b) => a.day.compareTo(b.day));
     }
 
-    var requests = paused ? <PullSession>[] : policy.propose(week, currentGear);
+    List<PullSession> propose({bool allowTest = true}) {
+      if (paused) return [];
+      if (approach == PullApproach.australian && currentGear == PullGear.rows) {
+        return [
+          circuits.propose(week, 'A'),
+          if (circuits.hasCalibration) circuits.propose(week, 'B'),
+        ];
+      }
+      final primary = policy.propose(week, currentGear, allowTest: allowTest);
+      if (approach == PullApproach.current) return primary;
+      var index = 0;
+      return primary.map((s) {
+        if (s.decision == PullDecision.test) return s;
+        final support = currentGear.hasRows
+            ? circuits.propose(week, index++ == 0 ? 'A' : 'B')
+            : null;
+        return PullSession(
+          day: s.day,
+          lane: s.lane,
+          dose: s.dose,
+          decision: s.decision,
+          reason: s.reason,
+          minutes: s.minutes + (support == null ? 0 : support.minutes + 2),
+          supportDose: support?.dose,
+          supportDecision: support?.decision,
+          supportReason: support?.reason ?? 'La propuesta necesita una barra baja disponible para las australianas.',
+        );
+      }).toList();
+    }
+
+    var requests = propose();
     var sessions = place(requests);
     if (requests.any((s) => s.decision == PullDecision.test) &&
         (sessions.length < 2 ||
             !sessions.any((s) => s.decision == PullDecision.test))) {
-      requests = policy.propose(week, currentGear, allowTest: false);
+      requests = propose(allowTest: false);
       sessions = place(requests);
     }
     for (final session in sessions) {
@@ -184,14 +306,33 @@ List<PullWeek> simulatePullUps({
           _observedMark(startingMark ?? 0, policy.completedControls, response),
         );
       } else if (session.dose case final dose?) {
-        if (session.lane.isNotEmpty) {
-          policy.doses[session.lane] = dose;
+        if (dose.isCircuit) {
+          circuits.record(
+            day,
+            session.lane,
+            dose,
+            _response(week, response),
+            calibration: session.decision == PullDecision.calibrate,
+          );
+        } else {
+          if (session.lane.isNotEmpty) {
+            policy.doses[session.lane] = dose;
+          }
+          policy.record(
+            day,
+            dose,
+            _response(week, response),
+            calibration: session.decision == PullDecision.calibrate,
+          );
         }
-        policy.record(
+      }
+      if (session.supportDose case final support?) {
+        circuits.record(
           day,
-          dose,
+          support.widths.length == 2 ? 'A' : 'B',
+          support,
           _response(week, response),
-          calibration: session.decision == PullDecision.calibrate,
+          calibration: session.supportDecision == PullDecision.calibrate,
         );
       }
       policy.lastTrainingDay = day;
@@ -211,6 +352,9 @@ List<PullWeek> simulatePullUps({
             : unplaced > 0
             ? 'Se aplaza trabajo de dominadas por tiempo o recuperación.'
             : '',
+        deferredSupports:
+            requests.where((s) => s.supportDose != null).length -
+            sessions.where((s) => s.supportDose != null).length,
       ),
     );
   }
@@ -410,7 +554,7 @@ class _PullPolicy {
             variant == PullVariant.negative);
     if (eligibleTest) {
       return [
-        (
+        PullSession(
           day: 0,
           lane: '',
           dose: null,
@@ -547,7 +691,7 @@ class _PullPolicy {
     PullDecision decision,
     String reason, {
     String lane = '',
-  }) => (
+  }) => PullSession(
     day: 0,
     lane: lane,
     dose: dose,
@@ -555,4 +699,124 @@ class _PullPolicy {
     reason: reason,
     minutes: dose.minutes,
   );
+}
+
+/// Hipótesis del laboratorio. A y B conservan dosis y observaciones propias.
+/// Las cifras iniciales y las guardas son parámetros de ensayo, no dosis óptimas.
+class PullCircuitPolicy {
+  PullGear? _gear;
+  final _doses = <String, PullDose>{};
+  final _calibrated = <String>{};
+  final _evidence = <_Observation>[];
+
+  bool get hasCalibration => _calibrated.isNotEmpty;
+
+  void reset() {
+    _doses.clear();
+    _calibrated.clear();
+    _evidence.clear();
+  }
+
+  void useGear(PullGear gear) {
+    if (_gear != gear) reset();
+    _gear = gear;
+  }
+
+  PullDose _dose(String lane, List<int> reps, int holdSeconds) => PullDose(
+    PullVariant.australian,
+    '${_gear!.label}, altura, pies y posición del hold fijos',
+    reps,
+    0,
+    widths: lane == 'A'
+        ? const ['normales', 'cerradas']
+        : const ['abiertas', 'normales', 'cerradas'],
+    holdSeconds: holdSeconds,
+  );
+
+  PullSession propose(int week, String lane) {
+    if (!(_gear?.hasRows ?? false)) {
+      throw StateError('El circuito necesita una barra baja disponible.');
+    }
+    final dose =
+        _doses[lane] ?? _dose(lane, List.filled(lane == 'A' ? 2 : 3, 2), 2);
+    var next = dose;
+    var decision = PullDecision.maintain;
+    var reason = 'Repetir el circuito con el mismo montaje, técnica y margen.';
+    if (!_calibrated.contains(lane)) {
+      decision = PullDecision.calibrate;
+      reason =
+          'Calibrar el circuito $lane por separado. Elegir una inclinación '
+          'que permita recorrido completo y margen.';
+    }
+    final recent = _evidence.reversed
+        .where(
+          (e) => e.signature == dose.signature && (e.day - 1) ~/ 7 >= week - 4,
+        )
+        .take(2)
+        .toList();
+    final comparable =
+        recent.length == 2 &&
+        recent[0].day != recent[1].day &&
+        recent[0].signal == recent[1].signal;
+    if (comparable && recent.first.signal == PullSignal.difficulty) {
+      // Recortar una sola variable mantiene legible la respuesta del ensayo.
+      final reps = [...dose.reps];
+      final index = reps.indexOf(reps.reduce(math.max));
+      if (reps[index] > 1) {
+        reps[index]--;
+        next = _dose(lane, reps, dose.holdSeconds);
+        decision = PullDecision.reduce;
+        reason =
+            'Dos días comparables difíciles. Quitar una repetición del circuito $lane.';
+      } else if (dose.holdSeconds > 1) {
+        next = _dose(lane, reps, dose.holdSeconds - 1);
+        decision = PullDecision.reduce;
+        reason = 'Dos días comparables difíciles. Recortar un segundo de hold.';
+      } else {
+        decision = PullDecision.calibrate;
+        reason = 'La dosis mínima sigue difícil. Revisar la inclinación antes de continuar.';
+      }
+    } else if (_calibrated.contains(lane) &&
+        comparable &&
+        recent.first.signal == PullSignal.tolerated) {
+      final reps = [...dose.reps];
+      final index = reps.indexOf(reps.reduce(math.min));
+      if (reps[index] < 5) {
+        reps[index]++;
+        next = _dose(lane, reps, dose.holdSeconds);
+        decision = PullDecision.progress;
+        reason =
+            'Dos días comparables tolerados. Añadir una repetición al circuito $lane.';
+      } else if (dose.holdSeconds < 5) {
+        next = _dose(lane, reps, dose.holdSeconds + 1);
+        decision = PullDecision.progress;
+        reason = 'Dos días comparables tolerados. Añadir un segundo de hold.';
+      } else {
+        reason =
+            'Receta $lane alcanzada con este montaje. Mantener y revisar '
+            'la inclinación mediante otra calibración.';
+      }
+    }
+    return PullSession(
+      day: 0,
+      lane: lane,
+      dose: next,
+      decision: decision,
+      reason: reason,
+      minutes: next.minutes,
+    );
+  }
+
+  void record(
+    int day,
+    String lane,
+    PullDose dose,
+    PullSignal signal, {
+    bool calibration = false,
+  }) {
+    _doses[lane] = dose;
+    _evidence.add((day: day, signature: dose.signature, signal: signal));
+    if (calibration) _calibrated.remove(lane);
+    if (signal == PullSignal.tolerated) _calibrated.add(lane);
+  }
 }

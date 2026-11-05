@@ -1,6 +1,6 @@
 # Dominadas estrictas de 0 a 25 · evidencia y propuesta para EntrenaOP
 
-Revisión del 04/11/2026. Propuesta de laboratorio para adultos que preparan una
+Revisión del 05/11/2026. Propuesta de laboratorio para adultos que preparan una
 serie máxima de dominadas pronas estrictas. El objetivo de 20–25 repeticiones se
 puede seleccionar como meta. La bibliografía encontrada no permite asignarle un
 plazo ni una probabilidad de éxito individual. La técnica válida y el tope de
@@ -132,7 +132,7 @@ pueden hacer que el plan pida controles en momentos distintos. Los recuentos
 miden decisiones del laboratorio y no permiten comparar la eficacia de las
 negativas con la de las gomas ni pronosticar mejoras en seis o doce meses.
 
-La política de laboratorio incluye asistidas, australianas, negativas con
+La política de referencia del laboratorio incluye asistidas, australianas, negativas con
 escalón, libres sueltas y series libres. Para activar la estrategia hace falta
 ensayar la vinculación de una prueba en Admin, el registro real y la publicación
 de una semana siguiente con el coordinador de servidor. El lastre, las supinas,
@@ -145,7 +145,9 @@ Javier propone alternar agarres en australianas y combinar el tirón vertical
 asistido con negativas de otro agarre. En personas con dominadas libres propone
 combinar pronas, supinas cerradas y trabajo rápido, con variantes de tronco
 cuando el nivel lo permita. Se plantea un segundo brazo de laboratorio para
-comparar esta semana con el ensayo inicial.
+comparar esta semana con el ensayo inicial. La comparación de australianas
+descrita más abajo implementa el circuito horizontal. La combinación de otros
+agarres verticales y negativas conserva su condición de propuesta posterior.
 
 Mantener un bloque de dominada prona de recorrido completo con un montaje
 repetible. Al inicio puede ir asistido y más adelante pasa a libre. Repetirlo
@@ -201,3 +203,132 @@ prona comparable, qué apoyos entran o se aplazan y si una subida de ayuda,
 volumen o intensidad se atribuye al montaje correcto. El ensayo del software
 puede verificar esas decisiones. La comparación de mejora en el máximo
 estricto necesita registros de un piloto real.
+
+## Comparación de australianas · 05/11/2026
+
+Admin → Laboratorio → Dominadas de 0 a 25 muestra ambas propuestas para la
+misma semana. Los seis selectores comunes cambian nivel, material, agenda,
+respuesta, horizonte y semana observada. Cada columna presenta la dosis,
+pausas, motivo de adaptación y apoyos aplazados. La progresión actual de esa
+pantalla es la referencia del laboratorio introducida el 04/11. El código de
+ambas propuestas vive en `admin_app/lib/features/programs/domain/pull_up_lab.dart`.
+
+### Circuitos y adaptación del ensayo
+
+- A mantiene el orden normal → cerrado y persigue 5 + 5 repeticiones más
+  5 s de hold cerrado. B mantiene abierto → normal → cerrado y persigue
+  5 + 5 + 5 repeticiones más 5 s de hold cerrado. Todas son australianas supinas.
+- La entrada de cada circuito es una práctica de 2 repeticiones por ancho y
+  2 s de hold, con inclinación que permita técnica y margen. Ese inicio es un
+  parámetro de laboratorio elegido para comprobar la calibración independiente.
+- Se exigen dos días recientes de la misma receta y montaje para cambiarla.
+  Si se toleran, añadir una repetición total hasta llegar a cinco por ancho.
+  Después se añaden segundos de hold de uno en uno hasta cinco. El ensayo
+  conserva la receta alcanzada y pide revisar la inclinación mediante una nueva
+  calibración. No modela aumentos automáticos de dificultad de esa inclinación.
+- Dos días comparables difíciles quitan una repetición de un tramo. Si todos
+  están en uno, recortan un segundo de hold. En la dosis mínima se propone
+  revisar el montaje. Una dificultad aislada o un registro desconocido mantiene
+  la pauta. También se aplica la reducción si la entrada resultó difícil dos veces.
+- Los registros de A, B y del principal vertical se comparan por separado.
+  Cambiar material o volver de una pausa reinicia la calibración del circuito.
+  Solicitar un apoyo que no cabe deja su historial intacto.
+- Con barra alta, gomas o máquina se mantiene el principal vertical de
+  referencia. El circuito exige barra baja explícita y va al final. El presupuesto
+  reserva dos minutos previos, tres de preparación, seis segundos estimados
+  por repetición, diez por cambio de ancho y los segundos de hold. Los seis
+  segundos son una estimación de agenda. Con solo barra baja, los circuitos
+  son el principal y sus resultados mantienen separada la marca estricta.
+
+### Resultado reproducible
+
+Ejecutar `dart run tool/simulate_pull_ups.dart` desde `admin_app/`. El JSON
+incluye recuentos de ambos brazos, ejemplos de sesiones con descansos y las
+semanas comparadas. El lote cruza siete referencias iniciales, diez conjuntos
+de material, tres agendas y cuatro respuestas. Son 840 escenarios por brazo
+y horizonte, 3.360 trayectorias en total y 131.040 semanas ejecutadas.
+
+| Comprobación | 26 semanas | 52 semanas |
+| --- | ---: | ---: |
+| Semanas emparejadas | 21.840 | 43.680 |
+| Carreras conservadas por brazo | 29.120 | 58.240 |
+| Controles estrictos por brazo | 776 | 1.682 |
+| Sesiones de tirón, referencia | 29.102 | 58.962 |
+| Sesiones de tirón, candidata | 29.170 | 59.133 |
+| Circuitos candidatos como principal | 3.437 | 6.993 |
+| Circuitos candidatos como apoyo colocado | 9.703 | 19.592 |
+| Apoyos candidatos aplazados por agenda | 6.627 | 14.115 |
+
+El lote verifica carrera, material, separación entre sesiones, tiempo diario,
+controles y ausencia de marcas nuevas sin control. En perfiles con trabajo
+vertical compara cada dosis principal, día, motivo y decisión entre brazos.
+El circuito opcional conserva esos campos y los controles. Las diferencias
+en sesiones principales se concentran en el perfil que solo tiene barra baja.
+El circuito continuo puede caber donde el remo de varias series de referencia
+no cabe. Eso acredita viabilidad de agenda bajo las estimaciones del ensayo.
+
+Se contrastaron también los 1.176 trazados de las siete opciones de material
+originales contra el código anterior de Git `39fc89c3`, con igualdad completa
+de días, dosis, firmas, motivos, carreras, controles y marcas del brazo actual.
+La prueba de regresión conserva sus recuentos originales de 26 y 52 semanas.
+La verificación final pasa `flutter analyze` en raíz y Admin, 382 pruebas de
+Admin con dos omisiones previas y 1.844 de raíz con una omisión previa.
+
+Ejemplo desde cero con gomas, barra baja, carrera y respuesta favorable del guion.
+En la semana 2 ambas propuestas pautan 3×5 asistidas pronas el lunes y viernes,
+con 120 s entre series. La candidata añade el lunes A de 2 normales + 2 cerradas
+y 2 s de hold. El viernes B tiene 2 abiertas + 2 normales + 2 cerradas y 2 s de hold.
+El viernes incluye además el rodaje fácil de 30 minutos. En la semana 26 el
+guion coloca A de 5 + 5 y hold de 5 s y B de 4 + 3 + 3 y hold de 2 s.
+Las exposiciones aplazadas explican parte de la diferencia de avance entre A y B.
+
+En agenda justa el apoyo solo cabe durante algunas calibraciones principales
+breves. Los días quedan demasiado separados para acreditar progreso reciente.
+Se conserva el circuito de entrada y se informa de los aplazamientos. Con solo
+barra baja se alcanzan las dos recetas bajo respuesta favorable, conservando
+el cero estricto y sin solicitar controles de dominadas pronas.
+
+### Revisión científica y límites
+
+Se revisaron de nuevo el estudio de [Youdas y colaboradores](https://pubmed.ncbi.nlm.nih.gov/26422610/),
+el ensayo de [Sánchez-Moreno y colaboradores](https://doi.org/10.1519/JSC.0000000000003500)
+y la [posición ACSM de 2026](https://pubmed.ncbi.nlm.nih.gov/41843416/).
+El primero estudia activación aguda en 26 personas con cuatro formas de remo
+invertido. El segundo estudia pérdida de velocidad en dominadas pronas de
+hombres entrenados. La tercera recoge evidencia de entrenamiento progresivo
+en adultos y no encuentra una ventaja consistente de entrenar al fallo.
+Su alcance no valida el circuito exacto ni su transferencia a la primera
+dominada o a 25 repeticiones. La secuencia A/B, cinco repeticiones por ancho,
+cinco segundos de hold y dos días comparables siguen siendo hipótesis o
+guardas operativas del ensayo.
+
+Los dos brazos reciben los mismos guiones ficticios. La tolerancia de cada
+bloque se suministra como dato, sin modelar cómo el cansancio adicional cambia
+esa tolerancia. El laboratorio no calcula adaptación fisiológica ni predice
+que la candidata mejore más la marca. Tampoco modela medidas reales de la
+inclinación, meteorología, dolor ni fatiga acumulada de una preparación completa.
+El ensayo usa agendas de carrera fijas. La alternancia de supinas/neutras
+verticales, las negativas de agarre contrario y el lastre siguen pendientes.
+
+### Cómo usa Javier los algoritmos
+
+En Admin, abrir Programas y una versión en borrador. «Cómo se prepara cada
+prueba» permite vincular la tarea de rendimiento y sus condiciones mediante
+«Configurar» o «Revisar». Si el programa ya está habilitado, la pantalla pide
+crear otra versión. Carrera tiene su vinculación de módulo en el programa.
+El catálogo versionado, la prueba y su protocolo determinan qué política
+disponible puede preparar ese objetivo.
+
+| Componente | Qué configura Javier | Qué resuelve al entrenar |
+| --- | --- | --- |
+| Programa | Pruebas, protocolo, baremos, contenido y módulos disponibles | Define qué se prepara y cómo se mide. |
+| Carrera | Prueba y módulo de carrera compatibles | Ritmos, recetas y cambios desde sus registros. |
+| Rendimiento | Tarea, medición y condiciones de la prueba | Calibración, dosis y apoyos admitidos con registros propios. |
+| Coordinador | Recibe las restricciones del programa y la agenda del deportista | Encaja propuestas, prioridades, minutos y recuperación de la semana. |
+| Laboratorio de dominadas | Nivel, material, respuesta y semana del ensayo | Permite comparar las dos propuestas experimentales. |
+
+Crear un programa no crea un motor nuevo para cada movimiento. La biblioteca
+de ejercicios y las políticas deportivas disponibles son recursos distintos.
+La incorporación de esta candidata necesita después representar y registrar
+sus tramos y hold, vincular una estrategia versionada y ensayar la publicación
+real de la semana siguiente por RPC con el coordinador de desarrollo.
