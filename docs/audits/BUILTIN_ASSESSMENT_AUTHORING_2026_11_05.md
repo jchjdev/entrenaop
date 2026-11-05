@@ -109,5 +109,14 @@ Las pruebas existentes pasan a utilizar scroll persistente como la ficha real.
 Dos regresiones adicionales recorren ambos programas, abren varios objetivos,
 pliegan uno sin afectar al otro y vuelven a abrir manteniendo metadatos. Las 16
 pruebas focales pasan; batería ADMIN completa: 408 correctas y dos omisiones
-previas. Análisis sin incidencias. La compilación y publicación de esta corrección
-se acreditan con su ejecución y comprobación autenticada posterior.
+previas. Análisis sin incidencias y compilación web release Dev correcta.
+
+La ejecución ADMIN Dev 42099553973 completa validación, despliegue y retención.
+HTTPS independiente acredita revisión 7fd496f52ad7c7f0bf4b83ebdada5d9a7e026719,
+versión 0.7.1+13, destino Dev, índice y SHA-256 del código correctos. Se repite el
+recorrido autenticado en Chrome: Tropa muestra perfil/protocolo sin bloque gris;
+FAS permite abrir los tres objetivos, plegar la plancha independientemente y
+mantener circuito/flexiones completos. El simulador FAS abre edad y las cuatro
+marcas. Capturas antes/después contrastadas y cero errores nuevos de la revisión
+publicada en consola. No se guardan intentos ni se cambia ninguna revisión durante
+la comprobación visual.
