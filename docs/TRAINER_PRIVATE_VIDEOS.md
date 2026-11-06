@@ -1,5 +1,21 @@
 # Vídeos privados profesionales y técnica del alumno · 21/10/2026
 
+**Comprobación Dev · 06/11/2026:** el periodo de prueba de Bunny había caducado
+y la creación de vídeos devolvía HTTP 401 después de reservar en Supabase. Tras
+la recarga de Javier, el panel vuelve a consultar los siete vídeos existentes;
+la consulta de estado desde EntrenaOP y la reproducción firmada responden 200,
+y un clip existente se reproduce sin errores. Javier confirma después una nueva
+subida desde el móvil y el servidor acredita el clip listo (6 s y 3.783.897 bytes
+de origen); no se acredita por ello cada recorrido de recuperación de reservas
+fallidas. Se mantienen MP4, codificación gratuita H.264,
+360p/480p/720p, token CDN y High Volume; transcripción/IA y recarga automática
+desactivadas. No se han cambiado claves, permisos ni cuotas.
+
+El diálogo de técnica separa la explicación de la etiqueta flotante «Sesión o
+serie» para evitar el solapamiento visto en iPhone. La regresión usa el tema real
+y una ejecución con series seleccionables, con escalas de texto 1, 1,5 y 2.
+La corrección visual requiere recompilar e instalar la app en el dispositivo.
+
 **TRN-046 · 29/10/2026 · Dev:** las demostraciones propias admiten una
 solicitud de eliminación desde Vídeos. El servidor protege referencias de
 versiones, papelera, borradores, asignaciones e historial; las técnicas ligadas a

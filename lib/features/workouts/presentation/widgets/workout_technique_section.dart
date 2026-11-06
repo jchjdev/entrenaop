@@ -117,6 +117,7 @@ class _WorkoutTechniqueSectionState extends State<WorkoutTechniqueSection> {
                       const Text(
                         'El vídeo se compartirá con el preparador de esta sesión. Después puedes retirar o volver a activar la compartición desde aquí.',
                       ),
+                      if (selectable.isNotEmpty) const SizedBox(height: 24),
                       if (selectable.isNotEmpty)
                         DropdownButtonFormField<String?>(
                           initialValue: selectedSet,

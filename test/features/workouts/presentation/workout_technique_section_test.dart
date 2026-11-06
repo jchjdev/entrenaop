@@ -3,6 +3,7 @@ import 'package:entrenaop/features/workouts/domain/entities/workout_execution.da
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_technique_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:entrena_ui/entrena_ui.dart';
 import 'package:workout_editor_ui/exercise_video_source.dart';
 
 class TechniqueFixture extends ClientTechniqueRepository {
@@ -52,14 +53,22 @@ final execution = WorkoutExecution(
   sets: const [],
 );
 
-Widget app(TechniqueFixture fixture, {double scale = 1}) => MaterialApp(
+Widget app(
+  TechniqueFixture fixture, {
+  double scale = 1,
+  WorkoutExecution? workout,
+}) => MaterialApp(
+  theme: EntrenaTheme.dark,
   builder: (context, child) => MediaQuery(
     data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(scale)),
     child: child!,
   ),
   home: Scaffold(
     body: SingleChildScrollView(
-      child: WorkoutTechniqueSection(execution: execution, repository: fixture),
+      child: WorkoutTechniqueSection(
+        execution: workout ?? execution,
+        repository: fixture,
+      ),
     ),
   ),
 );
@@ -135,4 +144,50 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
+
+  for (final scale in [1.0, 1.5, 2.0]) {
+    testWidgets(
+      'la etiqueta de sesión no invade la explicación con texto a $scale',
+      (tester) async {
+        await tester.binding.setSurfaceSize(const Size(390, 844));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        final workout = execution.copyWith(
+          sets: const [
+            WorkoutExecutionSet(
+              id: 'set',
+              blockOrder: 0,
+              blockName: 'Fuerza',
+              itemOrder: 0,
+              exerciseId: 'exercise',
+              exerciseName: 'Dominadas',
+              setOrder: 0,
+              restAfterSeconds: 60,
+              status: WorkoutSetStatus.completed,
+            ),
+          ],
+        );
+        await tester.pumpWidget(
+          app(TechniqueFixture(), scale: scale, workout: workout),
+        );
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.text('Enviar vídeo de técnica'));
+        await tester.tap(find.text('Enviar vídeo de técnica'));
+        await tester.pumpAndSettle();
+
+        final explanation = find.textContaining(
+          'Después puedes retirar o volver a activar',
+        );
+        final label = find.text('Sesión o serie');
+        expect(label, findsOneWidget);
+        expect(
+          tester.getRect(label).top,
+          greaterThanOrEqualTo(tester.getRect(explanation).bottom + 8),
+        );
+        expect(tester.takeException(), isNull);
+        await tester.tap(find.text('Cerrar y actualizar'));
+        await tester.pumpAndSettle();
+        expect(find.text('Enviar técnica al preparador'), findsNothing);
+      },
+    );
+  }
 }
