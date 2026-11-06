@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {nativeGarminPrescriptionReference,deliveredGarminPrescriptionReference} from '../_shared/garmin/activity_reference.ts';
-import {ActivityReturnService} from '../_shared/device_activity/return_service.ts';
+import {nativeGarminPrescriptionReference,deliveredGarminPrescriptionReference,deliveredGarminLapStepIndices} from '../_shared/garmin/activity_reference.ts';
+import {ActivityReturnService,activityReview} from '../_shared/device_activity/return_service.ts';
 import type {ActivityJob} from '../_shared/device_activity/return_service.ts';
 import type {ObservedRunningActivity} from '../_shared/device_activity/running_result.ts';
 import type {AccessGrant} from '../_shared/device_training/delivery.ts';
@@ -74,7 +74,8 @@ test('un bucle FIT conserva la misma referencia que los pasos expandidos anterio
 const job:ActivityJob={id:'job',owner:'owner',generation:1,lease:'lease',callback:'callback',metadata:{},tokens:'tokens',
   providerUserId:'provider',accessExpiresAt:'2026-11-02T00:00:00Z',refreshExpiresAt:'2026-11-03T00:00:00Z'};
 const grant:AccessGrant={accessToken:'access',refreshToken:'refresh',expiresInSeconds:3600,refreshExpiresInSeconds:86400,scope:''};
-function fixture(options:{duplicate?:boolean;stale?:boolean;extra?:boolean;failComplete?:boolean;stationary?:boolean;shortened?:boolean}={}){
+function fixture(options:{duplicate?:boolean;stale?:boolean;extra?:boolean;failComplete?:boolean;stationary?:boolean;shortened?:boolean;
+  repeated?:boolean;loopIndices?:number[];missingLoopLap?:boolean;wrongLoopIntensity?:boolean}={}){
   const actions:{action:string;input:Record<string,unknown>}[]=[];
   const activity:ObservedRunningActivity={schemaVersion:1,externalId:'123',name:'Prueba',startedAt:'2026-11-01T10:00:00Z',offsetSeconds:3600,
     timerSeconds:120,elapsedSeconds:120,distanceMeters:400,averageHeartRate:null,maxHeartRate:null,prescriptionReference:'reference',
@@ -83,6 +84,13 @@ function fixture(options:{duplicate?:boolean;stale?:boolean;extra?:boolean;failC
     activity.laps.push({...activity.laps[0],index:1,startedAt:'2026-11-01T10:02:00Z',workoutStepIndex:1});}
   if(options.stationary){activity.distanceMeters=0;activity.laps=activity.laps.map(lap=>({...lap,distanceMeters:0}));}
   const snapshot=source();
+  if(options.repeated){
+    const repeated=repeatedRunning();
+    Object.assign(snapshot,repeated.snapshot);Object.assign(activity,repeated.activity);
+    if(options.loopIndices)activity.laps.forEach((lap,index)=>lap.workoutStepIndex=options.loopIndices![index]);
+    if(options.missingLoopLap)activity.laps=activity.laps.filter(lap=>lap.index!==3).map((lap,index)=>({...lap,index}));
+    if(options.wrongLoopIntensity)activity.laps[4].intensity='rest';
+  }
   if(options.shortened){
     Object.assign(snapshot.blocks[0].items[0].sets[0],{target_duration_seconds:null,target_distance_meters:400});
     activity.timerSeconds=8.125;activity.elapsedSeconds=8.125;activity.distanceMeters=3.5;
@@ -98,7 +106,8 @@ function fixture(options:{duplicate?:boolean;stale?:boolean;extra?:boolean;failC
     return {};
   }},{refresh:async()=>grant,userId:async()=> 'provider',permissions:async()=>({canReadActivities:true,canSendWorkouts:true})},
   {open:async<T>(value:string)=> (value==='tokens'?grant:'https://apis.garmin.com/wellness-api/rest/activityFile?id=1') as T,seal:async()=> 'rotated'},
-  {read:async()=>activity,reference:()=> 'reference'},()=>Date.parse('2026-11-01T12:00:00Z'));
+  {read:async()=>activity,reference:()=> options.repeated?deliveredGarminPrescriptionReference(snapshot):'reference',
+    lapStepIndices:deliveredGarminLapStepIndices},()=>Date.parse('2026-11-01T12:00:00Z'));
   return {service,actions};
 }
 test('cierra únicamente una coincidencia completa y conserva el mapa observado',async()=>{
@@ -107,6 +116,78 @@ test('cierra únicamente una coincidencia completa y conserva el mapa observado'
   const request=f.actions.find(a=>a.action==='automatic.complete')!.input;
   assert.deepEqual(request.mapping,[{block_order:0,item_order:0,set_order:0,lap_indices:[0],recovery_lap_indices:[],skipped:false}]);
   assert.equal(request.scheduled_id,'one');assert.equal(request.rpe,undefined);
+});
+
+function repeatedRunning(){
+  const snapshot=source(),base=snapshot.blocks[0].items[0].sets[0];
+  const work={...base,target_duration_seconds:180,recovery_type:'jogging',recovery_duration_seconds:120};
+  const phase=(kind:string,seconds:number)=>({...base,target_duration_seconds:seconds,
+    target_pace_min_seconds_per_km:null,target_pace_max_seconds_per_km:null,
+    running_step:{schema_version:2,kind,completion:'time'}});
+  snapshot.blocks[0].items[0].sets=[phase('warmup',900),work,{...work},{...work},phase('cooldown',600)]
+    .map((set,order_index)=>({...set,order_index})) as (typeof base)[];
+  const encoder=new Encoder(),start=new Date('2026-11-01T10:00:00Z');
+  encoder.onMesg(Profile.MesgNum.FILE_ID,{type:'activity',manufacturer:'garmin',timeCreated:start});
+  const native=[{messageIndex:0,intensity:'warmup',durationType:'time',durationValue:900000,targetType:'open'},
+    {...steps[0],messageIndex:1,durationValue:180000},
+    {messageIndex:2,intensity:'recovery',durationType:'time',durationValue:120000,targetType:'open'},
+    {messageIndex:3,durationType:'repeatUntilStepsCmplt',durationValue:1,targetValue:3},
+    {messageIndex:4,intensity:'cooldown',durationType:'time',durationValue:600000,targetType:'open'}];
+  encoder.onMesg(Profile.MesgNum.WORKOUT,{sport:'running',numValidSteps:native.length});
+  native.forEach(step=>encoder.onMesg(Profile.MesgNum.WORKOUT_STEP,step));
+  const indices=[0,0,1,2,1,2,1,2,4],seconds=[15,20,180,120,180,120,180,120,45];
+  let elapsed=0,distance=0;
+  indices.forEach((wktStepIndex,messageIndex)=>{
+    const time=seconds[messageIndex],meters=time*2.5;
+    encoder.onMesg(Profile.MesgNum.LAP,{messageIndex,wktStepIndex,
+      startTime:new Date(start.getTime()+elapsed*1000),totalTimerTime:time,totalElapsedTime:time,totalDistance:meters,
+      intensity:native[wktStepIndex].intensity});
+    elapsed+=time;distance+=meters;
+  });
+  encoder.onMesg(Profile.MesgNum.SESSION,{sport:'running',startTime:start,totalTimerTime:elapsed,totalElapsedTime:elapsed,totalDistance:distance});
+  const activity=garminFitObservation(encoder.close(),{activityId:'123',activityName:'Carrera con bucle'}) as ObservedRunningActivity;
+  activity.offsetSeconds=3600;
+  assert.equal(activity.prescriptionReference,deliveredGarminPrescriptionReference(snapshot));
+  return {snapshot,activity};
+}
+
+test('el retorno FIT con bucle y Auto Lap cierra y propone el mismo mapa en la revisión manual',async()=>{
+  const {snapshot,activity}=repeatedRunning();
+  assert.deepEqual(deliveredGarminLapStepIndices(snapshot),[0,1,2,1,2,1,2,4]);
+  const review=activityReview({snapshot,activity},deliveredGarminLapStepIndices(snapshot));
+  const rows=review.rows as Record<string,unknown>[];
+  assert.deepEqual(rows.map(row=>row.lap_indices),[[0,1],[2],[4],[6],[8]]);
+  assert.deepEqual(rows.map(row=>row.recovery_lap_indices),[[],[3],[5],[7],[]]);
+  const f=fixture({repeated:true});await f.service.process(job);
+  const complete=f.actions.find(a=>a.action==='automatic.complete');assert.ok(complete);
+  assert.deepEqual(complete.input.mapping,rows.map(row=>({block_order:0,item_order:0,set_order:row.set_order,
+    lap_indices:row.lap_indices,recovery_lap_indices:row.recovery_lap_indices,skipped:false})));
+  const saved=f.actions.find(a=>a.action==='save')!.input.activity as ObservedRunningActivity;
+  assert.deepEqual(saved.laps.map(lap=>lap.workoutStepIndex),[0,0,1,2,1,2,1,2,4]);
+  assert.equal(saved.laps[0].timerSeconds+saved.laps[1].timerSeconds,35);
+  assert.equal(saved.laps.at(-1)!.timerSeconds,45);
+  assert.equal(complete.input.rpe,undefined);
+});
+
+test('el bucle conserva revisión si falta una vuelta, cambia un índice o no cubre la secuencia completa',async()=>{
+  for(const options of [{loopIndices:[0,0,1,2,1,2,1,2,3]}, {loopIndices:[0,0,1,2,7,2,1,2,4]},
+    {loopIndices:[0,0,1,2,1,2,1,1,4]}, {missingLoopLap:true}, {wrongLoopIntensity:true}]){
+    const f=fixture({repeated:true,...options});await f.service.process(job);
+    assert.ok(!f.actions.some(a=>a.action==='automatic.complete'));
+    assert.equal(f.actions.find(a=>a.action==='automatic.review')?.input.code,'intervals_require_review');
+  }
+});
+
+test('un bucle identificado no evita revisar una cita ambigua o una versión retirada',async()=>{
+  for(const options of [{duplicate:true},{stale:true}]){
+    const f=fixture({repeated:true,...options});await f.service.process(job);
+    assert.ok(!f.actions.some(a=>a.action==='automatic.complete'));
+  }
+});
+
+test('el mismo entrenamiento anterior con índices expandidos sigue completándose',async()=>{
+  const f=fixture({repeated:true,loopIndices:[0,0,1,2,3,4,5,6,7]});await f.service.process(job);
+  assert.ok(f.actions.some(a=>a.action==='automatic.complete'));
 });
 
 test('una serie recortada identificada cierra con la evidencia real, sin convertirla en 400 metros',async()=>{

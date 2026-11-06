@@ -65,7 +65,7 @@ export function validateRunningObservation(value: ObservedRunningActivity): void
 
 export type ActivityStep = {kind: string; measure: 'seconds' | 'meters' | 'manual'; value: number | null};
 /** Identificar un paso no acredita haber cumplido su distancia o intensidad objetivo. */
-export function proposeLapMapping(steps: readonly ActivityStep[], laps: readonly ObservedLap[]): (number[] | null)[] {
+export function proposeLapMapping(steps: readonly ActivityStep[], laps: readonly ObservedLap[], stepIndices?: readonly number[]): (number[] | null)[] {
   let groups: ObservedLap[][] = laps.map(lap => [lap]);
   if (steps.length !== laps.length) {
     groups = [];
@@ -76,13 +76,18 @@ export function proposeLapMapping(steps: readonly ActivityStep[], laps: readonly
       else groups.push([lap]);
     }
     // Solo evidencia explícita del índice de paso, nunca proximidad temporal.
-    if (groups.length !== steps.length || groups.some((g,i)=>g[0].workoutStepIndex!==i)) return steps.map(()=>null);
+    if (groups.length !== steps.length) return steps.map(()=>null);
   }
   // Un índice nativo continuo identifica cada paso aunque se haya terminado
   // antes con Lap. Conservamos todas sus mediciones, también las de Auto Lap.
   // Sin esa evidencia se mantiene la candidatura conservadora por estructura.
-  const indexed = groups.length === steps.length && groups.every((group,index) =>
-    group.every(lap => lap.workoutStepIndex === index));
+  const matchesIndices = (indices: readonly number[]) => indices.length === steps.length &&
+    groups.every((group,index) => group.every(lap => lap.workoutStepIndex === indices[index]));
+  // El adaptador puede aportar los índices de una receta nativa con bucles.
+  // Se exige la secuencia completa; no se deduce un bucle de las mediciones.
+  const indexed = matchesIndices(steps.map((_,index)=>index)) ||
+    stepIndices !== undefined && matchesIndices(stepIndices);
+  if (steps.length !== laps.length && !indexed) return steps.map(()=>null);
   const compatible = (step: ActivityStep, group: ObservedLap[]) => group.every(lap => {
     const kind = lap.intensity;
     if (kind === null) return false;

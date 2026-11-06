@@ -8,7 +8,8 @@ import type {AccessGrant, AccountGateway, GrantCipher} from '../device_training/
 type Json = Record<string, unknown>;
 export interface ActivityReturnStore {command(action: string, owner: string | null, session: string | null, input: Json): Promise<Json>}
 export interface ActivityFileGateway {read(callback: string, accessToken: string, metadata: Json): Promise<ObservedActivity>;
-  reference?(snapshot:unknown):string|null}
+  reference?(snapshot:unknown):string|null;
+  lapStepIndices?(snapshot:unknown):readonly number[]}
 export type ActivityJob = {id: string; owner: string; generation: number; lease: string; callback: string; metadata: Json;
   tokens: string; accessExpiresAt: string; refreshExpiresAt: string; providerUserId: string};
 
@@ -86,7 +87,8 @@ export class ActivityReturnService {
     if(!isStrengthActivity(activity)&&activity.distanceMeters===0){
       await command('automatic.review',{code:'intervals_require_review',...linked});return;
     }
-    const review=activityReview({snapshot:current.snapshot,activity});
+    const review=activityReview({snapshot:current.snapshot,activity},
+      isStrengthActivity(activity)?undefined:this.files.lapStepIndices?.(current.snapshot));
     const rows=review.rows as Json[];
     if(!rows.length||rows.some(r=>!(r.lap_indices as number[])?.length||r.requires_recovery&&!(r.recovery_lap_indices as number[])?.length)){
       await command('automatic.review',{code:'intervals_require_review',...linked});return;
@@ -110,7 +112,7 @@ export class ActivityReturnService {
   }
 }
 
-export function activityReview(source: Json): Json {
+export function activityReview(source: Json, lapStepIndices?: readonly number[]): Json {
   const observed=source.activity as ObservedActivity;
   if(isStrengthActivity(observed)){
     validateStrengthObservation(observed);
@@ -129,7 +131,7 @@ export function activityReview(source: Json): Json {
   const prescription = runningPrescription(source.snapshot);
   const activity = source.activity as ObservedRunningActivity;
   validateRunningObservation(activity);
-  const suggested = proposeLapMapping(prescription.steps, activity.laps);
+  const suggested = proposeLapMapping(prescription.steps, activity.laps, lapStepIndices);
   const rows: Json[] = []; let step = 0;
   const snapshot = source.snapshot as {blocks: {order_index: number; items: {order_index: number; sets: Json[]}[]}[]};
   for (const block of snapshot.blocks) for (const item of block.items) for (const set of item.sets) {

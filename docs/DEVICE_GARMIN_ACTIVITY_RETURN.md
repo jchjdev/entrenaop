@@ -1,5 +1,40 @@
 # Retorno de carrera Garmin · INT-012 · 23/10/2026
 
+## Índices de vueltas en bloques repetidos · 06/11/2026
+
+La carrera real de cuatro series de tres minutos llega a Dev con la receta
+identificada y `intervals_require_review`, sin ejecución en el historial. El FIT
+conserva los índices del cuerpo del bucle (`1, 2, 1, 2…`) y el enfriamiento usa el
+índice posterior a su cierre. Además, Auto Lap divide el calentamiento en dos
+vueltas. El asociador solo admitía la secuencia expandida de índices continuos.
+
+El adaptador Garmin proyecta ahora los índices nativos desde los bloques
+repetidos validados de la receta. El asociador común acepta esa secuencia
+completa como evidencia adicional, conservando la compatibilidad con entregas
+anteriores expandidas. La propuesta manual y el cierre automático utilizan el
+mismo mapa. Se conservan las vueltas originales y la comparación entre pauta y
+medición, incluidas fases recortadas; no se reparte un total ni se inventa RPE.
+Los tipos incompatibles, vueltas ausentes, secuencias incompletas, versiones
+retiradas y citas ambiguas conservan revisión. Fuerza y Apple no aportan esta
+proyección de índices Garmin.
+
+Pasan 274 pruebas de servidor, tipos TypeScript estrictos, `flutter analyze` y
+1.880 pruebas raíz con una omisión previa. Los contratos SQL de retorno y cierre
+automático pasan en Dev con ROLLBACK. El ensayo de reconciliación de la actividad
+real también termina con ROLLBACK y comprueba candidatos sin cambios, receta
+vigente, exclusión por cuenta, todas las mediciones e idempotencia.
+
+Publicados y activos solo en Dev `garmin-activity-ingest` v22 y
+`garmin-activities` v23, con los 23 archivos descargados coincidentes con la
+fuente validada y los permisos HTTP conservados. Se reconcilia después una sola
+recepción existente mediante el comando del trabajador, con lease exclusivo y
+auditoría `stored_reconciliation` que registra la huella del código. La cita y
+su ejecución quedan completadas, con seis filas de resultado, once vueltas,
+una observación, una confirmación y RPE ausente. Los identificadores privados y
+el material de reparación quedan fuera de Git. No requiere migración ni binario
+iOS nuevo; la siguiente recepción física automática y el refresco en el iPhone
+siguen sin acreditarse con esta reparación de evidencia ya almacenada.
+
 ## Series recortadas con identidad · 03/11/2026
 
 Javier contrasta el cierre de una carrera anterior con una nueva que queda

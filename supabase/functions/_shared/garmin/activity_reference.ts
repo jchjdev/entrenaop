@@ -2,8 +2,24 @@ import {garminRunningWorkout} from './training.ts';
 import {garminStrengthWorkout} from './strength.ts';
 import {runningPrescription} from '../device_training/prescription.ts';
 import {strengthPrescription} from '../device_training/strength.ts';
+import {validatedRunningRepeats} from '../device_training/running_repeats.ts';
 
 type Row=Record<string,unknown>;
+/** FIT indexa el cuerpo una vez y reserva otro índice para el cierre del bucle. */
+export function deliveredGarminLapStepIndices(snapshot:unknown): number[] {
+  const prescription=runningPrescription(snapshot);
+  const repeats=new Map(validatedRunningRepeats(prescription).map(group=>[group.start,group]));
+  const indices:number[]=[];
+  let native=0;
+  while(indices.length<prescription.steps.length){
+    const group=repeats.get(indices.length);
+    if(!group){indices.push(native++);continue;}
+    const count=group.stepCount*group.iterations-(group.omitLastRecovery?1:0);
+    for(let offset=0;offset<count;offset++)indices.push(native+offset%group.stepCount);
+    native+=group.stepCount+1;
+  }
+  return indices;
+}
 const kinds=new Set(['active','warmup','cooldown','rest','recovery']);
 const exercises:Record<string,number>={BARBELL_BENCH_PRESS:1,PUSH_UP:77,PULL_UP:38};
 const categories:Record<string,string>={BENCH_PRESS:'benchPress',PUSH_UP:'pushUp',PULL_UP:'pullUp'};

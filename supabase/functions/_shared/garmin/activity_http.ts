@@ -4,7 +4,7 @@ import {GarminCipher} from './cipher.ts';
 import {GarminOAuthClient} from './oauth.ts';
 import {garminActivityCallback, downloadGarminFit, garminFitObservation} from './activity_fit.ts';
 import {ActivityReturnService, activityReview} from '../device_activity/return_service.ts';
-import {deliveredGarminPrescriptionReference} from './activity_reference.ts';
+import {deliveredGarminPrescriptionReference,deliveredGarminLapStepIndices} from './activity_reference.ts';
 import type {ActivityReturnStore, ActivityJob} from '../device_activity/return_service.ts';
 type Json = Record<string, unknown>;
 export type ActivityReturnConfig = GarminServerConfig & {webhookSecret: string};
@@ -50,7 +50,8 @@ export async function drainActivityReturns(c: GarminServerConfig, f: typeof fetc
   const pending = await store.command('pending',null,null,{});
   const cipher = new GarminCipher(c.encryptionKey);
   const account = new GarminOAuthClient({clientId:c.clientId,clientSecret:c.clientSecret,redirectUri:`${c.supabaseUrl}/functions/v1/garmin-oauth-callback`},f);
-  const service = new ActivityReturnService(store,account,cipher,{reference:deliveredGarminPrescriptionReference,read:async (url,token,metadata)=>
+  const service = new ActivityReturnService(store,account,cipher,{reference:deliveredGarminPrescriptionReference,
+    lapStepIndices:deliveredGarminLapStepIndices,read:async (url,token,metadata)=>
     garminFitObservation(await downloadGarminFit(url,token,f),{activityId:String(metadata.activityId),activityName:String(metadata.activityName)})});
   let processed = 0; const deadline = Date.now()+40000;
   for (const id of pending.ids as string[]) {
@@ -123,7 +124,8 @@ export async function handleActivityUser(request: Request, c: GarminServerConfig
     const input = {...data}; delete input.action; delete input.expected_user_id; delete input.activity_schema_version;
     const value = await store.command(String(action),who.user,who.session,input);
     if(action==='preview' && schema===1 && (value.activity as Json).schemaVersion!==1) throw new HttpError(409,'unsupported_activity');
-    return Response.json(action==='preview' ? activityReview(value) : value,{headers});
+    return Response.json(action==='preview' ? activityReview(value,
+      (value.activity as Json).schemaVersion===1?deliveredGarminLapStepIndices(value.snapshot):undefined) : value,{headers});
   } catch (error) { return failure(error); }
 }
 function failure(error: unknown): Response {
