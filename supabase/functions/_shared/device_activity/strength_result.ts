@@ -1,4 +1,4 @@
-import {ActivityReturnError} from './running_result.ts';
+import {ActivityReturnError,validateObservedMetadata} from './running_result.ts';
 import type {ObservedRunningActivity} from './running_result.ts';
 export type ObservedStrengthSet={index:number;startedAt:string;seconds:number;kind:'active'|'rest';
   repetitions:number|null;loadKg:number|null;exerciseCode:string|null;workoutStepIndex:number|null};
@@ -8,6 +8,7 @@ export type ObservedStrengthActivity=Omit<ObservedRunningActivity,'schemaVersion
 export type ObservedActivity=ObservedRunningActivity|ObservedStrengthActivity;
 export function isStrengthActivity(a:ObservedActivity):a is ObservedStrengthActivity{return a.schemaVersion===2;}
 export function validateStrengthObservation(a:ObservedStrengthActivity):void{
+  validateObservedMetadata(a);
   const valid=(n:unknown,max:number)=>typeof n==='number'&&Number.isFinite(n)&&n>=0&&n<=max;
   const timestamp=(s:unknown)=>typeof s==='string'&&s.endsWith('Z')&&Number.isFinite(Date.parse(s));
   if(a.schemaVersion!==2||a.sport!=='strength'||a.distanceMeters!==null||!/^\d{1,24}$/.test(a.externalId)||

@@ -10,6 +10,8 @@ export type ObservedLap = {
 };
 export type ObservedRunningActivity = {
   prescriptionReference?: string;
+  prescriptionStepIndices?: number[];
+  perceivedExertion?: number;
   schemaVersion: 1;
   externalId: string;
   name: string;
@@ -25,7 +27,19 @@ export type ObservedRunningActivity = {
 export class ActivityReturnError extends Error {
   constructor(code: string) { super(code); this.name = 'ActivityReturnError'; }
 }
+export function validateObservedMetadata(value: Pick<ObservedRunningActivity,'prescriptionReference'|'prescriptionStepIndices'|'perceivedExertion'>):void {
+  const indices=value.prescriptionStepIndices,effort=value.perceivedExertion;
+  if(indices!==undefined&&(!value.prescriptionReference||!Array.isArray(indices)||indices.length<1||indices.length>100||
+    indices.some(index=>!Number.isInteger(index)||index<0||index>10000))||
+    effort!==undefined&&(!Number.isFinite(effort)||effort<0||effort>10))throw new ActivityReturnError('invalid_activity');
+}
+/** El historial actual usa enteros 1–10; no redondear una declaración externa. */
+export function recordedActivityRpe(value: Pick<ObservedRunningActivity,'perceivedExertion'>):number|null {
+  const rpe=value.perceivedExertion;
+  return rpe!==undefined&&Number.isInteger(rpe)&&rpe>=1&&rpe<=10?rpe:null;
+}
 export function validateRunningObservation(value: ObservedRunningActivity): void {
+  validateObservedMetadata(value);
   const positive = (v: number, zero = false) => Number.isFinite(v) && (zero ? v >= 0 : v > 0);
   const timestamp = (v: string) => typeof v === 'string' && Number.isFinite(Date.parse(v)) && v.endsWith('Z');
   if (value.schemaVersion !== 1 || !/^[0-9]{1,24}$/.test(value.externalId) ||
@@ -88,6 +102,9 @@ export function proposeLapMapping(steps: readonly ActivityStep[], laps: readonly
   const indexed = matchesIndices(steps.map((_,index)=>index)) ||
     stepIndices !== undefined && matchesIndices(stepIndices);
   if (steps.length !== laps.length && !indexed) return steps.map(()=>null);
+  // Si hay índices explícitos contradictorios, la coincidencia de cantidad o
+  // duración no autoriza ignorarlos y asociar otras vueltas por posición.
+  if(!indexed&&laps.some(lap=>lap.workoutStepIndex!==null))return steps.map(()=>null);
   const compatible = (step: ActivityStep, group: ObservedLap[]) => group.every(lap => {
     const kind = lap.intensity;
     if (kind === null) return false;

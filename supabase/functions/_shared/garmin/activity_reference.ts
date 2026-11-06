@@ -57,7 +57,7 @@ function signature(sport:string,steps:Row[],native:boolean):string|null {
   // siendo ambiguas. No se usa el nombre traducido ni la fecha como identidad.
   return JSON.stringify(['garmin-workout-v1',sport,result]);
 }
-export function nativeGarminPrescriptionReference(workouts:Row[],steps:Row[]):string|null {
+export function nativeGarminPrescription(workouts:Row[],steps:Row[]):{reference:string;stepIndices:number[]}|null {
   if(workouts.length!==1||Number(workouts[0].numValidSteps)!==steps.length)return null;
   const w=workouts[0];
   const sport=w.sport==='running'?'running':w.sport==='training'&&w.subSport==='strengthTraining'?'strength':null;
@@ -78,7 +78,11 @@ export function nativeGarminPrescriptionReference(workouts:Row[],steps:Row[]):st
     }else expanded.push(step);
     if(expanded.length>100)return null;
   }
-  return signature(sport,expanded.map((step,index)=>({...step,messageIndex:index})),true);
+  const reference=signature(sport,expanded.map((step,index)=>({...step,messageIndex:index})),true);
+  return reference===null?null:{reference,stepIndices:expanded.map(step=>Number(step.messageIndex))};
+}
+export function nativeGarminPrescriptionReference(workouts:Row[],steps:Row[]):string|null {
+  return nativeGarminPrescription(workouts,steps)?.reference??null;
 }
 export function deliveredGarminPrescriptionReference(snapshot:unknown):string|null {
   try {

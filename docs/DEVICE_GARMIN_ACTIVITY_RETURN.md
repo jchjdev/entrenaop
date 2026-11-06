@@ -1,5 +1,16 @@
 # Retorno de carrera Garmin · INT-012 · 23/10/2026
 
+## Revisión de variantes y esfuerzo observado · 06/11/2026
+
+La revisión ampliada pedida por Javier reproduce y corrige las recuperaciones
+finales omitidas, los índices contradictorios por tiempo, las series de fuerza
+con bucles y el RPE descartado por el lector FIT. Las recepciones nuevas conservan
+los índices físicos expandidos de su propio archivo y la declaración de esfuerzo.
+La observación antigua no permite recuperar una valoración que no se guardó.
+La revisión legítima conserva su estado; las zapatillas no tienen todavía una
+vía de importación acreditada. Consultar
+[matriz, contrato de RPE, validación y límites](audits/DEVICE_RETURN_MATRIX_2026_11_06.md).
+
 ## Índices de vueltas en bloques repetidos · 06/11/2026
 
 La carrera real de cuatro series de tres minutos llega a Dev con la receta

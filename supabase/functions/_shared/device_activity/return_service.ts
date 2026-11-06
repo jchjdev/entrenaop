@@ -1,4 +1,4 @@
-import {ActivityReturnError, validateRunningObservation, proposeLapMapping} from './running_result.ts';
+import {ActivityReturnError, validateRunningObservation, proposeLapMapping,recordedActivityRpe} from './running_result.ts';
 import type {ObservedRunningActivity} from './running_result.ts';
 import {isStrengthActivity,validateStrengthObservation} from './strength_result.ts';
 import type {ObservedActivity} from './strength_result.ts';
@@ -56,7 +56,13 @@ export class ActivityReturnService {
           if(activity.prescriptionReference)await this.automaticallyComplete(activity,bound);
           else await bound('automatic.review',{code:'prescription_not_identified'});
         }
-        catch { try { await bound('automatic.review',{code:'review_required'}); } catch { /* La evidencia permanece recibida. */ } }
+        catch {
+          // Un fallo de conciliación se diagnostica sin identidad, mediciones,
+          // callbacks ni mensajes/causas que puedan contener secretos.
+          console.warn(JSON.stringify({event:'device_activity_completion_failed',code:'review_required'}));
+          try { await bound('automatic.review',{code:'review_required'}); }
+          catch { console.warn(JSON.stringify({event:'device_activity_review_checkpoint_failed',code:'review_required'})); }
+        }
       }
     } catch (error) {
       const allowed = ['connection_changed', 'permission_denied', 'reauthorization_required', 'activity_file_expired',
@@ -75,7 +81,9 @@ export class ActivityReturnService {
     const context=await command('automatic.context');
     if(context.completed||context.blocked)return;
     const candidates=context.candidates as Json[];
-    if(!Array.isArray(candidates))return;
+    if(!Array.isArray(candidates)){
+      await command('automatic.review',{code:'review_required'});return;
+    }
     const matched=candidates.filter(c=>this.files.reference!(c.snapshot)===activity.prescriptionReference);
     const schedules=new Set(matched.map(c=>c.scheduled_id));
     if(schedules.size!==1){await command('automatic.review',{code:schedules.size?'ambiguous_prescription':'prescription_not_identified'});return;}
@@ -114,24 +122,35 @@ export class ActivityReturnService {
 
 export function activityReview(source: Json, lapStepIndices?: readonly number[]): Json {
   const observed=source.activity as ObservedActivity;
+  const effort={recorded_rpe:source.recorded_rpe??recordedActivityRpe(observed)};
   if(isStrengthActivity(observed)){
     validateStrengthObservation(observed);
     const p=strengthPrescription(source.snapshot);
-    const rows=p.steps.filter(s=>s.kind==='strength').map(s=>{
+    const work=p.steps.filter(s=>s.kind==='strength'),active=observed.sets.filter(s=>s.kind==='active');
+    const indices=observed.prescriptionStepIndices;
+    // Cada SET activo es una serie explícita. Los índices del FIT pueden volver
+    // al cuerpo del bucle; exigimos todas las series en orden y su ejercicio.
+    const nativeAligned=indices?.length===p.steps.length&&active.length===work.length&&work.every((s,index)=>
+      s.exerciseCode!==null&&active[index].exerciseCode===s.exerciseCode&&
+      active[index].workoutStepIndex===indices[p.steps.indexOf(s)]);
+    const rows=work.map((s,index)=>{
       const position=p.steps.indexOf(s);
       // Dos códigos desconocidos no acreditan que sean el mismo ejercicio.
       // Los ejercicios privados necesitan la correspondencia explícita del alumno.
       const matches=observed.sets.filter(a=>s.exerciseCode!==null&&a.kind==='active'&&a.workoutStepIndex===position&&a.exerciseCode===s.exerciseCode);
       return {block_order:s.block,item_order:s.item,set_order:s.set,label:s.description,kind:s.kind,measure:s.measure,value:s.value,
-        lap_indices:matches.length===1?[matches[0].index]:[],requires_recovery:false,recovery_lap_indices:[]};
+        lap_indices:nativeAligned?[active[index].index]:matches.length===1?[matches[0].index]:[],requires_recovery:false,recovery_lap_indices:[]};
     });
-    return {...source,rows};
+    return {...source,...effort,rows};
   }
   if((source.snapshot as Json).sport==='strength')throw new ActivityReturnError('unsupported_activity');
   const prescription = runningPrescription(source.snapshot);
   const activity = source.activity as ObservedRunningActivity;
   validateRunningObservation(activity);
-  const suggested = proposeLapMapping(prescription.steps, activity.laps, lapStepIndices);
+  // El FIT recibido manda: puede representar la última vuelta sin descanso
+  // con un tramo fuera del bucle. La proyección del envío queda para evidencia
+  // anterior que no conservaba sus índices nativos expandidos.
+  const suggested = proposeLapMapping(prescription.steps, activity.laps, activity.prescriptionStepIndices??lapStepIndices);
   const rows: Json[] = []; let step = 0;
   const snapshot = source.snapshot as {blocks: {order_index: number; items: {order_index: number; sets: Json[]}[]}[]};
   for (const block of snapshot.blocks) for (const item of block.items) for (const set of item.sets) {
@@ -141,5 +160,5 @@ export function activityReview(source: Json, lapStepIndices?: readonly number[])
       label: work.description, kind: work.kind, measure: work.measure, value: work.value,
       lap_indices: lap ?? [], requires_recovery: recovery !== undefined, recovery_lap_indices: recovery ?? []});
   }
-  return {...source, rows};
+  return {...source,...effort, rows};
 }

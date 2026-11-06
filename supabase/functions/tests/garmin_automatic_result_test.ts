@@ -75,7 +75,7 @@ const job:ActivityJob={id:'job',owner:'owner',generation:1,lease:'lease',callbac
   providerUserId:'provider',accessExpiresAt:'2026-11-02T00:00:00Z',refreshExpiresAt:'2026-11-03T00:00:00Z'};
 const grant:AccessGrant={accessToken:'access',refreshToken:'refresh',expiresInSeconds:3600,refreshExpiresInSeconds:86400,scope:''};
 function fixture(options:{duplicate?:boolean;stale?:boolean;extra?:boolean;failComplete?:boolean;stationary?:boolean;shortened?:boolean;
-  repeated?:boolean;loopIndices?:number[];missingLoopLap?:boolean;wrongLoopIntensity?:boolean}={}){
+  repeated?:boolean;loopIndices?:number[];missingLoopLap?:boolean;wrongLoopIntensity?:boolean;invalidContext?:boolean}={}){
   const actions:{action:string;input:Record<string,unknown>}[]=[];
   const activity:ObservedRunningActivity={schemaVersion:1,externalId:'123',name:'Prueba',startedAt:'2026-11-01T10:00:00Z',offsetSeconds:3600,
     timerSeconds:120,elapsedSeconds:120,distanceMeters:400,averageHeartRate:null,maxHeartRate:null,prescriptionReference:'reference',
@@ -101,7 +101,7 @@ function fixture(options:{duplicate?:boolean;stale?:boolean;extra?:boolean;failC
   const service=new ActivityReturnService({command:async(action,_owner,_session,input)=>{
     actions.push({action,input});
     if(action==='save')return {activity_id:'activity',activity_revision:'observed'};
-    if(action==='automatic.context')return {activity_id:'activity',activity_revision:'observed',candidates};
+    if(action==='automatic.context')return options.invalidContext?{}:{activity_id:'activity',activity_revision:'observed',candidates};
     if(action==='automatic.complete'&&options.failComplete)throw new Error('stale_prescription');
     return {};
   }},{refresh:async()=>grant,userId:async()=> 'provider',permissions:async()=>({canReadActivities:true,canSendWorkouts:true})},
@@ -213,6 +213,23 @@ test('un cierre fallido no invalida la importación ni vuelve a consumir el FIT'
   assert.ok(!f.actions.some(a=>a.action==='failed'));
   assert.equal(f.actions.find(a=>a.action==='automatic.review')?.input.code,'review_required');
   assert.equal(f.actions.at(-1)?.action,'release');
+});
+
+test('un contexto incompleto no deja una recepción almacenada sin estado de revisión',async()=>{
+  const f=fixture({invalidContext:true});await f.service.process(job);
+  assert.equal(f.actions.find(a=>a.action==='automatic.review')?.input.code,'review_required');
+  assert.ok(!f.actions.some(a=>a.action==='automatic.complete'||a.action==='failed'));
+  assert.equal(f.actions.at(-1)?.action,'release');
+});
+
+test('el diagnóstico de un cierre fallido solo publica evento y código seguros',async(t)=>{
+  const warnings:string[]=[];
+  t.mock.method(console,'warn',(message:string)=>warnings.push(message));
+  const f=fixture({failComplete:true});await f.service.process(job);
+  assert.deepEqual(warnings.map(message=>JSON.parse(message)),[
+    {event:'device_activity_completion_failed',code:'review_required'},
+  ]);
+  assert.ok(!warnings.join('').includes('owner'));
 });
 
 test('recibe una grabación sin desplazamiento, conserva la pauta y pide revisión sin completarla',async()=>{

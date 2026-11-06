@@ -1,5 +1,15 @@
 # Registro de decisiones vigentes
 
+**INT-012/INT-023 · Revisar variantes de recepción y esfuerzo · 06/11/2026.**
+Javier pide revisar los conectores implementados y los casos de series,
+repeticiones y recuperaciones para evitar recepciones detenidas antes del
+historial. Indica que cree haber registrado RPE y zapatillas; no confirma el
+valor concreto ni su llegada al servidor. Se conserva la evidencia original,
+se utiliza el esfuerzo declarado compatible con el historial y se mantiene
+revisión cuando falta identidad suficiente. No se transforma el supuesto 4 en
+un resultado ni se anuncia importación de material sin un contrato acreditado.
+[Matriz, correcciones y límites](audits/DEVICE_RETURN_MATRIX_2026_11_06.md).
+
 **Estado independiente de desplegables · 05/11/2026.** Javier pide revisar y corregir la colisión de estado detectada en FAS/Tropa también en ADMIN, Trainer, los creadores compartidos y el deportista. Se conserva el diseño: plegado y desplazamiento de cada control tienen identidades distintas; restaurar un apartado no puede ejecutar setState durante build. [Alcance y comprobación](audits/EXPANSION_STORAGE_2026_11_05.md).
 
 **Google Play · cuenta personal creada · 05/11/2026.** Javier completa y paga
