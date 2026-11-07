@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 
 import 'package:entrenaop/features/exercises/presentation/widgets/exercise_reference_video.dart';
 import 'package:entrenaop/features/exercises/presentation/widgets/exercise_detail_sheet.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:video_player/video_player.dart';
@@ -138,10 +140,64 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(Image), findsNothing);
     expect(find.byType(VideoPlayer), findsOneWidget);
+    final video = tester.getSize(find.byType(VideoPlayer));
+    expect(video.aspectRatio, closeTo(16 / 9, .001));
     expect(controller.value.isPlaying, true);
     expect(controller.volumeChanges, 0);
     await tester.pumpWidget(const SizedBox());
     expect(controller.disposals, 1);
+  });
+
+  testWidgets('la ficha muestra la portada y el clip vertical sin recortes', (
+    tester,
+  ) async {
+    const screenSize = Size(390, 700);
+    tester.view.physicalSize = screenSize;
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    const poster = NetworkImage('https://fixture.b-cdn.net/vertical.jpg');
+    final recorder = ui.PictureRecorder();
+    ui.Canvas(recorder).drawColor(Colors.blue, ui.BlendMode.src);
+    final picture = recorder.endRecording();
+    final image = picture.toImageSync(360, 640);
+    picture.dispose();
+    final cache = PaintingBinding.instance.imageCache;
+    cache.putIfAbsent(
+      poster,
+      () => OneFrameImageStreamCompleter(
+        SynchronousFuture(ImageInfo(image: image)),
+      ),
+    );
+    addTearDown(() => cache.evict(poster));
+
+    final controller = _Controller(size: const Size(360, 640));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: ExerciseReferenceVideo(
+              url: 'https://fixture.b-cdn.net/video/play_360p.mp4',
+              posterUrl: poster.url,
+              createController: (_) => controller,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final posterSize = tester.getSize(find.byType(RawImage));
+    expect(posterSize.aspectRatio, closeTo(9 / 16, .001));
+    expect(controller.value.isInitialized, false);
+
+    await tester.tap(find.byIcon(Icons.play_arrow_rounded));
+    await tester.pumpAndSettle();
+    final video = tester.getSize(find.byType(VideoPlayer));
+    expect(video, posterSize);
+    expect(video.height, lessThan(screenSize.height));
+    expect(find.byTooltip('Pausar vídeo').hitTestable(), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets(
@@ -237,8 +293,9 @@ void main() {
 }
 
 class _Controller extends VideoPlayerController {
-  _Controller()
+  _Controller({this.size = const Size(640, 360)})
     : super.networkUrl(Uri.parse('https://example.invalid/demo.mp4'));
+  final Size size;
   bool fail = false;
   int disposals = 0;
   int volumeChanges = 0;
@@ -250,7 +307,7 @@ class _Controller extends VideoPlayerController {
     if (fail) throw StateError('Fallo simulado');
     value = VideoPlayerValue(
       duration: const Duration(seconds: 12),
-      size: const Size(640, 360),
+      size: size,
       isInitialized: true,
     );
   }

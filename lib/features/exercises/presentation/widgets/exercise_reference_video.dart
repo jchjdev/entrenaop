@@ -23,6 +23,8 @@ class ExerciseReferenceVideo extends StatefulWidget {
 }
 
 class _ExerciseReferenceVideoState extends State<ExerciseReferenceVideo> {
+  static const _placeholderRatio = 16 / 9;
+
   bool get _managed =>
       Uri.tryParse(widget.url)?.host.endsWith('.b-cdn.net') == true;
   VideoPlayerController? _controller;
@@ -153,20 +155,15 @@ class _ExerciseReferenceVideoState extends State<ExerciseReferenceVideo> {
             valueListenable: controller,
             builder: (context, value, _) => Column(
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: AspectRatio(
-                    aspectRatio: 16 / 9,
-                    child: ColoredBox(
-                      color: Colors.black,
-                      child: Center(
-                        child: AspectRatio(
-                          aspectRatio: value.aspectRatio > 0
-                              ? value.aspectRatio
-                              : 16 / 9,
-                          child: VideoPlayer(controller),
-                        ),
-                      ),
+                _mediaFrame(
+                  context,
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: AspectRatio(
+                      aspectRatio: value.aspectRatio > 0
+                          ? value.aspectRatio
+                          : _placeholderRatio,
+                      child: VideoPlayer(controller),
                     ),
                   ),
                 ),
@@ -225,6 +222,16 @@ class _ExerciseReferenceVideoState extends State<ExerciseReferenceVideo> {
     );
   }
 
+  Widget _mediaFrame(BuildContext context, Widget child) => Center(
+    child: ConstrainedBox(
+      // En vertical queda espacio en la pantalla para los controles de vídeo.
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.sizeOf(context).height * .65,
+      ),
+      child: child,
+    ),
+  );
+
   Widget _poster(BuildContext context) {
     final label = _loading
         ? 'Cargando vídeo…'
@@ -233,29 +240,36 @@ class _ExerciseReferenceVideoState extends State<ExerciseReferenceVideo> {
         : 'Reproducir vídeo';
     final image = widget.posterUrl?.trim();
     final onTap = _loading ? null : _load;
+    const placeholder = AspectRatio(
+      aspectRatio: _placeholderRatio,
+      child: SizedBox.shrink(),
+    );
     return Semantics(
       button: true,
       label: label,
       enabled: !_loading,
       onTap: onTap,
       child: ExcludeSemantics(
-        child: Material(
-          color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(16),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: onTap,
-            child: AspectRatio(
-              aspectRatio: 16 / 9,
+        child: _mediaFrame(
+          context,
+          Material(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(16),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: onTap,
               child: Stack(
-                fit: StackFit.expand,
                 children: [
                   if (image != null && image.isNotEmpty)
                     Image.network(
                       image,
                       fit: BoxFit.contain,
-                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
-                    ),
+                      frameBuilder: (_, child, frame, _) =>
+                          frame == null ? placeholder : child,
+                      errorBuilder: (_, _, _) => placeholder,
+                    )
+                  else
+                    placeholder,
                   Positioned(
                     right: 8,
                     bottom: 8,

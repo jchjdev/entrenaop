@@ -2909,3 +2909,12 @@ exige la referencia WorkoutKit y todas las fases medidas; Garmin contrasta el
 contenido exportable del FIT con las versiones enviadas. Dos citas iguales,
 referencias insuficientes o versiones retiradas conservan revisión. No se
 identifica una cita por nombre o fecha.
+
+## Vídeos de ejercicios en vertical · 07/11/2026
+
+Javier confirma 9:16 como formato preferido para las nuevas demostraciones y
+las zancadas como primer piloto en móvil. La ficha conserva la proporción de
+la portada y el reproductor respeta la del clip, incluido el catálogo
+horizontal. La preferencia no es una restricción de subida. El contraste con
+el MP4 definitivo de zancadas queda pendiente.
+[Comportamiento del reproductor](VIDEOS.md#formato-vertical-para-nuevas-demostraciones--07112026).

@@ -166,6 +166,16 @@ sin texto visible ni capa oscura sobre la imagen. La portada completa sigue
 siendo pulsable, con etiqueta accesible; carga y reintento usan un indicador o
 icono en esa misma esquina.
 
+### Formato vertical para nuevas demostraciones · 07/11/2026
+
+Javier prefiere producir los nuevos vídeos en 9:16 y usar las zancadas como
+primer piloto en móvil. El formato es una preferencia de producción. La ficha
+y el reproductor ajustan el encuadre a la proporción de la portada cargada y
+del archivo reproducido, con un límite de altura que deja espacio para los
+controles. La portada sin imagen usa un marco provisional 16:9. Los vídeos
+horizontales conservan su proporción y la carga sigue siendo bajo demanda.
+La validación del MP4 real de zancadas en un móvil queda pendiente.
+
 Javier descarta añadir un control para silenciar: cada archivo conserva su audio.
 Si no quiere sonido lo subirá sin pista de audio; si necesita voz podrá conservarla.
 No se añaden ajustes de volumen/silencio, ni procesamiento de audio, ni reglas
