@@ -1,5 +1,32 @@
 # Retorno de carrera Garmin · INT-012 · 23/10/2026
 
+## Vuelta residual después de un paso cronometrado · 09/11/2026
+
+En el rodaje real de 30 minutos, Garmin devuelve seis vueltas con el índice
+del único tramo y exactamente 30:00 de trabajo. Después registra una vuelta
+final de 1,619 s sin índice. El asociador trataba esa vuelta como un intervalo
+sin correspondencia y dejaba la cita pendiente, aunque la receta y todo el
+trabajo pautado estuvieran acreditados. Esta vez el RPE 4 sí consta en el FIT.
+
+Se admite una única vuelta residual de hasta dos segundos cuando la receta
+coincide, todas las vueltas anteriores tienen un mapa nativo completo y el
+último paso cronometrado alcanza su duración dentro de 0,01 s. La vuelta debe
+ser contigua, cerrar la grabación y cuadrar con el total de tiempo. Se conserva
+en el total y en la evidencia sin sumarla a la dosis del paso. La revisión
+manual propone el mismo mapa. Una vuelta larga, separada o con índice
+contradictorio, un tramo sin acabar o la falta de identidad siguen en revisión.
+No se cambia la escala RPE, el contrato SQL ni el binario del deportista.
+
+Pasan 356 pruebas de servidor, los tipos estrictos, `flutter analyze`, 16
+pruebas focales Flutter y los contratos SQL de cierre y RPE con ROLLBACK.
+Publicadas solo en Dev `garmin-activity-ingest` v24 y `garmin-activities` v25;
+se cotejan los 23 archivos y el rechazo de peticiones sin autorización.
+Se ensaya el cierre de la recepción real con ROLLBACK y se concilia después
+mediante el comando del trabajador, con receta única, revisión vigente y
+exclusión por cuenta. Agenda e historial quedan completados una sola vez:
+30:00 en el tramo pautado, 30:02 y 5,50 km en el total, siete vueltas originales
+y RPE 4. La siguiente recepción física sigue pendiente de comprobación.
+
 ## Revisión de variantes y esfuerzo observado · 06/11/2026
 
 La revisión ampliada pedida por Javier reproduce y corrige las recuperaciones

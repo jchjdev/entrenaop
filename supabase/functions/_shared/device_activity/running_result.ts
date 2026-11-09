@@ -118,6 +118,33 @@ export function proposeLapMapping(steps: readonly ActivityStep[], laps: readonly
   return steps.every((step, i) => compatible(step, groups[i])) ? groups.map(group => group.map(lap => lap.index)) : steps.map(() => null);
 }
 
+/** Separa una vuelta residual del total sin atribuirla a un paso de la pauta. */
+export function proposeRunningActivityMapping(
+  steps: readonly ActivityStep[], activity: ObservedRunningActivity, stepIndices?: readonly number[],
+  exactPrescription = false,
+): {mapping: (number[] | null)[]; postWorkoutLap?: number} {
+  const {laps} = activity;
+  const mapping = proposeLapMapping(steps, laps, stepIndices);
+  const tail = laps.at(-1), previous = laps.at(-2), lastStep = steps.at(-1);
+  if (!exactPrescription || !activity.prescriptionStepIndices || !tail || !previous ||
+      lastStep?.measure !== 'seconds' || lastStep.value === null || tail.workoutStepIndex !== null ||
+      tail.elapsedSeconds > 2 || (tail.intensity !== null && tail.intensity !== previous.intensity)) return {mapping};
+
+  // FIT registra fronteras en segundos. Solo se separa la última vuelta si
+  // es contigua, cierra la grabación y el tramo previo agotó su temporizador.
+  const end = (lap: ObservedLap) => Date.parse(lap.startedAt) + lap.elapsedSeconds * 1000;
+  const prescribed = laps.slice(0, -1);
+  if (Math.abs(Date.parse(tail.startedAt) - end(previous)) > 2000 ||
+      Math.abs(end(tail) - (Date.parse(activity.startedAt) + activity.elapsedSeconds * 1000)) > 2000 ||
+      Math.abs(laps.reduce((sum, lap) => sum + lap.timerSeconds, 0) - activity.timerSeconds) > .01 ||
+      prescribed.some(lap => lap.workoutStepIndex === null)) return {mapping};
+  const indexed = proposeLapMapping(steps, prescribed, activity.prescriptionStepIndices);
+  const finalLaps = indexed.at(-1);
+  if (!finalLaps || indexed.some(group => !group?.length) ||
+      Math.abs(finalLaps.reduce((sum, index) => sum + laps[index].timerSeconds, 0) - lastStep.value) > .01) return {mapping};
+  return {mapping: indexed, postWorkoutLap: tail.index};
+}
+
 /** La evidencia conserva decimales; el resultado histórico admite segundos enteros. */
 export function historicalSeconds(seconds: number): number {
   if (!Number.isFinite(seconds) || seconds < 0) throw new ActivityReturnError('invalid_activity');

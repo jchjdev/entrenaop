@@ -75,7 +75,8 @@ const job:ActivityJob={id:'job',owner:'owner',generation:1,lease:'lease',callbac
   providerUserId:'provider',accessExpiresAt:'2026-11-02T00:00:00Z',refreshExpiresAt:'2026-11-03T00:00:00Z'};
 const grant:AccessGrant={accessToken:'access',refreshToken:'refresh',expiresInSeconds:3600,refreshExpiresInSeconds:86400,scope:''};
 function fixture(options:{duplicate?:boolean;stale?:boolean;extra?:boolean;failComplete?:boolean;stationary?:boolean;shortened?:boolean;
-  repeated?:boolean;loopIndices?:number[];missingLoopLap?:boolean;wrongLoopIntensity?:boolean;invalidContext?:boolean}={}){
+  repeated?:boolean;loopIndices?:number[];missingLoopLap?:boolean;wrongLoopIntensity?:boolean;invalidContext?:boolean;
+  tail?:{seconds:number;workSeconds?:number;index?:number;gap?:number;missingIndex?:boolean}}={}){
   const actions:{action:string;input:Record<string,unknown>}[]=[];
   const activity:ObservedRunningActivity={schemaVersion:1,externalId:'123',name:'Prueba',startedAt:'2026-11-01T10:00:00Z',offsetSeconds:3600,
     timerSeconds:120,elapsedSeconds:120,distanceMeters:400,averageHeartRate:null,maxHeartRate:null,prescriptionReference:'reference',
@@ -95,6 +96,19 @@ function fixture(options:{duplicate?:boolean;stale?:boolean;extra?:boolean;failC
     Object.assign(snapshot.blocks[0].items[0].sets[0],{target_duration_seconds:null,target_distance_meters:400});
     activity.timerSeconds=8.125;activity.elapsedSeconds=8.125;activity.distanceMeters=3.5;
     Object.assign(activity.laps[0],{timerSeconds:8.125,elapsedSeconds:8.125,distanceMeters:3.5});
+  }
+  if(options.tail){
+    const {seconds,workSeconds=120,index=null,gap=0,missingIndex=false}=options.tail;
+    const start=Date.parse(activity.startedAt);
+    activity.prescriptionStepIndices=[0];
+    activity.timerSeconds=workSeconds+seconds;
+    activity.elapsedSeconds=activity.timerSeconds+gap;
+    activity.distanceMeters=404;
+    activity.perceivedExertion=4;
+    activity.laps=[0,1,2].map(i=>({...activity.laps[0],index:i,
+      startedAt:new Date(start+(i<2?i*workSeconds/2:workSeconds+gap)*1000).toISOString(),
+      timerSeconds:i<2?workSeconds/2:seconds,elapsedSeconds:i<2?workSeconds/2:seconds,
+      distanceMeters:i<2?200:4,workoutStepIndex:i===2?index:missingIndex&&i===0?null:0}));
   }
   const candidates=[{scheduled_id:'one',revision:'revision',snapshot,current:!options.stale}];
   if(options.duplicate)candidates.push({...candidates[0],scheduled_id:'two',current:false});
@@ -116,6 +130,29 @@ test('cierra únicamente una coincidencia completa y conserva el mapa observado'
   const request=f.actions.find(a=>a.action==='automatic.complete')!.input;
   assert.deepEqual(request.mapping,[{block_order:0,item_order:0,set_order:0,lap_indices:[0],recovery_lap_indices:[],skipped:false}]);
   assert.equal(request.scheduled_id,'one');assert.equal(request.rpe,undefined);
+});
+
+test('cierra el paso cronometrado completo sin imputarle una vuelta residual posterior',async()=>{
+  const f=fixture({tail:{seconds:1.6}});await f.service.process(job);
+  const complete=f.actions.find(a=>a.action==='automatic.complete');
+  assert.ok(complete);
+  assert.deepEqual(complete.input.mapping,[{block_order:0,item_order:0,set_order:0,
+    lap_indices:[0,1],recovery_lap_indices:[],skipped:false}]);
+  const activity=f.actions.find(a=>a.action==='save')!.input.activity as ObservedRunningActivity;
+  assert.equal(activity.timerSeconds,121.6);
+  assert.equal(activity.laps.length,3);
+  assert.equal(activity.perceivedExertion,4);
+  assert.equal(activityReview({snapshot:source(),activity},[0],true).post_workout_lap,2);
+  assert.equal(activityReview({snapshot:source(),activity},[0]).post_workout_lap,undefined);
+});
+
+test('un tramo sin acabar o una vuelta sobrante larga, distante o contradictoria conserva revisión',async()=>{
+  for(const tail of [{seconds:1.6,workSeconds:119},{seconds:2.1},{seconds:1.6,index:1},
+    {seconds:1.6,gap:3},{seconds:1.6,missingIndex:true}]){
+    const f=fixture({tail});await f.service.process(job);
+    assert.equal(f.actions.some(a=>a.action==='automatic.complete'),false);
+    assert.equal(f.actions.find(a=>a.action==='automatic.review')?.input.code,'intervals_require_review');
+  }
 });
 
 function repeatedRunning(){

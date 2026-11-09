@@ -125,7 +125,8 @@ export async function handleActivityUser(request: Request, c: GarminServerConfig
     const value = await store.command(String(action),who.user,who.session,input);
     if(action==='preview' && schema===1 && (value.activity as Json).schemaVersion!==1) throw new HttpError(409,'unsupported_activity');
     return Response.json(action==='preview' ? activityReview(value,
-      (value.activity as Json).schemaVersion===1?deliveredGarminLapStepIndices(value.snapshot):undefined) : value,{headers});
+      (value.activity as Json).schemaVersion===1?deliveredGarminLapStepIndices(value.snapshot):undefined,
+      deliveredGarminPrescriptionReference(value.snapshot)===(value.activity as Json).prescriptionReference) : value,{headers});
   } catch (error) { return failure(error); }
 }
 function failure(error: unknown): Response {

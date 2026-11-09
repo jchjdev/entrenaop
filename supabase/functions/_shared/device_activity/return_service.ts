@@ -1,4 +1,4 @@
-import {ActivityReturnError, validateRunningObservation, proposeLapMapping,recordedActivityRpe} from './running_result.ts';
+import {ActivityReturnError, validateRunningObservation, proposeRunningActivityMapping,recordedActivityRpe} from './running_result.ts';
 import type {ObservedRunningActivity} from './running_result.ts';
 import {isStrengthActivity,validateStrengthObservation} from './strength_result.ts';
 import type {ObservedActivity} from './strength_result.ts';
@@ -96,14 +96,14 @@ export class ActivityReturnService {
       await command('automatic.review',{code:'intervals_require_review',...linked});return;
     }
     const review=activityReview({snapshot:current.snapshot,activity},
-      isStrengthActivity(activity)?undefined:this.files.lapStepIndices?.(current.snapshot));
+      isStrengthActivity(activity)?undefined:this.files.lapStepIndices?.(current.snapshot),true);
     const rows=review.rows as Json[];
     if(!rows.length||rows.some(r=>!(r.lap_indices as number[])?.length||r.requires_recovery&&!(r.recovery_lap_indices as number[])?.length)){
       await command('automatic.review',{code:'intervals_require_review',...linked});return;
     }
     const covered=new Set(rows.flatMap(r=>[...(r.lap_indices as number[]),...((r.recovery_lap_indices as number[])??[])]));
     const expected=isStrengthActivity(activity)?activity.sets.filter(s=>s.kind==='active').map(s=>s.index):activity.laps.map(l=>l.index);
-    if(expected.some(i=>!covered.has(i))){await command('automatic.review',{code:'intervals_require_review',...linked});return;}
+    if(expected.some(i=>!covered.has(i)&&i!==review.post_workout_lap)){await command('automatic.review',{code:'intervals_require_review',...linked});return;}
     if(isStrengthActivity(activity)){
       const work=strengthPrescription(current.snapshot).steps.filter(s=>s.kind==='strength');
       if(work.some((s,i)=>{
@@ -120,7 +120,7 @@ export class ActivityReturnService {
   }
 }
 
-export function activityReview(source: Json, lapStepIndices?: readonly number[]): Json {
+export function activityReview(source: Json, lapStepIndices?: readonly number[], exactPrescription=false): Json {
   const observed=source.activity as ObservedActivity;
   const effort={recorded_rpe:source.recorded_rpe??recordedActivityRpe(observed)};
   if(isStrengthActivity(observed)){
@@ -150,7 +150,8 @@ export function activityReview(source: Json, lapStepIndices?: readonly number[])
   // El FIT recibido manda: puede representar la última vuelta sin descanso
   // con un tramo fuera del bucle. La proyección del envío queda para evidencia
   // anterior que no conservaba sus índices nativos expandidos.
-  const suggested = proposeLapMapping(prescription.steps, activity.laps, activity.prescriptionStepIndices??lapStepIndices);
+  const {mapping:suggested,postWorkoutLap} = proposeRunningActivityMapping(
+    prescription.steps, activity, activity.prescriptionStepIndices??lapStepIndices, exactPrescription);
   const rows: Json[] = []; let step = 0;
   const snapshot = source.snapshot as {blocks: {order_index: number; items: {order_index: number; sets: Json[]}[]}[]};
   for (const block of snapshot.blocks) for (const item of block.items) for (const set of item.sets) {
@@ -160,5 +161,5 @@ export function activityReview(source: Json, lapStepIndices?: readonly number[])
       label: work.description, kind: work.kind, measure: work.measure, value: work.value,
       lap_indices: lap ?? [], requires_recovery: recovery !== undefined, recovery_lap_indices: recovery ?? []});
   }
-  return {...source,...effort, rows};
+  return {...source,...effort, rows,...(postWorkoutLap===undefined?{}:{post_workout_lap:postWorkoutLap})};
 }
