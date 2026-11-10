@@ -53,6 +53,14 @@ enum TrainerAssignmentVisibility {
 
   const TrainerAssignmentVisibility(this.label);
   final String label;
+
+  // El calendario compartido no expone el archivo interno del preparador.
+  bool includesSharedStatus(String status) => switch (this) {
+    current => status != 'cancelled',
+    withdrawn => status == 'cancelled',
+    archived => false,
+    all => true,
+  };
 }
 
 enum TrainerAssignmentLifecycleAction { archive, restore, delete }

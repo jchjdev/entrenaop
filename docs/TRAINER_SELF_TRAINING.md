@@ -183,7 +183,9 @@ archivar o borrar esas pautas. Las propias conservan sus acciones y no se duplic
 Los filtros de alumno y estado se aplican también a las recibidas: Habitual oculta
 las retiradas, Retiradas las muestra y Todas reúne ambas; Archivadas corresponde
 a la gestión propia. El contrato compartido no expone el archivo administrativo
-del preparador ajeno. Los fallos de carga personal no ocultan las pautas propias;
+del preparador ajeno. Para mí aplica el mismo filtro que Agenda a las pautas
+recibidas, de modo que las retiradas quedan fuera de la semana habitual.
+Los fallos de carga personal no ocultan las pautas propias;
 se ofrece reintento y paginación independiente con aviso de calendario parcial.
 La ruta se identifica por cuenta para descartar el estado al cambiar de usuario.
 

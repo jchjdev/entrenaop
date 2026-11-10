@@ -137,6 +137,7 @@ class SelfWorkspace extends WorkspaceFixture {
 
 class FutureCoachCalendar extends CalendarFixture {
   bool resultAvailable = false;
+  bool includeWithdrawn = false;
   final weeks = <DateTime>[];
   @override
   Future<SharedCalendarPage> calendar(
@@ -153,6 +154,18 @@ class FutureCoachCalendar extends CalendarFixture {
         {'name': 'Ervigio Jorge', 'is_you': false},
       ],
       'items': [
+        if (includeWithdrawn && from == DateTime(2026, 11, 2))
+          {
+            'id': 'retirada',
+            'scheduled_date': '2026-11-06',
+            'template_name': 'Series retiradas',
+            'source': 'coach',
+            'status': 'cancelled',
+            'trainer_name': 'Ervigio Jorge',
+            'is_own': false,
+            'relation_active': true,
+            'is_running': true,
+          },
         if (from == DateTime(2026, 11, 2))
           {
             'id': 'ervigio',
@@ -284,6 +297,40 @@ void main() {
     expect(find.text('Mover fecha'), findsNothing);
     expect(find.text('Ver resultados'), findsNothing);
   });
+
+  testWidgets(
+    'Para mí oculta las pautas ajenas retiradas de Habitual y las conserva en su filtro',
+    (t) async {
+      await mount(
+        t,
+        client: 'self',
+        workspace: SelfWorkspace(),
+        shared: FutureCoachCalendar()..includeWithdrawn = true,
+      );
+      await t.tap(find.byTooltip('Semana siguiente'));
+      await t.pumpAndSettle();
+      final active = find.byKey(
+        const ValueKey('client-planning-entry-ervigio'),
+      );
+      final withdrawn = find.byKey(
+        const ValueKey('client-planning-entry-retirada'),
+      );
+      expect(active, findsOneWidget);
+      expect(withdrawn, findsNothing);
+
+      for (final (filter, showActive, showWithdrawn) in [
+        ('Retiradas', false, true),
+        ('Archivadas', false, false),
+        ('Todas', true, true),
+        ('Habitual', true, false),
+      ]) {
+        await t.tap(find.widgetWithText(ChoiceChip, filter));
+        await t.pumpAndSettle();
+        expect(active, showActive ? findsOneWidget : findsNothing);
+        expect(withdrawn, showWithdrawn ? findsOneWidget : findsNothing);
+      }
+    },
+  );
 
   testWidgets(
     'Para mí abre el resultado autorizado de su pauta externa en solo lectura',

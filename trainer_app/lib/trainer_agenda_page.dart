@@ -145,12 +145,7 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
         (_clientFilter == null || _clientFilter == widget.personalClientId) &&
         (_statusFilter == null || entry.status == _statusFilter) &&
         _eventKind != 'appointments' &&
-        switch (_visibility) {
-          TrainerAssignmentVisibility.current => entry.status != 'cancelled',
-          TrainerAssignmentVisibility.withdrawn => entry.status == 'cancelled',
-          TrainerAssignmentVisibility.archived => false,
-          TrainerAssignmentVisibility.all => true,
-        },
+        _visibility.includesSharedStatus(entry.status),
   );
   List<ProfessionalAssessmentEvent> _assessments = [];
   bool _assessmentsBusy = false, _moreAssessments = false;

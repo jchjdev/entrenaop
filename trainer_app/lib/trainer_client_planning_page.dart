@@ -176,12 +176,7 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
     // La proyección compartida incluye también citas propias: no reintroducir
     // una propia que el filtro de servidor haya excluido o archivado.
     if (entry.shared?.own == true) return false;
-    return switch (_visibility) {
-      TrainerAssignmentVisibility.current ||
-      TrainerAssignmentVisibility.all => true,
-      TrainerAssignmentVisibility.withdrawn => entry.status == 'cancelled',
-      TrainerAssignmentVisibility.archived => false,
-    };
+    return _visibility.includesSharedStatus(entry.status);
   }).toList();
 
   @override
