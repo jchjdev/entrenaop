@@ -269,6 +269,7 @@ class _ActiveContent extends StatefulWidget {
 }
 
 class _ActiveContentState extends State<_ActiveContent> {
+  late final AppLifecycleListener _lifecycle;
   int? _finalRpe;
   int? _tabataBlockOrder;
   final _notesController = TextEditingController();
@@ -276,7 +277,16 @@ class _ActiveContentState extends State<_ActiveContent> {
   final _maxHeartRateController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    _lifecycle = AppLifecycleListener(
+      onResume: context.read<ActiveWorkoutCubit>().checkDiscardOnResume,
+    );
+  }
+
+  @override
   void dispose() {
+    _lifecycle.dispose();
     _notesController.dispose();
     _averageHeartRateController.dispose();
     _maxHeartRateController.dispose();
@@ -522,7 +532,8 @@ class _ActiveContentState extends State<_ActiveContent> {
         value: cubit,
         child: BlocBuilder<ActiveWorkoutCubit, ActiveWorkoutState>(
           builder: (context, state) {
-            final execution = state.execution!;
+            final execution = state.execution;
+            if (execution == null) return const SizedBox.shrink();
             return SafeArea(
               child: SizedBox(
                 height: MediaQuery.sizeOf(context).height * .78,
@@ -605,66 +616,70 @@ class _ActiveContentState extends State<_ActiveContent> {
       builder: (sheetContext) => BlocProvider.value(
         value: cubit,
         child: BlocBuilder<ActiveWorkoutCubit, ActiveWorkoutState>(
-          builder: (context, state) => Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.viewInsetsOf(context).bottom,
-            ),
-            child: SafeArea(
-              child: SizedBox(
-                height:
-                    (MediaQuery.sizeOf(context).height * .86 -
-                            MediaQuery.viewInsetsOf(context).bottom)
-                        .clamp(120.0, MediaQuery.sizeOf(context).height),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Row(
+          builder: (context, state) => state.execution == null
+              ? const SizedBox.shrink()
+              : Padding(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.viewInsetsOf(context).bottom,
+                  ),
+                  child: SafeArea(
+                    child: SizedBox(
+                      height:
+                          (MediaQuery.sizeOf(context).height * .86 -
+                                  MediaQuery.viewInsetsOf(context).bottom)
+                              .clamp(120.0, MediaQuery.sizeOf(context).height),
+                      child: Column(
                         children: [
-                          Expanded(
-                            child: Text(
-                              state.status == ActiveWorkoutStatus.resting
-                                  ? 'Descanso · ${workoutClock(state.restSecondsRemaining)}'
-                                  : 'Revisar resultado',
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    state.status == ActiveWorkoutStatus.resting
+                                        ? 'Descanso · ${workoutClock(state.restSecondsRemaining)}'
+                                        : 'Revisar resultado',
+                                  ),
+                                ),
+                                IconButton(
+                                  tooltip: 'Cerrar resultado',
+                                  onPressed: state.draftBusy
+                                      ? null
+                                      : () => Navigator.pop(context),
+                                  icon: const Icon(Icons.close_rounded),
+                                ),
+                              ],
                             ),
                           ),
-                          IconButton(
-                            tooltip: 'Cerrar resultado',
-                            onPressed: state.draftBusy
-                                ? null
-                                : () => Navigator.pop(context),
-                            icon: const Icon(Icons.close_rounded),
+                          if (state.errorMessage != null)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                              ),
+                              child: Text(
+                                state.errorMessage!,
+                                style: const TextStyle(color: Colors.redAccent),
+                              ),
+                            ),
+                          Expanded(
+                            child: WorkoutSetEntry(
+                              key: ValueKey('review-${set.id}'),
+                              set: set,
+                              executionId: state.execution!.id,
+                              timerStore: widget.timerStore,
+                              cueService: widget.cueService,
+                              saving: state.draftBusy,
+                              onComplete: cubit.completeCurrentSet,
+                              onSkip: cubit.skipCurrentSet,
+                              onSkipWarmUp: cubit.skipWarmUp,
+                              review: true,
+                            ),
                           ),
                         ],
                       ),
                     ),
-                    if (state.errorMessage != null)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Text(
-                          state.errorMessage!,
-                          style: const TextStyle(color: Colors.redAccent),
-                        ),
-                      ),
-                    Expanded(
-                      child: WorkoutSetEntry(
-                        key: ValueKey('review-${set.id}'),
-                        set: set,
-                        executionId: state.execution!.id,
-                        timerStore: widget.timerStore,
-                        cueService: widget.cueService,
-                        saving: state.draftBusy,
-                        onComplete: cubit.completeCurrentSet,
-                        onSkip: cubit.skipCurrentSet,
-                        onSkipWarmUp: cubit.skipWarmUp,
-                        review: true,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-          ),
         ),
       ),
     );

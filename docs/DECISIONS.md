@@ -1,5 +1,12 @@
 # Registro de decisiones vigentes
 
+**Caducidad de sesiones en curso · 10/11/2026.** Javier confirma que un
+entrenamiento que se dejó abierto durante días debe descartarse por completo.
+Desaparece con sus resultados y no cuenta en el historial ni en el progreso.
+Se fija un plazo de 24 horas desde la última actividad registrada en el
+servidor, con descarte automático y sin afectar sesiones ya cerradas.
+[Contrato del ejecutor](SESSION_CONTROLS_2026_10_08.md#caducidad-de-sesiones-en-curso--10112026).
+
 **INT-012/INT-023 · Revisar variantes de recepción y esfuerzo · 06/11/2026.**
 Javier pide revisar los conectores implementados y los casos de series,
 repeticiones y recuperaciones para evitar recepciones detenidas antes del

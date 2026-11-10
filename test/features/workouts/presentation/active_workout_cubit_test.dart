@@ -603,6 +603,38 @@ void main() {
     },
   );
 
+  testWidgets('al volver a la app respeta el descarte del servidor', (
+    tester,
+  ) async {
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    final repository = _Repository();
+    final (cubit, _) = await _mountSession(tester, repository);
+    await cubit.endCurrentSet();
+    await tester.pump();
+    expect(cubit.state.unconfirmedDraftCount, 1);
+
+    Future<void> resume() async {
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+    }
+
+    repository.failExecutionRead = true;
+    await resume();
+    expect(cubit.state.unconfirmedDraftCount, 1);
+    expect(cubit.state.status, ActiveWorkoutStatus.resting);
+
+    repository.failExecutionRead = false;
+    repository.executionMissing = true;
+    await resume();
+    expect(cubit.state.status, ActiveWorkoutStatus.discarded);
+    expect(cubit.state.unconfirmedDraftCount, 0);
+    expect(repository.discardAttempts, 0);
+    expect(find.text('Sesión descartada'), findsOneWidget);
+    expect(find.text('Volver'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('no permite finalizar con resultados sin confirmar', (
     tester,
   ) async {
@@ -1965,6 +1997,8 @@ class _Repository implements WorkoutRepository {
   int abandonAttempts = 0;
   int discardAttempts = 0;
   bool failDiscard = false;
+  bool failExecutionRead = false;
+  bool executionMissing = false;
   Future<void> Function()? discardResponse;
 
   @override
@@ -1980,6 +2014,8 @@ class _Repository implements WorkoutRepository {
 
   @override
   Future<WorkoutExecution?> getExecution(String executionId) async {
+    if (failExecutionRead) throw StateError('Sin conexión');
+    if (executionMissing) return null;
     if (failReadAfterFinish && finishAttempts > 0) {
       throw StateError('Lectura fallida');
     }

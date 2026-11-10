@@ -76,6 +76,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   final _exercises = <String, ExerciseEntity>{};
   final _savedSetIds = <String>{};
   bool _draftBusy = false;
+  bool _checkingDiscard = false;
 
   // La proyección local permite seguir entrenando; nunca se envía al motor
   // una serie sin confirmar ni se altera su prescripción histórica.
@@ -1010,6 +1011,37 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
 
   String _timerId(String resultId) => '$executionId:$resultId';
 
+  Future<void> checkDiscardOnResume() async {
+    final execution = state.execution;
+    if (_checkingDiscard ||
+        _draftBusy ||
+        state.status == ActiveWorkoutStatus.saving ||
+        execution == null ||
+        execution.status != WorkoutExecutionStatus.inProgress ||
+        DateTime.now().toUtc().difference(execution.startedAt) <
+            const Duration(hours: 24)) {
+      return;
+    }
+    _checkingDiscard = true;
+    try {
+      final saved = await _getExecution(executionId);
+      if (saved != null ||
+          isClosed ||
+          _draftBusy ||
+          state.status == ActiveWorkoutStatus.saving ||
+          state.execution?.status != WorkoutExecutionStatus.inProgress) {
+        return;
+      }
+      // Solo una respuesta del servidor confirma el descarte. Sin conexión
+      // el dispositivo conserva sus borradores.
+      await _clearDiscardedExecution(execution);
+    } catch (_) {
+      // El entrenamiento sigue visible si no se puede consultar al servidor.
+    } finally {
+      _checkingDiscard = false;
+    }
+  }
+
   Future<bool> discard() async {
     final previous = state;
     final execution = previous.execution;
@@ -1061,7 +1093,15 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       );
       return false;
     }
+    await _clearDiscardedExecution(execution);
+    return true;
+  }
+
+  Future<void> _clearDiscardedExecution(WorkoutExecution execution) async {
     _restTimer?.cancel();
+    _drafts.clear();
+    _amrapDrafts.clear();
+    _publish(const ActiveWorkoutState(status: ActiveWorkoutStatus.discarded));
     // Una limpieza local fallida no puede deshacer un descarte remoto confirmado.
     try {
       await _timerStore.clear(_restTimerId);
@@ -1073,14 +1113,8 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         }
       }
     } catch (_) {}
-    _drafts.clear();
     await _draftStore.clear(executionId).catchError((Object _) {});
-    _amrapDrafts.clear();
     await _amrapDraftStore.clear(executionId).catchError((Object _) {});
-    if (!isClosed) {
-      _publish(const ActiveWorkoutState(status: ActiveWorkoutStatus.discarded));
-    }
-    return true;
   }
 
   String get _restTimerId => '$executionId:rest';

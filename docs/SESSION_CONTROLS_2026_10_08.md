@@ -126,6 +126,27 @@ guardar. UI-022 lo implementa después de que Javier autorice incluir las series
 registradas: descarta únicamente la ejecución en curso, protege el historial
 cerrado y devuelve su cita a pendiente. No se trata como un abandono ordinario.
 
+## Caducidad de sesiones en curso · 10/11/2026
+
+Una ejecución en curso se puede retomar durante 24 horas desde que se inició o
+desde la última serie, agregado AMRAP o corrección registrados en el servidor.
+El descarte automático utiliza la misma operación que el descarte explícito.
+Elimina los resultados del intento sin sumar actividad al historial, volumen
+ni avance. Si había una cita, vuelve a pendiente con la misma pauta. Los
+identificadores de descarte permiten depurar operaciones tardías sin conservar
+resultados. El proceso programado se activa por entorno y comprueba el plazo
+de nuevo bajo bloqueo antes de borrar.
+
+Al volver a la app, si el servidor ya descartó la ejecución, el ejecutor
+muestra la salida y limpia sus borradores locales. Una consulta que falla sin
+conexión conserva el borrador. Los datos exclusivamente locales no renuevan el
+plazo del servidor. Las ejecuciones vinculadas a vídeos privados quedan fuera
+del borrado automático porque son la referencia de acceso a esos recursos.
+
+En EntrenaOP Dev, el trabajo `workout-expiration` revisa la caducidad cada
+minuto. La primera ejecución verificada descartó siete entrenamientos que
+seguían abiertos y habían superado el plazo.
+
 ## Mi semana: ancho disponible
 
 El segundo vídeo muestra la franja de días ocupando solo parte del contenido.
