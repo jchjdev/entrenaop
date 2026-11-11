@@ -9,6 +9,10 @@ dosis óptima requieren práctica observada.
 
 ## Cómo leer los dos circuitos
 
+La revisión posterior de Javier retira los circuitos automáticos desde cinco
+dominadas estrictas observadas. Los ejemplos de cinco y dieciocho de este
+documento se actualizan con ese criterio.
+
 - **A** tiene 2 australianas supinas normales + 2 cerradas + 2 segundos de
   hold con agarre cerrado.
 - **B** tiene 2 australianas supinas abiertas + 2 normales + 2 cerradas +
@@ -54,10 +58,10 @@ Agenda de fuerza.
 
 | Día | Principal | Pausa entre series | Apoyo final |
 | --- | --- | --- | --- |
-| Lunes | 4×2 dominadas pronas estrictas | 120 s | Circuito A |
-| Miércoles | 3×2 dominadas pronas estrictas | 150 s | Circuito B, primera calibración |
+| Lunes | 4×2 dominadas pronas estrictas | 120 s | Retirado por nivel |
+| Miércoles | 3×2 dominadas pronas estrictas | 150 s | Retirado por nivel |
 
-El bloque de tirón con apoyo ocupa 20 y 19 minutos estimados respectivamente.
+El bloque de tirón ocupa 14 y 13 minutos estimados respectivamente.
 Las cinco estrictas son una referencia ficticia. La primera semana incluye
 práctica de entrada para comprobar si la dosis propuesta se tolera.
 
@@ -67,12 +71,12 @@ Agenda combinada con carrera.
 
 | Día | Principal | Pausa entre series | Apoyo final |
 | --- | --- | --- | --- |
-| Lunes | 4×7 dominadas pronas estrictas | 120 s | Circuito A |
-| Viernes | 13 + 6 + 6 dominadas pronas estrictas | 150 s | Aplazado por tiempo |
+| Lunes | 4×7 dominadas pronas estrictas | 120 s | Retirado por nivel |
+| Viernes | 13 + 6 + 6 dominadas pronas estrictas | 150 s | Retirado por nivel |
 
 El viernes conserva el rodaje fácil de 30 minutos. El tirón ocupa 15 minutos
-estimados y cabe en los 50 disponibles. El circuito adicional excedería ese
-hueco. El lunes, principal y apoyo ocupan 22 minutos estimados.
+estimados y cabe en los 50 disponibles. El lunes, el principal ocupa 16 minutos
+estimados. Las variantes avanzadas están pendientes de concretar.
 
 ## Qué revisar en cada pauta
 

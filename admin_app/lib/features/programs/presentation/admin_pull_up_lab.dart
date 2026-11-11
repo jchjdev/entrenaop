@@ -91,7 +91,9 @@ class _AdminPullUpLabState extends State<AdminPullUpLab> {
           'Compara las dos propuestas con el mismo nivel, material, agenda y respuesta. '
           'La segunda ensaya un circuito supino de 5 normales + 5 cerradas + 5 s de hold '
           'y otro de 5 abiertas + 5 normales + 5 cerradas + 5 s de hold. '
-          'Cada circuito empieza con una calibración propia y se acerca a esa receta según la respuesta.',
+          'Cada circuito empieza con una calibración propia. Desde cinco dominadas estrictas '
+          'se retiran las australianas automáticas en el siguiente cálculo semanal. La programación de otras '
+          'variantes avanzadas sigue pendiente de revisión.',
         ),
         const SizedBox(height: 12),
         Wrap(
@@ -203,6 +205,9 @@ class _AdminPullUpLabState extends State<AdminPullUpLab> {
 
   Widget _weekView(PullApproach approach, List<PullWeek> trace) {
     final week = trace[_selectedWeek - 1];
+    final reference = _selectedWeek == 1
+        ? (_mark < 0 ? null : _mark)
+        : trace[_selectedWeek - 2].mark;
     final controls = trace
         .expand((w) => w.sessions)
         .where((s) => s.decision == PullDecision.test)
@@ -232,7 +237,10 @@ class _AdminPullUpLabState extends State<AdminPullUpLab> {
                 '$supports circuitos de apoyo colocados · $deferredSupports aplazados por agenda',
               ),
             Text(
-              'Última marca ficticia observada ${trace.last.mark ?? 'sin medir'}',
+              'Última marca del guion completo ${trace.last.mark ?? 'sin medir'}',
+            ),
+            Text(
+              'Referencia al calcular esta semana ${reference ?? 'sin medir'} estrictas',
             ),
             if (week.note.isNotEmpty) Text(week.note),
             for (final day in {

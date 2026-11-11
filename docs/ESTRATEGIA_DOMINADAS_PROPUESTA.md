@@ -10,6 +10,11 @@ exige agarre prono y parte con los brazos extendidos y el cuerpo estático.
 
 ## Evidencia directa y aplicación
 
+La [revisión de selección por nivel](#salida-de-australianas-automáticas--05112026)
+retira las australianas automáticas desde cinco estrictas observadas. Los
+recuentos del primer ensayo quedan como resultados históricos. Las variantes
+avanzadas continúan pendientes de concretar.
+
 | Fuente | Qué se observó | Qué tomar para el diseño |
 | --- | --- | --- |
 | [Flanagan y colaboradores, 2003](https://doi.org/10.1080/02701367.2003.10609064) · 19 universitarias, 12 semanas | Al inicio dos ya hacían dominadas. Cuatro de las 17 que partían de cero consiguieron al menos una en el test final. Usaron un programa combinado con tirón descargado en aparato inclinado. | La primera repetición puede llegar con trabajo escalable. La respuesta varía y el estudio no aísla el efecto de una variante. No usar su ecuación exploratoria para predecir el progreso ni prescribir cambios de peso. |
@@ -332,3 +337,52 @@ de ejercicios y las políticas deportivas disponibles son recursos distintos.
 La incorporación de esta candidata necesita después representar y registrar
 sus tramos y hold, vincular una estrategia versionada y ensayar la publicación
 real de la semana siguiente por RPC con el coordinador de desarrollo.
+
+## Salida de australianas automáticas · 05/11/2026
+
+La captura de Javier reproduce marca inicial 25 y semana 24. Se comprobó
+también la semana 39, tanto desde 25 como desde 15 llegando a 25 en el guion.
+El brazo candidato añadía australianas a toda práctica ordinaria con barra
+baja y tiempo. El circuito desconocía el nivel y el objetivo. Al alcanzar 25
+el principal detenía aumentos y controles, mientras el circuito seguía su
+progresión independiente. Las pruebas anteriores acreditaban agenda y
+trazabilidad. La pertinencia deportiva de ese apoyo no estaba validada.
+
+Javier fija como criterio experimental retirar las australianas automáticas
+desde cinco dominadas estrictas. La propuesta usa la referencia conocida al
+calcular cada semana. Se mantiene el circuito por debajo de cinco o con marca
+desconocida y calibración propia. Desde cinco, conserva la propuesta vertical
+de referencia y elimina el circuito y su coste. Al salir se limpia el historial
+del circuito para exigir nueva calibración si vuelve a utilizarse. Si solo hay
+barra baja, informa de la falta de material para trabajo vertical y conserva
+las sesiones de carrera.
+
+Un control ejecutado puede cambiar la referencia durante la semana ya pautada.
+La retirada se aplica al calcular la siguiente semana con esa referencia nueva.
+La semana histórica mantiene lo que se había prescrito con los datos anteriores.
+
+Las pruebas cubren el límite 4/5, iniciales 15 y 25, semanas 24 y 39,
+transición desde cuatro y falta de barra alta. Se repitieron 840 perfiles por
+brazo y horizonte, con 65.520 semanas emparejadas. El principal vertical,
+las carreras y los controles conservan su trazado. La excepción explícita es
+barra baja como único material desde cinco estrictas, que informa del bloqueo.
+
+| Resultado candidato tras retirar el circuito | 26 semanas | 52 semanas |
+| --- | ---: | ---: |
+| Circuitos como principal | 1.473 | 2.997 |
+| Circuitos como apoyo | 4.552 | 9.064 |
+| Apoyos aplazados por agenda | 2.440 | 5.007 |
+| Sesiones de tirón | 27.206 | 55.137 |
+| Carreras conservadas | 29.120 | 58.240 |
+| Controles estrictos | 776 | 1.682 |
+
+El cinco expresa el criterio de Javier para esta propuesta. La búsqueda no
+establece una cifra universal para retirar todos los remos. Los ensayos de
+[pérdida de velocidad en dominadas](https://pubmed.ncbi.nlm.nih.gov/32213783/)
+y de [regímenes de contracción en escaladores](https://pubmed.ncbi.nlm.nih.gov/38247962/)
+orientan el estudio de fuerza y potencia, con poblaciones y protocolos propios.
+Faltan sesiones avanzadas con material, agarre, recorrido, dosis, esfuerzo,
+pausas y condiciones de cambio. Potencia, lastre, isometrías y trabajo de
+densidad requieren propósitos diferenciados. También falta acordar qué debe
+hacer la preparación al alcanzar su objetivo, más allá de conservar la dosis
+de referencia. Esta corrección no completa esa programación avanzada.

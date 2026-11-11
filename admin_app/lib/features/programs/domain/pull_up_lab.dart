@@ -262,6 +262,17 @@ List<PullWeek> simulatePullUps({
 
     List<PullSession> propose({bool allowTest = true}) {
       if (paused) return [];
+      // Criterio de Javier para este ensayo. No es un umbral fisiológico validado.
+      final useCircuits = (policy.mark ?? 0) < 5;
+      if (approach == PullApproach.australian && !useCircuits) {
+        circuits.reset();
+        if (currentGear == PullGear.rows) {
+          policy.note =
+              'Desde cinco dominadas estrictas se retiran las australianas '
+              'automáticas. Falta material para practicar el tirón vertical.';
+          return [];
+        }
+      }
       if (approach == PullApproach.australian && currentGear == PullGear.rows) {
         return [
           circuits.propose(week, 'A'),
@@ -273,7 +284,7 @@ List<PullWeek> simulatePullUps({
       var index = 0;
       return primary.map((s) {
         if (s.decision == PullDecision.test) return s;
-        final support = currentGear.hasRows
+        final support = useCircuits && currentGear.hasRows
             ? circuits.propose(week, index++ == 0 ? 'A' : 'B')
             : null;
         return PullSession(
@@ -285,7 +296,12 @@ List<PullWeek> simulatePullUps({
           minutes: s.minutes + (support == null ? 0 : support.minutes + 2),
           supportDose: support?.dose,
           supportDecision: support?.decision,
-          supportReason: support?.reason ?? 'La propuesta necesita una barra baja disponible para las australianas.',
+          supportReason:
+              support?.reason ??
+              (useCircuits
+                  ? 'La propuesta necesita una barra baja disponible para las australianas.'
+                  : 'Australianas retiradas desde cinco estrictas. Se conserva el trabajo '
+                        'vertical de referencia; las variantes avanzadas están pendientes de definir.'),
         );
       }).toList();
     }

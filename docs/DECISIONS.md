@@ -24,6 +24,14 @@ revisión cuando falta identidad suficiente. No se transforma el supuesto 4 en
 un resultado ni se anuncia importación de material sin un contrato acreditado.
 [Matriz, correcciones y límites](audits/DEVICE_RETURN_MATRIX_2026_11_06.md).
 
+**Dominadas · salida de australianas automáticas · 05/11/2026.** Javier
+señala que el laboratorio sigue añadiendo remo a perfiles de 25 estrictas.
+Acuerda retirarlo al calcular con una referencia de cinco dominadas estrictas
+o más. El corte es un criterio de diseño del ensayo, pendiente de validación
+observada. Propone estudiar potencia, lastre e isometrías para perfiles de
+15–25, con las sesiones y pausas aún por concretar. La retirada no activa
+esas variantes. [Reproducción y corrección](ESTRATEGIA_DOMINADAS_PROPUESTA.md#salida-de-australianas-automáticas--05112026).
+
 **Estado independiente de desplegables · 05/11/2026.** Javier pide revisar y corregir la colisión de estado detectada en FAS/Tropa también en ADMIN, Trainer, los creadores compartidos y el deportista. Se conserva el diseño: plegado y desplazamiento de cada control tienen identidades distintas; restaurar un apartado no puede ejecutar setState durante build. [Alcance y comprobación](audits/EXPANSION_STORAGE_2026_11_05.md).
 
 **Google Play · cuenta personal creada · 05/11/2026.** Javier completa y paga

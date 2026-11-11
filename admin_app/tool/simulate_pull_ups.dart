@@ -31,6 +31,7 @@ void main() {
                 gear,
                 calendar,
                 response,
+                approach,
               );
               if (approach == PullApproach.current) {
                 baseline = trace;
@@ -149,6 +150,7 @@ class _Totals {
     PullGear gear,
     PullCalendar calendar,
     PullResponse response,
+    PullApproach approach,
   ) {
     scenarios++;
     if (trace.last.mark == 25) atTarget++;
@@ -217,6 +219,7 @@ class _Totals {
         ].whereType<PullDose>()) {
           if (dose.isCircuit &&
               (!currentGear.hasRows ||
+                  (approach == PullApproach.australian && (mark ?? 0) >= 5) ||
                   dose.variant != PullVariant.australian ||
                   dose.widths.length != dose.reps.length ||
                   dose.reps.any((n) => n < 1 || n > 5) ||

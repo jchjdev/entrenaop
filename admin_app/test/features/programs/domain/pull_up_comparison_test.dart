@@ -2,6 +2,68 @@ import 'package:entrenaop_admin/features/programs/domain/pull_up_lab.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('las australianas salen al calcular con cinco estrictas o más', () {
+    for (final mark in [4, 5, 15, 25]) {
+      final trace = simulatePullUps(
+        startingMark: mark,
+        gear: PullGear.bandsAndRows,
+        calendar: PullCalendar.strength,
+        response: PullResponse.favorable,
+        weeks: 52,
+        approach: PullApproach.australian,
+      );
+      if (mark == 4) {
+        expect(trace[1].sessions.any((s) => s.supportDose != null), isTrue);
+        final reached = trace.indexWhere((w) => w.mark! >= 5);
+        expect(reached, greaterThanOrEqualTo(0));
+        expect(
+          trace
+              .skip(reached + 1)
+              .expand((w) => w.sessions)
+              .every(
+                (s) => s.supportDose == null && !(s.dose?.isCircuit ?? false),
+              ),
+          isTrue,
+        );
+      } else {
+        expect(
+          trace.expand((w) => w.sessions).every((s) => s.supportDose == null),
+          isTrue,
+        );
+        expect(trace[23].sessions, isNotEmpty);
+        expect(trace[38].sessions, isNotEmpty);
+        expect(
+          trace[38].sessions.every(
+            (s) =>
+                s.dose?.variant == PullVariant.strict ||
+                s.decision == PullDecision.test,
+          ),
+          isTrue,
+        );
+      }
+    }
+  });
+
+  test(
+    'retirar australianas con solo barra baja informa del material que falta',
+    () {
+      final trace = simulatePullUps(
+        startingMark: 5,
+        gear: PullGear.rows,
+        calendar: PullCalendar.combined,
+        response: PullResponse.favorable,
+        weeks: 26,
+        approach: PullApproach.australian,
+      );
+      expect(
+        trace.every(
+          (w) => w.sessions.isEmpty && w.mark == 5 && w.runs.length == 2,
+        ),
+        isTrue,
+      );
+      expect(trace.first.note, contains('cinco dominadas'));
+    },
+  );
   test(
     'la dificultad inicial repetida reduce y un día difícil aislado mantiene',
     () {
