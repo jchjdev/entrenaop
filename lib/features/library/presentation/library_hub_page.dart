@@ -99,6 +99,7 @@ class LibraryHubPage extends StatelessWidget {
                         title: 'Ejercicios EntrenaOP',
                         description: 'Técnica y práctica.',
                         icon: Icons.fitness_center_outlined,
+                        primary: true,
                         onBrowse: () => context.push('/library/exercises'),
                         browseLabel: 'Explorar ejercicios',
                       ),

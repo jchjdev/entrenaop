@@ -1,5 +1,9 @@
 # Registro de decisiones vigentes
 
+**Ejercicios EntrenaOP en Biblioteca · 11/11/2026.** Javier pide que la
+tarjeta oficial use el mismo acento naranja que Sesiones EntrenaOP para
+distinguirla de Mis ejercicios. [Criterio visual](VISUAL_DESIGN.md#semanas-por-gesto-y-biblioteca-ajustada--ui-043--16102026).
+
 **Marcas objetivo FAS · 11/11/2026.** Javier confirma los controles
 «Mínimos» y «Máximos» debajo de H/M, con selección exclusiva u opcional.
 Recalculan las marcas al cambiar edad o categoría. Editar una marca o

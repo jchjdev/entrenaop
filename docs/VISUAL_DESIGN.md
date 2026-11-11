@@ -464,6 +464,10 @@ Cuando caben no existe recorrido vertical; texto doble o un espacio muy corto
 conservan desplazamiento para acceder a todos los controles. La tarjeta personal
 de sesiones usa «Ver las mías»; la de ejercicios conserva «Ver los míos».
 
+Desde el 11/11/2026, las tarjetas de Sesiones EntrenaOP y Ejercicios EntrenaOP
+usan el mismo acento naranja y botón principal. Las tarjetas de contenido
+propio usan el tono neutro y botones con borde.
+
 Cada entrada de las listas de ejercicios, tanto personal como oficial, muestra
 la misma `thumbnailUrl` ya utilizada por su ficha, inicialmente en una miniatura
 de 72 px; UI-050 fija finalmente 80×60 px tras descartar UI-049.
