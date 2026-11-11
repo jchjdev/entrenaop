@@ -394,6 +394,19 @@ y volver a pulsar Guardar test. Se mantiene la misma revisión de baremo y la
 validación de integridad del servidor; esta adaptación no cambia reglas SQL ni
 el algoritmo de puntuación.
 
+### Marcas objetivo en la calculadora FAS
+
+«Mínimos» rellena la marca menos exigente que alcanza el mínimo de cada
+prueba. «Máximos» hace lo mismo con la máxima puntuación de su columna
+(100 puntos en el baremo original). Para tiempos, se elige el mayor tiempo
+que cumple el objetivo; para repeticiones o plancha, la menor marca.
+Se usa el baremo cargado y solo se rellenan las pruebas aplicables.
+
+Solo puede activarse un objetivo. Al cambiar edad o categoría, se recalculan
+las marcas del objetivo activo. Escribir o mover el deslizador de una marca,
+o volver a pulsar el objetivo activo, lo desactiva sin borrar los valores.
+Activar un objetivo no guarda ningún test ni modifica el perfil.
+
 La migración
 `20260923006000_fas_periodic_assessments.sql` guarda cada intento fechado en
 tablas independientes del ingreso, con edad calculada desde la fecha de

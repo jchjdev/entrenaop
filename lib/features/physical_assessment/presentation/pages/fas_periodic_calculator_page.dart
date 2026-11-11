@@ -14,6 +14,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+enum _MarkPreset { minimum, maximum }
+
 class FasPeriodicCalculatorPage extends StatefulWidget {
   const FasPeriodicCalculatorPage({
     super.key,
@@ -46,6 +48,7 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
   int _age = 25;
   bool _ageEdited = false;
   AssessmentCategory _category = AssessmentCategory.men;
+  _MarkPreset? _markPreset;
   final Map<String, PeriodicScoreResult> _results = {};
   bool _savingAssessment = false;
   bool _writingAssessment = false;
@@ -158,8 +161,27 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
   void _recalculate(FasPeriodic2027Reference reference, int age) {
     final results = <String, PeriodicScoreResult>{};
     for (final test in _calculatorTests) {
-      if (!_applies(reference, test.id, age)) continue;
-      final mark = _parseMark(test.id, _controllers[test.id]!.text);
+      final passMark = reference.passMarkFor(
+        testId: test.id,
+        category: _category,
+        age: age,
+      );
+      if (passMark == null) continue;
+      final controller = _controllers[test.id]!;
+      final presetMark = switch (_markPreset) {
+        _MarkPreset.minimum => passMark.threshold,
+        _MarkPreset.maximum => reference.maximumScoreMarkFor(
+          testId: test.id,
+          category: _category,
+          age: age,
+        ),
+        null => null,
+      };
+      if (presetMark != null) {
+        final formatted = _formatMarkForInput(test.id, presetMark);
+        if (controller.text != formatted) controller.text = formatted;
+      }
+      final mark = _parseMark(test.id, controller.text);
       if (mark == null) continue;
       results[test.id] = reference.scoreFor(
         testId: test.id,
@@ -478,6 +500,24 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
           },
         ),
         const SizedBox(height: 10),
+        SegmentedButton<_MarkPreset>(
+          key: const ValueKey('fas-mark-presets'),
+          direction: MediaQuery.textScalerOf(context).scale(16) / 16 >= 1.6
+              ? Axis.vertical
+              : Axis.horizontal,
+          segments: const [
+            ButtonSegment(value: _MarkPreset.minimum, label: Text('Mínimos')),
+            ButtonSegment(value: _MarkPreset.maximum, label: Text('Máximos')),
+          ],
+          emptySelectionAllowed: true,
+          selected: {?_markPreset},
+          onSelectionChanged: (values) {
+            _dismissKeyboard();
+            _markPreset = values.singleOrNull;
+            _recalculate(reference, age);
+          },
+        ),
+        const SizedBox(height: 10),
         _Results(results: _results, expectedTests: expectedTests),
         const SizedBox(height: 10),
         Form(
@@ -523,10 +563,14 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
                         )
                         ?.threshold,
                     result: _results[test.id],
-                    onChanged: () => _recalculate(reference, age),
+                    onChanged: () {
+                      _markPreset = null;
+                      _recalculate(reference, age);
+                    },
                     onDismissKeyboard: _dismissKeyboard,
                     onSliderChanged: (mark) {
                       _dismissKeyboard();
+                      _markPreset = null;
                       _controllers[test.id]!.text = _formatMarkForInput(
                         test.id,
                         mark,

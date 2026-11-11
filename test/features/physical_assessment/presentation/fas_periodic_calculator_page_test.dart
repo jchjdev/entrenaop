@@ -386,6 +386,97 @@ void main() {
     expect(profile.saveCalls, 0);
   });
 
+  testWidgets('rellena objetivos por edad y sexo hasta editar una marca', (
+    tester,
+  ) async {
+    final profile = _BirthDateRepository(null);
+    final repository = _Repository();
+    await _showCalculator(tester, reference, profile, repository);
+
+    Finder field(String id) => find.byKey(ValueKey('fas-mark-$id'));
+    String mark(String id) =>
+        tester.widget<TextFormField>(field(id)).controller!.text;
+    Future<void> age(String value) async {
+      await tester.enterText(
+        find.byKey(const ValueKey('fas-calculation-age')),
+        value,
+      );
+      await tester.pump();
+    }
+
+    await tester.tap(find.text('Mínimos'));
+    await tester.pumpAndSettle();
+    expect(mark('upper_body_push_ups_2_min'), '14');
+    expect(mark('run_2000_m'), '11:46');
+    expect(find.text('80 puntos'), findsOneWidget);
+
+    await age('35');
+    expect(mark('upper_body_push_ups_2_min'), '12');
+    expect(mark('run_2000_m'), '12:02');
+    await tester.tap(find.text('M · mujeres'));
+    await tester.pumpAndSettle();
+    expect(mark('upper_body_push_ups_2_min'), '6');
+    expect(mark('run_2000_m'), '12:50');
+
+    await tester.tap(find.text('Máximos'));
+    await tester.pumpAndSettle();
+    expect(mark('upper_body_push_ups_2_min'), '64');
+    expect(mark('run_2000_m'), '07:30');
+    expect(find.text('400 puntos'), findsOneWidget);
+    await age('45');
+    expect(field('agility_speed_circuit'), findsNothing);
+    expect(find.text('300 puntos'), findsOneWidget);
+
+    await tester.enterText(field('upper_body_push_ups_2_min'), '23');
+    await tester.pump();
+    await age('35');
+    expect(mark('upper_body_push_ups_2_min'), '23');
+    expect(mark('run_2000_m'), '08:02');
+    expect(profile.saveCalls, 0);
+    expect(repository.saveCalls, 0);
+  });
+
+  testWidgets(
+    'permite desmarcar un objetivo y mover un slider sin sobrescribir',
+    (tester) async {
+      await _showCalculator(
+        tester,
+        reference,
+        _BirthDateRepository(null),
+        _Repository(),
+      );
+      final field = find.byKey(
+        const ValueKey('fas-mark-upper_body_push_ups_2_min'),
+      );
+      String mark() => tester.widget<TextFormField>(field).controller!.text;
+      final age = find.byKey(const ValueKey('fas-calculation-age'));
+      Future<void> tapMinimum() async {
+        await tester.tap(find.text('Mínimos'));
+        await tester.pumpAndSettle();
+      }
+
+      await tapMinimum();
+      await tapMinimum();
+      await tester.enterText(age, '35');
+      await tester.pump();
+      expect(mark(), '14');
+
+      await tapMinimum();
+      expect(mark(), '12');
+      final grid = find.byKey(const ValueKey('fas-tests-grid'));
+      final slider = find
+          .descendant(of: grid, matching: find.byType(Slider))
+          .first;
+      await tester.tapAt(tester.getCenter(slider));
+      await tester.pumpAndSettle();
+      final manual = mark();
+      expect(manual, isNot('12'));
+      await tester.tap(find.text('M · mujeres'));
+      await tester.pumpAndSettle();
+      expect(mark(), manual);
+    },
+  );
+
   testWidgets('no pide agilidad desde el día en que se cumplen 45 años', (
     tester,
   ) async {

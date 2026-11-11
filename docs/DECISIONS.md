@@ -1,5 +1,12 @@
 # Registro de decisiones vigentes
 
+**Marcas objetivo FAS · 11/11/2026.** Javier confirma los controles
+«Mínimos» y «Máximos» debajo de H/M, con selección exclusiva u opcional.
+Recalculan las marcas al cambiar edad o categoría. Editar una marca o
+volver a pulsar el control activo desactiva el modo y conserva los valores.
+Se mantiene la estética y el guardado explícito.
+[Criterio](PHYSICAL_ASSESSMENT_DOMAIN.md#marcas-objetivo-en-la-calculadora-fas).
+
 **Caducidad de sesiones en curso · 10/11/2026.** Javier confirma que un
 entrenamiento que se dejó abierto durante días debe descartarse por completo.
 Desaparece con sus resultados y no cuenta en el historial ni en el progreso.

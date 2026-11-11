@@ -208,6 +208,28 @@ class FasPeriodic2027Reference {
     );
   }
 
+  /// Marca menos exigente que alcanza la máxima puntuación de su columna.
+  int? maximumScoreMarkFor({
+    required String testId,
+    required AssessmentCategory category,
+    required int age,
+  }) {
+    final table = _tableFor(testId, age);
+    if (table == null) return null;
+    final column = table.columnFor(_ageBandFor(age).id, category);
+    var best = table.rows.first;
+    for (final row in table.rows.skip(1)) {
+      final lessDemanding = table.direction == BetterDirection.higher
+          ? row.mark < best.mark
+          : row.mark > best.mark;
+      if (row.scores[column] > best.scores[column] ||
+          (row.scores[column] == best.scores[column] && lessDemanding)) {
+        best = row;
+      }
+    }
+    return best.mark;
+  }
+
   PeriodicMarkRange? markRangeFor({required String testId, required int age}) {
     final table = _tableFor(testId, age);
     if (table == null) return null;
