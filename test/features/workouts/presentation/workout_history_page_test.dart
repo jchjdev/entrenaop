@@ -316,12 +316,21 @@ void main() {
         await tester.tap(find.byTooltip('Corregir resultado'));
         await tester.pumpAndSettle();
         expect(find.text('RIR real'), duration ? findsNothing : findsOneWidget);
+        if (!duration) {
+          final load = find.widgetWithText(
+            TextFormField,
+            'Carga utilizada (kg, opcional)',
+          );
+          await tester.ensureVisible(load);
+          await tester.enterText(load, '42,5');
+        }
         final reason = find.widgetWithText(TextFormField, 'Motivo');
         await tester.ensureVisible(reason);
         await tester.enterText(reason, 'Corregir anotación');
         await tester.tap(find.text('Guardar corrección'));
         await tester.pumpAndSettle();
         expect(repository.lastCorrection?.actualRir, 2.5);
+        expect(repository.lastCorrection?.actualLoadKg, duration ? null : 42.5);
         expect(tester.takeException(), isNull);
       },
     );

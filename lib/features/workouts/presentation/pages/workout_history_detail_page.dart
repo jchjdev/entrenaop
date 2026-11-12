@@ -894,9 +894,9 @@ class _CorrectionDialogState extends State<_CorrectionDialog> {
                 set.blockFormat != WorkoutBlockFormat.running
             ? null
             : _parseDecimal(_distance.text),
-        actualLoadKg: set.targetLoadKg == null
-            ? null
-            : _parseDecimal(_load.text),
+        actualLoadKg: set.supportsLoadRecording
+            ? _parseDecimal(_load.text)
+            : null,
         actualRpe: set.targetRpe == null && set.actualRpe == null ? null : _rpe,
         // Corregir otro dato no elimina ni redondea un esfuerzo antiguo.
         actualRir: set.usesRir ? _rir : set.actualRir,
@@ -954,10 +954,11 @@ class _CorrectionDialogState extends State<_CorrectionDialog> {
                         : 'Metros realizados',
                     optional: set.manualDistanceOptional,
                   ),
-                if (set.targetLoadKg != null)
+                if (set.supportsLoadRecording)
                   _CorrectionField(
                     controller: _load,
-                    label: 'Carga utilizada (kg)',
+                    label: 'Carga utilizada (kg, opcional)',
+                    optional: true,
                   ),
                 if (set.recoveryDurationSeconds != null)
                   _DurationCorrectionField(
@@ -1041,7 +1042,9 @@ class _CorrectionField extends StatelessWidget {
         validator: (value) {
           if (optional && (value ?? '').trim().isEmpty) return null;
           final parsed = _parseDecimal(value ?? '');
-          if (parsed == null) return 'Introduce un número válido';
+          if (parsed == null || !parsed.isFinite) {
+            return 'Introduce un número válido';
+          }
           if (parsed < 0) return 'El valor no puede ser negativo';
           if (!decimal && parsed != parsed.roundToDouble()) {
             return 'Introduce un número entero';

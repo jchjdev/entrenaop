@@ -97,9 +97,8 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
     _recoveryDistanceController = TextEditingController(
       text: workoutNullableNumber(set.recoveryDistanceMeters),
     );
-    _loadController = TextEditingController(
-      text: workoutNullableNumber(set.targetLoadKg),
-    );
+    // La carga prescrita orienta la serie. Solo se registra la carga declarada.
+    _loadController = TextEditingController();
     final draft = context.read<ActiveWorkoutCubit>().state.drafts[set.id];
     final source = draft?.fields;
     final controllers = _controllers;
@@ -176,9 +175,9 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
                 set.blockFormat != WorkoutBlockFormat.running
             ? null
             : parseWorkoutDecimal(_distanceController.text),
-        actualLoadKg: set.targetLoadKg == null
-            ? null
-            : parseWorkoutDecimal(_loadController.text),
+        actualLoadKg: set.supportsLoadRecording
+            ? parseWorkoutDecimal(_loadController.text)
+            : null,
         // El borrador puede conservar un dato heredado que ya no corresponde
         // enviar como resultado nuevo de esta tarea.
         actualRir: forDraft
@@ -644,11 +643,12 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
                   controller: _recoveryDistanceController,
                   label: 'Metros reales de recuperación',
                 ),
-              if (set.targetLoadKg != null)
+              if (set.supportsLoadRecording)
                 WorkoutNumberResultField(
                   enabled: !widget.saving,
                   controller: _loadController,
-                  label: 'Carga utilizada (kg)',
+                  label: 'Carga utilizada (kg, opcional)',
+                  optional: true,
                 ),
               if (set.targetRpe != null)
                 WorkoutEffortField(

@@ -1,5 +1,11 @@
 # Registro de decisiones vigentes
 
+**Carga real opcional en fuerza · 12/11/2026.** Javier confirma que el
+deportista debe poder registrar los kilos empleados aunque la pauta solo
+indique repeticiones y RIR. Los kilos reales pueden quedar en blanco incluso
+si existe una carga objetivo. La app permite introducirlos en la sesión y
+corregirlos en el historial. [Contrato del ejecutor](SESSION_CONTROLS_2026_10_08.md#carga-real-opcional-en-fuerza).
+
 **Ejercicios EntrenaOP en Biblioteca · 11/11/2026.** Javier pide que la
 tarjeta oficial use el mismo acento naranja que Sesiones EntrenaOP para
 distinguirla de Mis ejercicios. [Criterio visual](VISUAL_DESIGN.md#semanas-por-gesto-y-biblioteca-ajustada--ui-043--16102026).

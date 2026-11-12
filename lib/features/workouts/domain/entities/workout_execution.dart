@@ -407,6 +407,16 @@ class WorkoutExecutionSet extends Equatable {
             actualRecoveryDurationSeconds?.toDouble()
       : actualRecoveryDurationSeconds?.toDouble();
 
+  bool get supportsLoadRecording =>
+      targetLoadKg != null ||
+      actualLoadKg != null ||
+      switch (blockFormat) {
+        WorkoutBlockFormat.running ||
+        WorkoutBlockFormat.warmUp ||
+        WorkoutBlockFormat.coolDown => false,
+        _ => true,
+      };
+
   /// Los objetivos heredados de duración no habilitan nuevos registros de RIR.
   bool get usesRir =>
       performancePrescription?.usesRir ??

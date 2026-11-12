@@ -65,7 +65,6 @@ class WorkoutSessionSetDraft extends Equatable {
         result.actualDistanceMeters == null) {
       return false;
     }
-    if (set.targetLoadKg != null && result.actualLoadKg == null) return false;
     if (set.blockFormat == WorkoutBlockFormat.running &&
         (result.actualDurationSeconds == null ||
             result.actualDurationSeconds! <= 0 ||

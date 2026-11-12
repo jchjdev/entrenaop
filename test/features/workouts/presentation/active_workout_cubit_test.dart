@@ -292,7 +292,10 @@ void main() {
       expect(find.text('Confirmar datos').hitTestable(), findsOneWidget);
       expect(find.byTooltip('Cerrar registros'), findsNothing);
       await capturePerformanceWidget(tester, 'serie-completar-directo-390');
-      await tester.enterText(find.byType(TextFormField), '9');
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Repeticiones realizadas'),
+        '9',
+      );
       await tester.tap(find.text('Confirmar datos'));
       await tester.pumpAndSettle();
       expect(cubit.state.unconfirmedDraftCount, 0);
@@ -634,6 +637,47 @@ void main() {
     expect(find.text('Volver'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  for (final prescribedLoad in [null, 120.0]) {
+    testWidgets('carga real opcional con pauta de $prescribedLoad kg', (
+      tester,
+    ) async {
+      final repository = _Repository()
+        ..execution = _execution().copyWith(
+          sets: [
+            WorkoutExecutionSet(
+              id: 'set-1',
+              blockOrder: 0,
+              blockName: 'Fuerza',
+              itemOrder: 0,
+              exerciseId: 'exercise-1',
+              exerciseName: 'Hip thrust',
+              setOrder: 0,
+              targetReps: 8,
+              targetRir: 3,
+              targetLoadKg: prescribedLoad,
+              restAfterSeconds: 0,
+              status: WorkoutSetStatus.pending,
+            ),
+          ],
+        );
+      await _mountSession(tester, repository);
+      await _openCurrentResult(tester);
+      final field = find.widgetWithText(
+        TextFormField,
+        'Carga utilizada (kg, opcional)',
+      );
+      expect(tester.widget<TextFormField>(field).controller!.text, isEmpty);
+      if (prescribedLoad == null) await tester.enterText(field, '47,5');
+      await _confirmOpenResult(tester);
+      expect(repository.lastSetResult, isNotNull);
+      expect(
+        repository.lastSetResult!.actualLoadKg,
+        prescribedLoad == null ? 47.5 : null,
+      );
+      expect(repository.lastSetResult!.actualRir, isNull);
+    });
+  }
 
   testWidgets('no permite finalizar con resultados sin confirmar', (
     tester,

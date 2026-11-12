@@ -1,5 +1,14 @@
 # Sesión, tiempo y ancho de Mi semana · UI-019/020 · 08/10/2026
 
+## Carga real opcional en fuerza
+
+Desde el 12/11/2026 el registro de una serie de fuerza permite indicar los
+kilos usados con independencia de la carga prescrita. El campo empieza vacío,
+incluso si se muestra un objetivo en kilos. Un campo vacío guarda ausencia de
+dato y una carga explícita de 0 kg se conserva como tal. El RIR objetivo sirve
+de referencia y el RIR real sigue siendo opcional. La corrección del historial
+admite la carga en las mismas series y dentro del plazo habitual.
+
 ## UI-051 · Tabata continuo · 19/10/2026
 
 Javier pide que pulsar Iniciar ejecute todo el Tabata automáticamente, con
