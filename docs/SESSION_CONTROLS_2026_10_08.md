@@ -157,10 +157,11 @@ seguían abiertos y habían superado el plazo.
 
 ## Una sesión abierta por cuenta · 12/11/2026
 
-Inicio consulta las ejecuciones abiertas de la cuenta y ofrece continuar desde
-una tarjeta encima del calendario. El botón abre la ejecución original,
-independientemente del día, la plantilla o la pauta. Se refresca al volver a
-Inicio o recuperar la app en primer plano.
+Inicio consulta las ejecuciones abiertas de la cuenta. Si la tarjeta del día
+seleccionado ya ofrece retomar una ejecución concreta, ese botón es su único
+acceso en Inicio. Las demás ejecuciones abiertas aparecen encima del
+calendario. Cada botón abre la ejecución original. Inicio actualiza el estado
+al volver a la pantalla o recuperar la app en primer plano.
 
 La comprobación del servidor impide que un inicio manual deje una segunda
 sesión abierta. Ante un conflicto, el deportista puede retomar la anterior

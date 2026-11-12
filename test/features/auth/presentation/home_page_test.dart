@@ -549,6 +549,38 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Retomada'), findsOneWidget);
   });
+  testWidgets('muestra un solo acceso por ejecución en el día seleccionado', (
+    tester,
+  ) async {
+    final scheduled = workout(ScheduledWorkoutStatus.inProgress);
+    final router = await mount(
+      tester,
+      overview(
+        workouts: [scheduled],
+        openWorkouts: [
+          OpenWorkoutSession(
+            id: scheduled.executionId!,
+            name: scheduled.templateName,
+            startedAt: today,
+          ),
+        ],
+      ),
+    );
+    expect(find.text(scheduled.templateName), findsOneWidget);
+    expect(find.text('Retomar sesión'), findsOneWidget);
+    expect(find.text('Continuar sesión'), findsNothing);
+
+    final otherDay = week.add(Duration(days: today.weekday == 1 ? 1 : 0));
+    await tester.tap(
+      find.byKey(ValueKey('home-day-${homeDateParam(otherDay)}')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text(scheduled.templateName), findsOneWidget);
+    expect(find.text('Retomar sesión'), findsNothing);
+    await tester.tap(find.text('Continuar sesión'));
+    await tester.pumpAndSettle();
+    expect(router.state.uri.path, '/plan/week/active/${scheduled.executionId}');
+  });
   testWidgets('una sesión completada lleva al resultado', (tester) async {
     await mount(
       tester,

@@ -2,7 +2,8 @@
 
 **Una sesión abierta por cuenta · 12/11/2026.** Javier confirma que Inicio
 debe ofrecer continuar una ejecución abierta aunque sea de ayer o se haya
-iniciado fuera de agenda. Para empezar otra, puede retomar la anterior o
+iniciado fuera de agenda. Si la tarjeta del día ya ofrece retomar esa misma
+ejecución, basta con ese acceso. Para empezar otra, puede retomar la anterior o
 confirmar su descarte. Sigue vigente la caducidad de 24 horas sin actividad.
 [Contrato del ejecutor](SESSION_CONTROLS_2026_10_08.md#una-sesión-abierta-por-cuenta--12112026).
 

@@ -185,6 +185,12 @@ class _DashboardContentState extends State<_DashboardContent> {
   @override
   Widget build(BuildContext context) {
     final overview = widget.overview;
+    final dayWorkouts = homeWorkoutsForDay(overview, _selectedDay);
+    final dayWorkout = dayWorkouts.firstOrNull;
+    final resumableDayExecutionId =
+        dayWorkout?.status == ScheduledWorkoutStatus.inProgress
+        ? dayWorkout?.executionId
+        : null;
     final complete = overview.weeklyWorkouts
         .where((w) => w.status == ScheduledWorkoutStatus.completed)
         .length;
@@ -214,10 +220,11 @@ class _DashboardContentState extends State<_DashboardContent> {
                 children: [
                   if (widget.refreshing)
                     const LinearProgressIndicator(minHeight: 2),
-                  for (final workout in overview.openWorkouts) ...[
-                    _OpenWorkoutCard(workout: workout, onOpen: _open),
-                    const SizedBox(height: 16),
-                  ],
+                  for (final workout in overview.openWorkouts)
+                    if (workout.id != resumableDayExecutionId) ...[
+                      _OpenWorkoutCard(workout: workout, onOpen: _open),
+                      const SizedBox(height: 16),
+                    ],
                   _CompactWeek(
                     weekStart: overview.weekStart,
                     selectedDay: _selectedDay,
@@ -243,6 +250,7 @@ class _DashboardContentState extends State<_DashboardContent> {
                   _DayHero(
                     overview: overview,
                     selectedDay: _selectedDay,
+                    items: dayWorkouts,
                     onOpen: _open,
                   ),
                   const SizedBox(height: 24),
@@ -461,15 +469,16 @@ class _DayHero extends StatelessWidget {
   const _DayHero({
     required this.overview,
     required this.selectedDay,
+    required this.items,
     required this.onOpen,
   });
   final PreparationOverview overview;
   final DateTime selectedDay;
+  final List<ScheduledWorkout> items;
   final Future<void> Function(String route) onOpen;
 
   @override
   Widget build(BuildContext context) {
-    final items = homeWorkoutsForDay(overview, selectedDay);
     final item = items.firstOrNull;
     final program = overview.activeProgram;
     // Conservamos la ayuda inicial y una revisión real. Un plan guardado no
