@@ -1,5 +1,19 @@
 # Programas privados y agenda profesional · TRN-017 · 21/10/2026
 
+## Actualizar pautas de programas · 12/11/2026
+
+Al guardar una revisión, **Actualizar pautas…** permite seleccionar alumnos
+o sesiones y confirmar el lote. La vista previa explica las omisiones y
+permite abrir la receta nueva. Se incluyen envíos anteriores del mismo
+programa con vínculo vigente. La correspondencia exige una fase identificable
+y una única referencia a la familia de la sesión en esa fase de ambas versiones.
+Una copia con otra familia se revisa individualmente.
+
+El servidor revalida la versión y el estado bajo bloqueo antes de escribir.
+Actualiza la receta de la misma cita y conserva su fecha, nota, envío y fase.
+La confirmación devuelve cuántas se actualizaron y cuántas se omitieron
+desde la vista previa. Reintentar la misma operación devuelve el mismo recibo.
+
 ## Color y programas pautados · 12/11/2026
 
 La ficha del alumno ofrece **Color en agenda**. Automático mantiene la

@@ -18,6 +18,7 @@ import 'package:workout_editor_ui/workout_template_content.dart';
 import 'package:workout_core/workout_template.dart';
 
 import 'trainer_program_repository.dart';
+import 'trainer_program_updates_dialog.dart';
 import 'trainer_program_date_plan.dart';
 import 'trainer_workout_repository.dart';
 import 'trainer_session_work_editor.dart';
@@ -112,10 +113,33 @@ class _TrainerProgramDetailPageState extends State<TrainerProgramDetailPage> {
               FilledButton(
                 onPressed: () async {
                   final result = await context.push('/programs/${p.id}/revise');
-                  if (result == true && context.mounted) context.pop(true);
+                  if (!context.mounted) return;
+                  if (result is String) {
+                    await context.push(
+                      '/programs/${Uri.encodeComponent(result)}',
+                    );
+                    if (context.mounted && context.canPop()) context.pop(true);
+                  } else if (result == true && context.canPop()) {
+                    context.pop(true);
+                  }
                 },
                 child: const Text('Crear nueva versión'),
               ),
+              if (p.status == 'published' && p.version > 1)
+                if (widget.repository case final TrainerProgramUpdates updates)
+                  OutlinedButton.icon(
+                    onPressed: () => showDialog<void>(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (_) => TrainerProgramUpdatesDialog(
+                        repository: updates,
+                        programId: p.id!,
+                        openSession: _preview,
+                      ),
+                    ),
+                    icon: const Icon(Icons.update),
+                    label: const Text('Actualizar pautas…'),
+                  ),
               OutlinedButton(
                 onPressed: () => context.go('/clients'),
                 child: const Text('Elegir alumno para asignar'),
@@ -397,9 +421,14 @@ class _TrainerProgramLibraryPageState extends State<TrainerProgramLibraryPage> {
                 onTap: _discardBusy
                     ? null
                     : () async {
-                        await context.push(
+                        final result = await context.push(
                           '/programs/work/${Uri.encodeComponent(work.id)}',
                         );
+                        if (result is String && context.mounted) {
+                          await context.push(
+                            '/programs/${Uri.encodeComponent(result)}',
+                          );
+                        }
                         if (mounted) await _load();
                       },
                 trailing: IconButton(
@@ -576,6 +605,7 @@ class _TrainerProgramEditorPageState extends State<TrainerProgramEditorPage> {
           widget.exercisePreferences,
           widget.sessionWorkRepository,
           widget.onSaved,
+          revision: snapshot.data != null,
         ),
       );
     },
@@ -643,10 +673,12 @@ class _TrainerProgramAdapter extends GuidedProgramEditorAdapter {
     this.onCreateExercise,
     this.exercisePreferences,
     this.sessionWorkRepository,
-    this.onSaved,
-  );
+    this.onSaved, {
+    required this.revision,
+  });
   final TrainerWorkoutRepository workouts;
   final ValueChanged<String>? onSaved;
+  final bool revision;
   final Future<WorkoutEditorExercise?> Function(BuildContext)? onCreateExercise;
   final ExerciseCatalogPreferences? exercisePreferences;
   final WorkoutEditorWorkRepository? sessionWorkRepository;
@@ -725,6 +757,12 @@ class _TrainerProgramAdapter extends GuidedProgramEditorAdapter {
   void finish(BuildContext context, String id, bool review) {
     if (onSaved != null) {
       onSaved!(id);
+    } else if (revision) {
+      if (context.canPop()) {
+        context.pop(id);
+      } else {
+        context.go('/programs/${Uri.encodeComponent(id)}');
+      }
     } else {
       context.canPop() ? context.pop(true) : context.go('/programs');
     }

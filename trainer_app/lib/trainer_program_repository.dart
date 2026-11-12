@@ -48,7 +48,44 @@ abstract class TrainerProgramRepository {
   });
 }
 
-class SupabaseTrainerProgramRepository implements TrainerProgramRepository {
+abstract interface class TrainerProgramUpdates {
+  Future<List<TrainerProgramUpdate>> previewUpdates(String programId);
+  Future<({int updated, int skipped})> applyUpdates(
+    String operationId,
+    String programId,
+    List<TrainerProgramUpdate> sessions,
+  );
+}
+
+class TrainerProgramUpdate {
+  TrainerProgramUpdate.fromJson(Map row)
+    : id = row['id'] as String,
+      clientId = row['client_id'] as String,
+      clientName = row['client_name'] as String,
+      date = DateTime.parse(row['scheduled_date'] as String),
+      name = row['session_name'] as String,
+      revision = row['revision'] as int,
+      fromVersion = row['from_version'] as int,
+      templateId = row['template_id'] as String?,
+      toVersion = row['to_version'] as int?,
+      reason = row['reason'] as String;
+
+  final String id, clientId, clientName, name, reason;
+  final DateTime date;
+  final int revision, fromVersion;
+  final String? templateId;
+  final int? toVersion;
+  bool get eligible => reason == 'eligible';
+
+  Map<String, Object?> get selection => {
+    'id': id,
+    'revision': revision,
+    'template_id': templateId,
+  };
+}
+
+class SupabaseTrainerProgramRepository
+    implements TrainerProgramRepository, TrainerProgramUpdates {
   const SupabaseTrainerProgramRepository(this.client, this.userId);
   final SupabaseClient client;
   final String userId;
@@ -124,6 +161,29 @@ class SupabaseTrainerProgramRepository implements TrainerProgramRepository {
       'p_entries': entries.map((e) => e.toJson()).toList(),
       'p_note': note,
     });
+  }
+
+  @override
+  Future<List<TrainerProgramUpdate>> previewUpdates(String programId) async =>
+      (await _rpc('preview_trainer_program_updates', {
+        'p_program_id': programId,
+      }) as List).cast<Map>().map(TrainerProgramUpdate.fromJson).toList();
+
+  @override
+  Future<({int updated, int skipped})> applyUpdates(
+    String operationId,
+    String programId,
+    List<TrainerProgramUpdate> sessions,
+  ) async {
+    final result = await _rpc('apply_trainer_program_updates', {
+      'p_operation_id': operationId,
+      'p_program_id': programId,
+      'p_selection': sessions.map((session) => session.selection).toList(),
+    }) as Map;
+    return (
+      updated: result['updated'] as int,
+      skipped: result['skipped'] as int,
+    );
   }
 }
 

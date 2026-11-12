@@ -1,5 +1,11 @@
 # Registro de decisiones vigentes
 
+**Actualizar pautas de programas · 12/11/2026.** Javier confirma la selección
+de uno, varios o todos los alumnos, con vista previa de sesiones y una sola
+confirmación. Se aplican revisiones a citas pendientes con correspondencia
+inequívoca. Las iniciadas y las adaptadas individualmente quedan protegidas.
+[Recorrido](TRAINER_PRIVATE_PROGRAMS.md#actualizar-pautas-de-programas--12112026).
+
 **Color y programas pautados · 12/11/2026.** Javier confirma elegir el color
 del alumno desde su ficha, con opción Automático, y ver los programas pautados
 en Preparador con fases y progreso. El calendario y el programa comparten la
