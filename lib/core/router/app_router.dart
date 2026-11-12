@@ -581,6 +581,8 @@ class AppRouter {
                                           param2: auth.user.id,
                                         ),
                                     child: ScheduledWorkoutPreviewPage(
+                                      getExercise: (id) =>
+                                          sl<GetExerciseByIdUseCase>()(id),
                                       routeBase:
                                           '/plan/week/session/${Uri.encodeComponent(state.pathParameters['scheduledId']!)}',
                                       initialDate: DateTime.tryParse(

@@ -1,5 +1,21 @@
 # Ejercicios privados profesionales · TRN-019 · 21/10/2026
 
+## Ficha actualizada y conservación al iniciar
+
+Si el preparador cambia solo la descripción, la foto o el vídeo, el ejercicio
+conserva su ID y la edición no consume una versión. Las pautas pendientes que
+usan ese ID muestran el texto al abrir la sesión y la foto y el vídeo en
+«Ver ficha». Las ediciones que también cambian nombre, tipo, músculos, material
+o dificultad crean otra versión. Las pautas asociadas a una versión previa
+siguen apuntando a esa versión.
+
+Al iniciar se fijan el texto, la ruta privada de la foto y el vídeo, incluidos
+los campos vacíos. Para las ejecuciones existentes se conserva la foto que
+mostraban al instalar la migración. Solo el dueño de la ejecución puede
+obtener la imagen histórica por ese vínculo. El control de referencias de
+medios protege los archivos que usa el historial. La app del deportista
+1.23.0 incorpora la consulta de la ficha pendiente y la foto congelada.
+
 ## Filtros rápidos y nombres musculares · 12/11/2026
 
 Las dos pestañas de Ejercicios en Trainer ofrecen filtros visibles por músculo
@@ -109,9 +125,9 @@ alojamiento externo. La interfaz lo explica.
 
 `exercises.origin='coach'`, propietario obligatorio y `is_public=false` separan
 el contenido profesional de los ejercicios personales y del catálogo oficial.
-Cada edición crea un ID nuevo y retira la anterior de la selección general.
-La sesión conserva el ID exacto del ejercicio; el programa conserva el de la
-sesión. Revisar no modifica técnica, vídeo ni foto de recetas anteriores.
+Una edición que cambia la definición del ejercicio crea un ID nuevo y retira
+la versión anterior de la selección general. La sesión conserva el ID exacto
+del ejercicio y el programa conserva el de la sesión.
 El selector conserva versiones antiguas que ya formen parte de la receta editada.
 
 La autoría requiere acceso profesional activo y MFA. Las lecturas propias
@@ -133,8 +149,9 @@ Bucket privado `trainer-exercise-images`, JPEG y límite de 512.000 bytes.
 La reserva idempotente tiene ruta `propietario/operación.jpg`. Solo su dueño con
 MFA y acceso activo puede subirla; no existen permisos de sobrescritura o
 borrado de estas imágenes. El alumno obtiene firma mediante acceso al recurso
-asignado. Una edición conserva, sustituye con otra ruta o retira la imagen en
-la nueva versión, manteniendo la anterior intacta. No se guardan firmas en SQL.
+asignado. Una edición conserva, sustituye con otra ruta o retira la imagen.
+Las versiones y ejecuciones que referencian una foto anterior la conservan.
+No se guardan firmas en SQL.
 
 Los contadores condicionados de `exercise_limits` y el bloqueo de autoría hacen
 cumplir cuotas bajo concurrencia. Cada ejercicio/version guardado consume una

@@ -4,6 +4,10 @@ import 'package:entrenaop/features/pro/domain/pro_access.dart';
 
 import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
+import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dart';
+import 'package:entrenaop/features/exercises/domain/repositories/exercise_repository.dart';
+import 'package:entrenaop/features/exercises/domain/usecases/get_exercise_by_id_usecase.dart';
+import 'package:entrenaop/features/exercises/presentation/widgets/exercise_detail_sheet.dart';
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout_preview.dart';
 import 'package:entrenaop/features/workout_schedule/domain/repositories/scheduled_workout_preview_repository.dart';
@@ -18,6 +22,38 @@ import 'package:go_router/go_router.dart';
 import 'package:workout_core/performance_set.dart';
 
 void main() {
+  testWidgets(
+    'una pauta pendiente abre la ficha actual sin iniciar la sesión',
+    (tester) async {
+      final repository = _PreviewRepository();
+      final cubit = _cubit(repository);
+      final exercises = _ExerciseDetails();
+      final router = _router(
+        cubit,
+        direct: true,
+        getExercise: GetExerciseByIdUseCase(exercises),
+      );
+      addTearDown(cubit.close);
+      addTearDown(router.dispose);
+      await cubit.load();
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+      final action = find.byTooltip('Ver ficha de Sentadilla');
+      await tester.ensureVisible(action);
+      await tester.pumpAndSettle();
+      await tester.tap(action);
+      await tester.pumpAndSettle();
+      final sheet = tester.widget<ExerciseDetailSheet>(
+        find.byType(ExerciseDetailSheet),
+      );
+      expect(sheet.description, 'Descripción corregida');
+      expect(sheet.imageUrl, 'https://example.invalid/foto.jpg');
+      expect(sheet.videoUrl, 'https://example.invalid/video');
+      expect(exercises.lookups, ['exercise']);
+      expect(repository.startedRevisions, isEmpty);
+    },
+  );
+
   test(
     'Free conserva la pauta pero no puede solicitar otro inicio adaptativo',
     () async {
@@ -486,7 +522,11 @@ void main() {
   });
 }
 
-GoRouter _router(ScheduledWorkoutPreviewCubit cubit, {bool direct = false}) {
+GoRouter _router(
+  ScheduledWorkoutPreviewCubit cubit, {
+  bool direct = false,
+  Future<ExerciseEntity?> Function(String)? getExercise,
+}) {
   const path = '/plan/week/session/scheduled';
   final exits = WorkflowExitRegistry();
   return GoRouter(
@@ -517,6 +557,7 @@ GoRouter _router(ScheduledWorkoutPreviewCubit cubit, {bool direct = false}) {
             child: ScheduledWorkoutPreviewPage(
               routeBase: path,
               initialDate: DateTime(2026, 9, 23),
+              getExercise: getExercise,
             ),
           ),
         ),
@@ -564,6 +605,28 @@ class _PreviewRepository implements ScheduledWorkoutPreviewRepository {
     expect(id, 'scheduled');
     startedRevisions.add(revision);
     return onStart?.call(revision) ?? 'execution';
+  }
+}
+
+class _ExerciseDetails extends Fake implements ExerciseRepository {
+  final lookups = <String>[];
+
+  @override
+  Future<ExerciseEntity?> getExerciseById(String id) async {
+    lookups.add(id);
+    return const ExerciseEntity(
+      id: 'exercise',
+      name: 'Sentadilla',
+      description: 'Descripción corregida',
+      thumbnailUrl: 'https://example.invalid/foto.jpg',
+      videoUrl: 'https://example.invalid/video',
+      muscleGroups: ['piernas'],
+      equipment: [],
+      difficulty: 'inicial',
+      exerciseType: 'repeticiones',
+      isPublic: false,
+      origin: ExerciseOrigin.coach,
+    );
   }
 }
 

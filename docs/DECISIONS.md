@@ -1,5 +1,12 @@
 # Registro de decisiones vigentes
 
+**Ficha de ejercicios privados en Trainer · 12/11/2026.** Javier confirma
+que el texto, la foto y el vídeo actualizados deben verse en las sesiones
+pendientes que utilizan el ejercicio, sin volver a pautarlas. La ejecución
+fija esos tres campos al iniciarse. Los cambios de nombre, tipo, músculos,
+material o dificultad conservan el versionado.
+[Contrato](TRAINER_PRIVATE_EXERCISES.md#ficha-actualizada-y-conservación-al-iniciar).
+
 **Una sesión abierta por cuenta · 12/11/2026.** Javier confirma que Inicio
 debe ofrecer continuar una ejecución abierta aunque sea de ayer o se haya
 iniciado fuera de agenda. Si la tarjeta del día ya ofrece retomar esa misma

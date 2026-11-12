@@ -86,7 +86,7 @@ begin
     jsonb_set(payload, '{blocks,0,exercises,0,exercise_id}', to_jsonb(private_coach::text)));
   perform public.assign_trainer_workout(private_schedule, relation, private_session, current_date + 4, null);
   private_coach_latest := public.save_trainer_exercise(gen_random_uuid(),
-    jsonb_set(exercise_draft, '{description}', '"Instrucción revisada"'), private_coach);
+    exercise_draft || jsonb_build_object('name', 'Nueva variante', 'description', 'Instrucción revisada'), private_coach);
 
   perform set_config('request.jwt.claim.sub', pupil::text, true);
   perform set_config('request.jwt.claims', jsonb_build_object('sub', pupil, 'role', 'authenticated', 'aal', 'aal1')::text, true);

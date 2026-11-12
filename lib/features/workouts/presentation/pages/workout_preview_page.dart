@@ -166,12 +166,14 @@ class WorkoutPreviewContent extends StatelessWidget {
     required this.thumbnails,
     this.errorMessage,
     this.leading,
+    this.onExercisePressed,
     super.key,
   });
   final WorkoutTemplate workout;
   final Map<String, String> thumbnails;
   final String? errorMessage;
   final Widget? leading;
+  final ValueChanged<WorkoutItem>? onExercisePressed;
 
   @override
   Widget build(BuildContext context) => SafeArea(
@@ -198,6 +200,7 @@ class WorkoutPreviewContent extends StatelessWidget {
                       number: index + 1,
                       block: block,
                       thumbnails: thumbnails,
+                      onExercisePressed: onExercisePressed,
                     ),
                     const SizedBox(height: 12),
                   ],
@@ -316,11 +319,13 @@ class _BlockCard extends StatelessWidget {
     required this.number,
     required this.block,
     required this.thumbnails,
+    this.onExercisePressed,
   });
 
   final int number;
   final WorkoutBlock block;
   final Map<String, String> thumbnails;
+  final ValueChanged<WorkoutItem>? onExercisePressed;
 
   @override
   Widget build(BuildContext context) {
@@ -389,6 +394,11 @@ class _BlockCard extends StatelessWidget {
                 index: index,
                 item: item,
                 imageUrl: thumbnails[item.exerciseId],
+                onPressed:
+                    onExercisePressed != null &&
+                        block.format != WorkoutBlockFormat.running
+                    ? () => onExercisePressed!(item)
+                    : null,
               ),
             ],
           ],
@@ -443,12 +453,14 @@ class _ExerciseRow extends StatelessWidget {
     required this.index,
     required this.item,
     this.imageUrl,
+    this.onPressed,
   });
 
   final WorkoutBlock block;
   final int index;
   final WorkoutItem item;
   final String? imageUrl;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -472,6 +484,12 @@ class _ExerciseRow extends StatelessWidget {
                 style: const TextStyle(fontWeight: FontWeight.w700),
               ),
             ),
+            if (onPressed != null)
+              IconButton(
+                tooltip: 'Ver ficha de ${item.exerciseName}',
+                onPressed: onPressed,
+                icon: const Icon(Icons.info_outline),
+              ),
           ],
         ),
         const SizedBox(height: 7),

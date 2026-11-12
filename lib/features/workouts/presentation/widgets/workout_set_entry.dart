@@ -357,11 +357,13 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
         ),
       );
     }
-    final imageUrl = context
-        .read<ActiveWorkoutCubit>()
-        .state
-        .exercises[set.exerciseId]
-        ?.thumbnailUrl;
+    final imageUrl = set.imageForExecution(
+      context
+          .read<ActiveWorkoutCubit>()
+          .state
+          .exercises[set.exerciseId]
+          ?.thumbnailUrl,
+    );
     final expandImage = !widget.review && imageUrl?.trim().isNotEmpty == true;
     final header = WorkoutExerciseHeader(
       name: set.exerciseName,

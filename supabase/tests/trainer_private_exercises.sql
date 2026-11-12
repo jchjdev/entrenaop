@@ -5,7 +5,8 @@ do $$
 declare trainer uuid:=gen_random_uuid(); pupil uuid:=gen_random_uuid(); other uuid:=gen_random_uuid();
  rel uuid:=gen_random_uuid(); op uuid:=gen_random_uuid(); image_op uuid:=gen_random_uuid();
  exercise uuid; revised uuid; hidden uuid; t uuid; program uuid; scheduled uuid; execution uuid;
- path text; draft jsonb; payload jsonb; changed integer; personal uuid; ownblock uuid;
+ next_scheduled uuid:=gen_random_uuid(); next_execution uuid; edit_op uuid:=gen_random_uuid();
+ path text; next_path text; draft jsonb; edited jsonb; payload jsonb; changed integer; personal uuid; ownblock uuid;
 begin
  insert into auth.users(id,email) values(trainer,trainer||'@trainer-exercises.invalid'),
   (pupil,pupil||'@trainer-exercises.invalid'),(other,other||'@trainer-exercises.invalid');
@@ -41,7 +42,56 @@ begin
   'phases',jsonb_build_array(jsonb_build_object('name','Base','duration_weeks',1,'instructions','Controla el esfuerzo','sessions',jsonb_build_array(jsonb_build_object('template_id',t,'name','Día A'))))));
  perform public.assign_trainer_program(gen_random_uuid(),rel,program,jsonb_build_array(jsonb_build_object('phase',0,'session',0,'date',current_date)),null);
  scheduled:=(public.list_trainer_assignments(pupil)->0->>'id')::uuid;
- revised:=public.save_trainer_exercise(gen_random_uuid(),jsonb_set(draft,'{description}','"Instrucción nueva"'),exercise);
+ perform public.assign_trainer_workout(next_scheduled,rel,t,current_date+1,null);
+ next_path:=public.reserve_trainer_exercise_image(gen_random_uuid());
+ insert into storage.objects(bucket_id,name) values('trainer-exercise-images',next_path);
+ perform set_config('request.jwt.claim.sub',pupil::text,true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',pupil,'role','authenticated','aal','aal1')::text,true);
+ execution:=public.start_scheduled_workout(scheduled);
+ perform set_config('request.jwt.claim.sub',trainer::text,true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',trainer,'role','authenticated','aal','aal2')::text,true);
+ edited:=draft||jsonb_build_object('description','Instrucción nueva','video_url','https://example.invalid/nuevo','image_path',next_path);
+ if public.save_trainer_exercise(edit_op,edited,exercise) is distinct from exercise
+    or public.save_trainer_exercise(edit_op,edited,exercise) is distinct from exercise
+    or (public.get_trainer_exercise_usage()->>'exercise_used')::int<>1 then
+  raise exception 'El cambio de ficha duplica el ejercicio';
+ end if;
+ begin perform public.save_trainer_exercise(edit_op,draft,exercise); raise exception 'Cambia reintento de ficha';
+ exception when invalid_parameter_value then null; end;
+ perform set_config('request.jwt.claim.sub',pupil::text,true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',pupil,'role','authenticated','aal','aal1')::text,true);
+ if not exists(select 1 from public.workout_execution_sets where execution_id=execution and exercise_id=exercise
+    and exercise_media_frozen and exercise_description='Controla la bajada'
+    and exercise_video_url='https://example.invalid/tecnica' and exercise_image_path=path) then
+  raise exception 'La edición cambió una ejecución iniciada';
+ end if;
+ if public.get_scheduled_workout_preview(pupil,scheduled)#>>'{template,workout_blocks,0,workout_items,0,exercises,description}'
+    is distinct from 'Controla la bajada' then raise exception 'El detalle de la pauta iniciada usa texto nuevo'; end if;
+ if public.get_scheduled_workout_preview(pupil,next_scheduled)#>>'{template,workout_blocks,0,workout_items,0,exercises,description}'
+    is distinct from 'Instrucción nueva' then raise exception 'La pauta pendiente sigue usando texto viejo'; end if;
+ if not exists(select 1 from storage.objects where bucket_id='trainer-exercise-images' and name=path)
+    or not exists(select 1 from storage.objects where bucket_id='trainer-exercise-images' and name=next_path) then
+  raise exception 'El alumno pierde la foto congelada o la actual';
+ end if;
+ reset role;
+ if trainer_private.media_block_reason('image','trainer-exercise-images',path,null) is distinct from 'execution_history' then
+  raise exception 'La limpieza puede retirar una foto congelada';
+ end if;
+ set local role authenticated;
+ perform public.complete_workout_set((select id from public.workout_execution_sets where execution_id=execution limit 1),p_actual_reps=>8);
+ perform public.finish_workout_execution(execution,6,'Ensayo privado',null,null,'manual');
+ next_execution:=public.start_scheduled_workout(next_scheduled);
+ if not exists(select 1 from public.workout_execution_sets where execution_id=next_execution and exercise_id=exercise
+    and exercise_media_frozen and exercise_description='Instrucción nueva'
+    and exercise_video_url='https://example.invalid/nuevo' and exercise_image_path=next_path) then
+  raise exception 'La sesión pendiente no inicia con la ficha actualizada';
+ end if;
+ perform public.complete_workout_set((select id from public.workout_execution_sets where execution_id=next_execution limit 1),p_actual_reps=>8);
+ perform public.finish_workout_execution(next_execution,6,'Segundo ensayo',null,null,'manual');
+ perform set_config('request.jwt.claim.sub',trainer::text,true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',trainer,'role','authenticated','aal','aal2')::text,true);
+ revised:=public.save_trainer_exercise(gen_random_uuid(),jsonb_set(edited,'{name}','"Dominada con pausa"'),exercise);
+ if revised = exercise then raise exception 'El cambio estructural no crea versión'; end if;
  begin perform public.save_trainer_exercise(gen_random_uuid(),draft||jsonb_build_object('extra',repeat('x',10000)));
   raise exception 'Conserva payload sin límite'; exception when check_violation then null; end;
  hidden:=public.save_trainer_exercise(gen_random_uuid(),jsonb_set(draft,'{name}','"Nunca pautado"'));
@@ -51,11 +101,11 @@ begin
  begin perform public.create_personal_exercise('Personal extra',null,null,array['espalda'],'{}','inicial','repeticiones');
   raise exception 'Cuota personal ampliada'; exception when raise_exception then if sqlerrm='Cuota personal ampliada' then raise; end if; end;
  reset role;
- update trainer_private.exercise_limits set exercise_limit=3,image_limit=1 where trainer_id=trainer;
+ update trainer_private.exercise_limits set exercise_limit=3,image_limit=2 where trainer_id=trainer;
  set local role authenticated;
  begin perform public.save_trainer_exercise(gen_random_uuid(),draft); raise exception 'Sin límite de ejercicios'; exception when invalid_parameter_value then null; end;
  begin perform public.reserve_trainer_exercise_image(gen_random_uuid()); raise exception 'Sin límite de imágenes'; exception when invalid_parameter_value then null; end;
- if (public.get_trainer_exercise_usage()->>'exercise_used')::int<>3 or (public.get_trainer_exercise_usage()->>'image_used')::int<>1 then raise exception 'Cuenta fallos de cuota'; end if;
+ if (public.get_trainer_exercise_usage()->>'exercise_used')::int<>3 or (public.get_trainer_exercise_usage()->>'image_used')::int<>2 then raise exception 'Cuenta fallos de cuota'; end if;
 
  perform set_config('request.jwt.claim.sub',other::text,true);
  perform set_config('request.jwt.claims',jsonb_build_object('sub',other,'role','authenticated','aal','aal2')::text,true);
@@ -75,11 +125,7 @@ begin
  perform set_config('request.jwt.claim.sub',pupil::text,true);
  perform set_config('request.jwt.claims',jsonb_build_object('sub',pupil,'role','authenticated','aal','aal1')::text,true);
  if not exists(select 1 from public.exercises where id=exercise) or exists(select 1 from public.exercises where id in(revised,hidden)) then raise exception 'Alumno no ve solo lo asignado'; end if;
- if not exists(select 1 from storage.objects where bucket_id='trainer-exercise-images' and name=path) then raise exception 'Alumno no accede a la foto pautada'; end if;
- execution:=public.start_scheduled_workout(scheduled);
- if not exists(select 1 from public.workout_execution_sets where execution_id=execution and exercise_id=exercise and exercise_description='Controla la bajada') then raise exception 'Revisión altera receta recibida'; end if;
- perform public.complete_workout_set((select id from public.workout_execution_sets where execution_id=execution limit 1),p_actual_reps=>8);
- perform public.finish_workout_execution(execution,6,'Ensayo privado',null,null,'manual');
+ if not exists(select 1 from storage.objects where bucket_id='trainer-exercise-images' and name=path) then raise exception 'Alumno no accede a la foto histórica'; end if;
  perform public.end_trainer_relation(rel);
  if not exists(select 1 from public.exercises where id=exercise) then raise exception 'Baja pierde técnica histórica'; end if;
  perform set_config('request.jwt.claim.sub',trainer::text,true);

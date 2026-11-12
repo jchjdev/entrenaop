@@ -158,7 +158,9 @@ class _WorkoutAmrapReviewState extends State<WorkoutAmrapReview> {
                     for (final set in widget.sets)
                       WorkoutAmrapExerciseTile(
                         set: set,
-                        imageUrl: state.exercises[set.exerciseId]?.thumbnailUrl,
+                        imageUrl: set.imageForExecution(
+                          state.exercises[set.exerciseId]?.thumbnailUrl,
+                        ),
                         selected: draft.partialItemOrder == set.itemOrder,
                         onTap: () {
                           if (!saving &&

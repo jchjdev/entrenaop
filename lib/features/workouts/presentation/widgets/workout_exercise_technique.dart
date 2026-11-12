@@ -19,10 +19,14 @@ Future<void> showWorkoutTechnique(
     showDragHandle: true,
     builder: (_) => ExerciseDetailSheet(
       name: set.exerciseName,
-      description: set.exerciseDescription ?? exercise?.description,
+      description: set.exerciseMediaFrozen
+          ? set.exerciseDescription
+          : set.exerciseDescription ?? exercise?.description,
       sessionInstructions: set.itemInstructions,
-      imageUrl: exercise?.thumbnailUrl,
-      videoUrl: set.exerciseVideoUrl ?? exercise?.videoUrl,
+      imageUrl: set.imageForExecution(exercise?.thumbnailUrl),
+      videoUrl: set.exerciseMediaFrozen
+          ? set.exerciseVideoUrl
+          : set.exerciseVideoUrl ?? exercise?.videoUrl,
       muscleGroups: exercise?.muscleGroups ?? const [],
       equipment: exercise?.equipment ?? const [],
     ),

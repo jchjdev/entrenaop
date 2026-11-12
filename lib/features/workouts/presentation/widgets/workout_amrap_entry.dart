@@ -111,7 +111,9 @@ class WorkoutAmrapEntry extends StatelessWidget {
         for (final set in sets)
           WorkoutAmrapExerciseTile(
             set: set,
-            imageUrl: exercises[set.exerciseId]?.thumbnailUrl,
+            imageUrl: set.imageForExecution(
+              exercises[set.exerciseId]?.thumbnailUrl,
+            ),
             onTap: () => showWorkoutTechnique(context, set),
           ),
       ],

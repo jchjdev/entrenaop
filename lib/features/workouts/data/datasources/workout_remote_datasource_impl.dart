@@ -66,6 +66,8 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
       exercise_description,
       item_instructions,
       exercise_video_url,
+      exercise_media_frozen,
+      exercise_image_path,
       set_order,
       performance_prescription,
       performance_result,
@@ -221,9 +223,12 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
       }
       row = {...row, 'can_finish_without_full_recording': allowed == true};
     }
-    if (row == null || owner == null || row['result_source'] != 'device') {
-      return row;
+    if (row == null || owner == null) return row;
+    row = await _withExecutionImages(row);
+    if (supabaseClient.auth.currentUser?.id != owner) {
+      throw const AuthException('La cuenta ha cambiado.');
     }
+    if (row['result_source'] != 'device') return row;
     final details = await supabaseClient.rpc(
       'my_execution_device_details',
       params: {'p_owner': owner, 'p_execution': executionId},
@@ -232,6 +237,38 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
       throw const AuthException('La cuenta ha cambiado.');
     }
     return {...row, ...Map<String, dynamic>.from(details as Map)};
+  }
+
+  Future<Map<String, dynamic>> _withExecutionImages(
+    Map<String, dynamic> row,
+  ) async {
+    final sets = (row['workout_execution_sets'] as List)
+        .cast<Map<String, dynamic>>();
+    final paths = sets
+        .map((set) => set['exercise_image_path'])
+        .whereType<String>()
+        .toSet()
+        .toList();
+    if (paths.isEmpty) return row;
+    try {
+      final urls = await supabaseClient.storage
+          .from('trainer-exercise-images')
+          .createSignedUrlsResult(paths, 3600);
+      final signed = {
+        for (final url in urls.whereType<SignedUrlSuccess>())
+          url.path: url.signedUrl,
+      };
+      return {
+        ...row,
+        'workout_execution_sets': [
+          for (final set in sets)
+            {...set, 'exercise_image_url': signed[set['exercise_image_path']]},
+        ],
+      };
+    } catch (_) {
+      // Un fallo de la foto no debe impedir retomar la sesión.
+      return row;
+    }
   }
 
   @override

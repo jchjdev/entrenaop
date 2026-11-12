@@ -7,6 +7,8 @@ import 'package:workout_core/workout_template.dart';
 import '../../../../core/navigation/workflow_exit_guard.dart';
 import '../../../../core/presentation/app_dates.dart';
 import '../../../../core/presentation/widgets/entrena_card.dart';
+import '../../../exercises/domain/entities/exercise_entity.dart';
+import '../../../exercises/presentation/widgets/exercise_detail_sheet.dart';
 import '../../../workouts/presentation/pages/workout_preview_page.dart';
 import '../../../workouts/presentation/open_workout_prompt.dart';
 import '../../../pro/domain/pro_offer.dart';
@@ -17,12 +19,52 @@ import '../bloc/scheduled_workout_preview_cubit.dart';
 class ScheduledWorkoutPreviewPage extends StatelessWidget {
   const ScheduledWorkoutPreviewPage({
     required this.routeBase,
+    this.getExercise,
     this.initialDate,
     super.key,
   });
 
   final String routeBase;
+  final Future<ExerciseEntity?> Function(String)? getExercise;
   final DateTime? initialDate;
+
+  void _showExercise(BuildContext context, WorkoutItem item) {
+    final exercise = getExercise!(item.exerciseId);
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (_) => FutureBuilder<ExerciseEntity?>(
+        future: exercise,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return const SizedBox(
+              height: 120,
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+          final details = snapshot.data;
+          if (details == null) {
+            return const SafeArea(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: Text('No se ha podido abrir la ficha del ejercicio.'),
+              ),
+            );
+          }
+          return ExerciseDetailSheet(
+            name: details.name,
+            description: details.description,
+            imageUrl: details.thumbnailUrl,
+            videoUrl: details.videoUrl,
+            muscleGroups: details.muscleGroups,
+            equipment: details.equipment,
+            sessionInstructions: item.notes,
+          );
+        },
+      ),
+    );
+  }
 
   void _back(BuildContext context, ScheduledWorkoutPreviewState state) {
     if (context.read<ScheduledWorkoutPreviewCubit>().state.status ==
@@ -70,6 +112,13 @@ class ScheduledWorkoutPreviewPage extends StatelessWidget {
               ),
               workout: preview.workout,
               thumbnails: const {},
+              onExercisePressed:
+                  getExercise != null &&
+                      preview.scheduled.source ==
+                          ScheduledWorkoutSource.coach &&
+                      preview.scheduled.status == ScheduledWorkoutStatus.planned
+                  ? (item) => _showExercise(context, item)
+                  : null,
               leading: _AssignmentSummary(preview: preview),
             ),
             null => Center(

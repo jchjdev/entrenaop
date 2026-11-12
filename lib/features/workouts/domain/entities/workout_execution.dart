@@ -329,6 +329,8 @@ class WorkoutExecutionSet extends Equatable {
     this.exerciseDescription,
     this.itemInstructions,
     this.exerciseVideoUrl,
+    this.exerciseMediaFrozen = false,
+    this.exerciseImageUrl,
     this.targetDurationSeconds,
     this.targetDistanceMeters,
     this.targetLoadKg,
@@ -368,6 +370,11 @@ class WorkoutExecutionSet extends Equatable {
   /// Instrucciones de esta sesión, conservadas al iniciar la ejecución.
   final String? itemInstructions;
   final String? exerciseVideoUrl;
+  final bool exerciseMediaFrozen;
+  final String? exerciseImageUrl;
+
+  String? imageForExecution(String? currentImageUrl) =>
+      exerciseMediaFrozen ? exerciseImageUrl : currentImageUrl;
   final int setOrder;
   final int? targetReps;
   final int? targetDurationSeconds;
@@ -473,6 +480,8 @@ class WorkoutExecutionSet extends Equatable {
     exerciseDescription: exerciseDescription,
     itemInstructions: itemInstructions,
     exerciseVideoUrl: exerciseVideoUrl,
+    exerciseMediaFrozen: exerciseMediaFrozen,
+    exerciseImageUrl: exerciseImageUrl,
     setOrder: setOrder,
     targetReps: targetReps,
     targetDurationSeconds: targetDurationSeconds,
@@ -543,6 +552,8 @@ class WorkoutExecutionSet extends Equatable {
     exerciseDescription,
     itemInstructions,
     exerciseVideoUrl,
+    exerciseMediaFrozen,
+    exerciseImageUrl,
     setOrder,
     targetReps,
     targetDurationSeconds,

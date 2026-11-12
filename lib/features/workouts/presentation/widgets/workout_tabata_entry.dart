@@ -310,7 +310,9 @@ class _WorkoutTabataEntryState extends State<WorkoutTabataEntry> {
           WorkoutExerciseHeader(
             name: set.exerciseName,
             position: 'Intervalo ${_round + 1} de ${widget.sets.length}',
-            imageUrl: widget.exercises[set.exerciseId]?.thumbnailUrl,
+            imageUrl: set.imageForExecution(
+              widget.exercises[set.exerciseId]?.thumbnailUrl,
+            ),
             onTechnique: () => showWorkoutTechnique(context, set),
           ),
           const SizedBox(height: 20),
