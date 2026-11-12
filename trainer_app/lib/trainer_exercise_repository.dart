@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:trainer_access/authenticated_rpc.dart';
 import 'package:trainer_access/trainer_access.dart';
@@ -113,18 +116,30 @@ class SupabaseTrainerExerciseRepository implements TrainerExerciseRepository {
     final signed = <String, String>{};
     for (var start = 0; start < paths.length; start += 100) {
       _identity();
-      final results = await client.storage
-          .from(bucket)
-          .createSignedUrlsResult(
-            paths.sublist(
-              start,
-              start + 100 > paths.length ? paths.length : start + 100,
-            ),
-            900,
-          );
-      _identity();
-      for (final result in results.whereType<SignedUrlSuccess>()) {
-        signed[result.path] = result.signedUrl;
+      try {
+        final results = await client.storage
+            .from(bucket)
+            .createSignedUrlsResult(
+              paths.sublist(
+                start,
+                start + 100 > paths.length ? paths.length : start + 100,
+              ),
+              900,
+            )
+            .timeout(const Duration(seconds: 4));
+        for (final result in results.whereType<SignedUrlSuccess>()) {
+          signed[result.path] = result.signedUrl;
+        }
+      } on StorageException {
+        // Las miniaturas son opcionales. Una caída de Storage no debe ocultar
+        // los ejercicios que el servidor ya ha autorizado a consultar.
+        break;
+      } on http.ClientException {
+        break;
+      } on TimeoutException {
+        break;
+      } finally {
+        _identity();
       }
     }
     return signed;

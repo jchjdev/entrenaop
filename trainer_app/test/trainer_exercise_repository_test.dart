@@ -41,6 +41,7 @@ class ServerFixture {
   Uint8List? stored;
   bool failSave = true;
   bool failUploadOnce = false;
+  bool failSigning = false;
   int uploads = 0;
   List<Map<String, dynamic>> workoutRows = [], workoutDetails = [];
   List<Map<String, dynamic>> officialRows = [
@@ -124,6 +125,12 @@ class ServerFixture {
       return json(request, officialRows.skip(offset).take(500).toList());
     }
     if (path.endsWith('/object/sign/trainer-exercise-images')) {
+      if (failSigning) {
+        return json(request, {
+          'statusCode': '500',
+          'message': 'Storage no disponible',
+        }, 500);
+      }
       final paths = (jsonDecode(request.body) as Map)['paths'] as List;
       return json(request, [
         for (final value in paths)
@@ -426,6 +433,27 @@ void main() {
     );
     expect(server.payloads, isEmpty);
     expect(server.uploads, 0);
+  });
+
+  test('un fallo de miniaturas conserva la biblioteca y el selector', () async {
+    final server = ServerFixture()..failSigning = true;
+    addTearDown(server.client.dispose);
+    await server.login();
+    final repository = SupabaseTrainerExerciseRepository(server.client, owner);
+    final items = await repository.list();
+    expect(items.map((e) => e.id), ['current', 'old']);
+    expect(items.every((e) => e.imageUrl == null), isTrue);
+    expect(items.first.imagePath, '$owner/current.jpg');
+
+    final selector = SupabaseTrainerWorkoutRepository(server.client, owner);
+    expect((await selector.exercises()).map((e) => e.id), [
+      'official',
+      'current',
+    ]);
+
+    server.failSigning = false;
+    final refreshed = await repository.list();
+    expect(refreshed.first.imageUrl, contains('token=fixture'));
   });
 
   test('el selector mezcla públicos y propios y conserva solo la revisión antigua fijada', () async {
