@@ -5,7 +5,7 @@ do $$
 declare trainer uuid:=gen_random_uuid(); pupil uuid:=gen_random_uuid(); other uuid:=gen_random_uuid();
  rel uuid:=gen_random_uuid(); op uuid:=gen_random_uuid(); delivery uuid:=gen_random_uuid();
  exercise uuid; t uuid; revised uuid; program uuid; revised_program uuid; scheduled uuid; execution uuid;
- payload jsonb; content jsonb; entries jsonb; j jsonb; before_count integer;
+ payload jsonb; content jsonb; entries jsonb; j jsonb; before_count integer; move_fingerprint text; set_id uuid;
 begin
  insert into auth.users(id,email) values(trainer,trainer||'@trainer-programs.invalid'),
   (pupil,pupil||'@trainer-programs.invalid'),(other,other||'@trainer-programs.invalid');
@@ -22,10 +22,18 @@ begin
  perform set_config('request.jwt.claim.sub',trainer::text,true);
  perform set_config('request.jwt.claims',jsonb_build_object('sub',trainer,'role','authenticated','aal','aal2')::text,true);
  set local role authenticated;
+ perform public.set_trainer_agenda_color(pupil,'teal');
+ if public.list_trainer_agenda_colors()->>pupil::text is distinct from 'teal' then
+  raise exception 'No guarda el color manual';
+ end if;
+ begin perform public.set_trainer_agenda_color(pupil,'#ffffff');
+  raise exception 'Admite un color fuera de la paleta'; exception when check_violation then null; end;
  t:=public.save_trainer_workout(gen_random_uuid(),payload);
  content:=jsonb_build_object('name','Preparación privada','mode','phased','description','Base y progresión',
   'phases',jsonb_build_array(jsonb_build_object('name','Base','duration_weeks',2,'instructions','Revisar RPE antes de avanzar',
-   'sessions',jsonb_build_array(jsonb_build_object('template_id',t,'name','Fuerza A')))));
+   'sessions',jsonb_build_array(jsonb_build_object('template_id',t,'name','Fuerza A'))),
+   jsonb_build_object('name','Progresión','duration_weeks',2,'instructions','Subir carga gradualmente',
+   'sessions',jsonb_build_array(jsonb_build_object('template_id',t,'name','Fuerza B')))));
  program:=public.save_trainer_program(op,content);
  if public.save_trainer_program(op,content)<>program then raise exception 'Duplica programa al reintentar'; end if;
  begin perform public.save_trainer_program(op,jsonb_set(content,'{name}','"Otro programa"'));
@@ -39,7 +47,7 @@ begin
  begin perform public.assign_trainer_workout(gen_random_uuid(),rel,t,current_date,null);
   raise exception 'Permite asignar versión suelta retirada'; exception when insufficient_privilege then null; end;
  entries:=jsonb_build_array(jsonb_build_object('phase',0,'session',0,'date',current_date),
-  jsonb_build_object('phase',0,'session',0,'date',current_date+2));
+  jsonb_build_object('phase',1,'session',0,'date',current_date+2));
  perform public.assign_trainer_program(delivery,rel,program,entries,'Controla el descanso');
  perform public.assign_trainer_program(delivery,rel,program,entries,'Controla el descanso');
  if jsonb_array_length(public.list_trainer_assignments(pupil))<>2 then raise exception 'Entrega no idempotente'; end if;
@@ -60,22 +68,55 @@ begin
  if (public.get_trainer_program(revised_program)->>'version')::integer<>2
   or (public.get_trainer_program(program)->>'version')::integer<>1 then raise exception 'Reinterpreta programa'; end if;
  if jsonb_array_length(public.list_trainer_programs())<>1 then raise exception 'Lista versiones retiradas'; end if;
+ move_fingerprint:=public.preview_trainer_assignment_change(scheduled,0,current_date+1,'Nota editada')->>'fingerprint';
+ perform public.change_trainer_assignment_reviewed(gen_random_uuid(),scheduled,0,current_date+1,'Nota editada',move_fingerprint);
 
  perform set_config('request.jwt.claim.sub',other::text,true);
  perform set_config('request.jwt.claims',jsonb_build_object('sub',other,'role','authenticated','aal','aal2')::text,true);
  if public.list_trainer_agenda(current_date,current_date+7)<>'[]'::jsonb or public.list_trainer_programs()<>'[]'::jsonb then raise exception 'ADMIN ajeno lee biblioteca/agenda'; end if;
  begin perform public.get_trainer_program(program);raise exception 'ADMIN abre programa ajeno';exception when insufficient_privilege then null;end;
  begin perform public.assign_trainer_program(gen_random_uuid(),rel,program,entries,null);raise exception 'Otro asigna programa ajeno';exception when insufficient_privilege then null;end;
+ if public.list_trainer_agenda_colors()<>'{}'::jsonb
+  or public.list_my_assigned_programs(other,delivery)->'items'<>'[]'::jsonb then
+  raise exception 'Un usuario ajeno ve color o programa';
+ end if;
+ begin perform public.list_my_assigned_programs(pupil,delivery);
+  raise exception 'Puede suplantar al alumno'; exception when insufficient_privilege then null; end;
  perform set_config('request.jwt.claim.sub',pupil::text,true);
  perform set_config('request.jwt.claims',jsonb_build_object('sub',pupil,'role','authenticated','aal','aal1')::text,true);
  begin perform public.get_trainer_program(program);raise exception 'Alumno abre biblioteca profesional';exception when insufficient_privilege then null;end;
+ begin perform public.list_trainer_agenda_colors();
+  raise exception 'Alumno consulta preferencias del entrenador'; exception when insufficient_privilege then null; end;
+ j:=public.list_my_assigned_programs(pupil,delivery)->'items'->0;
+ if j->>'name' is distinct from 'Preparación privada'
+  or j->>'total' is distinct from '2' or j->>'completed' is distinct from '0'
+  or j#>>'{phases,0,name}' is distinct from 'Base'
+  or j#>>'{phases,1,name}' is distinct from 'Progresión'
+  or j#>>'{phases,0,sessions,0,id}' is distinct from scheduled::text
+  or j#>>'{phases,0,sessions,0,date}' is distinct from (current_date+1)::text then
+  raise exception 'La ficha no conserva fases, versión y cita movida: %',j;
+ end if;
+ if public.get_my_trainer_notice_groups_v2(pupil)#>>'{resources,has_assigned_programs}' is distinct from 'true' then
+  raise exception 'Preparador no muestra el acceso a programas';
+ end if;
  execution:=public.start_scheduled_workout(scheduled);
  if not exists(select 1 from public.workout_execution_sets where execution_id=execution and target_reps=8) then raise exception 'Pierde receta fijada';end if;
  perform public.end_trainer_relation(rel);
  if public.start_scheduled_workout(scheduled)<>execution then raise exception 'Baja interrumpe iniciada';end if;
+ for set_id in select id from public.workout_execution_sets where execution_id=execution loop
+  perform public.complete_workout_set(set_id,p_actual_reps=>8,p_actual_load_kg=>20);
+ end loop;
+ perform public.finish_workout_execution(execution,6,'Resultado del programa',null,null,'manual');
+ j:=public.list_my_assigned_programs(pupil)->'items'->0;
+ if j->>'completed' is distinct from '1' or j->>'total' is distinct from '1'
+  or public.list_my_assigned_programs(pupil,delivery)#>>'{items,0,phases,0,sessions,0,status}' is distinct from 'completed' then
+  raise exception 'El progreso diverge del calendario o pierde el historial';
+ end if;
  perform set_config('request.jwt.claim.sub',trainer::text,true);
  perform set_config('request.jwt.claims',jsonb_build_object('sub',trainer,'role','authenticated','aal','aal2')::text,true);
  if jsonb_array_length(public.list_trainer_agenda(current_date,current_date+7))<>2 then raise exception 'Pierde historial del programa';end if;
+ perform public.set_trainer_agenda_color(pupil,null);
+ if public.list_trainer_agenda_colors()<>'{}'::jsonb then raise exception 'No vuelve al color automático'; end if;
  begin perform public.assign_trainer_program(gen_random_uuid(),rel,program,entries,null);raise exception 'Asigna tras baja';exception when insufficient_privilege then null;end;
  perform set_config('request.jwt.claims',jsonb_build_object('sub',trainer,'role','authenticated','aal','aal1')::text,true);
  begin perform public.list_trainer_programs();raise exception 'Biblioteca sin MFA';exception when insufficient_privilege then null;end;

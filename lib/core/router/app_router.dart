@@ -41,6 +41,8 @@ import 'package:entrenaop/features/trainers/presentation/pages/trainer_forms_pag
 import 'package:entrenaop/features/trainers/presentation/pages/trainer_assessments_page.dart';
 import 'package:entrenaop/features/trainers/data/trainer_assessment_repository.dart';
 import 'package:entrenaop/features/trainers/data/supabase_student_notice_repository.dart';
+import 'package:entrenaop/features/trainers/data/supabase_student_assigned_programs_repository.dart';
+import 'package:entrenaop/features/trainers/presentation/pages/student_assigned_programs_page.dart';
 import 'package:entrenaop/features/trainers/presentation/pages/professional_hub_page.dart';
 import 'package:entrenaop/features/trainers/presentation/pages/professional_technique_page.dart';
 import 'package:entrenaop/features/workouts/data/services/client_technique_repository.dart';
@@ -1661,6 +1663,27 @@ class AppRouter {
                         sl<SupabaseClient>(),
                         auth.user.id,
                         forTrainer: false,
+                      ),
+                    ),
+            ),
+          ),
+        for (final programDetail in [false, true])
+          materialAppRoute(
+            path: programDetail
+                ? '/my-trainer/programs/:id'
+                : '/my-trainer/programs',
+            builder: (_, state) => BlocBuilder<AuthCubit, AuthState>(
+              bloc: authCubit,
+              builder: (_, auth) => auth is! AuthAuthenticated
+                  ? const SizedBox.shrink()
+                  : StudentAssignedProgramsPage(
+                      key: ValueKey(
+                        'assigned-program-${auth.user.id}-${state.pathParameters['id']}',
+                      ),
+                      deliveryId: state.pathParameters['id'],
+                      repository: SupabaseStudentAssignedProgramsRepository(
+                        sl<SupabaseClient>(),
+                        auth.user.id,
                       ),
                     ),
             ),

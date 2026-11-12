@@ -105,6 +105,7 @@ class SupabaseStudentNoticeRepository implements StudentNoticeRepository {
         hasConversations: resources['has_conversations'] as bool,
         hasTechnique: resources['has_technique'] as bool,
         hasAssignedWorkouts: resources['has_assigned_workouts'] as bool,
+        hasAssignedPrograms: resources['has_assigned_programs'] == true,
         hasAppointments: resources['has_appointments'] == true,
         conversationRelationId:
             resources['conversation_relation_id'] as String?,

@@ -16,6 +16,7 @@ import 'package:workout_editor_ui/device_training_progress_tile.dart';
 import 'package:workout_editor_ui/workout_template_content.dart';
 
 import 'trainer_client_planning_repository.dart';
+import 'trainer_agenda_colors.dart';
 import 'trainer_assignment_lifecycle_actions.dart';
 import 'trainer_client_workspace_repository.dart';
 import 'trainer_operations_pages.dart';
@@ -113,9 +114,11 @@ class TrainerClientPlanningPage extends StatefulWidget {
     this.onCreateSession,
     this.onCreateProgram,
     this.receivedActivities,
+    this.agendaColors,
   });
   final ProfilePhotoLoader? photoLoader;
   final DeviceActivityInboxRepository? receivedActivities;
+  final TrainerAgendaColors? agendaColors;
   final String clientId;
   final TrainerClientWorkspaceRepository workspace;
   final TrainerRepository access;
@@ -368,6 +371,12 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
                 ),
                 if (_client!.client.isSelf)
                   const Chip(label: Text('Para mí · No ocupa plaza')),
+                if (!_client!.client.isSelf && widget.agendaColors != null)
+                  TrainerAgendaColorPicker(
+                    key: ValueKey(widget.clientId),
+                    colors: widget.agendaColors!,
+                    clientId: widget.clientId,
+                  ),
               ],
             ),
             const SizedBox(height: 8),

@@ -52,6 +52,7 @@ import 'trainer_program_date_plan.dart';
 import 'trainer_program_work_repository.dart';
 import 'trainer_program_work_pages.dart';
 import 'trainer_agenda_page.dart';
+import 'trainer_agenda_colors.dart';
 import 'trainer_shared_calendar_page.dart';
 import 'trainer_assignment_work_page.dart';
 import 'trainer_assignment_work_repository.dart';
@@ -212,6 +213,7 @@ class _TrainerAppState extends State<TrainerApp> {
   GoRouter _createRouter() {
     final identity = _identity;
     final exits = WorkflowExitRegistry();
+    late final agendaColors = TrainerAgendaColors(widget.client, identity!);
     GoRouter.optionURLReflectsImperativeAPIs = true;
     // Estas instancias pertenecen a la identidad del router. Una renovación
     // de sesión no debe reiniciar el trabajo abierto ni sus campos pendientes.
@@ -1050,6 +1052,7 @@ class _TrainerAppState extends State<TrainerApp> {
               builder: (context, _) => TrainerAgendaPage(
                 key: ValueKey('agenda-$identity'),
                 repository: agenda(),
+                agendaColors: agendaColors,
                 personalCalendar: SupabaseTrainerPersonalCalendarRepository(
                   widget.client,
                   identity!,
@@ -1249,6 +1252,7 @@ class _TrainerAppState extends State<TrainerApp> {
                 return guarded(
                   state,
                   TrainerClientPlanningPage(
+                    agendaColors: agendaColors,
                     photoLoader: photos().download,
                     key: ValueKey(
                       'client-planning-$identity-$id-${state.uri.queryParameters['date']}',

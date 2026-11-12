@@ -61,12 +61,14 @@ class StudentNoticeResources {
     this.hasConversations = false,
     this.hasTechnique = false,
     this.hasAssignedWorkouts = false,
+    this.hasAssignedPrograms = false,
     this.hasAppointments = false,
     this.conversationRelationId,
     this.conversations = const [],
   });
   final bool hasForms, hasAssessments, hasConversations, hasTechnique;
   final bool hasAssignedWorkouts;
+  final bool hasAssignedPrograms;
   final bool hasAppointments;
   final String? conversationRelationId;
   final List<StudentConversationLink> conversations;
@@ -77,6 +79,7 @@ class StudentNoticeResources {
       hasConversations ||
       hasTechnique ||
       hasAssignedWorkouts ||
+      hasAssignedPrograms ||
       hasAppointments;
 }
 

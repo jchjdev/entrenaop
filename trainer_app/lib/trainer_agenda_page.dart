@@ -17,6 +17,7 @@ import 'trainer_workout_repository.dart';
 import 'trainer_workout_filters.dart';
 import 'trainer_workout_pages.dart';
 import 'trainer_month_calendar.dart';
+import 'trainer_agenda_colors.dart';
 import 'trainer_pointer_drag.dart';
 import 'trainer_assignment_lifecycle_actions.dart';
 import 'trainer_agenda_session_panel.dart';
@@ -107,10 +108,12 @@ class TrainerAgendaPage extends StatefulWidget {
     this.appointments,
     this.personalCalendar,
     this.personalClientId,
+    this.agendaColors,
   }) : assert((personalCalendar == null) == (personalClientId == null));
   final TrainerAgendaRepository repository;
   final TrainerSharedCalendarRepository? personalCalendar;
   final String? personalClientId;
+  final TrainerAgendaColors? agendaColors;
   final TrainerWorkoutRepository? workouts;
   final TrainerRepository? access;
   final TrainerAppointmentRepository? appointments;
@@ -191,6 +194,7 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
 
   @override
   void dispose() {
+    widget.agendaColors?.removeListener(_colorsChanged);
     _catalogSearch.dispose();
     super.dispose();
   }
@@ -198,9 +202,12 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
   @override
   void initState() {
     super.initState();
+    widget.agendaColors?.addListener(_colorsChanged);
     _load();
     if (widget.workouts != null) _loadLibrary();
   }
+
+  void _colorsChanged() => setState(() {});
 
   final _catalogSearch = TrainerCatalogSearch();
   String _libraryQuery = '';
@@ -514,6 +521,7 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
       id: 'session-${assignment.id}',
       date: assignment.date,
       personId: row.clientId,
+      color: widget.agendaColors?[row.clientId],
       personName: row.clientName,
       title: assignment.name,
       stateLabel:
@@ -682,6 +690,7 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
   }
 
   Future<void> _load({bool more = false}) async {
+    if (!more) widget.agendaColors?.refresh().catchError((Object _) {});
     final request = ++_request;
     final from = _from, to = _to;
     final personalFetch = !more
@@ -783,6 +792,7 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
         id: 'received-${entry.id}',
         date: entry.date,
         personId: widget.personalClientId!,
+        color: widget.agendaColors?[widget.personalClientId!],
         personName: 'Para mí · ${entry.trainerName ?? 'Preparador'}',
         title: entry.name,
         stateLabel: '${_receivedState(entry)} · Solo lectura',
@@ -1044,6 +1054,7 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
     id: 'appointment-${row.id}',
     date: row.calendarStart,
     personId: row.clientId,
+    color: widget.agendaColors?[row.clientId],
     personName: row.clientName,
     title:
         '${row.calendarStart.hour.toString().padLeft(2, '0')}:${row.calendarStart.minute.toString().padLeft(2, '0')} · ${row.title}',
@@ -1971,6 +1982,7 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
         id: 'assessment-${event.id}',
         date: event.date,
         personId: event.clientId,
+        color: widget.agendaColors?[event.clientId],
         personName: event.personName,
         title: event.title,
         stateLabel: switch (event.status) {

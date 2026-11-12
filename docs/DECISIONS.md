@@ -1,5 +1,10 @@
 # Registro de decisiones vigentes
 
+**Color y programas pautados · 12/11/2026.** Javier confirma elegir el color
+del alumno desde su ficha, con opción Automático, y ver los programas pautados
+en Preparador con fases y progreso. El calendario y el programa comparten la
+misma cita y su estado. [Recorrido](TRAINER_PRIVATE_PROGRAMS.md#color-y-programas-pautados--12112026).
+
 **Tarjetas de los portales · 12/11/2026.** Javier pide que las tarjetas de
 un mismo listado tengan la misma altura aunque unos títulos ocupen una línea
 y otros dos, con el contenido centrado en vertical. Se aplica a los catálogos

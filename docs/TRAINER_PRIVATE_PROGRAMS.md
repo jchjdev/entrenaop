@@ -1,5 +1,24 @@
 # Programas privados y agenda profesional · TRN-017 · 21/10/2026
 
+## Color y programas pautados · 12/11/2026
+
+La ficha del alumno ofrece **Color en agenda**. Automático mantiene la
+asignación por identidad. Los colores manuales pertenecen al par
+preparador-alumno, se guardan entre dispositivos y se usan en el tablero para
+sesiones, citas y pruebas. El contraste se adapta al tema del preparador.
+
+**Preparador → Programas pautados** aparece cuando el deportista tiene un
+envío consultable. Cada ficha usa la versión pautada y muestra preparador,
+indicaciones y progreso. Solo aparecen fases con sesiones pautadas en ese
+envío. Cada sesión abre la misma cita del calendario y el progreso se calcula
+de su estado actual. Las retiradas salen del recuento. Al terminar la relación
+quedan disponibles los entrenamientos con ejecución.
+
+Los envíos previos recuperan su fase desde la orden original de la cita,
+aunque se haya movido o adaptado después. Si dos fases antiguas no se pueden
+distinguir, la sesión se presenta en «Sesiones del programa». Los envíos
+nuevos guardan directamente el índice de fase.
+
 ## Recorrido y reutilización
 
 El preparador crea rutinas o programas por fases con nombre, objetivo,
@@ -53,10 +72,8 @@ resultados y contratos de baja de TRN-016. Un alumno no obtiene acceso general
 a la biblioteca del profesional ni repetición libre por conocer el ID del
 programa. No se añade una sección vacía de programas a todos los deportistas.
 Los controles nuevos del deportista de TRN-016 aún requieren distribuir su app.
-El alumno recibe las sesiones y las etiquetas de programa/fase, no una ficha
-completa del programa con todas las indicaciones generales de cada fase. Esa
-presentación contextual en Mi plan sigue pendiente; no se atribuye a esta tanda
-una biblioteca de programas del alumno que todavía no existe.
+El alumno recibe las sesiones y las etiquetas de programa/fase. La vista de
+Preparador descrita arriba añade el contexto del envío.
 
 ## Agenda y navegación
 

@@ -3,27 +3,37 @@ import 'dart:math' as math;
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 
-/// Presentación local: el color depende de la identidad, no del orden de carga.
+enum TrainerAgendaColor {
+  sky('Azul celeste', Color(0xff38bdf8)),
+  violet('Violeta', Color(0xffa78bfa)),
+  green('Verde', Color(0xff34d399)),
+  orange('Naranja', Color(0xfffb923c)),
+  pink('Rosa', Color(0xfff472b6)),
+  indigo('Índigo', Color(0xff818cf8)),
+  teal('Turquesa', Color(0xff2dd4bf)),
+  yellow('Amarillo', Color(0xfffacc15));
+
+  const TrainerAgendaColor(this.label, this.color);
+  final String label;
+  final Color color;
+}
+
+/// El color automático depende de la identidad, no del orden de carga.
 Color trainerCalendarColor(String personId) {
-  const palette = [
-    Color(0xff38bdf8),
-    Color(0xffa78bfa),
-    Color(0xff34d399),
-    Color(0xfffb923c),
-    Color(0xfff472b6),
-    Color(0xff818cf8),
-    Color(0xff2dd4bf),
-    Color(0xfffacc15),
-  ];
   var hash = 0;
   for (final unit in personId.codeUnits) {
     hash = (hash * 31 + unit) & 0x7fffffff;
   }
-  return palette[hash % palette.length];
+  return TrainerAgendaColor
+      .values[hash % TrainerAgendaColor.values.length]
+      .color;
 }
 
-Color trainerCalendarDisplayColor(BuildContext context, String personId) =>
-    context.readableAccent(trainerCalendarColor(personId));
+Color trainerCalendarDisplayColor(
+  BuildContext context,
+  String personId, [
+  TrainerAgendaColor? override,
+]) => context.readableAccent(override?.color ?? trainerCalendarColor(personId));
 
 class TrainerCalendarEntry {
   const TrainerCalendarEntry({
@@ -33,6 +43,7 @@ class TrainerCalendarEntry {
     required this.personName,
     required this.title,
     required this.stateLabel,
+    this.color,
     this.assessment = false,
     this.appointment = false,
     this.muted = false,
@@ -42,6 +53,7 @@ class TrainerCalendarEntry {
   });
   final String id, personId, personName, title, stateLabel;
   final DateTime date;
+  final TrainerAgendaColor? color;
   final bool assessment, appointment, muted, completed;
   final VoidCallback? onTap;
   final Widget Function(Widget child)? dragBuilder;
@@ -54,7 +66,11 @@ class TrainerCalendarEntryTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final color = trainerCalendarDisplayColor(context, entry.personId);
+    final color = trainerCalendarDisplayColor(
+      context,
+      entry.personId,
+      entry.color,
+    );
     final label =
         '${entry.personName} · ${entry.title} · ${entry.stateLabel}'
         '${entry.dragBuilder == null ? '' : ' · Arrastra para cambiar de día'}';
@@ -192,7 +208,11 @@ class TrainerMonthCalendar extends StatelessWidget {
                       : entry.appointment
                       ? Icons.schedule
                       : Icons.event_note,
-                  color: trainerCalendarDisplayColor(context, entry.personId),
+                  color: trainerCalendarDisplayColor(
+                    context,
+                    entry.personId,
+                    entry.color,
+                  ),
                 ),
                 title: Text(entry.personName),
                 subtitle: Text('${entry.title}\n${entry.stateLabel}'),

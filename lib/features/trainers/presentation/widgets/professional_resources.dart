@@ -29,6 +29,13 @@ class ProfessionalResources extends StatelessWidget {
           'Consulta tus pautas en la agenda',
           '/plan/week',
         ),
+      if (resources.hasAssignedPrograms)
+        _link(
+          Icons.view_timeline_outlined,
+          'Programas pautados',
+          'Consulta las fases y tu progreso',
+          '/my-trainer/programs',
+        ),
       if (resources.hasForms)
         _link(
           Icons.assignment_outlined,
