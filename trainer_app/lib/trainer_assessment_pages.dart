@@ -407,6 +407,7 @@ class _TrainerAssessmentEditorPageState
                         onChanged: (_) => setState(() => _dirty = true),
                       ),
                       ProfessionalCatalogGrid(
+                        uniformHeight: false,
                         minCardWidth: 440,
                         maxColumns: 2,
                         children: [

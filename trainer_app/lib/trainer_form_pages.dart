@@ -416,6 +416,7 @@ class _TrainerFormEditorPageState extends State<TrainerFormEditorPage> {
                         onChanged: (_) => _changed(),
                       ),
                       ProfessionalCatalogGrid(
+                        uniformHeight: false,
                         minCardWidth: 440,
                         maxColumns: 2,
                         children: [

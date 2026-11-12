@@ -121,6 +121,7 @@ class _TrainerHomePageState extends State<TrainerHomePage> {
               ),
               const SizedBox(height: 24),
               ProfessionalCatalogGrid(
+                uniformHeight: false,
                 minCardWidth: 420,
                 maxColumns: 2,
                 children: [

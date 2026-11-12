@@ -31,6 +31,67 @@ class _DraftProbeState extends State<DraftProbe> {
 }
 
 void main() {
+  testWidgets('las tarjetas de catálogo se igualan entre todas las filas', (
+    t,
+  ) async {
+    await t.binding.setSurfaceSize(const Size(1200, 900));
+    addTearDown(() => t.binding.setSurfaceSize(null));
+    var taps = 0;
+    Widget app({required bool desktop, double scale = 1}) => MaterialApp(
+      home: ProfessionalWorkspaceScope(
+        desktop: desktop,
+        child: Scaffold(
+          body: Builder(
+            builder: (context) => MediaQuery(
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: TextScaler.linear(scale)),
+              child: SingleChildScrollView(
+                child: ProfessionalCatalogGrid(
+                  maxColumns: 3,
+                  children: [
+                    for (final (index, title) in [
+                      'Dominadas',
+                      'Face pulls',
+                      'Front lever',
+                      'Remo con mancuernas\ncon pecho apoyado',
+                    ].indexed)
+                      ProfessionalResourceCard(
+                        key: ValueKey(index),
+                        title: Text(title),
+                        subtitle: const Text('Versión 1 · espalda'),
+                        onTap: () => taps++,
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    Rect card(int index) => t.getRect(find.byKey(ValueKey(index)));
+
+    await t.pumpWidget(app(desktop: true));
+    final desktopCard = card(0);
+    expect(card(1).top, desktopCard.top);
+    for (final index in [1, 2, 3]) {
+      expect(card(index).width, closeTo(desktopCard.width, 0.01));
+      expect(card(index).height, desktopCard.height);
+    }
+    expect(card(3).top, desktopCard.bottom + 16);
+    await t.tap(find.byKey(const ValueKey(3)));
+    expect(taps, 1);
+
+    await t.binding.setSurfaceSize(const Size(320, 900));
+    await t.pumpWidget(app(desktop: false, scale: 2));
+    final compactCard = card(0);
+    expect(compactCard.width, 320);
+    expect(compactCard.height, greaterThan(desktopCard.height));
+    expect(card(1).top, compactCard.bottom + 16);
+    expect(card(3).size, compactCard.size);
+    expect(t.takeException(), isNull);
+  });
+
   testWidgets(
     'cambiar de paneles a scroll compacto conserva el editor montado',
     (t) async {

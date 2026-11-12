@@ -1,5 +1,14 @@
 # Identidad visual de EntrenaOP
 
+## Tarjetas de listado · 12/11/2026
+
+Las tarjetas de una rejilla profesional comparten ancho y altura, también en
+la última fila. La altura se calcula según el contenido más alto del listado
+visible, al ancho de columna y con la escala de texto actual. Así los títulos
+largos y los metadatos caben con los mismos márgenes que los títulos cortos.
+Las rejillas de formularios y los paneles de contenido independiente conservan
+la altura de su contenido.
+
 ## Tema claro profesional · 30/10/2026
 
 Trainer y ADMIN permiten alternar claro/oscuro junto a la calculadora de la

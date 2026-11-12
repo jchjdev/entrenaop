@@ -62,6 +62,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
             ),
             const SizedBox(height: 20),
             ProfessionalCatalogGrid(
+              uniformHeight: false,
               minCardWidth: 420,
               maxColumns: 3,
               children: [

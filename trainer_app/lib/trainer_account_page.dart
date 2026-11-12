@@ -86,6 +86,7 @@ class _TrainerAccountPageState extends State<TrainerAccountPage> {
             ),
           if (snapshot.data case final account?)
             ProfessionalCatalogGrid(
+              uniformHeight: false,
               children: [
                 EntrenaCard(
                   child: Column(

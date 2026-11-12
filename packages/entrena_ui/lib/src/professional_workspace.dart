@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
 import 'professional_theme.dart';
@@ -129,11 +130,13 @@ class ProfessionalCatalogGrid extends StatelessWidget {
     this.minCardWidth = 300,
     this.spacing = 16,
     this.maxColumns = 4,
+    this.uniformHeight = true,
   });
 
   final List<Widget> children;
   final double minCardWidth, spacing;
   final int maxColumns;
+  final bool uniformHeight;
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
@@ -145,6 +148,14 @@ class ProfessionalCatalogGrid extends StatelessWidget {
                 .floor()
                 .clamp(1, maxColumns)
           : 1;
+      if (uniformHeight) {
+        return _UniformCatalogGrid(
+          columns: count,
+          spacing: spacing,
+          direction: Directionality.of(context),
+          children: children,
+        );
+      }
       final cardWidth = (width - spacing * (count - 1)) / count;
       return SizedBox(
         width: width,
@@ -159,6 +170,101 @@ class ProfessionalCatalogGrid extends StatelessWidget {
       );
     },
   );
+}
+
+class _UniformCatalogGrid extends MultiChildRenderObjectWidget {
+  const _UniformCatalogGrid({
+    required this.columns,
+    required this.spacing,
+    required this.direction,
+    required super.children,
+  });
+
+  final int columns;
+  final double spacing;
+  final TextDirection direction;
+
+  @override
+  _RenderUniformCatalogGrid createRenderObject(BuildContext context) =>
+      _RenderUniformCatalogGrid(columns, spacing, direction);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderUniformCatalogGrid renderObject,
+  ) => renderObject.update(columns, spacing, direction);
+}
+
+class _CatalogGridParentData extends ContainerBoxParentData<RenderBox> {}
+
+class _RenderUniformCatalogGrid extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _CatalogGridParentData>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _CatalogGridParentData> {
+  _RenderUniformCatalogGrid(this._columns, this._spacing, this._direction);
+
+  int _columns;
+  double _spacing;
+  TextDirection _direction;
+
+  void update(int columns, double spacing, TextDirection direction) {
+    if (_columns == columns && _spacing == spacing && _direction == direction) {
+      return;
+    }
+    _columns = columns;
+    _spacing = spacing;
+    _direction = direction;
+    markNeedsLayout();
+  }
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _CatalogGridParentData) {
+      child.parentData = _CatalogGridParentData();
+    }
+  }
+
+  @override
+  void performLayout() {
+    final width = constraints.maxWidth;
+    final cardWidth = (width - _spacing * (_columns - 1)) / _columns;
+    final naturalConstraints = BoxConstraints.tightFor(width: cardWidth);
+    var cardHeight = 0.0;
+    for (var child = firstChild; child != null; child = childAfter(child)) {
+      child.layout(naturalConstraints, parentUsesSize: true);
+      if (child.size.height > cardHeight) cardHeight = child.size.height;
+    }
+
+    // Medir al ancho final deja sitio al texto ampliado y a las acciones.
+    final cardConstraints = naturalConstraints.tighten(height: cardHeight);
+    var index = 0;
+    for (var child = firstChild; child != null; child = childAfter(child)) {
+      if (child.size.height < cardHeight) {
+        child.layout(cardConstraints, parentUsesSize: true);
+      }
+      final column = index % _columns;
+      final visualColumn = _direction == TextDirection.ltr
+          ? column
+          : _columns - 1 - column;
+      (child.parentData! as _CatalogGridParentData).offset = Offset(
+        visualColumn * (cardWidth + _spacing),
+        (index ~/ _columns) * (cardHeight + _spacing),
+      );
+      index++;
+    }
+
+    final rows = (childCount + _columns - 1) ~/ _columns;
+    final height = rows == 0 ? 0.0 : rows * (cardHeight + _spacing) - _spacing;
+    size = constraints.constrain(Size(width, height));
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) =>
+      defaultPaint(context, offset);
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
+      defaultHitTestChildren(result, position: position);
 }
 
 /// Cabecera local: acciones visibles sin imponer una anchura fija al contenido.

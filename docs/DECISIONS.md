@@ -1,5 +1,10 @@
 # Registro de decisiones vigentes
 
+**Tarjetas de los portales · 12/11/2026.** Javier pide que las tarjetas de
+un mismo listado tengan la misma altura aunque unos títulos ocupen una línea
+y otros dos. Se aplica a las rejillas de Trainer y ADMIN.
+[Criterio visual](VISUAL_DESIGN.md#tarjetas-de-listado--12112026).
+
 **Filtros de Ejercicios en Trainer · 12/11/2026.** Javier pide localizar
 ejercicios rápidamente y agrupar nombres musculares equivalentes. «Mis
 ejercicios» y «EntrenaOP» combinan búsqueda, músculo, material y colecciones.
