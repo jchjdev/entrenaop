@@ -104,6 +104,8 @@ void main() {
           equipment: ['mancuerna'],
         ),
         entry('Elevación sentada', muscles: ['sóleo']),
+        entry('Aperturas', muscles: ['pectorales']),
+        entry('Press de banca', muscles: ['pecho']),
       ]
       ..officialRows = [
         entry('Elevación oficial', muscles: ['pantorrilla']),
@@ -133,6 +135,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('pantorrillas'), findsNothing);
     expect(find.text('gemelos'), findsOneWidget);
+    expect(find.text('pectorales'), findsNothing);
+    expect(find.text('pecho'), findsOneWidget);
     await tester.tap(find.text('gemelos'));
     await tester.pumpAndSettle();
     expect(find.text('Elevación de pie'), findsOneWidget);

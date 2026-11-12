@@ -8,7 +8,8 @@ reinician al cambiar de catálogo y la búsqueda se conserva.
 
 Las tarjetas, fichas y selector de Trainer agrupan alias conocidos. Por ejemplo,
 «pantorrillas» y «gemelo» se presentan como «gemelos», «isquios» como
-«isquiotibiales», y «sóleo» conserva su grupo propio. El buscador de la biblioteca
+«isquiotibiales» y «pectorales» como «pecho». «Sóleo» conserva su grupo propio.
+El buscador de la biblioteca
 admite también los alias anteriores. Esta presentación no reescribe ejercicios,
 versiones ni recetas ya pautadas. El buscador tiene espacio propio tras el botón
 de limpieza para que no se solape su etiqueta.

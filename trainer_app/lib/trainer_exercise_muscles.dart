@@ -14,6 +14,8 @@ const _aliases = {
   'cuadriceps': 'cuádriceps',
   'gluteo': 'glúteos',
   'gluteos': 'glúteos',
+  'pectoral': 'pecho',
+  'pectorales': 'pecho',
   'biceps': 'bíceps',
   'triceps': 'tríceps',
 };
