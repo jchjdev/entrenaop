@@ -31,7 +31,7 @@ void main() {
       final router = _router(
         cubit,
         direct: true,
-        getExercise: GetExerciseByIdUseCase(exercises),
+      getExercise: GetExerciseByIdUseCase(exercises).call,
       );
       addTearDown(cubit.close);
       addTearDown(router.dispose);

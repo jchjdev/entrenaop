@@ -736,7 +736,7 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
                         : 'Revisar ejercicio privado',
                     supportingText: widget.previous == null
                         ? 'Se guarda en tu biblioteca. Para que lo vea un alumno, utiliza el ejercicio en una sesión asignada.'
-                        : 'Los cambios de texto, foto o vídeo se ven en las sesiones pendientes que usan este ejercicio. Si cambias también el nombre, el tipo, los músculos, el material o la dificultad, se crea una versión para futuras pautas.',
+                        : 'Los cambios de texto, foto o vídeo se ven en las sesiones pendientes que usan esta versión. Si cambias también el nombre, el tipo, los músculos, el material o la dificultad, podrás elegir la nueva versión al preparar una sesión.',
                     submitLabel: widget.previous == null
                         ? 'Crear ejercicio'
                         : 'Guardar cambios',
