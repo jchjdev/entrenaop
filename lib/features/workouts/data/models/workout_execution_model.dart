@@ -79,7 +79,9 @@ class WorkoutExecutionModel {
       exerciseDescription: json['exercise_description'] as String?,
       itemInstructions: json['item_instructions'] as String?,
       exerciseVideoUrl: json['exercise_video_url'] as String?,
-      exerciseMediaFrozen: json['exercise_media_frozen'] == true,
+      exerciseMediaFrozen:
+          json['exercise_media_frozen'] == true ||
+          json['official_exercise_image'] != null,
       exerciseImageUrl: json['exercise_image_url'] as String?,
       setOrder: json['set_order'] as int,
       targetReps: json['target_reps'] as int?,

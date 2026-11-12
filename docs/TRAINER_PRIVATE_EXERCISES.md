@@ -16,6 +16,20 @@ obtener la imagen histórica por ese vínculo. El control de referencias de
 medios protege los archivos que usa el historial. La app del deportista
 1.23.0 incorpora la consulta de la ficha pendiente y la foto congelada.
 
+## Ejercicios oficiales y filtros compartidos
+
+Las ejecuciones con ejercicios oficiales fijan los mismos campos que las de
+ejercicios privados. En las ejecuciones anteriores se conservan el texto y el
+vídeo ya guardados y se fija la foto que consultaban en el catálogo. Las pautas
+pendientes leen la ficha vigente. Las fotos oficiales gestionadas conservan su
+ruta pública y la limpieza protege las referencias del historial.
+
+ADMIN y Trainer comparten el componente de filtros y sus reglas. Cada catálogo
+genera las opciones con los músculos y materiales de sus ejercicios. Al
+recargar tras crear o editar un ejercicio, el filtro incorpora los valores que
+se hayan añadido. Las colecciones se generan con las etiquetas asignadas a los
+ejercicios del catálogo.
+
 ## Filtros rápidos y nombres musculares · 12/11/2026
 
 Las dos pestañas de Ejercicios en Trainer ofrecen filtros visibles por músculo

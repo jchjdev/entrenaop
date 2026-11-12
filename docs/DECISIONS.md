@@ -1,5 +1,11 @@
 # Registro de decisiones vigentes
 
+**Ficha de ejercicios oficiales y filtros compartidos · 12/11/2026.**
+Al iniciar una sesión, se fijan el texto, la foto y el vídeo de los ejercicios
+oficiales con el mismo contrato que los privados. ADMIN y Trainer usan los
+mismos filtros de músculo y material sobre sus respectivos catálogos.
+[Contrato](TRAINER_PRIVATE_EXERCISES.md#ejercicios-oficiales-y-filtros-compartidos).
+
 **Ficha de ejercicios privados en Trainer · 12/11/2026.** Javier confirma
 que el texto, la foto y el vídeo actualizados deben verse en las sesiones
 pendientes que utilizan el ejercicio, sin volver a pautarlas. La ejecución

@@ -7,6 +7,7 @@ import 'package:workout_core/exercise_draft.dart';
 import 'package:workout_core/exercise_catalog_preferences.dart';
 import 'package:workout_editor_ui/catalog_search.dart';
 import 'package:workout_editor_ui/exercise_collections.dart';
+import 'package:workout_editor_ui/exercise_catalog_filters.dart';
 import 'package:workout_editor_ui/exercise_preferences_controller.dart';
 import 'package:workout_editor_ui/exercise_labels_dialog.dart';
 import 'package:workout_editor_ui/exercise_form.dart';
@@ -18,7 +19,6 @@ import 'package:workout_editor_ui/exercise_video_field.dart';
 import 'package:workout_editor_ui/exercise_video_source.dart';
 
 import 'trainer_exercise_repository.dart';
-import 'trainer_exercise_muscles.dart';
 import 'trainer_catalog_trash_page.dart';
 import 'trainer_catalog_trash_repository.dart';
 import 'trainer_workout_repository.dart';
@@ -49,7 +49,7 @@ Future<WorkoutEditorExercise?> showTrainerExerciseEditor(
           saved = WorkoutEditorExercise(
             id: id,
             name: draft.name,
-            muscleGroups: trainerExerciseMuscles(draft.muscleGroups),
+            muscleGroups: exerciseMuscleLabels(draft.muscleGroups),
             equipment: draft.equipment,
             catalogScope: 'Míos',
           );
@@ -211,79 +211,36 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
     if (edit == false && mounted) await _load();
   }
 
-  Map<String, String> _filterOptions(Iterable<String> values) {
-    final options = <String, String>{};
-    for (final value in values) {
-      final key = normalizeCatalogSearch(value);
-      if (key.isNotEmpty) options.putIfAbsent(key, () => value.trim());
-    }
-    return Map.fromEntries(
-      options.entries.toList()..sort((a, b) => a.key.compareTo(b.key)),
-    );
-  }
-
-  Widget _filter(
-    String label,
-    String allLabel,
-    Map<String, String> options,
-    String? selected,
-    ValueChanged<String?> changed,
-  ) => ConstrainedBox(
-    constraints: const BoxConstraints(maxWidth: 240),
-    child: DropdownButtonFormField<String>(
-      key: ValueKey('$label:$selected'),
-      initialValue: selected ?? '',
-      isExpanded: true,
-      decoration: InputDecoration(labelText: label),
-      items: [
-        DropdownMenuItem(value: '', child: Text(allLabel)),
-        for (final entry in options.entries)
-          DropdownMenuItem(
-            value: entry.key,
-            child: Text(entry.value, overflow: TextOverflow.ellipsis),
-          ),
-      ],
-      onChanged: (value) => changed(value == '' ? null : value),
-    ),
-  );
-
   @override
   Widget build(BuildContext context) {
     final catalog = _showOfficial ? _official : _items;
-    final muscleGroups = {
-      for (final exercise in catalog)
-        exercise.id: trainerExerciseMuscles(exercise.draft.muscleGroups),
-    };
-    final muscleOptions = _filterOptions(muscleGroups.values.expand((m) => m));
-    final equipmentOptions = _filterOptions(
-      catalog.expand((e) => e.draft.equipment),
+    final filters = ExerciseCatalogFilters(
+      catalog.map(
+        (e) => (muscles: e.draft.muscleGroups, equipment: e.draft.equipment),
+      ),
+      muscle: _muscle,
+      equipment: _equipment,
     );
-    final muscle = muscleOptions.containsKey(_muscle) ? _muscle : null;
-    final equipment = equipmentOptions.containsKey(_equipment)
-        ? _equipment
-        : null;
     final visible = catalog
-        .where((e) {
-          final muscles = muscleGroups[e.id]!;
-          return (muscle == null ||
-                  muscles.any(
-                    (value) => normalizeCatalogSearch(value) == muscle,
-                  )) &&
-              (equipment == null ||
-                  e.draft.equipment.any(
-                    (value) => normalizeCatalogSearch(value) == equipment,
-                  )) &&
+        .where(
+          (e) =>
+              filters.matches(
+                muscles: e.draft.muscleGroups,
+                equipment: e.draft.equipment,
+              ) &&
               matchesCatalogSearch(_query, [
                 e.draft.name,
-                ...trainerExerciseMuscleSearchTerms(muscles),
+                ...exerciseMuscleSearchTerms(
+                  exerciseMuscleLabels(e.draft.muscleGroups),
+                ),
                 ...e.draft.equipment,
                 ...?_preferences?.labels(e.id),
               ]) &&
               matchesExerciseCollection(
                 _preferences?.labels(e.id) ?? const [],
                 _label,
-              );
-        })
+              ),
+        )
         .toList(growable: false);
     return Scaffold(
       appBar: AppBar(
@@ -416,29 +373,13 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
                   ),
                 ),
               ),
-              if (muscleOptions.isNotEmpty || equipmentOptions.isNotEmpty) ...[
+              if (filters.hasOptions) ...[
                 const SizedBox(height: 12),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                    if (muscleOptions.isNotEmpty)
-                      _filter(
-                        'Músculo',
-                        'Todos los músculos',
-                        muscleOptions,
-                        muscle,
-                        (value) => setState(() => _muscle = value),
-                      ),
-                    if (equipmentOptions.isNotEmpty)
-                      _filter(
-                        'Material',
-                        'Todo el material',
-                        equipmentOptions,
-                        equipment,
-                        (value) => setState(() => _equipment = value),
-                      ),
-                  ],
+                ExerciseCatalogFilterFields(
+                  filters: filters,
+                  onMuscleChanged: (value) => setState(() => _muscle = value),
+                  onEquipmentChanged: (value) =>
+                      setState(() => _equipment = value),
                 ),
               ],
               if (_preferences?.labelsLoaded == true)
@@ -490,7 +431,7 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
                             'EntrenaOP'
                           else
                             'Versión ${exercise.version}',
-                          ...muscleGroups[exercise.id]!,
+                          ...exerciseMuscleLabels(exercise.draft.muscleGroups),
                           ...?_preferences?.labels(exercise.id),
                         ].join(' · '),
                       ),
@@ -584,7 +525,7 @@ class _ExerciseDetailsState extends State<_ExerciseDetails> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Músculos: ${trainerExerciseMuscles(draft.muscleGroups).join(' · ')}',
+                  'Músculos: ${exerciseMuscleLabels(draft.muscleGroups).join(' · ')}',
                 ),
                 Text(
                   'Material: ${draft.equipment.isEmpty ? 'Sin material' : draft.equipment.join(' · ')}',

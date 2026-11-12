@@ -68,6 +68,7 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
       exercise_video_url,
       exercise_media_frozen,
       exercise_image_path,
+      official_exercise_image,
       set_order,
       performance_prescription,
       performance_result,
@@ -249,26 +250,34 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
         .whereType<String>()
         .toSet()
         .toList();
-    if (paths.isEmpty) return row;
-    try {
-      final urls = await supabaseClient.storage
-          .from('trainer-exercise-images')
-          .createSignedUrlsResult(paths, 3600);
-      final signed = {
-        for (final url in urls.whereType<SignedUrlSuccess>())
-          url.path: url.signedUrl,
-      };
-      return {
-        ...row,
-        'workout_execution_sets': [
-          for (final set in sets)
-            {...set, 'exercise_image_url': signed[set['exercise_image_path']]},
-        ],
-      };
-    } catch (_) {
-      // Un fallo de la foto no debe impedir retomar la sesión.
-      return row;
+    final signed = <String, String>{};
+    if (paths.isNotEmpty) {
+      try {
+        final urls = await supabaseClient.storage
+            .from('trainer-exercise-images')
+            .createSignedUrlsResult(paths, 3600);
+        for (final url in urls.whereType<SignedUrlSuccess>()) {
+          signed[url.path] = url.signedUrl;
+        }
+      } catch (_) {
+        // Un fallo al firmar fotos privadas no impide retomar la sesión.
+      }
     }
+    final publicImages = supabaseClient.storage.from('exercise-images-public');
+    return {
+      ...row,
+      'workout_execution_sets': [
+        for (final set in sets)
+          {
+            ...set,
+            'exercise_image_url': switch (set['official_exercise_image']) {
+              {'path': final String path} => publicImages.getPublicUrl(path),
+              {'thumbnail_url': final String url} => url,
+              _ => signed[set['exercise_image_path']],
+            },
+          },
+      ],
+    };
   }
 
   @override

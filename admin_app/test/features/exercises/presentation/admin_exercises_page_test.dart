@@ -51,6 +51,48 @@ class _FakeRepository implements AdminExerciseRepository {
 }
 
 void main() {
+  testWidgets('ADMIN combina músculo y material con los nombres del catálogo', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(1000, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final repository = _FakeRepository()
+      ..exercises.addAll([
+        for (final (name, muscle, equipment) in [
+          ('Elevación con barra', 'pantorrillas', 'barra'),
+          ('Elevación con mancuerna', 'gemelos', 'mancuerna'),
+          ('Remo con barra', 'espalda', 'barra'),
+        ])
+          AdminCatalogExercise(
+            id: name,
+            name: name,
+            muscleGroups: [muscle],
+            equipment: [equipment],
+            difficulty: 'inicial',
+            exerciseType: 'repeticiones',
+          ),
+      ]);
+    await tester.pumpWidget(
+      MaterialApp(home: AdminExercisesPage(repository: repository)),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Todos los músculos'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('gemelos').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Elevación con barra'), findsOneWidget);
+    expect(find.text('Elevación con mancuerna'), findsOneWidget);
+    expect(find.text('Remo con barra'), findsNothing);
+
+    await tester.tap(find.text('Todo el material'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('barra').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Elevación con barra'), findsOneWidget);
+    expect(find.text('Elevación con mancuerna'), findsNothing);
+  });
+
   testWidgets('ADMIN consulta las mismas colecciones privadas del editor', (
     tester,
   ) async {

@@ -9,7 +9,7 @@ import 'package:workout_core/exercise_draft.dart';
 import 'package:workout_editor_ui/exercise_image_draft.dart';
 import 'package:workout_editor_ui/workout_editor_exercise.dart';
 
-import 'trainer_exercise_muscles.dart';
+import 'package:workout_editor_ui/exercise_catalog_filters.dart';
 
 String trainerExerciseError(Object error) {
   if (error is PostgrestException && error.code == '22023') {
@@ -190,7 +190,7 @@ class SupabaseTrainerExerciseRepository implements TrainerExerciseRepository {
           WorkoutEditorExercise(
             id: row['id'] as String,
             name: row['name'] as String,
-            muscleGroups: trainerExerciseMuscles(
+            muscleGroups: exerciseMuscleLabels(
               (row['muscle_groups'] as List).cast<String>(),
             ),
             equipment: (row['equipment'] as List).cast<String>(),

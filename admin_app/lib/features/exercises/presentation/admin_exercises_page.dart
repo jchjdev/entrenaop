@@ -7,6 +7,7 @@ import 'package:workout_core/exercise_catalog_preferences.dart';
 import 'package:workout_editor_ui/exercise_preferences_controller.dart';
 import 'package:workout_editor_ui/exercise_labels_dialog.dart';
 import 'package:workout_editor_ui/exercise_collections.dart';
+import 'package:workout_editor_ui/exercise_catalog_filters.dart';
 import 'package:workout_editor_ui/guided_program_work.dart';
 
 import '../../../core/admin_shell.dart';
@@ -45,7 +46,7 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
   String? _error;
   List<AdminCatalogExercise> _exercises = const [];
   final _search = TextEditingController();
-  String? _collection;
+  String? _collection, _muscle, _equipment;
   _ExerciseTrashAttempt? _trashAttempt;
   bool get _busy => _saving || _confirming;
   bool get _blocked => _busy || _trashAttempt != null;
@@ -60,16 +61,24 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
     if (mounted) setState(() {});
   }
 
-  List<AdminCatalogExercise> get _visibleExercises => _exercises
+  List<AdminCatalogExercise> _visibleExercises(
+    ExerciseCatalogFilters filters,
+  ) => _exercises
       .where(
         (exercise) =>
+            filters.matches(
+              muscles: exercise.muscleGroups,
+              equipment: exercise.equipment,
+            ) &&
             matchesExerciseCollection(
               _preferences?.labels(exercise.id) ?? const [],
               _collection,
             ) &&
             matchesCatalogSearch(_search.text, [
               exercise.name,
-              ...exercise.muscleGroups,
+              ...exerciseMuscleSearchTerms(
+                exerciseMuscleLabels(exercise.muscleGroups),
+              ),
               ...exercise.equipment,
               exercise.exerciseType,
               ...?_preferences?.labels(exercise.id),
@@ -314,7 +323,15 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
         ),
       );
     }
-    final visible = _visibleExercises;
+    final filters = ExerciseCatalogFilters(
+      _exercises.map(
+        (exercise) =>
+            (muscles: exercise.muscleGroups, equipment: exercise.equipment),
+      ),
+      muscle: _muscle,
+      equipment: _equipment,
+    );
+    final visible = _visibleExercises(filters);
     return Column(
       children: [
         if (_trashRepository != null)
@@ -365,6 +382,19 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
             ),
           ),
         ),
+        if (filters.hasOptions)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 4, 24, 8),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: ExerciseCatalogFilterFields(
+                filters: filters,
+                onMuscleChanged: (value) => setState(() => _muscle = value),
+                onEquipmentChanged: (value) =>
+                    setState(() => _equipment = value),
+              ),
+            ),
+          ),
         if (_error != null)
           TextButton(onPressed: _load, child: Text('$_error Reintentar')),
         if (_preferences?.labelsLoaded == true)
@@ -401,7 +431,7 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
                               [
                                 if (!exercise.isPublic)
                                   'Retirado · revisar para publicar',
-                                ...exercise.muscleGroups,
+                                ...exerciseMuscleLabels(exercise.muscleGroups),
                                 ...exercise.equipment,
                               ].join(' · '),
                             ),

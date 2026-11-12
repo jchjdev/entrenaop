@@ -1,7 +1,7 @@
 name: entrenaop
 description: "App de entrenamiento personal y preparación de oposiciones militares"
 publish_to: 'none'
-version: 1.23.0+51
+version: 1.24.0+52
 
 environment:
   sdk: '>=3.13.0 <4.0.0'
