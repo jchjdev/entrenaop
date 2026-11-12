@@ -15,6 +15,7 @@ declare
   old_program uuid;
   new_program uuid;
   to_start uuid;
+  execution uuid;
   to_adapt uuid;
   adapted_recipe uuid;
   to_move uuid;
@@ -87,21 +88,13 @@ begin
 
   perform set_config('request.jwt.claim.sub',pupils[1]::text,true);
   perform set_config('request.jwt.claims',jsonb_build_object('sub',pupils[1],'role','authenticated','aal','aal1')::text,true);
-  perform public.start_scheduled_workout(to_start);
+  execution:=public.start_scheduled_workout(to_start);
   perform set_config('request.jwt.claim.sub',coach::text,true);
   perform set_config('request.jwt.claims',jsonb_build_object('sub',coach,'role','authenticated','aal','aal2')::text,true);
   result:=public.apply_trainer_program_updates(operation,new_program,selection);
   if result<>jsonb_build_object('updated',4,'skipped',1)
     or public.apply_trainer_program_updates(operation,new_program,selection)<>result then
     raise exception 'El lote o el reintento no respetan la ejecución: %',result;
-  end if;
-  new_program:=public.save_trainer_program(gen_random_uuid(),
-    jsonb_set(content,'{phases,0,sessions}',jsonb_build_array(
-      jsonb_build_object('template_id',new_recipe,'name','Fuerza A'),
-      jsonb_build_object('template_id',old_recipe,'name','Fuerza B'))),new_program);
-  preview:=public.preview_trainer_program_updates(new_program);
-  if (select count(*) from jsonb_array_elements(preview) x where x->>'reason'='uncertain')<>4 then
-    raise exception 'La vista previa acepta una correspondencia ambigua: %',preview;
   end if;
   reset role;
   if not exists(select 1 from public.scheduled_workouts where id=to_start and template_id=old_recipe and execution_id is not null)
@@ -113,6 +106,32 @@ begin
     or (select count(*) from public.scheduled_workouts where template_id=new_recipe)<>4 then
     raise exception 'Cambian citas protegidas o se pierde la cita original';
   end if;
+
+  perform set_config('request.jwt.claim.sub',pupils[1]::text,true);
+  perform set_config('request.jwt.claims',jsonb_build_object('sub',pupils[1],'role','authenticated','aal','aal1')::text,true);
+  set local role authenticated;
+  perform public.discard_workout_execution(execution,'DESCARTAR');
+  perform set_config('request.jwt.claim.sub',coach::text,true);
+  perform set_config('request.jwt.claims',jsonb_build_object('sub',coach,'role','authenticated','aal','aal2')::text,true);
+  preview:=public.preview_trainer_program_updates(new_program);
+  select jsonb_agg(jsonb_build_object('id',x->'id','revision',x->'revision','template_id',x->'template_id'))
+    into selection from jsonb_array_elements(preview) x where x->>'id'=to_start::text and x->>'reason'='eligible';
+  if selection is null or public.apply_trainer_program_updates(gen_random_uuid(),new_program,selection)
+    <>jsonb_build_object('updated',1,'skipped',0) then
+    raise exception 'Una cita pendiente vuelve del descarte pero el lote la bloquea: %',preview;
+  end if;
+  new_program:=public.save_trainer_program(gen_random_uuid(),
+    jsonb_set(content,'{phases,0,sessions}',jsonb_build_array(
+      jsonb_build_object('template_id',new_recipe,'name','Fuerza A'),
+      jsonb_build_object('template_id',old_recipe,'name','Fuerza B'))),new_program);
+  preview:=public.preview_trainer_program_updates(new_program);
+  if (select count(*) from jsonb_array_elements(preview) x where x->>'reason'='uncertain')<>5 then
+    raise exception 'La vista previa acepta una correspondencia ambigua: %',preview;
+  end if;
+  reset role;
+  if not exists(select 1 from public.scheduled_workouts s join public.trainer_assignments a on a.scheduled_id=s.id
+    where s.id=to_start and s.template_id=new_recipe and s.status='planned' and s.execution_id is null
+      and a.result_revision>0) then raise exception 'Se pierde el estado o la revisión tras el descarte'; end if;
 end $test$;
 
 select 'trainer_update_program_assignments: OK' as result;

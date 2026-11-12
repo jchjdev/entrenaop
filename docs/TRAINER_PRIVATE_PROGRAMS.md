@@ -10,6 +10,8 @@ y una única referencia a la familia de la sesión en esa fase de ambas versione
 Una copia con otra familia se revisa individualmente.
 
 El servidor revalida la versión y el estado bajo bloqueo antes de escribir.
+Una cita vuelve a admitir cambios si su ejecución se descarta o caduca y el
+calendario la devuelve a pendiente.
 Actualiza la receta de la misma cita y conserva su fecha, nota, envío y fase.
 La confirmación devuelve cuántas se actualizaron y cuántas se omitieron
 desde la vista previa. Reintentar la misma operación devuelve el mismo recibo.
