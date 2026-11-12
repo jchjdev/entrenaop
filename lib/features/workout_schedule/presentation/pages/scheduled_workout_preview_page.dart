@@ -8,6 +8,7 @@ import '../../../../core/navigation/workflow_exit_guard.dart';
 import '../../../../core/presentation/app_dates.dart';
 import '../../../../core/presentation/widgets/entrena_card.dart';
 import '../../../workouts/presentation/pages/workout_preview_page.dart';
+import '../../../workouts/presentation/open_workout_prompt.dart';
 import '../../../pro/domain/pro_offer.dart';
 import '../../domain/entities/scheduled_workout.dart';
 import '../../domain/entities/scheduled_workout_preview.dart';
@@ -223,7 +224,9 @@ class _PreviewAction extends StatelessWidget {
                 ] else if (preview.canStart)
                   FilledButton.icon(
                     key: const ValueKey('scheduled-preview-start'),
-                    onPressed: state.canStart ? cubit.start : null,
+                    onPressed: state.canStart
+                        ? () => startWithOpenWorkoutPrompt(context, cubit.start)
+                        : null,
                     icon: state.busy
                         ? const SizedBox.square(
                             dimension: 18,

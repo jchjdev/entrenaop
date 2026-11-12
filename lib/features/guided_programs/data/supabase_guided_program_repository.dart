@@ -3,6 +3,7 @@ import 'package:workout_core/guided_program.dart';
 import 'package:workout_core/guided_program_codec.dart';
 
 import '../../pro/domain/pro_access.dart';
+import '../../workouts/data/open_workout_rpc.dart';
 
 import '../domain/guided_program_repository.dart';
 
@@ -225,15 +226,17 @@ class SupabaseGuidedProgramRepository implements GuidedProgramRepository {
     required String operationId,
     required bool omitWarmup,
     int? restSeconds,
-  }) async => await client.rpc(
-    'start_guided_program_session',
-    params: {
-      'p_program_id': programId,
-      'p_phase_index': phaseIndex,
-      'p_session_index': sessionIndex,
-      'p_operation_id': operationId,
-      'p_omit_warmup': omitWarmup,
-      'p_rest_seconds': restSeconds,
-    },
-  ) as String;
+  }) => mapOpenWorkoutConflict(
+    () async => await client.rpc(
+      'start_guided_program_session',
+      params: {
+        'p_program_id': programId,
+        'p_phase_index': phaseIndex,
+        'p_session_index': sessionIndex,
+        'p_operation_id': operationId,
+        'p_omit_warmup': omitWarmup,
+        'p_rest_seconds': restSeconds,
+      },
+    ) as String,
+  );
 }

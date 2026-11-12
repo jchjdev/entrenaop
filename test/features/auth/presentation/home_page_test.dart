@@ -9,6 +9,7 @@ import 'package:entrenaop/features/preparation_goal/domain/entities/adaptive_pro
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_program.dart';
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
+import 'package:entrenaop/features/workouts/domain/entities/open_workout_session.dart';
 import 'package:entrenaop/features/guided_programs/domain/guided_program_repository.dart';
 import 'package:workout_core/guided_program.dart';
 import 'package:entrena_ui/entrena_ui.dart' show EntrenaProgramCard;
@@ -36,6 +37,7 @@ void main() {
   PreparationOverview overview({
     bool newUser = false,
     List<ScheduledWorkout> workouts = const [],
+    List<OpenWorkoutSession> openWorkouts = const [],
     bool needsReview = false,
   }) => PreparationOverview(
     assessments: const [],
@@ -43,6 +45,7 @@ void main() {
     goals: newUser ? const [] : const [goal],
     weekStart: week,
     weeklyWorkouts: workouts,
+    openWorkouts: openWorkouts,
     programs: newUser
         ? const []
         : [
@@ -170,6 +173,32 @@ void main() {
     await tester.pumpAndSettle();
     return router;
   }
+
+  testWidgets('retoma una sesión de ayer fuera de la agenda de hoy', (
+    tester,
+  ) async {
+    final data = overview(
+      workouts: [workout(ScheduledWorkoutStatus.planned)],
+      openWorkouts: [
+        OpenWorkoutSession(
+          id: 'open-yesterday',
+          name: 'Fuerza de ayer',
+          startedAt: DateTime(today.year, today.month, today.day - 1, 18),
+        ),
+      ],
+    );
+    final source = _Overview(data);
+    final router = await mount(tester, data, source: source);
+    expect(find.text('Empezada ayer'), findsOneWidget);
+    expect(find.text('Carrera de hoy'), findsOneWidget);
+    await tester.tap(find.text('Continuar sesión'));
+    await tester.pumpAndSettle();
+    expect(router.state.uri.path, '/plan/week/active/open-yesterday');
+    source.overview = overview();
+    router.pop();
+    await tester.pumpAndSettle();
+    expect(find.text('Continuar sesión'), findsNothing);
+  });
 
   testWidgets(
     'la sesión del preparador no queda oculta por la revisión del plan automático',
@@ -641,7 +670,7 @@ void main() {
 
 class _Overview implements GetPreparationOverviewUseCase {
   _Overview(this.overview);
-  final PreparationOverview overview;
+  PreparationOverview overview;
   int calls = 0;
   @override
   Future<PreparationOverview> call() async {

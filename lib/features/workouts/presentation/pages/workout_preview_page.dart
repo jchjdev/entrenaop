@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../open_workout_prompt.dart';
+
 class WorkoutPreviewPage extends StatelessWidget {
   const WorkoutPreviewPage({
     required this.routeBase,
@@ -128,7 +130,10 @@ class _SessionAction extends StatelessWidget {
                 style: FilledButton.styleFrom(minimumSize: const Size(0, 52)),
                 onPressed: starting || !enabled
                     ? null
-                    : context.read<WorkoutPreviewCubit>().start,
+                    : () => startWithOpenWorkoutPrompt(
+                        context,
+                        context.read<WorkoutPreviewCubit>().start,
+                      ),
                 icon: starting
                     ? const SizedBox.square(
                         dimension: 18,

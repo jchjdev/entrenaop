@@ -7,6 +7,7 @@ import '../widgets/workout_session_records.dart';
 import '../widgets/workout_set_entry.dart';
 import '../widgets/workout_execution_labels.dart';
 import '../widgets/workout_exercise_technique.dart';
+import '../open_workout_prompt.dart';
 
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_execution_layout.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
@@ -764,34 +765,7 @@ void _leaveDiscardedWorkout(BuildContext context) {
 }
 
 Future<bool> _requestWorkoutDiscard(BuildContext context) async {
-  final confirmed = await showDialog<bool>(
-    context: context,
-    builder: (dialogContext) => EntrenaDialog(
-      title: const Text('¿Descartar esta sesión?'),
-      content: const Text(
-        'Se eliminarán esta sesión y sus series registradas. No quedará en el '
-        'historial. Si estaba en tu agenda, volverá a estar pendiente.\n\n'
-        'No se puede deshacer y necesita conexión.',
-      ),
-      actions: [
-        EntrenaDialogActions(
-          primaryLabel: 'Continuar',
-          onPrimary: () => Navigator.pop(dialogContext, false),
-          secondary: [
-            OutlinedButton(
-              onPressed: () => Navigator.pop(dialogContext, true),
-              style: EntrenaButtonStyles.destructive(dialogContext),
-              child: const Text(
-                'Descartar y salir',
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ],
-        ),
-      ],
-    ),
-  );
-  if (confirmed != true || !context.mounted) return false;
+  if (!await confirmWorkoutDiscard(context) || !context.mounted) return false;
   return context.read<ActiveWorkoutCubit>().discard();
 }
 

@@ -7,6 +7,7 @@ import 'package:entrenaop/features/training_plan/domain/repositories/training_pr
 import 'package:entrenaop/features/workout_schedule/domain/repositories/workout_schedule_repository.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/adaptive_program_progress.dart';
 import 'package:entrenaop/features/training_plan/domain/entities/training_context.dart';
+import 'package:entrenaop/features/workouts/domain/entities/open_workout_session.dart';
 
 class GetPreparationOverviewUseCase {
   const GetPreparationOverviewUseCase({
@@ -18,6 +19,7 @@ class GetPreparationOverviewUseCase {
     required Future<bool> Function(String goalId) hasProgramAssessment,
     required Future<List<AdaptiveProgramProgress>> Function() refreshPrograms,
     Future<TrainingContext?> Function()? loadTrainingContext,
+    Future<List<OpenWorkoutSession>> Function()? loadOpenWorkouts,
     DateTime Function()? now,
   }) : _assessmentRepository = assessmentRepository,
        _preferencesRepository = preferencesRepository,
@@ -27,6 +29,7 @@ class GetPreparationOverviewUseCase {
        _hasProgramAssessment = hasProgramAssessment,
        _refreshPrograms = refreshPrograms,
        _loadTrainingContext = loadTrainingContext,
+       _loadOpenWorkouts = loadOpenWorkouts,
        _now = now ?? DateTime.now;
 
   final PhysicalAssessmentRepository _assessmentRepository;
@@ -38,6 +41,7 @@ class GetPreparationOverviewUseCase {
   final DateTime Function() _now;
   final Future<List<AdaptiveProgramProgress>> Function() _refreshPrograms;
   final Future<TrainingContext?> Function()? _loadTrainingContext;
+  final Future<List<OpenWorkoutSession>> Function()? _loadOpenWorkouts;
 
   Future<PreparationOverview> call() async {
     // La recuperación precede a la consulta: Inicio debe ver las sesiones nuevas.
@@ -46,6 +50,7 @@ class GetPreparationOverviewUseCase {
     final preferencesFuture = _preferencesRepository.get();
     final contextFuture = _loadTrainingContext?.call();
     final goalsFuture = _goalRepository.getActiveGoals();
+    final openWorkouts = _loadOpenWorkouts?.call().onError((_, _) => const []);
     final weekStart = _startOfWeek(_now());
     final scheduleFuture = _scheduleRepository.getRange(
       weekStart,
@@ -86,6 +91,7 @@ class GetPreparationOverviewUseCase {
       weekStart: weekStart,
       weeklyWorkouts: await scheduleFuture,
       assessedGoalIds: assessedGoalIds,
+      openWorkouts: await openWorkouts ?? const [],
     );
   }
 }

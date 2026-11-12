@@ -4,6 +4,7 @@ import 'package:trainer_access/authenticated_rpc.dart';
 import '../../../pro/domain/pro_access.dart';
 
 import '../../../workouts/data/models/workout_template_model.dart';
+import '../../../workouts/data/open_workout_rpc.dart';
 import '../../domain/entities/scheduled_workout_preview.dart';
 import '../../domain/repositories/scheduled_workout_preview_repository.dart';
 import '../models/scheduled_workout_model.dart';
@@ -48,15 +49,17 @@ class SupabaseScheduledWorkoutPreviewRepository
   @override
   Future<String> startReviewed(String scheduledId, String revision) async {
     try {
-      return await authenticatedTrainerRpc(
-        client,
-        ownerId,
-        'start_reviewed_scheduled_workout',
-        params: {
-          'p_expected_owner': ownerId,
-          'p_scheduled_id': scheduledId,
-          'p_expected_revision': revision,
-        },
+      return await mapOpenWorkoutConflict(
+        () => authenticatedTrainerRpc(
+          client,
+          ownerId,
+          'start_reviewed_scheduled_workout',
+          params: {
+            'p_expected_owner': ownerId,
+            'p_scheduled_id': scheduledId,
+            'p_expected_revision': revision,
+          },
+        ),
       ) as String;
     } on PostgrestException catch (error) {
       final denied = ProAccessDenied.fromDetails(error.details);

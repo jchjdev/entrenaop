@@ -4,7 +4,7 @@ do $$
 declare owner_id uuid:=gen_random_uuid(); outsider uuid:=gen_random_uuid(); admin_id uuid;
   payload jsonb; content jsonb; slot jsonb; phase jsonb; exercise uuid; session uuid; warmup uuid;
   program uuid; follow_id uuid; execution uuid; op uuid:=gen_random_uuid(); second uuid; effective uuid;
-  repeated uuid; timed_session uuid; timed_program uuid; timed_execution uuid; result_id uuid;
+  repeated uuid; timed_session uuid; timed_program uuid; timed_execution uuid; restarted uuid; result_id uuid;
   timed_operation uuid:=gen_random_uuid(); finish_operation uuid:=gen_random_uuid();
   amrap_session uuid; amrap_program uuid; amrap_execution uuid; running_session uuid; running_program uuid; running_execution uuid;
 begin
@@ -111,9 +111,12 @@ begin
   begin
     perform public.start_guided_program_session(timed_program,0,0,timed_operation,false,null);raise exception 'Revivió una ejecución descartada con la misma operación.';
   exception when sqlstate '22023' then null; end;
-  if public.start_guided_program_session(timed_program,0,0,gen_random_uuid(),false,null)=timed_execution then
+  restarted:=public.start_guided_program_session(timed_program,0,0,gen_random_uuid(),false,null);
+  if restarted=timed_execution then
     raise exception 'Una sesión descartada no permite empezar de nuevo.';
   end if;
+  set constraints public.one_open_workout_per_account immediate;
+  set constraints public.one_open_workout_per_account deferred;
   perform set_config('request.jwt.claim.sub',admin_id::text,true);
   payload:=jsonb_set(payload,'{blocks,0,format}','"amrap"');
   payload:=jsonb_set(payload,'{blocks,0,rest_after_seconds}','0');
@@ -124,6 +127,12 @@ begin
   amrap_program:=public.save_guided_program(content);perform public.set_guided_program_status(amrap_program,'published');
   perform set_config('request.jwt.claim.sub',owner_id::text,true);
   perform public.follow_guided_program(amrap_program);
+  begin
+    perform public.start_guided_program_session(amrap_program,0,0,gen_random_uuid(),false,null);
+    set constraints public.one_open_workout_per_account immediate;
+    raise exception 'Permite abrir sesiones de dos programas a la vez.';
+  exception when sqlstate 'EO001' then null; end;
+  perform public.discard_workout_execution(restarted,'DESCARTAR');
   amrap_execution:=public.start_guided_program_session(amrap_program,0,0,gen_random_uuid(),false,null);
   perform public.complete_amrap_block_idempotent(gen_random_uuid(),amrap_execution,0,3,null,0);
   perform public.finish_workout_execution(amrap_execution,7,null,null,null,'manual');

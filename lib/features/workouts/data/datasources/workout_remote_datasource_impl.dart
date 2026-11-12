@@ -5,6 +5,8 @@ import 'package:entrenaop/features/workouts/domain/entities/workout_history_quer
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:workout_core/workout_template_query.dart';
 
+import '../open_workout_rpc.dart';
+
 class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
   @override
   Future<List<String>> discardExecution(String executionId) async =>
@@ -189,9 +191,11 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
 
   @override
   Future<String> startExecution(String templateId) async {
-    final response = await _commercialRpc(
-      'start_workout_execution',
-      params: {'p_template_id': templateId},
+    final response = await mapOpenWorkoutConflict(
+      () => _commercialRpc(
+        'start_workout_execution',
+        params: {'p_template_id': templateId},
+      ),
     );
     return response as String;
   }

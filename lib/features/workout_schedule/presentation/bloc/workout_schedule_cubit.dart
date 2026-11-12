@@ -4,6 +4,7 @@ import 'package:entrenaop/features/workout_schedule/domain/usecases/workout_sche
 import 'package:entrenaop/features/workout_schedule/presentation/bloc/workout_schedule_state.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/get_starter_workout_usecase.dart';
+import 'package:entrenaop/features/workouts/domain/entities/open_workout_session.dart';
 
 import '../../../pro/domain/pro_access.dart';
 
@@ -187,6 +188,10 @@ class WorkoutScheduleCubit extends Cubit<WorkoutScheduleState> {
       final executionId = await _startWorkout(scheduledId);
       await _reloadItems();
       return executionId;
+    } on OpenWorkoutConflict {
+      if (isClosed) return null;
+      emit(state.copyWith(clearBusy: true));
+      rethrow;
     } catch (error) {
       emit(
         state.copyWith(

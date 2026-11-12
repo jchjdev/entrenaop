@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import '../../../pro/domain/pro_access.dart';
+import '../../domain/entities/open_workout_session.dart';
 
 import 'package:bloc/bloc.dart';
 import 'package:entrenaop/features/exercises/domain/usecases/get_exercise_by_id_usecase.dart';
@@ -124,6 +125,16 @@ class WorkoutPreviewCubit extends Cubit<WorkoutPreviewState> {
           exerciseThumbnails: state.exerciseThumbnails,
         ),
       );
+    } on OpenWorkoutConflict {
+      if (isClosed) return;
+      emit(
+        WorkoutPreviewState(
+          status: WorkoutPreviewStatus.ready,
+          workout: workout,
+          exerciseThumbnails: state.exerciseThumbnails,
+        ),
+      );
+      rethrow;
     } catch (error, stackTrace) {
       if (isClosed) return;
       debugPrint('No se pudo iniciar la ejecución: $error');

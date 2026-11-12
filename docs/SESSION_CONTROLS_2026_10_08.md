@@ -149,12 +149,30 @@ de nuevo bajo bloqueo antes de borrar.
 Al volver a la app, si el servidor ya descartó la ejecución, el ejecutor
 muestra la salida y limpia sus borradores locales. Una consulta que falla sin
 conexión conserva el borrador. Los datos exclusivamente locales no renuevan el
-plazo del servidor. Las ejecuciones vinculadas a vídeos privados quedan fuera
-del borrado automático porque son la referencia de acceso a esos recursos.
+plazo del servidor.
 
 En EntrenaOP Dev, el trabajo `workout-expiration` revisa la caducidad cada
 minuto. La primera ejecución verificada descartó siete entrenamientos que
 seguían abiertos y habían superado el plazo.
+
+## Una sesión abierta por cuenta · 12/11/2026
+
+Inicio consulta las ejecuciones abiertas de la cuenta y ofrece continuar desde
+una tarjeta encima del calendario. El botón abre la ejecución original,
+independientemente del día, la plantilla o la pauta. Se refresca al volver a
+Inicio o recuperar la app en primer plano.
+
+La comprobación del servidor impide que un inicio manual deje una segunda
+sesión abierta. Ante un conflicto, el deportista puede retomar la anterior
+o confirmar su descarte y reintentar el inicio solicitado. Las ejecuciones
+abiertas previamente se pueden resolver sin borrado por migración. Una
+importación que crea y finaliza el resultado en la misma transacción no ocupa
+una plaza de sesión abierta.
+
+La caducidad de 24 horas incluye las ejecuciones con vídeos privados. Al
+descartarlas, los vídeos de técnica conservan su vínculo con la pauta y los
+permisos de propietario y entrenador. Se desvinculan las referencias a la
+ejecución y sus series, que se eliminan.
 
 ## Mi semana: ancho disponible
 

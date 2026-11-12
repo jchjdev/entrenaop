@@ -16,6 +16,7 @@ import 'package:entrenaop/features/dashboard/presentation/widgets/home_section_h
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/adaptive_program_progress.dart';
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
+import 'package:entrenaop/features/workouts/domain/entities/open_workout_session.dart';
 import 'package:entrenaop/features/workout_schedule/presentation/widgets/coach_plan_coincidence_notice.dart';
 import 'package:entrenaop/features/workout_schedule/presentation/widgets/empty_workout_day_card.dart';
 import 'package:flutter/material.dart';
@@ -46,6 +47,25 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   // La recarga de programas también debe ocurrir si el resumen responde en el mismo frame.
   int _guidedRefreshVersion = 0;
+  late final AppLifecycleListener _lifecycle;
+
+  @override
+  void initState() {
+    super.initState();
+    _lifecycle = AppLifecycleListener(
+      onResume: () {
+        if (GoRouter.maybeOf(context)?.state.uri.path == '/home') {
+          _refresh();
+        }
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    super.dispose();
+  }
 
   Future<void> _refresh() async {
     setState(() => _guidedRefreshVersion++);
@@ -194,6 +214,10 @@ class _DashboardContentState extends State<_DashboardContent> {
                 children: [
                   if (widget.refreshing)
                     const LinearProgressIndicator(minHeight: 2),
+                  for (final workout in overview.openWorkouts) ...[
+                    _OpenWorkoutCard(workout: workout, onOpen: _open),
+                    const SizedBox(height: 16),
+                  ],
                   _CompactWeek(
                     weekStart: overview.weekStart,
                     selectedDay: _selectedDay,
@@ -251,6 +275,46 @@ class _DashboardContentState extends State<_DashboardContent> {
                 ],
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OpenWorkoutCard extends StatelessWidget {
+  const _OpenWorkoutCard({required this.workout, required this.onOpen});
+
+  final OpenWorkoutSession workout;
+  final ValueChanged<String> onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    final started = workout.startedAt.toLocal();
+    final today = DateUtils.dateOnly(DateTime.now());
+    final yesterday = DateTime(today.year, today.month, today.day - 1);
+    final date = DateUtils.isSameDay(started, today)
+        ? 'Empezada hoy'
+        : DateUtils.isSameDay(started, yesterday)
+        ? 'Empezada ayer'
+        : 'Empezada el ${_homeLongDay(started)}';
+    return EntrenaCard(
+      tone: EntrenaCardTone.accent,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Sesión en curso',
+            style: Theme.of(context).textTheme.labelLarge,
+          ),
+          const SizedBox(height: 4),
+          Text(workout.name, style: Theme.of(context).textTheme.titleMedium),
+          Text(date, style: TextStyle(color: context.visuals.textMuted)),
+          const SizedBox(height: 12),
+          FilledButton(
+            onPressed: () => onOpen('/plan/week/active/${workout.id}'),
+            child: const Text('Continuar sesión'),
           ),
         ],
       ),

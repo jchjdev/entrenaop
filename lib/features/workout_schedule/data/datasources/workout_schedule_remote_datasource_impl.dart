@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:trainer_access/authenticated_rpc.dart';
 
 import '../../../pro/domain/pro_access.dart';
+import '../../../workouts/data/open_workout_rpc.dart';
 
 import '../../../../core/config/app_config.dart';
 
@@ -133,9 +134,11 @@ class WorkoutScheduleRemoteDataSourceImpl
   @override
   Future<String> start(String scheduledId) async {
     try {
-      final response = await supabaseClient.rpc(
-        'start_scheduled_workout',
-        params: {'p_scheduled_id': scheduledId},
+      final response = await mapOpenWorkoutConflict(
+        () => supabaseClient.rpc(
+          'start_scheduled_workout',
+          params: {'p_scheduled_id': scheduledId},
+        ),
       );
       return response as String;
     } on PostgrestException catch (error) {

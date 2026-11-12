@@ -7,6 +7,7 @@ import 'package:workout_editor_ui/device_activity_summary_card.dart';
 import 'package:entrenaop/features/workout_schedule/presentation/bloc/workout_schedule_cubit.dart';
 import 'package:entrenaop/features/workout_schedule/presentation/bloc/workout_schedule_state.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
+import 'package:entrenaop/features/workouts/presentation/open_workout_prompt.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_library_search_controls.dart';
 import 'package:entrenaop/features/workouts/presentation/workout_library_filter.dart';
 import 'package:flutter/material.dart';
@@ -693,7 +694,12 @@ class _ScheduledWorkoutCard extends StatelessWidget {
     if (context.mounted) await context.read<WorkoutScheduleCubit>().load();
   }
 
-  Future<void> _start(BuildContext context) async {
+  Future<void> _start(BuildContext context) => startWithOpenWorkoutPrompt(
+    context,
+    () => _startRequestedWorkout(context),
+  );
+
+  Future<void> _startRequestedWorkout(BuildContext context) async {
     final executionId = await context.read<WorkoutScheduleCubit>().start(
       item.id,
     );

@@ -4,6 +4,7 @@ import '../../features/workouts/data/repositories/workout_effort_repository.dart
 import '../../features/preparation_goal/domain/repositories/preparation_setup_progress_store.dart';
 import '../../features/preparation_goal/data/repositories/shared_preferences_preparation_setup_progress_store.dart';
 import '../../features/workouts/domain/usecases/record_workout_effort.dart';
+import '../../features/workouts/data/open_workout_rpc.dart';
 
 import 'package:entrenaop/features/workouts/domain/usecases/workout_result_review_usecase.dart';
 import 'package:trainer_access/profile_photo/domain.dart';
@@ -518,6 +519,7 @@ Future<void> initDependencies() async {
 
   sl.registerLazySingleton(
     () => GetPreparationOverviewUseCase(
+      loadOpenWorkouts: () => readOpenWorkoutSessions(sl()),
       refreshPrograms: sl<PreparationTrainingRepository>().refreshPrograms,
       assessmentRepository: sl(),
       preferencesRepository: sl(),

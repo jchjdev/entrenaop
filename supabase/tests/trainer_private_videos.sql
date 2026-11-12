@@ -136,6 +136,17 @@ begin
  set local role authenticated;
  begin perform public.reserve_exercise_video_upload('trainer_exercise',gen_random_uuid(),42,'fixture.b-cdn.net',1); raise exception 'Supera presupuesto'; exception when program_limit_exceeded then null; end;
  reset role;
+ update public.workout_executions set started_at=now()-interval '25 hours' where id=execution;
+ if workout_private.discard_execution(execution,pupil,now()-interval '24 hours') is null then
+  raise exception 'El vídeo privado impide caducar el entrenamiento';
+ end if;
+ if not exists(select 1 from public.exercise_video_assets a where a.id=clip and a.assignment_id=scheduled
+    and a.execution_id is null and a.execution_set_id is null) then
+  raise exception 'La caducidad pierde el vídeo o su pauta';
+ end if;
+ set local role authenticated;
+ if not public.can_read_exercise_video(clip_url) then raise exception 'El preparador pierde acceso al vídeo al caducar la sesión'; end if;
+ reset role;
 end $$;
 select 'trainer_private_videos: OK' as result;
 rollback;

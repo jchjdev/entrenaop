@@ -1,5 +1,11 @@
 # Registro de decisiones vigentes
 
+**Una sesión abierta por cuenta · 12/11/2026.** Javier confirma que Inicio
+debe ofrecer continuar una ejecución abierta aunque sea de ayer o se haya
+iniciado fuera de agenda. Para empezar otra, puede retomar la anterior o
+confirmar su descarte. Sigue vigente la caducidad de 24 horas sin actividad.
+[Contrato del ejecutor](SESSION_CONTROLS_2026_10_08.md#una-sesión-abierta-por-cuenta--12112026).
+
 **Actualizar pautas de programas · 12/11/2026.** Javier confirma la selección
 de uno, varios o todos los alumnos, con vista previa de sesiones y una sola
 confirmación. Se aplican revisiones a citas pendientes con correspondencia

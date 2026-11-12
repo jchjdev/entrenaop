@@ -2,6 +2,7 @@ import 'package:entrenaop/features/physical_assessment/domain/entities/physical_
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
 import 'package:entrenaop/features/training_plan/domain/entities/training_preferences.dart';
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
+import 'package:entrenaop/features/workouts/domain/entities/open_workout_session.dart';
 import 'package:equatable/equatable.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/adaptive_program_progress.dart';
 import 'package:entrenaop/features/training_plan/domain/entities/training_context.dart';
@@ -25,6 +26,7 @@ class PreparationOverview extends Equatable {
     this.assessedGoalIds = const {},
     this.programs = const [],
     this.trainingContext,
+    this.openWorkouts = const [],
   });
 
   final List<PhysicalAssessmentHistoryEntry> assessments;
@@ -33,6 +35,7 @@ class PreparationOverview extends Equatable {
   final List<PreparationGoal> goals;
   final DateTime weekStart;
   final List<ScheduledWorkout> weeklyWorkouts;
+  final List<OpenWorkoutSession> openWorkouts;
   final Set<String> assessedGoalIds;
   final List<AdaptiveProgramProgress> programs;
   AdaptiveProgramProgress? get activeProgram =>
@@ -116,6 +119,7 @@ class PreparationOverview extends Equatable {
     goals,
     weekStart,
     weeklyWorkouts,
+    openWorkouts,
     assessedGoalIds,
     programs,
   ];

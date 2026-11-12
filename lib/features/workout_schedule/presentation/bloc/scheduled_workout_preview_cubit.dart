@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
 import '../../../pro/domain/pro_access.dart';
+import '../../../workouts/domain/entities/open_workout_session.dart';
 
 import '../../domain/entities/scheduled_workout_preview.dart';
 import '../../domain/usecases/scheduled_workout_preview_usecases.dart';
@@ -131,6 +132,15 @@ class ScheduledWorkoutPreviewCubit extends Cubit<ScheduledWorkoutPreviewState> {
           executionId: executionId,
         ),
       );
+    } on OpenWorkoutConflict {
+      if (isClosed || request != _request) return;
+      emit(
+        ScheduledWorkoutPreviewState(
+          status: ScheduledWorkoutPreviewStatus.ready,
+          preview: preview,
+        ),
+      );
+      rethrow;
     } on ProAccessDenied catch (denied) {
       if (isClosed || request != _request) return;
       // La vigencia puede cambiar desde la lectura. Conservar la pauta no
