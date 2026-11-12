@@ -955,24 +955,32 @@ class ProfessionalResourceCard extends StatelessWidget {
     final desktop = ProfessionalWorkspaceScope.isDesktop(context);
     return Card(
       clipBehavior: Clip.antiAlias,
-      child: Padding(
-        padding: desktop
-            ? const EdgeInsets.symmetric(vertical: 12, horizontal: 6)
-            : EdgeInsets.zero,
-        child: ListTile(
-          title: DefaultTextStyle.merge(
-            style: Theme.of(context).textTheme.titleMedium,
-            child: title,
-          ),
-          subtitle: subtitle == null
-              ? null
-              : Padding(
-                  padding: const EdgeInsets.only(top: 6),
-                  child: subtitle,
-                ),
-          leading: leading,
-          trailing: trailing,
+      child: Semantics(
+        button: onTap == null ? null : true,
+        child: InkWell(
           onTap: onTap,
+          child: Padding(
+            padding: desktop
+                ? const EdgeInsets.symmetric(vertical: 12, horizontal: 6)
+                : EdgeInsets.zero,
+            child: Center(
+              child: ListTile(
+                titleAlignment: ListTileTitleAlignment.center,
+                title: DefaultTextStyle.merge(
+                  style: Theme.of(context).textTheme.titleMedium,
+                  child: title,
+                ),
+                subtitle: subtitle == null
+                    ? null
+                    : Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: subtitle,
+                      ),
+                leading: leading,
+                trailing: trailing,
+              ),
+            ),
+          ),
         ),
       ),
     );

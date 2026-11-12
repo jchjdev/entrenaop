@@ -1148,12 +1148,17 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
           ),
           const SizedBox(height: 12),
         ],
-        if (!widget.warmup && widget.fixedRunningMode == null)
+        if (!widget.warmup && widget.fixedRunningMode == null) ...[
+          if (desktop) const SizedBox(height: 8),
           if (desktop)
             Align(alignment: Alignment.centerLeft, child: _modeSelector())
           else
             _modeSelector(),
-        ?widget.additionalFields,
+        ],
+        if (widget.additionalFields case final fields?) ...[
+          const SizedBox(height: 8),
+          fields,
+        ],
         if (!_running && !widget.warmup && widget.loadWarmups != null) ...[
           const SizedBox(height: 12),
           Align(
@@ -2203,6 +2208,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
+          runSpacing: 8,
           children: [
             TextButton.icon(
               onPressed: _runningCount >= 40
@@ -2643,7 +2649,15 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                         Expanded(child: title),
                       ],
                     ),
-                    Wrap(alignment: WrapAlignment.end, children: actions),
+                    if (actions.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Wrap(
+                        alignment: WrapAlignment.end,
+                        spacing: 4,
+                        runSpacing: 8,
+                        children: actions,
+                      ),
+                    ],
                   ],
                 );
               }
@@ -3015,9 +3029,10 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
             height: 430,
             child: Column(
               children: [
-                if (scopes.isNotEmpty)
+                if (scopes.isNotEmpty) ...[
                   Wrap(
                     spacing: 8,
+                    runSpacing: 8,
                     children: [
                       for (final label in <String?>[null, ...scopes])
                         ChoiceChip(
@@ -3027,6 +3042,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                         ),
                     ],
                   ),
+                  const SizedBox(height: 8),
+                ],
                 Expanded(
                   child: ExerciseSearchList<WorkoutEditorExercise>(
                     searchLabel: scopes.isEmpty

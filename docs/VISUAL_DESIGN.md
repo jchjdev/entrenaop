@@ -6,6 +6,9 @@ Las tarjetas de una rejilla profesional comparten ancho y altura, también en
 la última fila. La altura se calcula según el contenido más alto del listado
 visible, al ancho de columna y con la escala de texto actual. Así los títulos
 largos y los metadatos caben con los mismos márgenes que los títulos cortos.
+En las tarjetas de catálogo, el texto, el icono y las acciones se centran en
+vertical. En los creadores de sesiones y programas, los grupos de controles
+dejan espacio entre filas cuando se redistribuyen al estrechar la ventana.
 Las rejillas de formularios y los paneles de contenido independiente conservan
 la altura de su contenido.
 

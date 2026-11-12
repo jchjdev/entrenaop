@@ -839,10 +839,15 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             title,
-            Align(
-              alignment: Alignment.centerRight,
-              child: Wrap(children: actions),
-            ),
+            if (actions.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Wrap(
+                alignment: WrapAlignment.end,
+                spacing: 4,
+                runSpacing: 8,
+                children: actions,
+              ),
+            ],
           ],
         );
       }
@@ -1506,6 +1511,7 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
       ],
       Wrap(
         spacing: 8,
+        runSpacing: 8,
         children: [
           TextButton.icon(
             onPressed: () async {

@@ -2,7 +2,8 @@
 
 **Tarjetas de los portales · 12/11/2026.** Javier pide que las tarjetas de
 un mismo listado tengan la misma altura aunque unos títulos ocupen una línea
-y otros dos. Se aplica a las rejillas de Trainer y ADMIN.
+y otros dos, con el contenido centrado en vertical. Se aplica a los catálogos
+de Trainer y ADMIN.
 [Criterio visual](VISUAL_DESIGN.md#tarjetas-de-listado--12112026).
 
 **Filtros de Ejercicios en Trainer · 12/11/2026.** Javier pide localizar

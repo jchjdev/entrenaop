@@ -234,47 +234,40 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
             minCardWidth: 340,
             children: [
               for (final program in _visiblePrograms)
-                Card(
-                  child: ListTile(
-                    onTap: () async {
-                      await context.push(
-                        '/programs/${Uri.encodeComponent(program.id)}',
-                      );
-                      if (mounted) await _load();
-                    },
-                    leading: const Icon(Icons.account_tree_outlined),
-                    title: Text(program.name),
-                    subtitle: Padding(
-                      padding: const EdgeInsets.only(top: 6),
-                      child: Wrap(
-                        spacing: 12,
-                        runSpacing: 6,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          Text(
-                            program.kind == 'access'
-                                ? 'Acceso u oposición'
-                                : 'Evaluación interna',
-                          ),
-                          Chip(
-                            avatar: Icon(
-                              program.enabled
-                                  ? Icons.check_circle_outline
-                                  : Icons.edit_note_rounded,
-                              size: 16,
-                              color: program.enabled
-                                  ? context.visuals.success
-                                  : context.visuals.textMuted,
-                            ),
-                            label: Text(
-                              program.enabled ? 'Publicado' : 'Borrador',
-                            ),
-                          ),
-                        ],
+                ProfessionalResourceCard(
+                  onTap: () async {
+                    await context.push(
+                      '/programs/${Uri.encodeComponent(program.id)}',
+                    );
+                    if (mounted) await _load();
+                  },
+                  leading: const Icon(Icons.account_tree_outlined),
+                  title: Text(program.name),
+                  subtitle: Wrap(
+                    spacing: 12,
+                    runSpacing: 6,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Text(
+                        program.kind == 'access'
+                            ? 'Acceso u oposición'
+                            : 'Evaluación interna',
                       ),
-                    ),
-                    trailing: const Icon(Icons.chevron_right),
+                      Chip(
+                        avatar: Icon(
+                          program.enabled
+                              ? Icons.check_circle_outline
+                              : Icons.edit_note_rounded,
+                          size: 16,
+                          color: program.enabled
+                              ? context.visuals.success
+                              : context.visuals.textMuted,
+                        ),
+                        label: Text(program.enabled ? 'Publicado' : 'Borrador'),
+                      ),
+                    ],
                   ),
+                  trailing: const Icon(Icons.chevron_right),
                 ),
             ],
           ),

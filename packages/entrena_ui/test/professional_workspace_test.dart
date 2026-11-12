@@ -31,7 +31,7 @@ class _DraftProbeState extends State<DraftProbe> {
 }
 
 void main() {
-  testWidgets('las tarjetas de catálogo se igualan entre todas las filas', (
+  testWidgets('el catálogo iguala las tarjetas y centra su contenido', (
     t,
   ) async {
     await t.binding.setSurfaceSize(const Size(1200, 900));
@@ -59,6 +59,8 @@ void main() {
                         key: ValueKey(index),
                         title: Text(title),
                         subtitle: const Text('Versión 1 · espalda'),
+                        leading: const Icon(Icons.fitness_center),
+                        trailing: const Icon(Icons.chevron_right),
                         onTap: () => taps++,
                       ),
                   ],
@@ -79,8 +81,26 @@ void main() {
       expect(card(index).height, desktopCard.height);
     }
     expect(card(3).top, desktopCard.bottom + 16);
-    await t.tap(find.byKey(const ValueKey(3)));
-    expect(taps, 1);
+    void expectCentered(int index) {
+      final entry = find.byKey(ValueKey(index));
+      Finder within(Finder matching) =>
+          find.descendant(of: entry, matching: matching);
+      final title = t.getRect(within(find.byType(Text)).first);
+      final subtitle = t.getRect(within(find.text('Versión 1 · espalda')));
+      final content = title.expandToInclude(subtitle);
+      expect(content.center.dy, closeTo(card(index).center.dy, 5));
+      for (final icon in [Icons.fitness_center, Icons.chevron_right]) {
+        expect(
+          t.getCenter(within(find.byIcon(icon))).dy,
+          card(index).center.dy,
+        );
+      }
+    }
+
+    expectCentered(0);
+    expectCentered(3);
+    await t.tapAt(Offset(desktopCard.center.dx, desktopCard.bottom - 8));
+    expect(taps, 1, reason: 'También se puede pulsar en el margen interior.');
 
     await t.binding.setSurfaceSize(const Size(320, 900));
     await t.pumpWidget(app(desktop: false, scale: 2));
@@ -89,6 +109,8 @@ void main() {
     expect(compactCard.height, greaterThan(desktopCard.height));
     expect(card(1).top, compactCard.bottom + 16);
     expect(card(3).size, compactCard.size);
+    expectCentered(0);
+    expectCentered(3);
     expect(t.takeException(), isNull);
   });
 

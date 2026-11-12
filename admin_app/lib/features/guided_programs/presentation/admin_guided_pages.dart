@@ -397,13 +397,11 @@ class _AdminGuidedCatalogPageState extends State<AdminGuidedCatalogPage> {
             ProfessionalCatalogGrid(
               children: [
                 for (final w in _warmups ?? <GuidedWarmup>[])
-                  Card(
-                    child: ListTile(
-                      title: Text(w.name),
-                      subtitle: Text('Versión ${w.version}'),
-                      trailing: const Icon(Icons.edit_outlined),
-                      onTap: () => _open('${w.id}/edit'),
-                    ),
+                  ProfessionalResourceCard(
+                    title: Text(w.name),
+                    subtitle: Text('Versión ${w.version}'),
+                    trailing: const Icon(Icons.edit_outlined),
+                    onTap: () => _open('${w.id}/edit'),
                   ),
               ],
             ),
