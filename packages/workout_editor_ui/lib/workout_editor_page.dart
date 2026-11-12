@@ -1154,7 +1154,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
           else
             _modeSelector(),
         ?widget.additionalFields,
-        if (!_running && !widget.warmup && widget.loadWarmups != null)
+        if (!_running && !widget.warmup && widget.loadWarmups != null) ...[
+          const SizedBox(height: 12),
           Align(
             alignment: Alignment.centerLeft,
             child: OutlinedButton.icon(
@@ -1167,6 +1168,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
               ),
             ),
           ),
+        ],
         const SizedBox(height: 20),
         if (_running)
           _catalogDrop<RunningStepKind>(

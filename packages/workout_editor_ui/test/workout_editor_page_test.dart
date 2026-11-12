@@ -233,6 +233,39 @@ void main() {
     },
   );
 
+  for (final desktop in [false, true]) {
+    testWidgets(
+      'separa el calentamiento del selector con escritorio $desktop',
+      (t) async {
+        await t.binding.setSurfaceSize(
+          desktop ? const Size(1440, 900) : const Size(390, 844),
+        );
+        addTearDown(() => t.binding.setSurfaceSize(null));
+        await t.pumpWidget(
+          ProfessionalWorkspaceScope(
+            desktop: desktop,
+            child: _app(
+              save: (_) async => 's',
+              saved: (_) {},
+              warmups: () async => [],
+            ),
+          ),
+        );
+        await t.pumpAndSettle();
+
+        final selector = t.getRect(find.byType(SegmentedButton<bool>));
+        final warmup = t.getRect(
+          find.ancestor(
+            of: find.text('Insertar calentamiento'),
+            matching: find.byType(OutlinedButton),
+          ),
+        );
+        expect(warmup.top - selector.bottom, greaterThanOrEqualTo(12));
+        expect(t.takeException(), isNull);
+      },
+    );
+  }
+
   testWidgets(
     'inserta el calentamiento como copia y conserva receta y dosis diferentes',
     (t) async {
