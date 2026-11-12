@@ -18,6 +18,7 @@ import 'package:workout_editor_ui/exercise_video_field.dart';
 import 'package:workout_editor_ui/exercise_video_source.dart';
 
 import 'trainer_exercise_repository.dart';
+import 'trainer_exercise_muscles.dart';
 import 'trainer_catalog_trash_page.dart';
 import 'trainer_catalog_trash_repository.dart';
 import 'trainer_workout_repository.dart';
@@ -48,7 +49,7 @@ Future<WorkoutEditorExercise?> showTrainerExerciseEditor(
           saved = WorkoutEditorExercise(
             id: id,
             name: draft.name,
-            muscleGroups: draft.muscleGroups,
+            muscleGroups: trainerExerciseMuscles(draft.muscleGroups),
             equipment: draft.equipment,
             catalogScope: 'Míos',
           );
@@ -94,7 +95,7 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
   bool _canOrganize = false;
   String _query = '';
   final _search = TextEditingController();
-  String? _label;
+  String? _label, _muscle, _equipment;
   late final _preferences = widget.preferences == null
       ? null
       : ExercisePreferencesController(widget.preferences!);
@@ -210,220 +211,313 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
     if (edit == false && mounted) await _load();
   }
 
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const Text('Ejercicios'),
-      actions: [
-        if (widget.trashRepository != null)
-          IconButton(
-            onPressed: _busy
-                ? null
-                : () async {
-                    await context.push('/exercises/trash');
-                    if (mounted) await _load();
-                  },
-            icon: const Icon(Icons.delete_outline),
-            tooltip: 'Papelera de ejercicios propios',
+  Map<String, String> _filterOptions(Iterable<String> values) {
+    final options = <String, String>{};
+    for (final value in values) {
+      final key = normalizeCatalogSearch(value);
+      if (key.isNotEmpty) options.putIfAbsent(key, () => value.trim());
+    }
+    return Map.fromEntries(
+      options.entries.toList()..sort((a, b) => a.key.compareTo(b.key)),
+    );
+  }
+
+  Widget _filter(
+    String label,
+    String allLabel,
+    Map<String, String> options,
+    String? selected,
+    ValueChanged<String?> changed,
+  ) => ConstrainedBox(
+    constraints: const BoxConstraints(maxWidth: 240),
+    child: DropdownButtonFormField<String>(
+      key: ValueKey('$label:$selected'),
+      initialValue: selected ?? '',
+      isExpanded: true,
+      decoration: InputDecoration(labelText: label),
+      items: [
+        DropdownMenuItem(value: '', child: Text(allLabel)),
+        for (final entry in options.entries)
+          DropdownMenuItem(
+            value: entry.key,
+            child: Text(entry.value, overflow: TextOverflow.ellipsis),
           ),
-        IconButton(
-          onPressed: _showOfficial
-              ? (_officialBusy ? null : _loadOfficial)
-              : (_busy ? null : _load),
-          tooltip: 'Actualizar',
-          icon: const Icon(Icons.refresh),
-        ),
       ],
+      onChanged: (value) => changed(value == '' ? null : value),
     ),
-    body: Center(
-      child: ConstrainedBox(
-        constraints: ProfessionalWorkspaceScope.pageConstraints(
-          context,
-          maxWidth: 900,
-        ),
-        child: ListView(
-          padding: const EdgeInsets.all(24),
-          children: [
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                ChoiceChip(
-                  label: const Text('Mis ejercicios'),
-                  selected: !_showOfficial,
-                  onSelected: (_) => setState(() {
-                    _showOfficial = false;
-                    _label = null;
-                  }),
-                ),
-                ChoiceChip(
-                  label: const Text('EntrenaOP'),
-                  selected: _showOfficial,
-                  onSelected: (_) {
-                    setState(() {
-                      _showOfficial = true;
-                      _label = null;
-                    });
-                    if (!_officialLoaded && !_officialBusy) _loadOfficial();
-                  },
-                ),
-              ],
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final catalog = _showOfficial ? _official : _items;
+    final muscleGroups = {
+      for (final exercise in catalog)
+        exercise.id: trainerExerciseMuscles(exercise.draft.muscleGroups),
+    };
+    final muscleOptions = _filterOptions(muscleGroups.values.expand((m) => m));
+    final equipmentOptions = _filterOptions(
+      catalog.expand((e) => e.draft.equipment),
+    );
+    final muscle = muscleOptions.containsKey(_muscle) ? _muscle : null;
+    final equipment = equipmentOptions.containsKey(_equipment)
+        ? _equipment
+        : null;
+    final visible = catalog
+        .where((e) {
+          final muscles = muscleGroups[e.id]!;
+          return (muscle == null ||
+                  muscles.any(
+                    (value) => normalizeCatalogSearch(value) == muscle,
+                  )) &&
+              (equipment == null ||
+                  e.draft.equipment.any(
+                    (value) => normalizeCatalogSearch(value) == equipment,
+                  )) &&
+              matchesCatalogSearch(_query, [
+                e.draft.name,
+                ...trainerExerciseMuscleSearchTerms(muscles),
+                ...e.draft.equipment,
+                ...?_preferences?.labels(e.id),
+              ]) &&
+              matchesExerciseCollection(
+                _preferences?.labels(e.id) ?? const [],
+                _label,
+              );
+        })
+        .toList(growable: false);
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Ejercicios'),
+        actions: [
+          if (widget.trashRepository != null)
+            IconButton(
+              onPressed: _busy
+                  ? null
+                  : () async {
+                      await context.push('/exercises/trash');
+                      if (mounted) await _load();
+                    },
+              icon: const Icon(Icons.delete_outline),
+              tooltip: 'Papelera de ejercicios propios',
             ),
-            const SizedBox(height: 16),
-            if (_showOfficial) ...[
-              const Text(
-                'Catálogo de EntrenaOP. Puedes utilizar estos ejercicios directamente al crear tus sesiones y programas; no necesitas copiarlos.',
-              ),
-              const SizedBox(height: 16),
-            ] else ...[
-              const Text(
-                'Tu biblioteca privada para preparar sesiones y programas de tus alumnos.',
-              ),
-              const SizedBox(height: 16),
-              if (_usage case final usage?)
-                Text(
-                  '${usage.exercises}/${usage.exerciseLimit} ejercicios y versiones · ${usage.images}/${usage.imageLimit} imágenes reservadas.',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              const ExpansionTile(
-                key: PageStorageKey('trainer-exercise-storage-help'),
-                tilePadding: EdgeInsets.zero,
-                title: Text('Límites y conservación'),
+          IconButton(
+            onPressed: _showOfficial
+                ? (_officialBusy ? null : _loadOfficial)
+                : (_busy ? null : _load),
+            tooltip: 'Actualizar',
+            icon: const Icon(Icons.refresh),
+          ),
+        ],
+      ),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: ProfessionalWorkspaceScope.pageConstraints(
+            context,
+            maxWidth: 900,
+          ),
+          child: ListView(
+            padding: const EdgeInsets.all(24),
+            children: [
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
                 children: [
-                  Padding(
-                    padding: EdgeInsets.only(bottom: 16),
-                    child: Text(
-                      'Las versiones anteriores conservan el historial y cuentan en el límite. Cada imagen ocupa como máximo 500 KB; las reservas de subidas también cuentan. La limpieza retira solo archivos sin otros usos y libera su reserva tras confirmar el borrado. Puedes enlazar un vídeo HTTPS o subir una demostración. Los enlaces externos dependen de la disponibilidad y privacidad de ese proveedor.',
-                    ),
+                  ChoiceChip(
+                    label: const Text('Mis ejercicios'),
+                    selected: !_showOfficial,
+                    onSelected: (_) => setState(() {
+                      _showOfficial = false;
+                      _label = _muscle = _equipment = null;
+                    }),
+                  ),
+                  ChoiceChip(
+                    label: const Text('EntrenaOP'),
+                    selected: _showOfficial,
+                    onSelected: (_) {
+                      setState(() {
+                        _showOfficial = true;
+                        _label = _muscle = _equipment = null;
+                      });
+                      if (!_officialLoaded && !_officialBusy) _loadOfficial();
+                    },
                   ),
                 ],
               ),
               const SizedBox(height: 16),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: FilledButton.icon(
-                  onPressed: _busy || !_enabled ? null : _edit,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Crear ejercicio privado'),
+              if (_showOfficial) ...[
+                const Text(
+                  'Catálogo de EntrenaOP. Puedes utilizar estos ejercicios directamente al crear tus sesiones y programas; no necesitas copiarlos.',
                 ),
-              ),
-            ],
-            const SizedBox(height: 16),
-            if (widget.onCleanup != null)
-              Align(
-                alignment: Alignment.centerLeft,
-                child: OutlinedButton.icon(
-                  onPressed: _busy
-                      ? null
-                      : () async {
-                          await widget.onCleanup!();
-                          if (mounted) await _load();
-                        },
-                  icon: const Icon(Icons.cleaning_services_outlined),
-                  label: const Text('Limpiar archivos sin uso'),
+                const SizedBox(height: 16),
+              ] else ...[
+                const Text(
+                  'Tu biblioteca privada para preparar sesiones y programas de tus alumnos.',
                 ),
-              ),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 640),
-                child: TextField(
-                  controller: _search,
-                  decoration: InputDecoration(
-                    labelText: _showOfficial
-                        ? 'Buscar en EntrenaOP'
-                        : 'Buscar en mis ejercicios',
-                    prefixIcon: const Icon(Icons.search),
+                const SizedBox(height: 16),
+                if (_usage case final usage?)
+                  Text(
+                    '${usage.exercises}/${usage.exerciseLimit} ejercicios y versiones · ${usage.images}/${usage.imageLimit} imágenes reservadas.',
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
-                  onChanged: (value) =>
-                      setState(() => _query = value.trim().toLowerCase()),
+                const ExpansionTile(
+                  key: PageStorageKey('trainer-exercise-storage-help'),
+                  tilePadding: EdgeInsets.zero,
+                  title: Text('Límites y conservación'),
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 16),
+                      child: Text(
+                        'Las versiones anteriores conservan el historial y cuentan en el límite. Cada imagen ocupa como máximo 500 KB; las reservas de subidas también cuentan. La limpieza retira solo archivos sin otros usos y libera su reserva tras confirmar el borrado. Puedes enlazar un vídeo HTTPS o subir una demostración. Los enlaces externos dependen de la disponibilidad y privacidad de ese proveedor.',
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ),
-            if (_preferences?.labelsLoaded == true)
-              ExerciseCollections(
-                memberships: (_showOfficial ? _official : _items)
-                    .map((e) => _preferences!.labels(e.id))
-                    .toList(),
-                selected: _label,
-                onChanged: (v) => setState(() => _label = v),
-              ),
-            if (!_showOfficial)
-              if (_preferences?.labelsError case final error?) Text(error),
-            if (_showOfficial ? _officialBusy : _busy)
-              const LinearProgressIndicator(),
-            if (_showOfficial && _officialError != null) ...[
-              Text(_officialError!),
-              TextButton(
-                onPressed: _loadOfficial,
-                child: const Text('Reintentar'),
-              ),
-            ],
-            if (!_showOfficial && _error != null) ...[
-              Text(_error!),
-              TextButton(onPressed: _load, child: const Text('Reintentar')),
-            ],
-            if (!_showOfficial && !_busy && _items.isEmpty && _error == null)
-              const Padding(
-                padding: EdgeInsets.all(24),
-                child: Text('Todavía no has creado ejercicios propios.'),
-              ),
-            ProfessionalCatalogGrid(
-              minCardWidth: 320,
-              children: [
-                for (final exercise
-                    in (_showOfficial ? _official : _items).where(
-                      (e) =>
-                          matchesCatalogSearch(_query, [
-                            e.draft.name,
-                            ...e.draft.muscleGroups,
-                            ...e.draft.equipment,
-                            ...?_preferences?.labels(e.id),
-                          ]) &&
-                          matchesExerciseCollection(
-                            _preferences?.labels(e.id) ?? const [],
-                            _label,
-                          ),
-                    ))
-                  ProfessionalResourceCard(
-                    leading: ExerciseThumbnail(
-                      url: exercise.imageUrl,
-                      size: 56,
-                    ),
-                    title: Text(exercise.draft.name),
-                    subtitle: Text(
-                      [
-                        if (exercise.official)
-                          'EntrenaOP'
-                        else
-                          'Versión ${exercise.version}',
-                        ...exercise.draft.muscleGroups,
-                        ...?_preferences?.labels(exercise.id),
-                      ].join(' · '),
-                    ),
-                    trailing: _preferences == null
-                        ? const Icon(Icons.chevron_right)
-                        : IconButton(
-                            tooltip: 'Etiquetas: ${exercise.draft.name}',
-                            icon: const Icon(Icons.label_outline),
-                            onPressed: _busy || !_canOrganize
-                                ? null
-                                : () => editExerciseLabels(
-                                    context,
-                                    _preferences,
-                                    exercise.id,
-                                    exercise.draft.name,
-                                  ),
-                          ),
-                    onTap: () => _inspect(exercise),
+                const SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: FilledButton.icon(
+                    onPressed: _busy || !_enabled ? null : _edit,
+                    icon: const Icon(Icons.add),
+                    label: const Text('Crear ejercicio privado'),
                   ),
+                ),
               ],
-            ),
-          ],
+              const SizedBox(height: 16),
+              if (widget.onCleanup != null) ...[
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: OutlinedButton.icon(
+                    onPressed: _busy
+                        ? null
+                        : () async {
+                            await widget.onCleanup!();
+                            if (mounted) await _load();
+                          },
+                    icon: const Icon(Icons.cleaning_services_outlined),
+                    label: const Text('Limpiar archivos sin uso'),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+              Align(
+                alignment: Alignment.centerLeft,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 640),
+                  child: TextField(
+                    controller: _search,
+                    decoration: InputDecoration(
+                      labelText: _showOfficial
+                          ? 'Buscar en EntrenaOP'
+                          : 'Buscar en mis ejercicios',
+                      prefixIcon: const Icon(Icons.search),
+                    ),
+                    onChanged: (value) =>
+                        setState(() => _query = value.trim().toLowerCase()),
+                  ),
+                ),
+              ),
+              if (muscleOptions.isNotEmpty || equipmentOptions.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    if (muscleOptions.isNotEmpty)
+                      _filter(
+                        'Músculo',
+                        'Todos los músculos',
+                        muscleOptions,
+                        muscle,
+                        (value) => setState(() => _muscle = value),
+                      ),
+                    if (equipmentOptions.isNotEmpty)
+                      _filter(
+                        'Material',
+                        'Todo el material',
+                        equipmentOptions,
+                        equipment,
+                        (value) => setState(() => _equipment = value),
+                      ),
+                  ],
+                ),
+              ],
+              if (_preferences?.labelsLoaded == true)
+                ExerciseCollections(
+                  memberships: (_showOfficial ? _official : _items)
+                      .map((e) => _preferences!.labels(e.id))
+                      .toList(),
+                  selected: _label,
+                  onChanged: (v) => setState(() => _label = v),
+                ),
+              if (!_showOfficial)
+                if (_preferences?.labelsError case final error?) Text(error),
+              if (_showOfficial ? _officialBusy : _busy)
+                const LinearProgressIndicator(),
+              if (_showOfficial && _officialError != null) ...[
+                Text(_officialError!),
+                TextButton(
+                  onPressed: _loadOfficial,
+                  child: const Text('Reintentar'),
+                ),
+              ],
+              if (!_showOfficial && _error != null) ...[
+                Text(_error!),
+                TextButton(onPressed: _load, child: const Text('Reintentar')),
+              ],
+              if (!_showOfficial && !_busy && _items.isEmpty && _error == null)
+                const Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Text('Todavía no has creado ejercicios propios.'),
+                ),
+              if (catalog.isNotEmpty && visible.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Text('No hay ejercicios con estos filtros.'),
+                ),
+              ProfessionalCatalogGrid(
+                minCardWidth: 320,
+                children: [
+                  for (final exercise in visible)
+                    ProfessionalResourceCard(
+                      leading: ExerciseThumbnail(
+                        url: exercise.imageUrl,
+                        size: 56,
+                      ),
+                      title: Text(exercise.draft.name),
+                      subtitle: Text(
+                        [
+                          if (exercise.official)
+                            'EntrenaOP'
+                          else
+                            'Versión ${exercise.version}',
+                          ...muscleGroups[exercise.id]!,
+                          ...?_preferences?.labels(exercise.id),
+                        ].join(' · '),
+                      ),
+                      trailing: _preferences == null
+                          ? const Icon(Icons.chevron_right)
+                          : IconButton(
+                              tooltip: 'Etiquetas: ${exercise.draft.name}',
+                              icon: const Icon(Icons.label_outline),
+                              onPressed: _busy || !_canOrganize
+                                  ? null
+                                  : () => editExerciseLabels(
+                                      context,
+                                      _preferences,
+                                      exercise.id,
+                                      exercise.draft.name,
+                                    ),
+                            ),
+                      onTap: () => _inspect(exercise),
+                    ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _ExerciseDetails extends StatefulWidget {
@@ -489,7 +583,9 @@ class _ExerciseDetailsState extends State<_ExerciseDetails> {
                       : 'Tu ejercicio privado · Versión ${exercise.version}',
                 ),
                 const SizedBox(height: 12),
-                Text('Músculos: ${draft.muscleGroups.join(' · ')}'),
+                Text(
+                  'Músculos: ${trainerExerciseMuscles(draft.muscleGroups).join(' · ')}',
+                ),
                 Text(
                   'Material: ${draft.equipment.isEmpty ? 'Sin material' : draft.equipment.join(' · ')}',
                 ),

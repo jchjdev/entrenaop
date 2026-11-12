@@ -1,5 +1,18 @@
 # Ejercicios privados profesionales · TRN-019 · 21/10/2026
 
+## Filtros rápidos y nombres musculares · 12/11/2026
+
+Las dos pestañas de Ejercicios en Trainer ofrecen filtros visibles por músculo
+y material. Se combinan con el buscador y las colecciones. Los filtros se
+reinician al cambiar de catálogo y la búsqueda se conserva.
+
+Las tarjetas, fichas y selector de Trainer agrupan alias conocidos. Por ejemplo,
+«pantorrillas» y «gemelo» se presentan como «gemelos», «isquios» como
+«isquiotibiales», y «sóleo» conserva su grupo propio. El buscador de la biblioteca
+admite también los alias anteriores. Esta presentación no reescribe ejercicios,
+versiones ni recetas ya pautadas. El buscador tiene espacio propio tras el botón
+de limpieza para que no se solape su etiqueta.
+
 ## Limpieza protegida de imágenes · TRN-046 · Dev
 
 La eliminación definitiva encola la imagen gestionada anterior. La vista

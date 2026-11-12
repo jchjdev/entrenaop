@@ -9,6 +9,8 @@ import 'package:workout_core/exercise_draft.dart';
 import 'package:workout_editor_ui/exercise_image_draft.dart';
 import 'package:workout_editor_ui/workout_editor_exercise.dart';
 
+import 'trainer_exercise_muscles.dart';
+
 String trainerExerciseError(Object error) {
   if (error is PostgrestException && error.code == '22023') {
     if (error.message == 'Has alcanzado el límite de imágenes profesionales.' ||
@@ -188,7 +190,9 @@ class SupabaseTrainerExerciseRepository implements TrainerExerciseRepository {
           WorkoutEditorExercise(
             id: row['id'] as String,
             name: row['name'] as String,
-            muscleGroups: (row['muscle_groups'] as List).cast<String>(),
+            muscleGroups: trainerExerciseMuscles(
+              (row['muscle_groups'] as List).cast<String>(),
+            ),
             equipment: (row['equipment'] as List).cast<String>(),
             thumbnailUrl: path == null
                 ? row['thumbnail_url'] as String?

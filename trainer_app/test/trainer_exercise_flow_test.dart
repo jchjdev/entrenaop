@@ -59,17 +59,21 @@ class ExerciseFixture extends TrainerExerciseRepository {
   }
 }
 
-TrainerExercise entry(String id, {bool current = true}) =>
-    TrainerExercise.fromJson({
-      'id': id,
-      'name': id,
-      'version': 1,
-      'current': current,
-      'muscle_groups': ['espalda'],
-      'equipment': ['barra'],
-      'difficulty': 'inicial',
-      'exercise_type': 'repeticiones',
-    });
+TrainerExercise entry(
+  String id, {
+  bool current = true,
+  List<String> muscles = const ['espalda'],
+  List<String> equipment = const ['barra'],
+}) => TrainerExercise.fromJson({
+  'id': id,
+  'name': id,
+  'version': 1,
+  'current': current,
+  'muscle_groups': muscles,
+  'equipment': equipment,
+  'difficulty': 'inicial',
+  'exercise_type': 'repeticiones',
+});
 
 Future<void> open(WidgetTester tester, ExerciseFixture repository) async {
   await tester.pumpWidget(
@@ -85,6 +89,71 @@ Future<void> open(WidgetTester tester, ExerciseFixture repository) async {
 }
 
 void main() {
+  testWidgets('agrupa alias de músculo y combina material y búsqueda', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final repo = ExerciseFixture()
+      ..rows = [
+        entry('Elevación de pie', muscles: ['pantorrillas', 'gemelos']),
+        entry(
+          'Elevación con mancuerna',
+          muscles: ['gemelo'],
+          equipment: ['mancuerna'],
+        ),
+        entry('Elevación sentada', muscles: ['sóleo']),
+      ]
+      ..officialRows = [
+        entry('Elevación oficial', muscles: ['pantorrilla']),
+      ];
+    await tester.pumpWidget(
+      MaterialApp(
+        home: TrainerExercisePage(
+          repository: repo,
+          access: FakeTrainerRepository(),
+          onCleanup: () async {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final search = find.byType(TextField);
+    expect(
+      tester.getTopLeft(search).dy -
+          tester
+              .getBottomLeft(
+                find.widgetWithText(OutlinedButton, 'Limpiar archivos sin uso'),
+              )
+              .dy,
+      greaterThanOrEqualTo(12),
+    );
+    final muscle = find.byKey(const ValueKey('Músculo:null'));
+    await tester.tap(muscle);
+    await tester.pumpAndSettle();
+    expect(find.text('pantorrillas'), findsNothing);
+    expect(find.text('gemelos'), findsOneWidget);
+    await tester.tap(find.text('gemelos'));
+    await tester.pumpAndSettle();
+    expect(find.text('Elevación de pie'), findsOneWidget);
+    expect(find.text('Elevación con mancuerna'), findsOneWidget);
+    expect(find.text('Elevación sentada'), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('Material:null')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('mancuerna'));
+    await tester.pumpAndSettle();
+    await tester.enterText(search, 'pantorrillas');
+    await tester.pumpAndSettle();
+    expect(find.text('Elevación de pie'), findsNothing);
+    expect(find.text('Elevación con mancuerna'), findsOneWidget);
+
+    await tester.tap(find.text('EntrenaOP'));
+    await tester.pumpAndSettle();
+    expect(find.text('Elevación oficial'), findsOneWidget);
+    expect(repo.saves, isEmpty);
+  });
+
   testWidgets(
     'colecciones filtran sin copiar ejercicios y distinguen los no agrupados',
     (tester) async {
@@ -210,6 +279,9 @@ void main() {
   testWidgets('la biblioteca propia encuentra ejercicios por etiquetas', (
     tester,
   ) async {
+    tester.view.physicalSize = const Size(1000, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     final repo = ExerciseFixture()
       ..rows = [entry('Dominadas'), entry('Sentadillas')];
     await tester.pumpWidget(

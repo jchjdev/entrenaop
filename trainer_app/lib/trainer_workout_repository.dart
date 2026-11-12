@@ -13,6 +13,7 @@ import 'package:workout_core/workout_template_query.dart';
 import 'package:workout_editor_ui/workout_editor_exercise.dart';
 
 import 'trainer_exercise_repository.dart';
+import 'trainer_exercise_muscles.dart';
 
 typedef WorkoutJson = Map<String, dynamic>;
 
@@ -266,7 +267,7 @@ class SupabaseTrainerWorkoutRepository implements TrainerWorkoutRepository {
             (e) => WorkoutEditorExercise(
               id: e.id,
               name: e.draft.name,
-              muscleGroups: e.draft.muscleGroups,
+              muscleGroups: trainerExerciseMuscles(e.draft.muscleGroups),
               equipment: e.draft.equipment,
               thumbnailUrl: e.imageUrl,
               catalogScope: 'EntrenaOP',
@@ -283,7 +284,7 @@ class SupabaseTrainerWorkoutRepository implements TrainerWorkoutRepository {
               name: e.current
                   ? e.draft.name
                   : '${e.draft.name} (versión ${e.version})',
-              muscleGroups: e.draft.muscleGroups,
+              muscleGroups: trainerExerciseMuscles(e.draft.muscleGroups),
               equipment: e.draft.equipment,
               thumbnailUrl: e.imageUrl,
               catalogScope: 'Míos',

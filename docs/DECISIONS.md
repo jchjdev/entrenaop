@@ -1,5 +1,11 @@
 # Registro de decisiones vigentes
 
+**Filtros de Ejercicios en Trainer · 12/11/2026.** Javier pide localizar
+ejercicios rápidamente y agrupar nombres musculares equivalentes. «Mis
+ejercicios» y «EntrenaOP» combinan búsqueda, músculo, material y colecciones.
+Los alias se unifican al consultar el catálogo, conservando las versiones
+guardadas. [Criterio y alcance](TRAINER_PRIVATE_EXERCISES.md#filtros-rápidos-y-nombres-musculares--12112026).
+
 **Carga real opcional en fuerza · 12/11/2026.** Javier confirma que el
 deportista debe poder registrar los kilos empleados aunque la pauta solo
 indique repeticiones y RIR. Los kilos reales pueden quedar en blanco incluso
