@@ -232,7 +232,7 @@ void main() {
       );
       final thumbnail = tester.getSize(find.byType(ExerciseThumbnail));
       expect(thumbnail.aspectRatio, closeTo(4 / 3, 0.001));
-      expect(thumbnail.width, greaterThan(64));
+      expect(thumbnail.width, 128);
       expect(
         tester
             .widget<Image>(

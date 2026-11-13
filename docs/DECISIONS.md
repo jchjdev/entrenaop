@@ -1,8 +1,8 @@
 # Registro de decisiones vigentes
 
-**Prueba de miniaturas 4:3 en los catálogos de ejercicios · 13/11/2026.**
-ADMIN y Trainer muestran las fotos completas en un marco 4:3 de hasta
-80 × 60 píxeles lógicos para valorar el encuadre con esas portadas.
+**Portadas 4:3 en los catálogos de ejercicios · 13/11/2026.**
+ADMIN y Trainer muestran las fotos completas en un marco adaptable de hasta
+128 × 96 píxeles lógicos, con las acciones en la esquina superior derecha.
 La vista previa del editor de ambos portales muestra el mismo encuadre antes
 de guardar.
 [Diseño](VISUAL_DESIGN.md#miniaturas-43-en-los-catálogos-de-ejercicios-de-admin-y-trainer).

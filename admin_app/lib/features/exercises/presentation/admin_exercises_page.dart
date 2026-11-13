@@ -9,8 +9,7 @@ import 'package:workout_editor_ui/exercise_labels_dialog.dart';
 import 'package:workout_editor_ui/exercise_collections.dart';
 import 'package:workout_editor_ui/exercise_collection_selection.dart';
 import 'package:workout_editor_ui/exercise_catalog_filters.dart';
-import 'package:workout_editor_ui/exercise_search_list.dart'
-    show ExerciseThumbnail;
+import 'package:workout_editor_ui/exercise_catalog_card.dart';
 import 'package:workout_editor_ui/guided_program_work.dart';
 
 import '../../../core/admin_shell.dart';
@@ -457,20 +456,16 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
                     ProfessionalCatalogGrid(
                       children: [
                         for (final exercise in visible)
-                          ProfessionalResourceCard(
-                            leading: ExerciseThumbnail.catalog(
-                              url: exercise.imageUrl,
-                            ),
-                            title: Text(exercise.name),
-                            subtitle: Text(
-                              [
-                                if (!exercise.isPublic)
-                                  'Retirado · revisar para publicar',
-                                ...exerciseMuscleLabels(exercise.muscleGroups),
-                                ...exercise.equipment,
-                              ].join(' · '),
-                            ),
-                            trailing: _selection.active
+                          ExerciseCatalogCard(
+                            imageUrl: exercise.imageUrl,
+                            title: exercise.name,
+                            subtitle: [
+                              if (!exercise.isPublic)
+                                'Retirado · revisar para publicar',
+                              ...exerciseMuscleLabels(exercise.muscleGroups),
+                              ...exercise.equipment,
+                            ].join(' · '),
+                            actions: _selection.active
                                 ? _selection.checkbox(
                                     exercise.id,
                                     exercise.name,

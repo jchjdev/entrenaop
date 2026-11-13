@@ -9,10 +9,10 @@ import 'package:workout_editor_ui/catalog_search.dart';
 import 'package:workout_editor_ui/exercise_collections.dart';
 import 'package:workout_editor_ui/exercise_collection_selection.dart';
 import 'package:workout_editor_ui/exercise_catalog_filters.dart';
+import 'package:workout_editor_ui/exercise_catalog_card.dart';
 import 'package:workout_editor_ui/exercise_preferences_controller.dart';
 import 'package:workout_editor_ui/exercise_labels_dialog.dart';
 import 'package:workout_editor_ui/exercise_form.dart';
-import 'package:workout_editor_ui/exercise_search_list.dart';
 import 'package:workout_editor_ui/exercise_video_preview.dart';
 import 'package:workout_editor_ui/exercise_image_draft.dart';
 import 'package:workout_editor_ui/workout_editor_exercise.dart';
@@ -454,22 +454,18 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
                 minCardWidth: 320,
                 children: [
                   for (final exercise in visible)
-                    ProfessionalResourceCard(
-                      leading: ExerciseThumbnail.catalog(
-                        url: exercise.imageUrl,
-                      ),
-                      title: Text(exercise.draft.name),
-                      subtitle: Text(
-                        [
-                          if (exercise.official)
-                            'EntrenaOP'
-                          else
-                            'Versión ${exercise.version}',
-                          ...exerciseMuscleLabels(exercise.draft.muscleGroups),
-                          ...?_preferences?.labels(exercise.id),
-                        ].join(' · '),
-                      ),
-                      trailing: _selection.active
+                    ExerciseCatalogCard(
+                      imageUrl: exercise.imageUrl,
+                      title: exercise.draft.name,
+                      subtitle: [
+                        if (exercise.official)
+                          'EntrenaOP'
+                        else
+                          'Versión ${exercise.version}',
+                        ...exerciseMuscleLabels(exercise.draft.muscleGroups),
+                        ...?_preferences?.labels(exercise.id),
+                      ].join(' · '),
+                      actions: _selection.active
                           ? _selection.checkbox(
                               exercise.id,
                               exercise.draft.name,

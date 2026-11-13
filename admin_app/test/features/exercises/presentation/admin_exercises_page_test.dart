@@ -118,6 +118,12 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    final cardTitle = find.text('Dominadas');
+    final cardLabels = find.byTooltip('Etiquetas: Dominadas');
+    expect(
+      tester.getRect(cardLabels).bottom,
+      lessThanOrEqualTo(tester.getRect(cardTitle).top),
+    );
     await tester.tap(find.text('Técnica (1)'));
     await tester.pumpAndSettle();
     expect(find.text('Dominadas'), findsOneWidget);

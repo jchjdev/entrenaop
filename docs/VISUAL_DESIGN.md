@@ -2267,7 +2267,9 @@ reproducción bajo demanda, controles posteriores, datos ni permisos.
 ## Miniaturas 4:3 en los catálogos de ejercicios de ADMIN y Trainer
 
 Las tarjetas de los dos catálogos muestran las portadas en un marco 4:3 de
-hasta 80 × 60 píxeles lógicos. Una portada 4:3 llena el marco. Las fotos en otras
+hasta 128 × 96 píxeles lógicos. El marco se reduce con el ancho de la tarjeta.
+Las acciones y la casilla de selección van en la esquina superior derecha.
+Una portada 4:3 llena el marco. Las fotos en otras
 proporciones se ajustan completas con espacio de fondo alrededor.
 El editor de ejercicios de ambos portales usa el mismo encuadre antes de
 guardar. Los controles para cambiar o quitar la foto quedan debajo del marco.

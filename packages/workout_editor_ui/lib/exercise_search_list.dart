@@ -382,10 +382,13 @@ class ExerciseThumbnail extends StatelessWidget {
       _height = size,
       _catalog = false;
 
-  const ExerciseThumbnail.catalog({super.key, required this.url})
-    : _width = 80,
-      _height = 60,
-      _catalog = true;
+  const ExerciseThumbnail.catalog({
+    super.key,
+    required this.url,
+    required double width,
+  }) : _width = width,
+       _height = width * 3 / 4,
+       _catalog = true;
 
   final String? url;
   final double _width, _height;
