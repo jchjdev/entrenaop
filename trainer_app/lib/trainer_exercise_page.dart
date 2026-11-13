@@ -11,7 +11,7 @@ import 'package:workout_editor_ui/exercise_collection_selection.dart';
 import 'package:workout_editor_ui/exercise_catalog_filters.dart';
 import 'package:workout_editor_ui/exercise_catalog_card.dart';
 import 'package:workout_editor_ui/exercise_preferences_controller.dart';
-import 'package:workout_editor_ui/exercise_labels_dialog.dart';
+import 'package:workout_editor_ui/exercise_collections_dialog.dart';
 import 'package:workout_editor_ui/exercise_form.dart';
 import 'package:workout_editor_ui/exercise_video_preview.dart';
 import 'package:workout_editor_ui/exercise_image_draft.dart';
@@ -111,7 +111,18 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
   }
 
   void _preferencesChanged() {
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    setState(() {
+      final collection = _label;
+      final catalog = _showOfficial ? _official : _items;
+      if (collection != null &&
+          collection.isNotEmpty &&
+          !catalog.any(
+            (item) => _preferences!.labels(item.id).contains(collection),
+          )) {
+        _label = null;
+      }
+    });
   }
 
   Future<void> _addToCollection(List<TrainerExercise> catalog) async {
@@ -475,17 +486,12 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
                             )
                           : _preferences == null
                           ? const Icon(Icons.chevron_right)
-                          : IconButton(
-                              tooltip: 'Etiquetas: ${exercise.draft.name}',
-                              icon: const Icon(Icons.label_outline),
-                              onPressed: _busy || !_canOrganize
-                                  ? null
-                                  : () => editExerciseLabels(
-                                      context,
-                                      _preferences,
-                                      exercise.id,
-                                      exercise.draft.name,
-                                    ),
+                          : ExerciseCollectionsButton(
+                              preferences: _preferences,
+                              exerciseId: exercise.id,
+                              exerciseName: exercise.draft.name,
+                              catalogIds: catalog.map((item) => item.id),
+                              enabled: !_busy && _canOrganize,
                             ),
                       onTap: () {
                         if (_selection.active) {

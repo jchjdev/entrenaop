@@ -108,7 +108,7 @@ void main() {
       ]);
       expect(source.writes[1].$4, source.writes[2].$4);
       expect(preferences.labels('Dominadas'), ['Técnica', 'Fuerza']);
-      expect(preferences.labels('Sentadillas'), ['Técnica']);
+      expect(preferences.labels('Sentadillas'), ['Movilidad', 'Técnica']);
       expect(find.byType(AlertDialog), findsNothing);
     },
   );
@@ -128,20 +128,48 @@ void main() {
   });
 
   testWidgets(
-    'respuesta perdida conserva operación, revisión y texto en reintento',
+    'marca varias colecciones y reintenta el mismo guardado si se pierde la respuesta',
     (tester) async {
-      final source = LabelsSource()..loseLabelResponse = true;
+      final source = _BatchLabelsSource()..loseLabelResponse = true;
       final preferences = ExercisePreferencesController(source);
       addTearDown(preferences.dispose);
       await tester.pumpWidget(catalog(preferences));
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Etiquetas: Dominadas'));
+      final folder = find.byTooltip('Colecciones: Dominadas');
+      expect(
+        find.descendant(
+          of: folder,
+          matching: find.byIcon(Icons.folder_outlined),
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(folder);
+      await tester.pumpAndSettle();
+      expect(find.text('Colecciones de Dominadas'), findsOneWidget);
+      final assigned = find.widgetWithText(CheckboxListTile, 'Fuerza');
+      expect(tester.widget<CheckboxListTile>(assigned).value, isTrue);
+      await tester.tap(assigned);
+      final existing = find.widgetWithText(CheckboxListTile, 'Movilidad');
+      expect(tester.widget<CheckboxListTile>(existing).value, isFalse);
+      await tester.tap(existing);
+      await tester.tap(find.text('Nueva colección'));
       await tester.pumpAndSettle();
       await tester.enterText(
-        find.widgetWithText(TextField, 'Etiquetas separadas por comas'),
-        'Oposición, Inicio',
+        find.widgetWithText(TextField, 'Nombre de la colección'),
+        'Oposición',
       );
-      await tester.tap(find.text('Guardar etiquetas'));
+      await tester.tap(find.text('Crear colección'));
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<CheckboxListTile>(
+              find.widgetWithText(CheckboxListTile, 'Oposición'),
+            )
+            .value,
+        isTrue,
+      );
+      expect(source.writes, isEmpty);
+      await tester.tap(find.text('Guardar colecciones'));
       await tester.pumpAndSettle();
       expect(source.writes, hasLength(1));
       await tester.tap(find.text('Reintentar mismo envío'));
@@ -151,24 +179,37 @@ void main() {
       expect(source.writes[0].$2, source.writes[1].$2);
       expect(source.writes[0].$3, source.writes[1].$3);
       expect(source.writes[0].$4, source.writes[1].$4);
-      expect(find.text('Mis etiquetas · Dominadas'), findsNothing);
-      expect(preferences.labels('Dominadas'), ['Oposición', 'Inicio']);
+      expect(find.text('Colecciones de Dominadas'), findsNothing);
+      expect(preferences.labels('Dominadas'), [
+        'técnica',
+        'Movilidad',
+        'Oposición',
+      ]);
     },
   );
 
-  testWidgets('fallo de lectura no permite guardar etiquetas vacías', (
+  testWidgets('permite reintentar la lectura antes de editar colecciones', (
     tester,
   ) async {
-    final preferences = ExercisePreferencesController(
-      LabelsSource()..failLabels = true,
-    );
+    final source = LabelsSource()..failLabels = true;
+    final preferences = ExercisePreferencesController(source);
     addTearDown(preferences.dispose);
     await tester.pumpWidget(catalog(preferences));
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Etiquetas: Dominadas'));
+    await tester.tap(find.byTooltip('Colecciones: Dominadas'));
     await tester.pumpAndSettle();
-    expect(find.text('Guardar etiquetas'), findsNothing);
-    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.text('Guardar colecciones'), findsNothing);
+    source.failLabels = false;
+    await tester.tap(find.text('Reintentar lectura de colecciones'));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<CheckboxListTile>(
+            find.widgetWithText(CheckboxListTile, 'Técnica'),
+          )
+          .value,
+      isTrue,
+    );
   });
 }
 
@@ -181,6 +222,11 @@ class _BatchLabelsSource extends LabelsSource {
       revision: 1,
     ),
     ExerciseLabelEntry(exerciseId: 'Remo', labels: ['Técnica'], revision: 1),
+    ExerciseLabelEntry(
+      exerciseId: 'Sentadillas',
+      labels: ['Movilidad'],
+      revision: 1,
+    ),
   ];
 
   @override

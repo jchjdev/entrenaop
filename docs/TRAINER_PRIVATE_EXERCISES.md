@@ -2,13 +2,19 @@
 
 ## Colecciones de ejercicios en lote
 
+ADMIN y Trainer llaman «Colecciones» a esta organización en la biblioteca y
+en el creador de sesiones. En la carpeta de un ejercicio se pueden marcar o
+desmarcar varias colecciones y crear una nueva antes de guardar. La interfaz
+lee las pertenencias privadas existentes y guarda en el mismo registro por
+ejercicio.
+
 En Ejercicios, «Crear colección o añadir a una existente» activa las casillas
 de las tarjetas.
 La selección se conserva al buscar y filtrar dentro del catálogo. «Añadir a
 colección» permite elegir una existente o escribir un nombre nuevo, conservando
-las demás etiquetas de cada ejercicio. ADMIN y Trainer comparten este flujo.
+las demás colecciones de cada ejercicio. ADMIN y Trainer comparten este flujo.
 
-Se comprueba el límite de ocho etiquetas antes de enviar el lote. El guardado
+Se comprueba el límite de ocho colecciones por ejercicio antes de guardar. El guardado
 usa las revisiones y recibos por ejercicio del servidor. Si se interrumpe,
 el diálogo muestra cuántos cambios se confirmaron y permite reintentar los
 pendientes con el mismo envío. Las colecciones aparecen en el filtro al
@@ -41,8 +47,8 @@ ruta pública y la limpieza protege las referencias del historial.
 ADMIN y Trainer comparten el componente de filtros y sus reglas. Cada catálogo
 genera las opciones con los músculos y materiales de sus ejercicios. Al
 recargar tras crear o editar un ejercicio, el filtro incorpora los valores que
-se hayan añadido. Las colecciones se generan con las etiquetas asignadas a los
-ejercicios del catálogo.
+se hayan añadido. Cada filtro de colecciones usa las pertenencias de los
+ejercicios de su catálogo.
 
 ## Filtros rápidos y nombres musculares · 12/11/2026
 

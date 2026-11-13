@@ -27,7 +27,7 @@ class ExercisePreferencesController extends ChangeNotifier {
       labelsError = null;
       labelsLoaded = true;
     } catch (_) {
-      if (!_disposed) labelsError = 'No se pudieron cargar tus etiquetas.';
+      if (!_disposed) labelsError = 'No se pudieron cargar tus colecciones.';
       rethrow;
     } finally {
       _notify();

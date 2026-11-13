@@ -122,7 +122,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     final cardTitle = find.text('Dominadas');
-    final cardLabels = find.byTooltip('Etiquetas: Dominadas');
+    final cardLabels = find.byTooltip('Colecciones: Dominadas');
     final card = find.ancestor(
       of: cardTitle,
       matching: find.byType(ExerciseCatalogCard),
@@ -147,6 +147,16 @@ void main() {
     expect(find.text('Sentadillas'), findsNothing);
     expect(repo.updated, isNull);
     expect(repo.created, isNull);
+
+    await tester.tap(cardLabels);
+    await tester.pumpAndSettle();
+    final collection = find.widgetWithText(CheckboxListTile, 'Técnica');
+    expect(tester.widget<CheckboxListTile>(collection).value, isTrue);
+    await tester.tap(collection);
+    await tester.tap(find.text('Cerrar'));
+    await tester.pumpAndSettle();
+    expect(labels.writes, isEmpty);
+    expect(find.text('Sentadillas'), findsNothing);
 
     await tester.tap(find.text('Todos (2)'));
     await tester.pumpAndSettle();

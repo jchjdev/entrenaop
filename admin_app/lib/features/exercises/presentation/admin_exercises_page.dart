@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:entrenaop_admin/core/catalog_search.dart';
 import 'package:workout_core/exercise_catalog_preferences.dart';
 import 'package:workout_editor_ui/exercise_preferences_controller.dart';
-import 'package:workout_editor_ui/exercise_labels_dialog.dart';
+import 'package:workout_editor_ui/exercise_collections_dialog.dart';
 import 'package:workout_editor_ui/exercise_collections.dart';
 import 'package:workout_editor_ui/exercise_collection_selection.dart';
 import 'package:workout_editor_ui/exercise_catalog_filters.dart';
@@ -61,7 +61,17 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
       ? null
       : ExercisePreferencesController(widget.preferences!);
   void _preferencesChanged() {
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    setState(() {
+      final collection = _collection;
+      if (collection != null &&
+          collection.isNotEmpty &&
+          !_exercises.any(
+            (item) => _preferences!.labels(item.id).contains(collection),
+          )) {
+        _collection = null;
+      }
+    });
   }
 
   Future<void> _addToCollection() async {
@@ -477,18 +487,14 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       if (_preferences?.supportsLabels == true)
-                                        IconButton(
-                                          tooltip:
-                                              'Etiquetas: ${exercise.name}',
-                                          icon: const Icon(Icons.label_outline),
-                                          onPressed: _blocked
-                                              ? null
-                                              : () => editExerciseLabels(
-                                                  context,
-                                                  _preferences!,
-                                                  exercise.id,
-                                                  exercise.name,
-                                                ),
+                                        ExerciseCollectionsButton(
+                                          preferences: _preferences!,
+                                          exerciseId: exercise.id,
+                                          exerciseName: exercise.name,
+                                          catalogIds: _exercises.map(
+                                            (item) => item.id,
+                                          ),
+                                          enabled: !_blocked,
                                         ),
                                       if (_trashRepository != null)
                                         PopupMenuButton<String>(

@@ -313,7 +313,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.byTooltip('Etiquetas: Dominadas'), findsOneWidget);
+    expect(find.byTooltip('Colecciones: Dominadas'), findsOneWidget);
     await tester.enterText(find.byType(TextField), 'tecnica');
     await tester.pumpAndSettle();
     expect(find.text('Dominadas'), findsOneWidget);

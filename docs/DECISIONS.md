@@ -7,9 +7,10 @@ La vista previa del editor de ambos portales muestra el mismo encuadre antes
 de guardar.
 [Diseño](VISUAL_DESIGN.md#miniaturas-43-en-los-catálogos-de-ejercicios-de-admin-y-trainer).
 
-**Colecciones de ejercicios en lote · 13/11/2026.** ADMIN y Trainer permiten
-seleccionar varios ejercicios del listado y añadirlos a una colección privada
-existente o nueva con una sola acción. Se conservan las otras etiquetas.
+**Colecciones de ejercicios · 13/11/2026.** ADMIN y Trainer usan «Colecciones»
+en la biblioteca y el creador de sesiones. La carpeta de cada ejercicio abre
+un diálogo para marcar varias colecciones privadas o crear una. La selección
+en lote añade ejercicios a una colección y conserva sus demás pertenencias.
 [Contrato](TRAINER_PRIVATE_EXERCISES.md#colecciones-de-ejercicios-en-lote).
 
 **Ficha de ejercicios oficiales y filtros compartidos · 12/11/2026.**

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'exercise_collections.dart';
 import 'exercise_preferences_controller.dart';
 
 class ExerciseCollectionSelection {
@@ -126,22 +127,14 @@ class _AddToCollectionDialogState extends State<_AddToCollectionDialog> {
 
   List<_LabelWrite>? _prepare() {
     final input = _name.text.trim();
-    if (input.isEmpty ||
-        input.runes.length > 32 ||
-        RegExp(r'[\x00-\x1f\x7f,]').hasMatch(input)) {
+    if (!isValidExerciseCollectionName(input)) {
       setState(
         () => _error = 'Escribe un nombre de 1 a 32 caracteres sin comas.',
       );
       return null;
     }
     final key = input.toLowerCase();
-    final collections = _collections;
-    final name = collections.contains(input)
-        ? input
-        : collections.firstWhere(
-            (label) => label.toLowerCase() == key,
-            orElse: () => input,
-          );
+    final name = resolveExerciseCollectionName(input, _collections);
     final writes = <_LabelWrite>[];
     for (final entry in widget.selected.entries) {
       final existing = widget.preferences.labels(entry.key);
@@ -152,7 +145,7 @@ class _AddToCollectionDialogState extends State<_AddToCollectionDialog> {
       if (equivalent == -1 && existing.length >= 8) {
         setState(
           () => _error =
-              '${entry.value} ya tiene ocho colecciones. Quita una de sus etiquetas o ajusta la selección.',
+              '${entry.value} ya tiene ocho colecciones. Quita una de ellas o ajusta la selección.',
         );
         return null;
       }
@@ -197,7 +190,7 @@ class _AddToCollectionDialogState extends State<_AddToCollectionDialog> {
         setState(
           () => _error = _writes == null
               ? 'No se pudo preparar el cambio. Comprueba tu acceso y vuelve a intentarlo.'
-              : 'Cambios confirmados: $_confirmed de ${_writes!.length}. Puedes reintentar los pendientes o cerrar y volver a abrir para consultar las etiquetas guardadas.',
+              : 'Cambios confirmados: $_confirmed de ${_writes!.length}. Puedes reintentar los pendientes o cerrar y volver a abrir para consultar las colecciones guardadas.',
         );
       }
     } finally {
@@ -234,9 +227,9 @@ class _AddToCollectionDialogState extends State<_AddToCollectionDialog> {
                 const SizedBox(height: 12),
                 if (snapshot.hasError)
                   TextButton(
-                    onPressed: () => setState(
-                      () => _load = widget.preferences.refreshLabels(),
-                    ),
+                    onPressed: () => setState(() {
+                      _load = widget.preferences.refreshLabels();
+                    }),
                     child: const Text('Reintentar lectura de colecciones'),
                   )
                 else if (!ready)

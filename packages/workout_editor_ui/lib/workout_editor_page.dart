@@ -28,7 +28,7 @@ import 'package:workout_editor_ui/compact_field_layout.dart';
 
 import 'workout_editor_exercise.dart';
 import 'exercise_preferences_controller.dart';
-import 'exercise_labels_dialog.dart';
+import 'exercise_collections_dialog.dart';
 
 /// Creador común: edita la receta; el consumidor aporta catálogo, guardado y salida.
 /// La visibilidad y los permisos pertenecen a la aplicación y al servidor.
@@ -570,7 +570,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
 
   void _connectExercisePreferences() {
     // El panel lateral no abre el buscador: carga su organización al entrar y
-    // escucha los cambios de etiquetas realizados desde cualquiera de los dos.
+    // escucha los cambios de colecciones realizados desde el buscador.
     _exercisePreferences?.addListener(_exercisePreferencesChanged);
     _exercisePreferences?.load();
   }
@@ -582,7 +582,20 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     // Agrupar las notificaciones evita reconstruir la ruta durante ese build.
     scheduleMicrotask(() {
       _preferencesRebuildQueued = false;
-      if (mounted) setState(() {});
+      if (!mounted) return;
+      setState(() {
+        if (_libraryLabel != null &&
+            !_catalog.any(
+              (item) =>
+                  item.selectable &&
+                  (_exercisePreferences
+                          ?.labels(item.id)
+                          .contains(_libraryLabel) ??
+                      false),
+            )) {
+          _libraryLabel = null;
+        }
+      });
     });
   }
 
@@ -1403,8 +1416,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                   ),
           ),
         if (_exercisePreferences?.labelsLoaded == true)
-          ExerciseLabelFilter(
-            labels: _catalog
+          ExerciseCollectionFilter(
+            collections: _catalog
                 .where((e) => e.selectable)
                 .expand((e) => _exercisePreferences!.labels(e.id)),
             selected: _libraryLabel,

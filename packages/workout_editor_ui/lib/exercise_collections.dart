@@ -6,6 +6,19 @@ bool matchesExerciseCollection(Iterable<String> labels, String? collection) =>
     collection == null ||
     (collection.isEmpty ? labels.isEmpty : labels.contains(collection));
 
+bool isValidExerciseCollectionName(String name) =>
+    name.isNotEmpty &&
+    name.runes.length <= 32 &&
+    !RegExp(r'[\x00-\x1f\x7f,]').hasMatch(name);
+
+String resolveExerciseCollectionName(String name, Iterable<String> existing) =>
+    existing.contains(name)
+    ? name
+    : existing.firstWhere(
+        (collection) => collection.toLowerCase() == name.toLowerCase(),
+        orElse: () => name,
+      );
+
 class ExerciseCollections extends StatelessWidget {
   const ExerciseCollections({
     super.key,

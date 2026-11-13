@@ -66,7 +66,7 @@ class ExercisePreferencesClient
         result.revision != expectedRevision + 1 ||
         result.labels.length != proposed.length ||
         proposed.indexed.any((e) => result.labels[e.$1] != e.$2)) {
-      throw StateError('El recibo no corresponde a estas etiquetas.');
+      throw StateError('El recibo no corresponde a estas colecciones.');
     }
     return result;
   }

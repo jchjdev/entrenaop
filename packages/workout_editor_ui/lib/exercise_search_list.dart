@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'catalog_search.dart';
 import 'exercise_preferences_controller.dart';
-import 'exercise_labels_dialog.dart';
+import 'exercise_collections_dialog.dart';
 
 enum _View { all, favorites, recent }
 
@@ -61,7 +61,17 @@ class _ExerciseSearchListState<T> extends State<ExerciseSearchList<T>> {
   }
 
   void _preferencesChanged() {
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    setState(() {
+      if (_label != null &&
+          !widget.exercises.any(
+            (exercise) => widget.preferences!
+                .labels(widget.idOf!(exercise))
+                .contains(_label),
+          )) {
+        _label = null;
+      }
+    });
   }
 
   @override
@@ -220,8 +230,8 @@ class _ExerciseSearchListState<T> extends State<ExerciseSearchList<T>> {
               ),
             if (preferences?.supportsLabels == true &&
                 preferences!.labelsLoaded)
-              ExerciseLabelFilter(
-                labels: widget.exercises.expand(
+              ExerciseCollectionFilter(
+                collections: widget.exercises.expand(
                   (e) => preferences.labels(idOf(e)),
                 ),
                 selected: _label,
@@ -329,18 +339,12 @@ class _ExerciseSearchListState<T> extends State<ExerciseSearchList<T>> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 if (preferences.supportsLabels)
-                                  IconButton(
-                                    tooltip:
-                                        'Etiquetas: ${widget.nameOf(exercise)}',
-                                    icon: const Icon(Icons.label_outline),
-                                    onPressed: preferences.loading
-                                        ? null
-                                        : () => editExerciseLabels(
-                                            context,
-                                            preferences,
-                                            idOf(exercise),
-                                            widget.nameOf(exercise),
-                                          ),
+                                  ExerciseCollectionsButton(
+                                    preferences: preferences,
+                                    exerciseId: idOf(exercise),
+                                    exerciseName: widget.nameOf(exercise),
+                                    catalogIds: widget.exercises.map(idOf),
+                                    enabled: !preferences.loading,
                                   ),
                                 IconButton(
                                   tooltip:

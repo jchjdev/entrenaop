@@ -1,7 +1,7 @@
 name: entrenaop_admin
 description: "Panel web de administración de EntrenaOP"
 publish_to: 'none'
-version: 0.9.6+26
+version: 0.10.0+27
 
 environment:
   sdk: '>=3.13.0 <4.0.0'
