@@ -346,6 +346,7 @@ void main() {
         'Vídeo propio reutilizado',
       );
       await tester.ensureVisible(find.text('Elegir vídeo de mi biblioteca'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Elegir vídeo de mi biblioteca'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));

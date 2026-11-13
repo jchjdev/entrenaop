@@ -19,6 +19,7 @@ class ExerciseForm extends StatefulWidget {
     this.fieldKeyPrefix = 'exercise',
     this.autofocusName = true,
     this.initialImageUrl,
+    this.useCatalogPhotoPreview = false,
     this.onDirtyChanged,
     this.videoFieldBuilder,
   });
@@ -31,6 +32,7 @@ class ExerciseForm extends StatefulWidget {
   final String fieldKeyPrefix;
   final bool autofocusName;
   final String? initialImageUrl;
+  final bool useCatalogPhotoPreview;
   final ValueChanged<bool>? onDirtyChanged;
   final Widget Function(
     TextEditingController controller,
@@ -118,6 +120,7 @@ class _ExerciseFormState extends State<ExerciseForm> {
     ];
     final imageFields = <Widget>[
       _ImageHeader(
+        useCatalogPhotoPreview: widget.useCatalogPhotoPreview,
         bytes: _image?.bytes,
         initialUrl: _removeExistingImage ? null : widget.initialImageUrl,
         processing: _processingImage,
@@ -397,6 +400,7 @@ class _ImageHeader extends StatelessWidget {
     required this.onPick,
     required this.onRemove,
     required this.automaticCover,
+    required this.useCatalogPhotoPreview,
   });
 
   final Uint8List? bytes;
@@ -406,6 +410,7 @@ class _ImageHeader extends StatelessWidget {
   final VoidCallback onPick;
   final VoidCallback? onRemove;
   final bool automaticCover;
+  final bool useCatalogPhotoPreview;
 
   @override
   Widget build(BuildContext context) {
@@ -419,6 +424,7 @@ class _ImageHeader extends StatelessWidget {
         final compact =
             constraints.maxWidth < 280 ||
             MediaQuery.textScalerOf(context).scale(14) > 18;
+        final controlsBelow = compact || useCatalogPhotoPreview;
         final controls = Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -445,48 +451,63 @@ class _ImageHeader extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: AspectRatio(
-                aspectRatio: 16 / 9,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    if (provider != null)
-                      Image(image: provider, fit: BoxFit.cover)
-                    else
-                      ColoredBox(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerHighest,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.add_photo_alternate_outlined,
-                              size: 44,
-                            ),
-                            if (!compact) ...[
-                              const SizedBox(height: 8),
-                              const Text('Añade una foto del ejercicio'),
+            ConstrainedBox(
+              constraints: useCatalogPhotoPreview
+                  ? const BoxConstraints(maxWidth: 400)
+                  : const BoxConstraints(),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: AspectRatio(
+                  aspectRatio: useCatalogPhotoPreview ? 4 / 3 : 16 / 9,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      if (provider != null)
+                        ColoredBox(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest,
+                          child: Image(
+                            image: provider,
+                            fit: useCatalogPhotoPreview
+                                ? BoxFit.contain
+                                : BoxFit.cover,
+                          ),
+                        )
+                      else
+                        ColoredBox(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.add_photo_alternate_outlined,
+                                size: 44,
+                              ),
+                              if (!compact) ...[
+                                const SizedBox(height: 8),
+                                const Text('Añade una foto del ejercicio'),
+                              ],
                             ],
-                          ],
+                          ),
                         ),
-                      ),
-                    if (!compact)
-                      Positioned(
-                        left: 12,
-                        right: 12,
-                        bottom: 12,
-                        child: controls,
-                      ),
-                  ],
+                      if (!controlsBelow)
+                        Positioned(
+                          left: 12,
+                          right: 12,
+                          bottom: 12,
+                          child: controls,
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),
-            if (compact) ...[
+            if (controlsBelow) ...[
               const SizedBox(height: 8),
-              if (provider == null) ...[
+              if (compact && provider == null) ...[
                 const Text('Añade una foto del ejercicio'),
                 const SizedBox(height: 8),
               ],

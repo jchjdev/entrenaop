@@ -30,6 +30,7 @@ void main() {
               submitLabel: 'Guardar',
               autofocusName: false,
               initialImageUrl: existing ? 'fixture-existing-image' : null,
+              useCatalogPhotoPreview: true,
               initialDraft: const ExerciseDraft(
                 name: 'Flexiones',
                 muscleGroups: ['pecho'],
@@ -50,6 +51,17 @@ void main() {
       expect(applyCover!(cover, false), !existing);
       expect(applyCover!(cover, true), true);
       await tester.pumpAndSettle();
+      final photo = find.byType(Image);
+      final frame = find.ancestor(
+        of: photo,
+        matching: find.byType(AspectRatio),
+      );
+      expect(tester.getSize(frame).aspectRatio, closeTo(4 / 3, 0.001));
+      expect(tester.widget<Image>(photo).fit, BoxFit.contain);
+      expect(
+        tester.getRect(find.text('Cambiar')).top,
+        greaterThanOrEqualTo(tester.getRect(frame).bottom),
+      );
       final save = find.widgetWithText(FilledButton, 'Guardar');
       await tester.ensureVisible(save);
       await tester.tap(save);

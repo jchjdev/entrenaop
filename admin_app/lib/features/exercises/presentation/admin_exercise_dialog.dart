@@ -79,6 +79,7 @@ Future<AdminCatalogExercise?> showAdminExerciseDialog(
                         fieldKeyPrefix: 'admin-exercise',
                         initialDraft: exercise?.toDraft(),
                         initialImageUrl: exercise?.imageUrl,
+                        useCatalogPhotoPreview: true,
                         onSubmit: submit,
                         onDirtyChanged: markDirty,
                         videoFieldBuilder: (controller, busy, cover) =>

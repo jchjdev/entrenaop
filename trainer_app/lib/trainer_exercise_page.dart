@@ -742,6 +742,7 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
                                 videoUrl: widget.initialVideoUrl,
                               )),
                     initialImageUrl: widget.previous?.imageUrl,
+                    useCatalogPhotoPreview: true,
                     fieldKeyPrefix: 'trainer-exercise',
                     onDirtyChanged: markDirty,
                     onSubmit: submit,
