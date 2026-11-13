@@ -127,8 +127,12 @@ void main() {
 
     await tester.tap(find.text('Todos (2)'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Seleccionar ejercicios'));
+    await tester.tap(find.text('Crear colección o añadir a una existente'));
     await tester.pumpAndSettle();
+    expect(
+      find.text('Marca los ejercicios que quieras añadir a la colección.'),
+      findsOneWidget,
+    );
     await tester.tap(find.text('Dominadas'));
     await tester.tap(find.text('Sentadillas'));
     await tester.pumpAndSettle();

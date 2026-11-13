@@ -35,7 +35,7 @@ class ExerciseCollections extends StatelessWidget {
           Text('Colecciones', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           const Text(
-            'Usa «Seleccionar ejercicios» para agrupar varios o el icono de etiqueta para organizar uno. Tus colecciones también aparecen en el creador de sesiones.',
+            'Tus colecciones también aparecen en el creador de sesiones.',
           ),
           const SizedBox(height: 10),
           ConstrainedBox(

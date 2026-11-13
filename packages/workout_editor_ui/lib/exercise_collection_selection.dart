@@ -39,10 +39,16 @@ class ExerciseCollectionActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!selection.active) {
-      return OutlinedButton.icon(
-        onPressed: onSelect,
-        icon: const Icon(Icons.checklist),
-        label: const Text('Seleccionar ejercicios'),
+      return Align(
+        alignment: Alignment.centerLeft,
+        child: OutlinedButton.icon(
+          onPressed: onSelect,
+          icon: const Icon(Icons.create_new_folder_outlined),
+          label: const Text(
+            'Crear colección o añadir a una existente',
+            textAlign: TextAlign.center,
+          ),
+        ),
       );
     }
     return Wrap(
@@ -50,7 +56,11 @@ class ExerciseCollectionActions extends StatelessWidget {
       runSpacing: 8,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        Text('Ejercicios seleccionados: ${selection.ids.length}'),
+        Text(
+          selection.ids.isEmpty
+              ? 'Marca los ejercicios que quieras añadir a la colección.'
+              : 'Ejercicios seleccionados: ${selection.ids.length}',
+        ),
         FilledButton.icon(
           onPressed: selection.ids.isEmpty ? null : onAdd,
           icon: const Icon(Icons.create_new_folder_outlined),
