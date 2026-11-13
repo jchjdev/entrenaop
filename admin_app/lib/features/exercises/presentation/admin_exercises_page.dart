@@ -473,7 +473,7 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
                                       () => _selection.toggle(exercise.id),
                                     ),
                                   )
-                                : Row(
+                                : Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       if (_preferences?.supportsLabels == true)

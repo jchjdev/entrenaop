@@ -136,9 +136,10 @@ void main() {
         (tester.getTopLeft(cardTitle).dy + tester.getBottomLeft(subtitle).dy) /
         2;
     expect(tester.getCenter(thumbnail).dy, closeTo(textCenter, 0.01));
+    expect(tester.getCenter(card).dy, closeTo(textCenter, 0.01));
     expect(
-      tester.getRect(cardLabels).bottom,
-      lessThanOrEqualTo(tester.getRect(cardTitle).top),
+      tester.getRect(cardLabels).left,
+      greaterThanOrEqualTo(tester.getRect(cardTitle).right),
     );
     await tester.tap(find.text('Técnica (1)'));
     await tester.pumpAndSettle();
