@@ -99,6 +99,7 @@ void main() {
     tester.view.physicalSize = const Size(1200, 1000);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
+    final labels = LabelsSource();
     final repo = _FakeRepository()
       ..exercises.addAll([
         for (final name in ['Dominadas', 'Sentadillas'])
@@ -113,7 +114,7 @@ void main() {
       ]);
     await tester.pumpWidget(
       MaterialApp(
-        home: AdminExercisesPage(repository: repo, preferences: LabelsSource()),
+        home: AdminExercisesPage(repository: repo, preferences: labels),
       ),
     );
     await tester.pumpAndSettle();
@@ -123,6 +124,27 @@ void main() {
     expect(find.text('Sentadillas'), findsNothing);
     expect(repo.updated, isNull);
     expect(repo.created, isNull);
+
+    await tester.tap(find.text('Todos (2)'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Seleccionar ejercicios'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Dominadas'));
+    await tester.tap(find.text('Sentadillas'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Añadir a colección'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Nombre de la colección'),
+      'Oposición',
+    );
+    await tester.tap(find.text('Añadir'));
+    await tester.pumpAndSettle();
+    expect(find.text('Oposición (2)'), findsOneWidget);
+    expect(labels.writes.map((write) => write.$2), [
+      ['Técnica', 'Oposición'],
+      ['Oposición'],
+    ]);
   });
 
   testWidgets('el enlace de calidad abre el editor existente sin guardar', (

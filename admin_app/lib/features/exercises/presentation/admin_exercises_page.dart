@@ -7,6 +7,7 @@ import 'package:workout_core/exercise_catalog_preferences.dart';
 import 'package:workout_editor_ui/exercise_preferences_controller.dart';
 import 'package:workout_editor_ui/exercise_labels_dialog.dart';
 import 'package:workout_editor_ui/exercise_collections.dart';
+import 'package:workout_editor_ui/exercise_collection_selection.dart';
 import 'package:workout_editor_ui/exercise_catalog_filters.dart';
 import 'package:workout_editor_ui/guided_program_work.dart';
 
@@ -47,6 +48,7 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
   List<AdminCatalogExercise> _exercises = const [];
   final _search = TextEditingController();
   String? _collection, _muscle, _equipment;
+  final _selection = ExerciseCollectionSelection();
   _ExerciseTrashAttempt? _trashAttempt;
   bool get _busy => _saving || _confirming;
   bool get _blocked => _busy || _trashAttempt != null;
@@ -59,6 +61,19 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
       : ExercisePreferencesController(widget.preferences!);
   void _preferencesChanged() {
     if (mounted) setState(() {});
+  }
+
+  Future<void> _addToCollection() async {
+    final added = await addExercisesToCollection(
+      context,
+      _preferences!,
+      selected: {
+        for (final exercise in _exercises)
+          if (_selection.ids.contains(exercise.id)) exercise.id: exercise.name,
+      },
+      catalogIds: _exercises.map((exercise) => exercise.id),
+    );
+    if (mounted && added == true) setState(_selection.clear);
   }
 
   List<AdminCatalogExercise> _visibleExercises(
@@ -111,6 +126,7 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
       if (!mounted) return;
       setState(() {
         _exercises = exercises;
+        _selection.ids.retainAll(exercises.map((exercise) => exercise.id));
         _loading = false;
       });
       if (!_initialOpened && widget.initialExerciseId != null) {
@@ -408,6 +424,21 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
               onChanged: (value) => setState(() => _collection = value),
             ),
           ),
+        if (_preferences?.labelsLoaded == true && _exercises.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: ExerciseCollectionActions(
+                selection: _selection,
+                onSelect: _blocked
+                    ? null
+                    : () => setState(() => _selection.active = true),
+                onCancel: () => setState(_selection.clear),
+                onAdd: _blocked ? null : _addToCollection,
+              ),
+            ),
+          ),
         if (_preferences?.labelsError case final error?) Text(error),
         Expanded(
           child: visible.isEmpty
@@ -435,41 +466,61 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
                                 ...exercise.equipment,
                               ].join(' · '),
                             ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (_preferences?.supportsLabels == true)
-                                  IconButton(
-                                    tooltip: 'Etiquetas: ${exercise.name}',
-                                    icon: const Icon(Icons.label_outline),
-                                    onPressed: _blocked
-                                        ? null
-                                        : () => editExerciseLabels(
-                                            context,
-                                            _preferences!,
-                                            exercise.id,
-                                            exercise.name,
-                                          ),
-                                  ),
-                                if (_trashRepository != null)
-                                  PopupMenuButton<String>(
-                                    enabled: !_blocked,
-                                    tooltip: 'Más opciones de ${exercise.name}',
-                                    onSelected: (_) => _trashExercise(exercise),
-                                    itemBuilder: (_) => const [
-                                      PopupMenuItem(
-                                        value: 'trash',
-                                        child: Text('Mover a papelera'),
-                                      ),
-                                    ],
+                            trailing: _selection.active
+                                ? _selection.checkbox(
+                                    exercise.id,
+                                    exercise.name,
+                                    () => setState(
+                                      () => _selection.toggle(exercise.id),
+                                    ),
                                   )
-                                else if (_preferences?.supportsLabels != true)
-                                  const Icon(Icons.edit_outlined),
-                              ],
-                            ),
+                                : Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (_preferences?.supportsLabels == true)
+                                        IconButton(
+                                          tooltip:
+                                              'Etiquetas: ${exercise.name}',
+                                          icon: const Icon(Icons.label_outline),
+                                          onPressed: _blocked
+                                              ? null
+                                              : () => editExerciseLabels(
+                                                  context,
+                                                  _preferences!,
+                                                  exercise.id,
+                                                  exercise.name,
+                                                ),
+                                        ),
+                                      if (_trashRepository != null)
+                                        PopupMenuButton<String>(
+                                          enabled: !_blocked,
+                                          tooltip:
+                                              'Más opciones de ${exercise.name}',
+                                          onSelected: (_) =>
+                                              _trashExercise(exercise),
+                                          itemBuilder: (_) => const [
+                                            PopupMenuItem(
+                                              value: 'trash',
+                                              child: Text('Mover a papelera'),
+                                            ),
+                                          ],
+                                        )
+                                      else if (_preferences?.supportsLabels !=
+                                          true)
+                                        const Icon(Icons.edit_outlined),
+                                    ],
+                                  ),
                             onTap: _blocked
                                 ? null
-                                : () => _openEditor(exercise),
+                                : () {
+                                    if (_selection.active) {
+                                      setState(
+                                        () => _selection.toggle(exercise.id),
+                                      );
+                                    } else {
+                                      _openEditor(exercise);
+                                    }
+                                  },
                           ),
                       ],
                     ),

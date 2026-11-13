@@ -1,5 +1,18 @@
 # Ejercicios privados profesionales · TRN-019 · 21/10/2026
 
+## Colecciones de ejercicios en lote
+
+En Ejercicios, «Seleccionar ejercicios» activa las casillas de las tarjetas.
+La selección se conserva al buscar y filtrar dentro del catálogo. «Añadir a
+colección» permite elegir una existente o escribir un nombre nuevo, conservando
+las demás etiquetas de cada ejercicio. ADMIN y Trainer comparten este flujo.
+
+Se comprueba el límite de ocho etiquetas antes de enviar el lote. El guardado
+usa las revisiones y recibos por ejercicio del servidor. Si se interrumpe,
+el diálogo muestra cuántos cambios se confirmaron y permite reintentar los
+pendientes con el mismo envío. Las colecciones aparecen en el filtro al
+guardarse.
+
 ## Ficha actualizada y conservación al iniciar
 
 Si el preparador cambia solo la descripción, la foto o el vídeo, el ejercicio

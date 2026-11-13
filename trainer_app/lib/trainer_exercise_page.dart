@@ -7,6 +7,7 @@ import 'package:workout_core/exercise_draft.dart';
 import 'package:workout_core/exercise_catalog_preferences.dart';
 import 'package:workout_editor_ui/catalog_search.dart';
 import 'package:workout_editor_ui/exercise_collections.dart';
+import 'package:workout_editor_ui/exercise_collection_selection.dart';
 import 'package:workout_editor_ui/exercise_catalog_filters.dart';
 import 'package:workout_editor_ui/exercise_preferences_controller.dart';
 import 'package:workout_editor_ui/exercise_labels_dialog.dart';
@@ -96,6 +97,7 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
   String _query = '';
   final _search = TextEditingController();
   String? _label, _muscle, _equipment;
+  final _selection = ExerciseCollectionSelection();
   late final _preferences = widget.preferences == null
       ? null
       : ExercisePreferencesController(widget.preferences!);
@@ -110,6 +112,20 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
 
   void _preferencesChanged() {
     if (mounted) setState(() {});
+  }
+
+  Future<void> _addToCollection(List<TrainerExercise> catalog) async {
+    final added = await addExercisesToCollection(
+      context,
+      _preferences!,
+      selected: {
+        for (final exercise in catalog)
+          if (_selection.ids.contains(exercise.id))
+            exercise.id: exercise.draft.name,
+      },
+      catalogIds: catalog.map((exercise) => exercise.id),
+    );
+    if (mounted && added == true) setState(_selection.clear);
   }
 
   @override
@@ -144,6 +160,9 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
       if (mounted) {
         setState(() {
           _items = items.where((e) => e.current).toList();
+          if (!_showOfficial) {
+            _selection.ids.retainAll(_items.map((exercise) => exercise.id));
+          }
           _usage = usage;
           _enabled = access.effective && usage.exercises < usage.exerciseLimit;
           _canOrganize = access.effective;
@@ -184,6 +203,9 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
       if (mounted) {
         setState(() {
           _official = items;
+          if (_showOfficial) {
+            _selection.ids.retainAll(items.map((exercise) => exercise.id));
+          }
           _officialLoaded = true;
         });
       }
@@ -283,6 +305,7 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
                     label: const Text('Mis ejercicios'),
                     selected: !_showOfficial,
                     onSelected: (_) => setState(() {
+                      if (_showOfficial) _selection.clear();
                       _showOfficial = false;
                       _label = _muscle = _equipment = null;
                     }),
@@ -292,6 +315,7 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
                     selected: _showOfficial,
                     onSelected: (_) {
                       setState(() {
+                        if (!_showOfficial) _selection.clear();
                         _showOfficial = true;
                         _label = _muscle = _equipment = null;
                       });
@@ -390,6 +414,17 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
                   selected: _label,
                   onChanged: (v) => setState(() => _label = v),
                 ),
+              if (_preferences?.labelsLoaded == true && catalog.isNotEmpty)
+                ExerciseCollectionActions(
+                  selection: _selection,
+                  onSelect: _busy || !_canOrganize
+                      ? null
+                      : () => setState(() => _selection.active = true),
+                  onCancel: () => setState(_selection.clear),
+                  onAdd: _busy || !_canOrganize
+                      ? null
+                      : () => _addToCollection(catalog),
+                ),
               if (!_showOfficial)
                 if (_preferences?.labelsError case final error?) Text(error),
               if (_showOfficial ? _officialBusy : _busy)
@@ -435,7 +470,15 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
                           ...?_preferences?.labels(exercise.id),
                         ].join(' · '),
                       ),
-                      trailing: _preferences == null
+                      trailing: _selection.active
+                          ? _selection.checkbox(
+                              exercise.id,
+                              exercise.draft.name,
+                              () => setState(
+                                () => _selection.toggle(exercise.id),
+                              ),
+                            )
+                          : _preferences == null
                           ? const Icon(Icons.chevron_right)
                           : IconButton(
                               tooltip: 'Etiquetas: ${exercise.draft.name}',
@@ -449,7 +492,13 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
                                       exercise.draft.name,
                                     ),
                             ),
-                      onTap: () => _inspect(exercise),
+                      onTap: () {
+                        if (_selection.active) {
+                          setState(() => _selection.toggle(exercise.id));
+                        } else {
+                          _inspect(exercise);
+                        }
+                      },
                     ),
                 ],
               ),

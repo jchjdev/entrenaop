@@ -1,5 +1,10 @@
 # Registro de decisiones vigentes
 
+**Colecciones de ejercicios en lote · 13/11/2026.** ADMIN y Trainer permiten
+seleccionar varios ejercicios del listado y añadirlos a una colección privada
+existente o nueva con una sola acción. Se conservan las otras etiquetas.
+[Contrato](TRAINER_PRIVATE_EXERCISES.md#colecciones-de-ejercicios-en-lote).
+
 **Ficha de ejercicios oficiales y filtros compartidos · 12/11/2026.**
 Al iniciar una sesión, se fijan el texto, la foto y el vídeo de los ejercicios
 oficiales con el mismo contrato que los privados. ADMIN y Trainer usan los
