@@ -455,9 +455,8 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
                 children: [
                   for (final exercise in visible)
                     ProfessionalResourceCard(
-                      leading: ExerciseThumbnail(
+                      leading: ExerciseThumbnail.catalog(
                         url: exercise.imageUrl,
-                        size: 56,
                       ),
                       title: Text(exercise.draft.name),
                       subtitle: Text(

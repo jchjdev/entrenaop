@@ -377,32 +377,47 @@ class _ExerciseSearchListState<T> extends State<ExerciseSearchList<T>> {
 }
 
 class ExerciseThumbnail extends StatelessWidget {
-  const ExerciseThumbnail({super.key, required this.url, this.size = 48});
+  const ExerciseThumbnail({super.key, required this.url, double size = 48})
+    : _width = size,
+      _height = size,
+      _catalog = false;
+
+  const ExerciseThumbnail.catalog({super.key, required this.url})
+    : _width = 80,
+      _height = 60,
+      _catalog = true;
 
   final String? url;
-  final double size;
+  final double _width, _height;
+  final bool _catalog;
 
   @override
   Widget build(BuildContext context) {
     final validUrl = url != null && Uri.tryParse(url!)?.scheme == 'https';
-    if (!validUrl) {
-      return SizedBox.square(
-        dimension: size,
-        child: const Icon(Icons.fitness_center_outlined),
-      );
-    }
+    const placeholder = Icon(Icons.fitness_center_outlined);
+    final image = validUrl
+        ? Image.network(
+            url!,
+            fit: _catalog ? BoxFit.contain : BoxFit.cover,
+            errorBuilder: (_, _, _) => _catalog
+                ? const Icon(Icons.broken_image_outlined)
+                : placeholder,
+          )
+        : placeholder;
     return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: Image.network(
-        url!,
-        width: size,
-        height: size,
-        fit: BoxFit.cover,
-        errorBuilder: (_, _, _) => SizedBox.square(
-          dimension: size,
-          child: const Icon(Icons.fitness_center_outlined),
-        ),
-      ),
+      borderRadius: BorderRadius.circular(_catalog ? 10 : 8),
+      child: _catalog
+          ? ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: _width, maxHeight: _height),
+              child: AspectRatio(
+                aspectRatio: 4 / 3,
+                child: ColoredBox(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  child: image,
+                ),
+              ),
+            )
+          : SizedBox(width: _width, height: _height, child: image),
     );
   }
 }

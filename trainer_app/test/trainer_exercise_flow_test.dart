@@ -230,6 +230,20 @@ void main() {
         tester.widget<ExerciseThumbnail>(find.byType(ExerciseThumbnail)).url,
         contains('token=signed'),
       );
+      final thumbnail = tester.getSize(find.byType(ExerciseThumbnail));
+      expect(thumbnail.aspectRatio, closeTo(4 / 3, 0.001));
+      expect(thumbnail.width, greaterThan(64));
+      expect(
+        tester
+            .widget<Image>(
+              find.descendant(
+                of: find.byType(ExerciseThumbnail),
+                matching: find.byType(Image),
+              ),
+            )
+            .fit,
+        BoxFit.contain,
+      );
       await tester.tap(find.text('A-skips'));
       await tester.pumpAndSettle();
       expect(find.byType(InteractiveViewer), findsOneWidget);

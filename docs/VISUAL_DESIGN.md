@@ -2263,3 +2263,9 @@ discreta en la esquina inferior derecha. Durante la carga aparece el indicador
 y ante fallo el icono de reintento en esa esquina. La portada completa sigue
 pulsable y conserva las etiquetas del lector de pantalla. No cambian audio,
 reproducción bajo demanda, controles posteriores, datos ni permisos.
+
+## Miniaturas 4:3 en los catálogos de ejercicios de ADMIN y Trainer
+
+Las tarjetas de los dos catálogos muestran las portadas en un marco 4:3 de
+hasta 80 × 60 píxeles lógicos. Una portada 4:3 llena el marco. Las fotos en otras
+proporciones se ajustan completas con espacio de fondo alrededor.

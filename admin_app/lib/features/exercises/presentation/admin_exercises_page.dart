@@ -9,6 +9,8 @@ import 'package:workout_editor_ui/exercise_labels_dialog.dart';
 import 'package:workout_editor_ui/exercise_collections.dart';
 import 'package:workout_editor_ui/exercise_collection_selection.dart';
 import 'package:workout_editor_ui/exercise_catalog_filters.dart';
+import 'package:workout_editor_ui/exercise_search_list.dart'
+    show ExerciseThumbnail;
 import 'package:workout_editor_ui/guided_program_work.dart';
 
 import '../../../core/admin_shell.dart';
@@ -456,7 +458,9 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
                       children: [
                         for (final exercise in visible)
                           ProfessionalResourceCard(
-                            leading: _ExerciseImage(url: exercise.imageUrl),
+                            leading: ExerciseThumbnail.catalog(
+                              url: exercise.imageUrl,
+                            ),
                             title: Text(exercise.name),
                             subtitle: Text(
                               [
@@ -536,30 +540,4 @@ class _ExerciseTrashAttempt {
   const _ExerciseTrashAttempt(this.exercise, this.operationId);
   final AdminCatalogExercise exercise;
   final String operationId;
-}
-
-class _ExerciseImage extends StatelessWidget {
-  const _ExerciseImage({required this.url});
-
-  final String? url;
-
-  @override
-  Widget build(BuildContext context) => ClipRRect(
-    borderRadius: BorderRadius.circular(10),
-    child: SizedBox(
-      width: 64,
-      height: 48,
-      child: url == null
-          ? ColoredBox(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              child: const Icon(Icons.fitness_center_outlined),
-            )
-          : Image.network(
-              url!,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) =>
-                  const Icon(Icons.broken_image_outlined),
-            ),
-    ),
-  );
 }
