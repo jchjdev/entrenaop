@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_core/exercise_draft.dart';
 import 'package:workout_core/exercise_image.dart';
+import 'package:workout_editor_ui/exercise_catalog_card.dart';
+import 'package:workout_editor_ui/exercise_search_list.dart'
+    show ExerciseThumbnail;
 
 import '../../../../../packages/workout_editor_ui/test/exercise_labels_test.dart'
     show LabelsSource;
@@ -120,6 +123,19 @@ void main() {
     await tester.pumpAndSettle();
     final cardTitle = find.text('Dominadas');
     final cardLabels = find.byTooltip('Etiquetas: Dominadas');
+    final card = find.ancestor(
+      of: cardTitle,
+      matching: find.byType(ExerciseCatalogCard),
+    );
+    final thumbnail = find.descendant(
+      of: card,
+      matching: find.byType(ExerciseThumbnail),
+    );
+    final subtitle = find.descendant(of: card, matching: find.text('piernas'));
+    final textCenter =
+        (tester.getTopLeft(cardTitle).dy + tester.getBottomLeft(subtitle).dy) /
+        2;
+    expect(tester.getCenter(thumbnail).dy, closeTo(textCenter, 0.01));
     expect(
       tester.getRect(cardLabels).bottom,
       lessThanOrEqualTo(tester.getRect(cardTitle).top),

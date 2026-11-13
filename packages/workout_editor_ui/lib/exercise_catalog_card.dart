@@ -30,7 +30,12 @@ class ExerciseCatalogCard extends StatelessWidget {
           InkWell(
             onTap: onTap,
             child: Padding(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.fromLTRB(
+                12,
+                actions == null ? 12 : 50,
+                12,
+                12,
+              ),
               child: LayoutBuilder(
                 builder: (context, constraints) => Row(
                   children: [
@@ -40,24 +45,21 @@ class ExerciseCatalogCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.only(top: actions == null ? 0 : 38),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(title, style: theme.textTheme.titleMedium),
-                            if (subtitle.isNotEmpty) ...[
-                              const SizedBox(height: 4),
-                              Text(
-                                subtitle,
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(title, style: theme.textTheme.titleMedium),
+                          if (subtitle.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              subtitle,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
                               ),
-                            ],
+                            ),
                           ],
-                        ),
+                        ],
                       ),
                     ),
                   ],
