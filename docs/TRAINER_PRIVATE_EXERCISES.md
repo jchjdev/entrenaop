@@ -20,7 +20,7 @@ el diálogo muestra cuántos cambios se confirmaron y permite reintentar los
 pendientes con el mismo envío. Las colecciones aparecen en el filtro al
 guardarse.
 
-En Ejercicios, el menú de tres puntos junto a cada colección permite
+En Ejercicios, el menú de tres puntos dentro del botón de cada colección permite
 renombrarla o eliminarla. Se actualizan todos los ejercicios accesibles de esa
 colección en el contexto actual, incluidas las referencias oficiales y
 privadas de Trainer aunque estén en pestañas distintas. Renombrar conserva

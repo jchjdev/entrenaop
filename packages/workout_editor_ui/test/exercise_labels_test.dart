@@ -69,19 +69,24 @@ void main() {
   testWidgets('renombra y elimina la agrupación también fuera de la pestaña', (
     tester,
   ) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     final source = _ManageLabelsSource();
     final preferences = ExercisePreferencesController(source);
+    final selected = ValueNotifier<String?>(null);
     addTearDown(preferences.dispose);
+    addTearDown(selected.dispose);
     await preferences.refreshLabels();
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
           body: ListenableBuilder(
-            listenable: preferences,
+            listenable: Listenable.merge([preferences, selected]),
             builder: (context, _) => ExerciseCollections(
               memberships: [preferences.labels('Dominadas')],
-              selected: null,
-              onChanged: (_) {},
+              selected: selected.value,
+              onChanged: (name) => selected.value = name,
               onManage: (name, action) =>
                   manageExerciseCollection(context, preferences, name, action),
             ),
@@ -89,8 +94,21 @@ void main() {
         ),
       ),
     );
-    await tester.tap(find.byTooltip('Opciones de la colección Técnica'));
+    final collection = find.widgetWithText(InputChip, 'Técnica (1)');
+    final all = find.widgetWithText(ChoiceChip, 'Todos (1)');
+    final menu = find.byTooltip('Opciones de la colección Técnica');
+    expect(find.descendant(of: collection, matching: menu), findsOneWidget);
+    expect(tester.getCenter(collection).dy, tester.getCenter(all).dy);
+    expect(
+      tester.getCenter(menu).dy,
+      closeTo(tester.getCenter(collection).dy, 1),
+    );
+    await tester.tap(find.text('Técnica (1)'));
     await tester.pumpAndSettle();
+    expect(selected.value, 'Técnica');
+    await tester.tap(menu);
+    await tester.pumpAndSettle();
+    expect(selected.value, 'Técnica');
     await tester.tap(find.text('Renombrar'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), 'movilidad');

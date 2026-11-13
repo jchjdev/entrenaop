@@ -47,7 +47,7 @@ class ExerciseCollections extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text('Colecciones', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
@@ -61,6 +61,7 @@ class ExerciseCollections extends StatelessWidget {
               child: Wrap(
                 spacing: 8,
                 runSpacing: 8,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   ChoiceChip(
                     label: Text('Todos (${memberships.length})'),
@@ -73,34 +74,60 @@ class ExerciseCollections extends StatelessWidget {
                     onSelected: (_) => onChanged(''),
                   ),
                   for (final name in names)
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Flexible(
-                          child: ChoiceChip(
-                            avatar: const Icon(Icons.folder_outlined, size: 18),
-                            label: Text('$name (${counts[name]})'),
-                            selected: selected == name,
-                            onSelected: (_) =>
-                                onChanged(selected == name ? null : name),
-                          ),
-                        ),
-                        if (onManage != null)
-                          PopupMenuButton<ExerciseCollectionAction>(
-                            tooltip: 'Opciones de la colección $name',
-                            onSelected: (action) => onManage!(name, action),
-                            itemBuilder: (_) => const [
-                              PopupMenuItem(
-                                value: ExerciseCollectionAction.rename,
-                                child: Text('Renombrar'),
-                              ),
-                              PopupMenuItem(
-                                value: ExerciseCollectionAction.remove,
-                                child: Text('Eliminar colección'),
-                              ),
-                            ],
-                          ),
-                      ],
+                    Builder(
+                      builder: (chipContext) => InputChip(
+                        avatar: const Icon(Icons.folder_outlined, size: 18),
+                        label: Text('$name (${counts[name]})'),
+                        selected: selected == name,
+                        onSelected: (_) =>
+                            onChanged(selected == name ? null : name),
+                        deleteIcon: const Icon(Icons.more_vert, size: 18),
+                        deleteButtonTooltipMessage:
+                            'Opciones de la colección $name',
+                        onDeleted: onManage == null
+                            ? null
+                            : () async {
+                                final overlay =
+                                    Navigator.of(chipContext).overlay!.context
+                                            .findRenderObject()!
+                                        as RenderBox;
+                                final chip =
+                                    chipContext.findRenderObject()!
+                                        as RenderBox;
+                                final anchor = chip.localToGlobal(
+                                  Offset(chip.size.width, chip.size.height),
+                                  ancestor: overlay,
+                                );
+                                final action =
+                                    await showMenu<ExerciseCollectionAction>(
+                                      context: chipContext,
+                                      position: RelativeRect.fromSize(
+                                        Rect.fromLTWH(
+                                          anchor.dx,
+                                          anchor.dy,
+                                          0,
+                                          0,
+                                        ),
+                                        overlay.size,
+                                      ),
+                                      items: const [
+                                        PopupMenuItem(
+                                          value:
+                                              ExerciseCollectionAction.rename,
+                                          child: Text('Renombrar'),
+                                        ),
+                                        PopupMenuItem(
+                                          value:
+                                              ExerciseCollectionAction.remove,
+                                          child: Text('Eliminar colección'),
+                                        ),
+                                      ],
+                                    );
+                                if (action != null && chipContext.mounted) {
+                                  onManage!(name, action);
+                                }
+                              },
+                      ),
                     ),
                 ],
               ),
