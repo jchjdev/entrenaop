@@ -9,10 +9,12 @@ class ExerciseVideoPreview extends StatefulWidget {
     super.key,
     required this.url,
     required this.source,
+    this.posterUrl,
     this.onPositionSelected,
   });
   final String url;
   final ExerciseVideoSource source;
+  final String? posterUrl;
   final ValueChanged<double>? onPositionSelected;
   @override
   State<ExerciseVideoPreview> createState() => _ExerciseVideoPreviewState();
@@ -44,6 +46,13 @@ class _ExerciseVideoPreviewState extends State<ExerciseVideoPreview> {
       _controller = candidate;
       _controller!.addListener(_changed);
       setState(() => _busy = false);
+      if (widget.posterUrl != null) {
+        try {
+          await candidate.play();
+        } catch (_) {
+          // El navegador puede requerir otro toque en el botón de reproducción.
+        }
+      }
     } catch (_) {
       await candidate?.dispose();
       if (mounted && request == _request) {
@@ -84,14 +93,57 @@ class _ExerciseVideoPreviewState extends State<ExerciseVideoPreview> {
   Widget build(BuildContext context) {
     final controller = _controller;
     if (controller == null) {
+      final poster = widget.posterUrl;
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          OutlinedButton.icon(
-            onPressed: _busy ? null : _load,
-            icon: const Icon(Icons.play_circle_outline),
-            label: const Text('Reproducir vídeo'),
-          ),
+          if (poster != null)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Stack(
+                alignment: AlignmentDirectional.bottomEnd,
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    height: 260,
+                    child: Image.network(
+                      poster,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, _, _) => const Center(
+                        child: Icon(Icons.image_not_supported_outlined),
+                      ),
+                    ),
+                  ),
+                  Positioned.fill(
+                    child: Material(
+                      type: MaterialType.transparency,
+                      child: InkWell(
+                        onTap: _busy ? null : _load,
+                        child: const Align(
+                          alignment: AlignmentDirectional.bottomEnd,
+                          child: Padding(
+                            padding: EdgeInsets.all(12),
+                            child: Icon(
+                              Icons.play_arrow_rounded,
+                              color: Colors.white,
+                              shadows: [Shadow(blurRadius: 6)],
+                              size: 36,
+                              semanticLabel: 'Reproducir vídeo',
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            OutlinedButton.icon(
+              onPressed: _busy ? null : _load,
+              icon: const Icon(Icons.play_circle_outline),
+              label: const Text('Reproducir vídeo'),
+            ),
           if (_busy) const LinearProgressIndicator(),
           if (_error != null) Text(_error!),
         ],

@@ -11,6 +11,7 @@ import 'package:workout_editor_ui/exercise_collection_selection.dart';
 import 'package:workout_editor_ui/exercise_catalog_filters.dart';
 import 'package:workout_editor_ui/exercise_catalog_card.dart';
 import 'package:workout_editor_ui/guided_program_work.dart';
+import 'package:workout_editor_ui/manage_exercise_collection_dialog.dart';
 
 import '../../../core/admin_shell.dart';
 
@@ -433,6 +434,14 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
                   .toList(),
               selected: _collection,
               onChanged: (value) => setState(() => _collection = value),
+              onManage: _blocked || _selection.active
+                  ? null
+                  : (name, action) => manageExerciseCollection(
+                      context,
+                      _preferences!,
+                      name,
+                      action,
+                    ),
             ),
           ),
         if (_preferences?.labelsLoaded == true && _exercises.isNotEmpty)

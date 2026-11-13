@@ -2266,6 +2266,10 @@ reproducción bajo demanda, controles posteriores, datos ni permisos.
 
 ## Miniaturas 4:3 en los catálogos de ejercicios de ADMIN y Trainer
 
+En la ficha de consulta de Trainer, la foto de un ejercicio con vídeo
+integrado sirve de portada del reproductor. La reproducción se solicita al
+pulsar la portada. Si el ejercicio solo tiene foto, se conserva la ampliación.
+
 Las tarjetas de los dos catálogos muestran las portadas en un marco 4:3 de
 hasta 128 × 96 píxeles lógicos. El marco se reduce con el ancho de la tarjeta.
 Las acciones y la casilla de selección van en el margen derecho, desde arriba.

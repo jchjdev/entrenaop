@@ -7,6 +7,8 @@ import 'package:workout_core/exercise_draft.dart';
 import 'package:workout_editor_ui/exercise_form.dart';
 import 'package:workout_editor_ui/exercise_search_list.dart';
 import 'package:workout_editor_ui/exercise_image_draft.dart';
+import 'package:workout_editor_ui/exercise_video_preview.dart';
+import 'package:workout_editor_ui/exercise_video_source.dart';
 
 import '../../packages/trainer_access/test_support/fake_trainer_repository.dart';
 import 'trainer_media_pages_test.dart'
@@ -75,13 +77,28 @@ TrainerExercise entry(
   'exercise_type': 'repeticiones',
 });
 
-Future<void> open(WidgetTester tester, ExerciseFixture repository) async {
+class _PreviewSource extends Fake implements ExerciseVideoSource {
+  int requests = 0;
+
+  @override
+  Future<Uri> playback(String url) async {
+    requests++;
+    throw StateError('Sin conexión');
+  }
+}
+
+Future<void> open(
+  WidgetTester tester,
+  ExerciseFixture repository, {
+  ExerciseVideoSource? videoSource,
+}) async {
   await tester.pumpWidget(
     MaterialApp(
       theme: EntrenaTheme.dark,
       home: TrainerExercisePage(
         repository: repository,
         access: FakeTrainerRepository(),
+        videoSource: videoSource,
       ),
     ),
   );
@@ -218,6 +235,7 @@ void main() {
             'version': 1,
             'current': true,
             'thumbnail_url': 'https://fixture.example.com/public.jpg',
+            'video_url': 'https://fixture.b-cdn.net/official.mp4',
             'description': 'Sube sin balancearte.',
             'muscle_groups': ['espalda'],
             'equipment': ['barra'],
@@ -225,7 +243,8 @@ void main() {
             'exercise_type': 'repeticiones',
           }, official: true),
         ];
-      await open(tester, repo);
+      final source = _PreviewSource();
+      await open(tester, repo, videoSource: source);
       expect(
         tester.widget<ExerciseThumbnail>(find.byType(ExerciseThumbnail)).url,
         contains('token=signed'),
@@ -262,6 +281,20 @@ void main() {
       );
       await tester.tap(find.text('Dominada oficial'));
       await tester.pumpAndSettle();
+      final preview = find.byType(ExerciseVideoPreview);
+      expect(
+        tester.widget<ExerciseVideoPreview>(preview).posterUrl,
+        endsWith('public.jpg'),
+      );
+      expect(find.byType(InteractiveViewer), findsNothing);
+      expect(source.requests, 0);
+      await tester.tap(preview);
+      await tester.pumpAndSettle();
+      expect(source.requests, 1);
+      expect(
+        find.text('No se pudo reproducir. Puedes reintentar.'),
+        findsOneWidget,
+      );
       expect(find.text('Sube sin balancearte.'), findsOneWidget);
       expect(
         find.text('Catálogo de EntrenaOP · Solo consulta'),

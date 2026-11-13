@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_core/exercise_catalog_labels.dart';
 import 'package:workout_editor_ui/exercise_collection_selection.dart';
+import 'package:workout_editor_ui/exercise_collections.dart';
 import 'package:workout_editor_ui/exercise_preferences_controller.dart';
 import 'package:workout_editor_ui/exercise_search_list.dart';
+import 'package:workout_editor_ui/manage_exercise_collection_dialog.dart';
 
 import 'exercise_preferences_controller_test.dart' show PreferenceSource;
 
@@ -64,6 +66,60 @@ Widget catalog(ExercisePreferencesController preferences) => MaterialApp(
 );
 
 void main() {
+  testWidgets('renombra y elimina la agrupación también fuera de la pestaña', (
+    tester,
+  ) async {
+    final source = _ManageLabelsSource();
+    final preferences = ExercisePreferencesController(source);
+    addTearDown(preferences.dispose);
+    await preferences.refreshLabels();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: ListenableBuilder(
+            listenable: preferences,
+            builder: (context, _) => ExerciseCollections(
+              memberships: [preferences.labels('Dominadas')],
+              selected: null,
+              onChanged: (_) {},
+              onManage: (name, action) =>
+                  manageExerciseCollection(context, preferences, name, action),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.byTooltip('Opciones de la colección Técnica'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Renombrar'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'movilidad');
+    await tester.tap(find.text('Guardar nombre'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Ya existe una colección con ese nombre.'),
+      findsOneWidget,
+    );
+    expect(source.writes, isEmpty);
+    await tester.enterText(find.byType(TextField), 'Oposición');
+    await tester.tap(find.text('Guardar nombre'));
+    await tester.pumpAndSettle();
+    expect(preferences.labels('Dominadas'), ['Oposición', 'Movilidad']);
+    expect(preferences.labels('Remo'), ['Oposición']);
+
+    await tester.tap(find.byTooltip('Opciones de la colección Oposición'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Eliminar colección'));
+    await tester.pumpAndSettle();
+    expect(find.text('«Oposición» · 2 ejercicios'), findsOneWidget);
+    expect(source.writes, hasLength(2));
+    await tester.tap(find.widgetWithText(FilledButton, 'Eliminar colección'));
+    await tester.pumpAndSettle();
+    expect(preferences.labels('Dominadas'), ['Movilidad']);
+    expect(preferences.labels('Remo'), isEmpty);
+    expect(find.text('Oposición (1)'), findsNothing);
+  });
+
   testWidgets(
     'añade varios conservando etiquetas y reintenta solo pendientes',
     (tester) async {
@@ -211,6 +267,21 @@ void main() {
       isTrue,
     );
   });
+}
+
+class _ManageLabelsSource extends LabelsSource {
+  @override
+  Future<List<ExerciseLabelEntry>> readLabels() async => [
+    for (final (id, names) in [
+      ('Dominadas', ['Técnica', 'Movilidad']),
+      ('Remo', ['Técnica']),
+    ])
+      labelReceipts.values.lastWhere(
+        (entry) => entry.exerciseId == id,
+        orElse: () =>
+            ExerciseLabelEntry(exerciseId: id, labels: names, revision: 1),
+      ),
+  ];
 }
 
 class _BatchLabelsSource extends LabelsSource {

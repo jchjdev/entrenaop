@@ -11,6 +11,8 @@ de guardar.
 en la biblioteca y el creador de sesiones. La carpeta de cada ejercicio abre
 un diálogo para marcar varias colecciones privadas o crear una. La selección
 en lote añade ejercicios a una colección y conserva sus demás pertenencias.
+El menú de cada colección permite renombrarla o eliminar su agrupación en
+todos los ejercicios accesibles del contexto actual.
 [Contrato](TRAINER_PRIVATE_EXERCISES.md#colecciones-de-ejercicios-en-lote).
 
 **Ficha de ejercicios oficiales y filtros compartidos · 12/11/2026.**

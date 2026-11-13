@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'exercise_collection_writes.dart';
 import 'exercise_collections.dart';
 import 'exercise_preferences_controller.dart';
 
@@ -106,18 +107,10 @@ class _AddToCollectionDialog extends StatefulWidget {
   State<_AddToCollectionDialog> createState() => _AddToCollectionDialogState();
 }
 
-typedef _LabelWrite = ({
-  String id,
-  String operationId,
-  int revision,
-  List<String> labels,
-});
-
 class _AddToCollectionDialogState extends State<_AddToCollectionDialog> {
   final _name = TextEditingController();
   late Future<void> _load = widget.preferences.refreshLabels();
-  List<_LabelWrite>? _writes;
-  int _confirmed = 0;
+  ExerciseCollectionWrites? _writes;
   bool _busy = false;
   String? _error;
 
@@ -125,7 +118,7 @@ class _AddToCollectionDialogState extends State<_AddToCollectionDialog> {
       widget.catalogIds.expand(widget.preferences.labels).toSet().toList()
         ..sort();
 
-  List<_LabelWrite>? _prepare() {
+  ExerciseCollectionWrites? _prepare() {
     final input = _name.text.trim();
     if (!isValidExerciseCollectionName(input)) {
       setState(
@@ -135,7 +128,7 @@ class _AddToCollectionDialogState extends State<_AddToCollectionDialog> {
     }
     final key = input.toLowerCase();
     final name = resolveExerciseCollectionName(input, _collections);
-    final writes = <_LabelWrite>[];
+    final writes = <ExerciseCollectionWrite>[];
     for (final entry in widget.selected.entries) {
       final existing = widget.preferences.labels(entry.key);
       if (existing.contains(name)) continue;
@@ -162,7 +155,7 @@ class _AddToCollectionDialogState extends State<_AddToCollectionDialog> {
         labels: labels,
       ));
     }
-    return writes;
+    return ExerciseCollectionWrites(widget.preferences, writes);
   }
 
   Future<void> _save() async {
@@ -174,23 +167,14 @@ class _AddToCollectionDialogState extends State<_AddToCollectionDialog> {
     try {
       final writes = _writes ??= _prepare();
       if (writes == null) return;
-      while (_confirmed < writes.length && mounted) {
-        final write = writes[_confirmed];
-        await widget.preferences.saveLabels(
-          write.id,
-          write.labels,
-          write.revision,
-          write.operationId,
-        );
-        _confirmed++;
-      }
+      await writes.save(isActive: () => mounted);
       if (mounted) Navigator.pop(context, true);
     } catch (_) {
       if (mounted) {
         setState(
           () => _error = _writes == null
               ? 'No se pudo preparar el cambio. Comprueba tu acceso y vuelve a intentarlo.'
-              : 'Cambios confirmados: $_confirmed de ${_writes!.length}. Puedes reintentar los pendientes o cerrar y volver a abrir para consultar las colecciones guardadas.',
+              : 'Cambios confirmados: ${_writes!.confirmed} de ${_writes!.writes.length}. Puedes reintentar los pendientes o cerrar y volver a abrir para consultar las colecciones guardadas.',
         );
       }
     } finally {

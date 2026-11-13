@@ -13,6 +13,7 @@ class ExercisePreferencesController extends ChangeNotifier {
   String? labelsError;
   bool labelsLoaded = false;
   bool get supportsLabels => source is ExerciseCatalogLabels;
+  Iterable<String> get organizedExerciseIds => _labels.keys;
   List<String> labels(String id) => _labels[id]?.labels ?? const [];
   int labelsRevision(String id) => _labels[id]?.revision ?? 0;
 

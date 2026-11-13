@@ -13,6 +13,7 @@ import 'package:workout_editor_ui/exercise_catalog_card.dart';
 import 'package:workout_editor_ui/exercise_preferences_controller.dart';
 import 'package:workout_editor_ui/exercise_collections_dialog.dart';
 import 'package:workout_editor_ui/exercise_form.dart';
+import 'package:workout_editor_ui/manage_exercise_collection_dialog.dart';
 import 'package:workout_editor_ui/exercise_video_preview.dart';
 import 'package:workout_editor_ui/exercise_image_draft.dart';
 import 'package:workout_editor_ui/workout_editor_exercise.dart';
@@ -424,6 +425,14 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
                       .toList(),
                   selected: _label,
                   onChanged: (v) => setState(() => _label = v),
+                  onManage: _busy || !_canOrganize || _selection.active
+                      ? null
+                      : (name, action) => manageExerciseCollection(
+                          context,
+                          _preferences!,
+                          name,
+                          action,
+                        ),
                 ),
               if (_preferences?.labelsLoaded == true && catalog.isNotEmpty)
                 ExerciseCollectionActions(
@@ -539,6 +548,11 @@ class _ExerciseDetailsState extends State<_ExerciseDetails> {
     final draft = exercise.draft;
     final image = exercise.imageUrl;
     final video = Uri.tryParse(draft.videoUrl ?? '');
+    final hasPhoto = image != null && Uri.tryParse(image)?.scheme == 'https';
+    final inlineVideo =
+        video?.scheme == 'https' &&
+        video!.host.endsWith('.b-cdn.net') &&
+        videoSource != null;
     return PopScope(
       canPop: !_pending,
       child: AlertDialog(
@@ -550,8 +564,14 @@ class _ExerciseDetailsState extends State<_ExerciseDetails> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (image != null &&
-                    Uri.tryParse(image)?.scheme == 'https') ...[
+                if (inlineVideo) ...[
+                  ExerciseVideoPreview(
+                    url: draft.videoUrl!,
+                    source: videoSource!,
+                    posterUrl: hasPhoto ? image : null,
+                  ),
+                  const SizedBox(height: 16),
+                ] else if (hasPhoto) ...[
                   SizedBox(
                     height: 300,
                     child: InteractiveViewer(
@@ -585,36 +605,30 @@ class _ExerciseDetailsState extends State<_ExerciseDetails> {
                   const SizedBox(height: 16),
                   Text(draft.description!),
                 ],
-                if (video?.scheme == 'https') ...[
+                if (!inlineVideo && video?.scheme == 'https') ...[
                   const SizedBox(height: 16),
-                  if (video!.host.endsWith('.b-cdn.net') && videoSource != null)
-                    ExerciseVideoPreview(
-                      url: draft.videoUrl!,
-                      source: videoSource!,
-                    )
-                  else
-                    OutlinedButton.icon(
-                      onPressed: () async {
-                        var opened = false;
-                        try {
-                          opened = await launchUrl(
-                            video,
-                            mode: LaunchMode.externalApplication,
-                          );
-                        } catch (_) {
-                          /* El proveedor externo puede no estar disponible. */
-                        }
-                        if (!opened && context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('No se pudo abrir el vídeo.'),
-                            ),
-                          );
-                        }
-                      },
-                      icon: const Icon(Icons.open_in_new),
-                      label: const Text('Ver vídeo'),
-                    ),
+                  OutlinedButton.icon(
+                    onPressed: () async {
+                      var opened = false;
+                      try {
+                        opened = await launchUrl(
+                          video!,
+                          mode: LaunchMode.externalApplication,
+                        );
+                      } catch (_) {
+                        /* El proveedor externo puede no estar disponible. */
+                      }
+                      if (!opened && context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('No se pudo abrir el vídeo.'),
+                          ),
+                        );
+                      }
+                    },
+                    icon: const Icon(Icons.open_in_new),
+                    label: const Text('Ver vídeo'),
+                  ),
                 ],
                 if (exercise.official) ...[
                   const SizedBox(height: 16),

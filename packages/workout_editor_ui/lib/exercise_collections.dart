@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+enum ExerciseCollectionAction { rename, remove }
+
 /// Las colecciones son vistas de las etiquetas privadas ya guardadas; no copian
 /// ejercicios ni alteran su autoría. La cadena vacía identifica los no agrupados.
 bool matchesExerciseCollection(Iterable<String> labels, String? collection) =>
@@ -25,10 +27,12 @@ class ExerciseCollections extends StatelessWidget {
     required this.memberships,
     required this.selected,
     required this.onChanged,
+    this.onManage,
   });
   final List<List<String>> memberships;
   final String? selected;
   final ValueChanged<String?> onChanged;
+  final void Function(String, ExerciseCollectionAction)? onManage;
 
   @override
   Widget build(BuildContext context) {
@@ -69,12 +73,34 @@ class ExerciseCollections extends StatelessWidget {
                     onSelected: (_) => onChanged(''),
                   ),
                   for (final name in names)
-                    ChoiceChip(
-                      avatar: const Icon(Icons.folder_outlined, size: 18),
-                      label: Text('$name (${counts[name]})'),
-                      selected: selected == name,
-                      onSelected: (_) =>
-                          onChanged(selected == name ? null : name),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: ChoiceChip(
+                            avatar: const Icon(Icons.folder_outlined, size: 18),
+                            label: Text('$name (${counts[name]})'),
+                            selected: selected == name,
+                            onSelected: (_) =>
+                                onChanged(selected == name ? null : name),
+                          ),
+                        ),
+                        if (onManage != null)
+                          PopupMenuButton<ExerciseCollectionAction>(
+                            tooltip: 'Opciones de la colección $name',
+                            onSelected: (action) => onManage!(name, action),
+                            itemBuilder: (_) => const [
+                              PopupMenuItem(
+                                value: ExerciseCollectionAction.rename,
+                                child: Text('Renombrar'),
+                              ),
+                              PopupMenuItem(
+                                value: ExerciseCollectionAction.remove,
+                                child: Text('Eliminar colección'),
+                              ),
+                            ],
+                          ),
+                      ],
                     ),
                 ],
               ),
