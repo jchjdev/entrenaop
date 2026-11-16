@@ -1,5 +1,10 @@
 # Registro de decisiones vigentes
 
+**Guía de uso en Trainer y ADMIN · 16/11/2026.** Los dos paneles ofrecen una
+guía breve con accesos directos a sus pantallas. Está disponible en el lateral
+y en Mi cuenta. Se puede posponer u ocultar por cuenta y panel en el navegador.
+[Diseño](VISUAL_DESIGN.md#guía-de-uso-de-trainer-y-admin).
+
 **Portadas 4:3 en los catálogos de ejercicios · 13/11/2026.**
 ADMIN y Trainer muestran las fotos completas en un marco adaptable de hasta
 128 × 96 píxeles lógicos, con las acciones en la esquina superior derecha.

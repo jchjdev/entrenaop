@@ -16,6 +16,7 @@ class AdminShell extends StatefulWidget {
     this.hasGuidedPrograms = false,
     this.hasOperations = false,
     this.hasDirectory = false,
+    this.guide,
     super.key,
   });
 
@@ -27,6 +28,7 @@ class AdminShell extends StatefulWidget {
   final bool hasOperations;
   final bool hasDirectory;
   final Widget child;
+  final ProfessionalGuideController? guide;
 
   @override
   State<AdminShell> createState() => _AdminShellState();
@@ -66,8 +68,26 @@ class _AdminShellState extends State<AdminShell> {
   }
 
   @override
-  Widget build(BuildContext context) =>
-      ProfessionalToolsWorkspace(child: _buildShell(context));
+  Widget build(BuildContext context) => ProfessionalToolsWorkspace(
+    child: widget.guide == null
+        ? _buildShell(context)
+        : FutureBuilder(
+            future: _access,
+            builder: (context, snapshot) => ProfessionalGuideHost(
+              controller: widget.guide!,
+              offerOnEntry:
+                  widget.path == (widget.hasOperations ? '/home' : '/programs'),
+              steps: snapshot.data?.admin == true
+                  ? _adminGuideSteps(
+                      accounts: snapshot.data!.accounts,
+                      operations: widget.hasOperations,
+                    )
+                  : const [],
+              onNavigate: _navigate,
+              child: _buildShell(context),
+            ),
+          ),
+  );
 
   Widget _buildShell(BuildContext context) {
     final section = _sections.firstWhere(
@@ -252,6 +272,7 @@ class _AdminShellState extends State<AdminShell> {
               },
             ),
           ),
+          const ProfessionalGuideButton(navigation: true),
           const Divider(height: 1),
           Padding(
             padding: const EdgeInsets.all(20),
@@ -262,6 +283,51 @@ class _AdminShellState extends State<AdminShell> {
     ),
   );
 }
+
+class AdminAccountPage extends StatelessWidget {
+  const AdminAccountPage({super.key, this.email});
+
+  final String? email;
+
+  @override
+  Widget build(BuildContext context) => ListView(
+    padding: const EdgeInsets.all(24),
+    children: [
+      ProfessionalSectionHeader(title: 'Mi cuenta', subtitle: email),
+      const SizedBox(height: 16),
+      const ProfessionalGuideButton(),
+    ],
+  );
+}
+
+List<ProfessionalGuideStep> _adminGuideSteps({
+  required bool accounts,
+  required bool operations,
+}) => [
+  if (operations)
+    const ProfessionalGuideStep(
+      title: 'Mira qué queda pendiente',
+      text: 'En Pendientes puedes retomar borradores y ver qué necesita revisión.',
+      destination: 'Pendientes',
+      path: '/home',
+      icon: Icons.dashboard_outlined,
+    ),
+  if (accounts)
+    const ProfessionalGuideStep(
+      title: 'Da acceso a un entrenador',
+      text: 'Busca su correo en Cuentas y Pro. Desde su ficha puedes darle acceso a Trainer.',
+      destination: 'Cuentas y Pro',
+      path: '/accounts',
+      icon: Icons.manage_accounts_outlined,
+    ),
+  const ProfessionalGuideStep(
+    title: 'Publica un ejercicio oficial',
+    text: 'En Ejercicios, pulsa «Nuevo ejercicio». Al guardarlo, se añade al catálogo de EntrenaOP.',
+    destination: 'Ejercicios',
+    path: '/exercises',
+    icon: Icons.fitness_center_rounded,
+  ),
+];
 
 class _EnvironmentLabel extends StatelessWidget {
   @override
@@ -397,4 +463,5 @@ const _sections = [
     '/laboratory',
     Icons.science_outlined,
   ),
+  _AdminSection('Cuenta', 'Mi cuenta', '/settings', Icons.settings_outlined),
 ];

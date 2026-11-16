@@ -14,5 +14,6 @@ export 'src/entrena_wordmark.dart';
 export 'src/workflow_exit_guard.dart';
 export 'src/retained_save_dialog.dart';
 export 'src/professional_workspace.dart';
+export 'src/professional_guide.dart';
 export 'src/professional_theme.dart';
 export 'src/professional_theme_preference.dart';

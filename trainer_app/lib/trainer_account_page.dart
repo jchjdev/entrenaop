@@ -54,6 +54,7 @@ class _TrainerAccountPageState extends State<TrainerAccountPage> {
         padding: const EdgeInsets.all(24),
         children: [
           ProfessionalSectionHeader(title: 'Mi cuenta', subtitle: widget.email),
+          const ProfessionalGuideButton(),
           const SizedBox(height: 24),
           EntrenaCard(
             child: Column(

@@ -2278,3 +2278,16 @@ Una portada 4:3 llena el marco. Las fotos en otras
 proporciones se ajustan completas con espacio de fondo alrededor.
 El editor de ejercicios de ambos portales usa el mismo encuadre antes de
 guardar. Los controles para cambiar o quitar la foto quedan debajo del marco.
+
+## Guía de uso de Trainer y ADMIN
+
+Al llegar a Inicio o Pendientes, el panel ofrece la guía una vez por sesión.
+«Ahora no» cierra la invitación hasta la siguiente visita. «No volver a mostrar
+al entrar» guarda la elección por cuenta y panel en el navegador y puede
+desmarcarse al reabrir la guía. Está disponible en el lateral, en Mi cuenta y
+en Más de Trainer cuando se usa la navegación compacta. Cada paso tiene un
+acceso directo al apartado correspondiente. ADMIN muestra únicamente los
+pasos acordes al acceso de la cuenta.
+
+En Trainer, el icono de ayuda junto a «Actualizar pautas» explica qué sesiones
+se pueden actualizar.

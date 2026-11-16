@@ -139,6 +139,7 @@ class _AdminAppState extends State<AdminApp> {
       ),
       mediaCleanup: cleanup,
       ownerKey: client.auth.currentUser?.id,
+      accountEmail: client.auth.currentUser?.email,
       exerciseVideos: SupabaseAdminExerciseVideoRepository(client),
       exercisePreferences: client.auth.currentUser == null
           ? null

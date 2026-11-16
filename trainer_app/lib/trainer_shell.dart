@@ -16,7 +16,9 @@ class TrainerShell extends StatefulWidget {
     required this.child,
     this.loadInbox,
     this.messageChanges,
+    this.guide,
   });
+  final ProfessionalGuideController? guide;
   final Future<TrainerMessageInbox> Function()? loadInbox;
   final Listenable? messageChanges;
   final String location;
@@ -203,7 +205,17 @@ class _TrainerShellState extends State<TrainerShell>
   @override
   Widget build(BuildContext context) => TrainerMessageInboxScope(
     inbox: _inbox,
-    child: ProfessionalToolsWorkspace(child: Builder(builder: _buildShell)),
+    child: ProfessionalToolsWorkspace(
+      child: widget.guide == null
+          ? Builder(builder: _buildShell)
+          : ProfessionalGuideHost(
+              controller: widget.guide!,
+              offerOnEntry: location == '/home',
+              steps: _trainerGuideSteps,
+              onNavigate: (path) => context.go(path),
+              child: Builder(builder: _buildShell),
+            ),
+    ),
   );
 
   Widget _buildShell(BuildContext context) {
@@ -231,6 +243,7 @@ class _TrainerShellState extends State<TrainerShell>
     }
 
     Future<void> more() async {
+      final openGuide = ProfessionalGuideHost.openerOf(context);
       final destination = await showModalBottomSheet<int>(
         context: context,
         useRootNavigator: true,
@@ -243,6 +256,12 @@ class _TrainerShellState extends State<TrainerShell>
           child: ListView(
             shrinkWrap: true,
             children: [
+              if (openGuide != null)
+                ListTile(
+                  leading: const Icon(Icons.help_outline),
+                  title: const Text('Guía de uso'),
+                  onTap: () => Navigator.pop(sheetContext, -2),
+                ),
               ListTile(
                 leading: const Icon(Icons.speed),
                 title: const Text('Calculadora de ritmos'),
@@ -269,6 +288,8 @@ class _TrainerShellState extends State<TrainerShell>
       if (destination != null && context.mounted) {
         if (destination == -1) {
           ProfessionalToolsWorkspace.openCalculator(context);
+        } else if (destination == -2) {
+          openGuide?.call();
         } else {
           go(destination);
         }
@@ -352,6 +373,7 @@ class _TrainerShellState extends State<TrainerShell>
                 ),
               ),
               const Divider(),
+              const ProfessionalGuideButton(navigation: true),
               const Align(
                 alignment: Alignment.centerLeft,
                 child: ProfessionalToolsButton(),
@@ -431,3 +453,35 @@ class _TrainerShellState extends State<TrainerShell>
     );
   }
 }
+
+const _trainerGuideSteps = [
+  ProfessionalGuideStep(
+    title: 'Invita a tu primer alumno',
+    text: 'En Alumnos, pulsa «Invitar alumno» y comparte el enlace con él.',
+    destination: 'Alumnos',
+    path: '/clients',
+    icon: Icons.people_outline,
+  ),
+  ProfessionalGuideStep(
+    title: 'Pauta un entrenamiento',
+    text:
+        'En Agenda, arrastra una sesión al día que quieras y elige el alumno.',
+    destination: 'Agenda',
+    path: '/agenda',
+    icon: Icons.calendar_month_outlined,
+  ),
+  ProfessionalGuideStep(
+    title: 'Revisa cómo le ha ido',
+    text: 'Abre la ficha del alumno y entra en Resultados. Puedes comentarlo con él en Conversación.',
+    destination: 'Alumnos',
+    path: '/clients',
+    icon: Icons.people_outline,
+  ),
+  ProfessionalGuideStep(
+    title: 'Pruébalo contigo',
+    text: 'En Para mí puedes pautarte entrenamientos y hacerlos desde tu app. Tu cuenta no ocupa plaza.',
+    destination: 'Para mí',
+    path: '/self',
+    icon: Icons.person_outline,
+  ),
+];

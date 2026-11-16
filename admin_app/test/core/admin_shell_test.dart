@@ -111,18 +111,22 @@ class _Fixture {
   final guided = _Guided();
   final accounts = _Accounts();
 
-  GoRouter router({String path = '/programs', bool authenticated = true}) =>
-      createAdminRouter(
-        programs: programs,
-        workouts: workouts,
-        exercises: exercises,
-        guided: guided,
-        proAccess: accounts,
-        onSignOut: () {},
-        initialLocation: path,
-        isAuthenticated: () => authenticated,
-        loginBuilder: (_) => const Scaffold(body: Text('Acceso al admin')),
-      );
+  GoRouter router({
+    String path = '/programs',
+    bool authenticated = true,
+    String? ownerKey,
+  }) => createAdminRouter(
+    programs: programs,
+    workouts: workouts,
+    exercises: exercises,
+    guided: guided,
+    proAccess: accounts,
+    ownerKey: ownerKey,
+    onSignOut: () {},
+    initialLocation: path,
+    isAuthenticated: () => authenticated,
+    loginBuilder: (_) => const Scaffold(body: Text('Acceso al admin')),
+  );
 }
 
 void _size(WidgetTester tester, Size size) {
@@ -139,12 +143,17 @@ Future<GoRouter> _mount(
   bool authenticated = true,
   double textScale = 1,
   ProfessionalThemeController? appearance,
+  String? ownerKey,
 }) async {
   final theme =
       appearance ??
       ProfessionalThemeController(read: () => 'dark', write: (_) {});
   if (appearance == null) addTearDown(theme.dispose);
-  final router = fixture.router(path: path, authenticated: authenticated);
+  final router = fixture.router(
+    path: path,
+    authenticated: authenticated,
+    ownerKey: ownerKey,
+  );
   addTearDown(router.dispose);
   await tester.pumpWidget(
     RepaintBoundary(
@@ -181,6 +190,28 @@ Future<void> _select(WidgetTester tester, String path) async {
 }
 
 void main() {
+  testWidgets('ADMIN ofrece la guía y la abre desde Mi cuenta y el lateral', (
+    tester,
+  ) async {
+    _size(tester, const Size(1440, 1000));
+    final fixture = _Fixture()..accounts.allowed = false;
+    final router = await _mount(tester, fixture, ownerKey: 'admin-guide-test');
+    expect(find.text('Ver guía'), findsOneWidget);
+    await tester.tap(find.text('Ahora no'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ListTile, 'Guía de uso'));
+    await tester.pumpAndSettle();
+    expect(find.text('Ir a Ejercicios'), findsOneWidget);
+    await tester.tap(find.text('Cerrar'));
+    await tester.pumpAndSettle();
+    await _select(tester, '/settings');
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Guía de uso'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ir a Ejercicios'));
+    await tester.pumpAndSettle();
+    expect(router.routeInformationProvider.value.uri.path, '/exercises');
+  });
+
   testWidgets('el selector de ADMIN cambia el tema y lo conserva al navegar', (
     t,
   ) async {

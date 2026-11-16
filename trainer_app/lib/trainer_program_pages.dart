@@ -126,7 +126,8 @@ class _TrainerProgramDetailPageState extends State<TrainerProgramDetailPage> {
                 child: const Text('Crear nueva versión'),
               ),
               if (p.status == 'published' && p.version > 1)
-                if (widget.repository case final TrainerProgramUpdates updates)
+                if (widget.repository
+                    case final TrainerProgramUpdates updates) ...[
                   OutlinedButton.icon(
                     onPressed: () => showDialog<void>(
                       context: context,
@@ -140,6 +141,15 @@ class _TrainerProgramDetailPageState extends State<TrainerProgramDetailPage> {
                     icon: const Icon(Icons.update),
                     label: const Text('Actualizar pautas…'),
                   ),
+                  const Tooltip(
+                    message: 'Aplica los cambios a las sesiones pendientes que elijas. Las iniciadas y las adaptadas a mano se conservan.',
+                    triggerMode: TooltipTriggerMode.tap,
+                    child: Padding(
+                      padding: EdgeInsets.all(10),
+                      child: Icon(Icons.help_outline),
+                    ),
+                  ),
+                ],
               OutlinedButton(
                 onPressed: () => context.go('/clients'),
                 child: const Text('Elegir alumno para asignar'),

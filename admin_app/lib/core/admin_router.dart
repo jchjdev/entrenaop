@@ -68,6 +68,7 @@ GoRouter createAdminRouter({
   AdminExerciseVideoRepository? exerciseVideos,
   ExerciseCatalogPreferences? exercisePreferences,
   Object? ownerKey,
+  String? accountEmail,
   AdminMediaCleanupRepository? mediaCleanup,
   String? initialLocation,
   Listenable? authChanges,
@@ -78,6 +79,9 @@ GoRouter createAdminRouter({
   Future<bool> Function()? needsSecurity,
 }) {
   final exits = WorkflowExitRegistry();
+  final guide = ownerKey is String && isAuthenticated != null
+      ? ProfessionalGuideController(panel: 'admin', accountId: ownerKey)
+      : null;
   GoRouter.optionURLReflectsImperativeAPIs = true;
 
   Widget load<T>(Future<T> Function() fetch, Widget Function(T) build) =>
@@ -319,7 +323,9 @@ GoRouter createAdminRouter({
         ),
       ShellRoute(
         builder: (_, state, child) => AdminShell(
+          key: ValueKey(ownerKey),
           path: state.uri.path,
+          guide: guide,
           hasAccess: programs.hasAccess,
           canManageAccounts: proAccess?.canManageAccounts,
           hasGuidedPrograms: guided != null,
@@ -329,6 +335,13 @@ GoRouter createAdminRouter({
           child: child,
         ),
         routes: [
+          GoRoute(
+            path: '/settings',
+            builder: (_, _) => load(
+              () async => true,
+              (_) => AdminAccountPage(email: accountEmail),
+            ),
+          ),
           if (operations != null) ...[
             GoRoute(
               path: '/home',

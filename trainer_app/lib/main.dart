@@ -212,6 +212,9 @@ class _TrainerAppState extends State<TrainerApp> {
 
   GoRouter _createRouter() {
     final identity = _identity;
+    final guide = identity == null
+        ? null
+        : ProfessionalGuideController(panel: 'trainer', accountId: identity);
     final exits = WorkflowExitRegistry();
     late final agendaColors = TrainerAgendaColors(widget.client, identity!);
     GoRouter.optionURLReflectsImperativeAPIs = true;
@@ -540,6 +543,7 @@ class _TrainerAppState extends State<TrainerApp> {
         ShellRoute(
           builder: (_, state, child) => TrainerShell(
             key: ValueKey('trainer-shell-$identity'),
+            guide: guide,
             loadInbox: identity == null ? null : messages.inbox,
             messageChanges: _messageChanges,
             location: state.uri.path.startsWith('/clients/$identity')
