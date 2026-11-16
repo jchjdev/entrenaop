@@ -1,3 +1,5 @@
+import 'trainer_guide_steps.dart';
+
 import 'trainer_catalog_search.dart';
 
 import 'package:entrena_ui/entrena_ui.dart';
@@ -125,10 +127,13 @@ class _TrainerGroupsPageState extends State<TrainerGroupsPage> {
               spacing: 8,
               runSpacing: 8,
               children: [
-                FilledButton.icon(
-                  onPressed: _busy || !_canWrite ? null : () => _edit(),
-                  icon: const Icon(Icons.group_add),
-                  label: const Text('Crear grupo'),
+                ProfessionalGuideTarget(
+                  id: TrainerGuideTargets.group,
+                  child: FilledButton.icon(
+                    onPressed: _busy || !_canWrite ? null : () => _edit(),
+                    icon: const Icon(Icons.group_add),
+                    label: const Text('Crear grupo'),
+                  ),
                 ),
                 OutlinedButton.icon(
                   onPressed: _busy || !_canWrite ? null : () => _deliver(),

@@ -1,3 +1,5 @@
+import 'trainer_guide_steps.dart';
+
 import 'trainer_catalog_search.dart';
 
 import 'package:workout_core/exercise_catalog_preferences.dart';
@@ -462,15 +464,18 @@ class _TrainerProgramLibraryPageState extends State<TrainerProgramLibraryPage> {
         ],
         Align(
           alignment: Alignment.centerLeft,
-          child: FilledButton.icon(
-            onPressed: _busy || !_canCreate
-                ? null
-                : () async {
-                    await context.push('/programs/new');
-                    if (mounted) await _load();
-                  },
-            icon: const Icon(Icons.add),
-            label: const Text('Crear programa privado'),
+          child: ProfessionalGuideTarget(
+            id: TrainerGuideTargets.program,
+            child: FilledButton.icon(
+              onPressed: _busy || !_canCreate
+                  ? null
+                  : () async {
+                      await context.push('/programs/new');
+                      if (mounted) await _load();
+                    },
+              icon: const Icon(Icons.add),
+              label: const Text('Crear programa privado'),
+            ),
           ),
         ),
         if (_busy) const LinearProgressIndicator(),

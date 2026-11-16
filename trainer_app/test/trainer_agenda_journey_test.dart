@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop_trainer/trainer_agenda_page.dart';
 import 'package:entrenaop_trainer/trainer_assignment_client_field.dart';
+import 'package:entrenaop_trainer/trainer_guide_steps.dart';
 import 'package:entrenaop_trainer/trainer_workout_pages.dart';
 import 'package:entrenaop_trainer/trainer_workout_repository.dart';
 import 'package:entrenaop_trainer/trainer_agenda_session_panel.dart';
@@ -78,6 +79,61 @@ Future<void> openEntry(WidgetTester t) => agenda.tapVisible(
 
 void main() {
   setUpAll(loadReviewFont);
+
+  testWidgets('la guía señala y deja pulsar Copiar semana en Agenda', (
+    t,
+  ) async {
+    await mount(
+      t,
+      ProfessionalGuideHost(
+        controller: ProfessionalGuideController(
+          panel: 'trainer',
+          accountId: 'test',
+        ),
+        offerOnEntry: false,
+        currentPath: '/agenda',
+        steps: [
+          trainerGuideSteps.singleWhere(
+            (step) => step.target == TrainerGuideTargets.copyWeek,
+          ),
+        ],
+        onNavigate: (_) {},
+        child: Scaffold(
+          body: Column(
+            children: [
+              const ProfessionalGuideButton(),
+              Expanded(
+                child: TrainerAgendaPage(
+                  repository: agenda.AgendaEditFixture(),
+                  now: DateTime(2026, 10, 21),
+                  onCopyWeek: (_, _) async {},
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    await t.tap(find.text('Guía de uso'));
+    await t.pumpAndSettle();
+    await t.tap(find.text('Ir a Agenda'));
+    await t.pumpAndSettle();
+    final button = find.widgetWithText(OutlinedButton, 'Copiar semana');
+    final target = find.ancestor(
+      of: button,
+      matching: find.byType(ProfessionalGuideTarget),
+    );
+    expect(
+      find.descendant(
+        of: target,
+        matching: find.byKey(const ValueKey('professional-guide-highlight')),
+      ),
+      findsOneWidget,
+    );
+    await t.tap(button);
+    await t.pumpAndSettle();
+    expect(find.text('Revisar copia de semana'), findsOneWidget);
+  });
 
   testWidgets(
     'agenda filtrada confirma alumno, sesión y día sin selección redundante',

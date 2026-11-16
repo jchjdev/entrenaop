@@ -1,3 +1,5 @@
+import '../../../core/admin_guide_steps.dart';
+
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop_admin/features/exercises/data/admin_exercise_repository.dart';
 import 'package:flutter/material.dart';
@@ -329,10 +331,13 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _blocked ? null : _openEditor,
-        icon: const Icon(Icons.add),
-        label: const Text('Nuevo ejercicio'),
+      floatingActionButton: ProfessionalGuideTarget(
+        id: AdminGuideTargets.exercise,
+        child: FloatingActionButton.extended(
+          onPressed: _blocked ? null : _openEditor,
+          icon: const Icon(Icons.add),
+          label: const Text('Nuevo ejercicio'),
+        ),
       ),
     ),
   );

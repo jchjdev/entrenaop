@@ -11,11 +11,13 @@ class ProfessionalGuideStep {
     required this.destination,
     required this.path,
     required this.icon,
+    this.target,
     this.topic = 'Primeros pasos',
   });
 
   final String title, text, destination, path, topic;
   final IconData icon;
+  final String? target;
 }
 
 /// La preferencia pertenece a esta cuenta y este panel en el navegador.
@@ -174,6 +176,72 @@ class _GuideScope extends InheritedWidget {
   @override
   bool updateShouldNotify(_GuideScope oldWidget) =>
       (open == null) != (oldWidget.open == null) || step != oldWidget.step;
+}
+
+/// Señala un control del paso actual y conserva sus acciones y su foco.
+class ProfessionalGuideTarget extends StatefulWidget {
+  const ProfessionalGuideTarget({
+    super.key,
+    required this.id,
+    required this.child,
+  });
+
+  final String? id;
+  final Widget child;
+
+  @override
+  State<ProfessionalGuideTarget> createState() =>
+      _ProfessionalGuideTargetState();
+}
+
+class _ProfessionalGuideTargetState extends State<ProfessionalGuideTarget> {
+  bool _highlighted = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final step = context
+        .dependOnInheritedWidgetOfExactType<_GuideScope>()
+        ?.step;
+    final highlighted = widget.id != null && step?.target == widget.id;
+    if (highlighted && !_highlighted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted ||
+            !_highlighted ||
+            ModalRoute.of(context)?.isCurrent == false) {
+          return;
+        }
+        Scrollable.ensureVisible(context, alignment: .3);
+      });
+    }
+    _highlighted = highlighted;
+    final colors = Theme.of(context).colorScheme;
+    return Semantics(
+      hint: highlighted ? 'Señalado por la guía' : null,
+      child: Stack(
+        clipBehavior: Clip.none,
+        fit: StackFit.passthrough,
+        children: [
+          widget.child,
+          if (highlighted)
+            Positioned.fill(
+              left: -3,
+              right: -3,
+              top: -2,
+              bottom: -2,
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  key: const ValueKey('professional-guide-highlight'),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: colors.primary, width: 2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }
 
 /// Queda a la vista mientras el usuario está en la pantalla del paso.

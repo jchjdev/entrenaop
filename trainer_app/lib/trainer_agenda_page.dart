@@ -1,3 +1,5 @@
+import 'trainer_guide_steps.dart';
+
 import 'trainer_catalog_search.dart';
 
 import 'package:entrena_ui/entrena_ui.dart';
@@ -1412,13 +1414,16 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
                     runSpacing: 8,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      FilledButton.icon(
-                        key: const ValueKey('agenda-create-appointment'),
-                        onPressed: _locked || widget.access == null
-                            ? null
-                            : () => _editAppointment(),
-                        icon: const Icon(Icons.add_alarm_outlined),
-                        label: const Text('Crear cita'),
+                      ProfessionalGuideTarget(
+                        id: TrainerGuideTargets.appointment,
+                        child: FilledButton.icon(
+                          key: const ValueKey('agenda-create-appointment'),
+                          onPressed: _locked || widget.access == null
+                              ? null
+                              : () => _editAppointment(),
+                          icon: const Icon(Icons.add_alarm_outlined),
+                          label: const Text('Crear cita'),
+                        ),
                       ),
                       for (final kind in {
                         'all': 'Todo',
@@ -1446,13 +1451,19 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
                       _AgendaView.day: 'Día',
                       _AgendaView.list: 'Lista',
                     }.entries)
-                      ChoiceChip(
-                        key: ValueKey('agenda-view-${entry.key.name}'),
-                        label: Text(entry.value),
-                        selected: _view == entry.key,
-                        onSelected: _locked
-                            ? null
-                            : (_) => _changeView(entry.key),
+                      ProfessionalGuideTarget(
+                        key: ValueKey('agenda-guide-view-${entry.key.name}'),
+                        id: entry.key == _AgendaView.week
+                            ? TrainerGuideTargets.weekView
+                            : null,
+                        child: ChoiceChip(
+                          key: ValueKey('agenda-view-${entry.key.name}'),
+                          label: Text(entry.value),
+                          selected: _view == entry.key,
+                          onSelected: _locked
+                              ? null
+                              : (_) => _changeView(entry.key),
+                        ),
                       ),
                     if (_view == _AgendaView.month)
                       ConstrainedBox(
@@ -1544,10 +1555,13 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
                         ),
                       ),
                     if (widget.onCopyWeek != null)
-                      OutlinedButton.icon(
-                        onPressed: _locked ? null : _copyWeek,
-                        icon: const Icon(Icons.copy),
-                        label: const Text('Copiar semana'),
+                      ProfessionalGuideTarget(
+                        id: TrainerGuideTargets.copyWeek,
+                        child: OutlinedButton.icon(
+                          onPressed: _locked ? null : _copyWeek,
+                          icon: const Icon(Icons.copy),
+                          label: const Text('Copiar semana'),
+                        ),
                       ),
                   ],
                 ),

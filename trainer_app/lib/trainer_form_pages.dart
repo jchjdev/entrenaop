@@ -1,3 +1,5 @@
+import 'trainer_guide_steps.dart';
+
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -89,10 +91,13 @@ class _TrainerFormsPageState extends State<TrainerFormsPage> {
             const SizedBox(height: 16),
             Align(
               alignment: Alignment.centerLeft,
-              child: FilledButton.icon(
-                onPressed: !_enabled || _busy ? null : () => _edit(),
-                icon: const Icon(Icons.add),
-                label: const Text('Crear formulario'),
+              child: ProfessionalGuideTarget(
+                id: TrainerGuideTargets.form,
+                child: FilledButton.icon(
+                  onPressed: !_enabled || _busy ? null : () => _edit(),
+                  icon: const Icon(Icons.add),
+                  label: const Text('Crear formulario'),
+                ),
               ),
             ),
             if (_busy) const LinearProgressIndicator(),

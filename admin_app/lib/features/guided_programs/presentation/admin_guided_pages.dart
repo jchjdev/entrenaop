@@ -8,6 +8,7 @@ import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:workout_core/exercise_catalog_preferences.dart';
 
+import '../../../core/admin_guide_steps.dart';
 import '../../../core/admin_shell.dart';
 import '../../../core/catalog_search.dart';
 
@@ -199,13 +200,18 @@ class _AdminGuidedCatalogPageState extends State<AdminGuidedCatalogPage> {
               spacing: 12,
               runSpacing: 12,
               children: [
-                FilledButton.icon(
-                  onPressed: _busy ? null : () => _open('new'),
-                  icon: const Icon(Icons.add),
-                  label: Text(
-                    widget.warmups
-                        ? 'Crear calentamiento'
-                        : 'Crear programa guiado',
+                ProfessionalGuideTarget(
+                  id: widget.warmups
+                      ? AdminGuideTargets.warmup
+                      : AdminGuideTargets.guidedProgram,
+                  child: FilledButton.icon(
+                    onPressed: _busy ? null : () => _open('new'),
+                    icon: const Icon(Icons.add),
+                    label: Text(
+                      widget.warmups
+                          ? 'Crear calentamiento'
+                          : 'Crear programa guiado',
+                    ),
                   ),
                 ),
                 if (!AdminShellScope.hidesAppBar(context))

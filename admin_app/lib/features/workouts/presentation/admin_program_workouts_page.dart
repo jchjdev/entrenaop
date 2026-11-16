@@ -1,3 +1,5 @@
+import '../../../core/admin_guide_steps.dart';
+
 import 'package:workout_editor_ui/workout_editor_work.dart';
 
 import '../../operations/presentation/admin_dashboard_page.dart';
@@ -246,10 +248,13 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
               spacing: 12,
               runSpacing: 12,
               children: [
-                FilledButton.icon(
-                  onPressed: _busy ? null : _create,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Nueva sesión'),
+                ProfessionalGuideTarget(
+                  id: AdminGuideTargets.session,
+                  child: FilledButton.icon(
+                    onPressed: _busy ? null : _create,
+                    icon: const Icon(Icons.add),
+                    label: const Text('Nueva sesión'),
+                  ),
                 ),
                 if (widget.trashRepository != null)
                   OutlinedButton.icon(

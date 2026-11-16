@@ -1,3 +1,5 @@
+import 'trainer_guide_steps.dart';
+
 import 'trainer_catalog_search.dart';
 
 import 'package:entrena_ui/entrena_ui.dart';
@@ -128,10 +130,13 @@ class _TrainerRecurrencePageState extends State<TrainerRecurrencePage> {
             const SizedBox(height: 12),
             Align(
               alignment: Alignment.centerLeft,
-              child: FilledButton.icon(
-                onPressed: _busy || !_canWrite ? null : _create,
-                icon: const Icon(Icons.event_repeat),
-                label: const Text('Planificar serie finita'),
+              child: ProfessionalGuideTarget(
+                id: TrainerGuideTargets.repeatWeeks,
+                child: FilledButton.icon(
+                  onPressed: _busy || !_canWrite ? null : _create,
+                  icon: const Icon(Icons.event_repeat),
+                  label: const Text('Planificar serie finita'),
+                ),
               ),
             ),
             if (_busy) const LinearProgressIndicator(),

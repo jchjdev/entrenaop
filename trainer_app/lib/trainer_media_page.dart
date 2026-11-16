@@ -1,3 +1,5 @@
+import 'trainer_guide_steps.dart';
+
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:workout_core/exercise_draft.dart';
@@ -357,10 +359,13 @@ class _TrainerMediaPageState extends State<TrainerMediaPage> {
             ),
           Align(
             alignment: Alignment.centerLeft,
-            child: FilledButton.icon(
-              onPressed: _busy ? null : () => _upload(),
-              icon: const Icon(Icons.upload_outlined),
-              label: const Text('Subir demostración'),
+            child: ProfessionalGuideTarget(
+              id: TrainerGuideTargets.video,
+              child: FilledButton.icon(
+                onPressed: _busy ? null : () => _upload(),
+                icon: const Icon(Icons.upload_outlined),
+                label: const Text('Subir demostración'),
+              ),
             ),
           ),
         ],

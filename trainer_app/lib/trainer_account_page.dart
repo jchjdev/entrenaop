@@ -1,3 +1,5 @@
+import 'trainer_guide_steps.dart';
+
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -69,10 +71,13 @@ class _TrainerAccountPageState extends State<TrainerAccountPage> {
                   'Consulta tu plan, amplía plazas y gestiona pagos, facturas o cancelación.',
                 ),
                 const SizedBox(height: 16),
-                FilledButton.icon(
-                  onPressed: () => context.push('/subscription'),
-                  icon: const Icon(Icons.credit_card),
-                  label: const Text('Gestionar plan y facturación'),
+                ProfessionalGuideTarget(
+                  id: TrainerGuideTargets.billing,
+                  child: FilledButton.icon(
+                    onPressed: () => context.push('/subscription'),
+                    icon: const Icon(Icons.credit_card),
+                    label: const Text('Gestionar plan y facturación'),
+                  ),
                 ),
               ],
             ),

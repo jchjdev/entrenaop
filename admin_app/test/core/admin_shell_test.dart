@@ -211,16 +211,39 @@ void main() {
     await tester.pumpAndSettle();
     expect(router.routeInformationProvider.value.uri.path, '/exercises');
     expect(find.text('Publica un ejercicio oficial'), findsOneWidget);
+    const highlight = ValueKey('professional-guide-highlight');
+    expect(
+      find.descendant(
+        of: find.ancestor(
+          of: find.text('Nuevo ejercicio'),
+          matching: find.byType(ProfessionalGuideTarget),
+        ),
+        matching: find.byKey(highlight),
+      ),
+      findsOneWidget,
+    );
     await tester.tap(find.text('Siguiente paso'));
     await tester.pumpAndSettle();
     expect(find.text('Organiza el catálogo'), findsOneWidget);
+    expect(find.byKey(highlight), findsNothing);
     await tester.tap(find.text('Siguiente paso'));
     await tester.pumpAndSettle();
     expect(router.routeInformationProvider.value.uri.path, '/sessions');
     expect(find.text('Crea una sesión oficial'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.ancestor(
+          of: find.text('Nueva sesión'),
+          matching: find.byType(ProfessionalGuideTarget),
+        ),
+        matching: find.byKey(highlight),
+      ),
+      findsOneWidget,
+    );
     await tester.tap(find.byTooltip('Cerrar recorrido'));
     await tester.pumpAndSettle();
     expect(find.text('Crea una sesión oficial'), findsNothing);
+    expect(find.byKey(highlight), findsNothing);
   });
 
   testWidgets('el selector de ADMIN cambia el tema y lo conserva al navegar', (

@@ -1,6 +1,13 @@
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 
+abstract final class AdminGuideTargets {
+  static const exercise = 'exercise';
+  static const session = 'session';
+  static const warmup = 'warmup';
+  static const guidedProgram = 'guidedProgram';
+}
+
 List<ProfessionalGuideStep> adminGuideSteps({
   required bool accounts,
   required bool operations,
@@ -19,6 +26,7 @@ List<ProfessionalGuideStep> adminGuideSteps({
   const ProfessionalGuideStep(
     topic: 'Catálogo oficial',
     title: 'Publica un ejercicio oficial',
+    target: AdminGuideTargets.exercise,
     text: 'En Ejercicios, pulsa «Nuevo ejercicio». Añade la explicación, los músculos y el material. La foto o el vídeo ayudan a mostrar cómo se hace.',
     destination: 'Ejercicios',
     path: '/exercises',
@@ -35,6 +43,7 @@ List<ProfessionalGuideStep> adminGuideSteps({
   const ProfessionalGuideStep(
     topic: 'Catálogo oficial',
     title: 'Crea una sesión oficial',
+    target: AdminGuideTargets.session,
     text: 'En Sesiones, pulsa «Nueva sesión». Elige Carrera o Fuerza, prepara el entrenamiento y revisa la ficha antes de publicar.',
     destination: 'Sesiones',
     path: '/sessions',
@@ -44,6 +53,7 @@ List<ProfessionalGuideStep> adminGuideSteps({
     const ProfessionalGuideStep(
       topic: 'Programas y pruebas',
       title: 'Prepara un calentamiento',
+      target: AdminGuideTargets.warmup,
       text: 'En Calentamientos, pulsa «Crear calentamiento» y añade los ejercicios. Después podrás insertarlo en el creador de sesiones.',
       destination: 'Calentamientos',
       path: '/warmups',
@@ -53,6 +63,7 @@ List<ProfessionalGuideStep> adminGuideSteps({
     const ProfessionalGuideStep(
       topic: 'Programas y pruebas',
       title: 'Publica un programa guiado',
+      target: AdminGuideTargets.guidedProgram,
       text: 'Pulsa «Crear programa guiado», organiza las sesiones por fases y revisa la vista previa. Al publicarlo estará disponible en Biblioteca.',
       destination: 'Programas guiados',
       path: '/guided-programs',

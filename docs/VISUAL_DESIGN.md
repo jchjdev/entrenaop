@@ -2290,6 +2290,10 @@ elegir una tarea por tema. «Ir a» abre la pantalla real y deja visible el paso
 por encima de su contenido, con accesos al índice, al siguiente paso y a cerrar
 el recorrido. La guía describe las acciones que el usuario puede realizar.
 ADMIN muestra únicamente los pasos acordes al acceso de la cuenta.
+Los pasos con un botón fijo lo resaltan al llegar y lo desplazan a la vista.
+La guía conserva la interacción original del botón. Los pasos que requieren
+elegir un alumno, un programa o un elemento muestran las instrucciones de
+esa tarea sin seleccionar por el usuario.
 
 En Trainer, el icono de ayuda junto a «Actualizar pautas» explica qué sesiones
 se pueden actualizar.

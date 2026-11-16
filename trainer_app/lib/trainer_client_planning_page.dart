@@ -1,5 +1,6 @@
 import 'trainer_catalog_search.dart';
 import 'trainer_device_activity_inbox_panel.dart';
+import 'trainer_guide_steps.dart';
 
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
@@ -1267,10 +1268,13 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
               spacing: 8,
               runSpacing: 8,
               children: [
-                FilledButton.icon(
-                  onPressed: _canAssign ? () => _assignSession(_day) : null,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Asignar sesión'),
+                ProfessionalGuideTarget(
+                  id: TrainerGuideTargets.selfAssignment,
+                  child: FilledButton.icon(
+                    onPressed: _canAssign ? () => _assignSession(_day) : null,
+                    icon: const Icon(Icons.add),
+                    label: const Text('Asignar sesión'),
+                  ),
                 ),
                 OutlinedButton.icon(
                   onPressed: _canAssign ? () => _assignProgram(_day) : null,

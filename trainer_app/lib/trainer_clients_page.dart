@@ -1,3 +1,5 @@
+import 'trainer_guide_steps.dart';
+
 import 'trainer_invitation_recipient_dialog.dart';
 
 import 'package:url_launcher/url_launcher.dart';
@@ -469,16 +471,19 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
                             'Todas tus plazas están ocupadas. Las invitaciones no reservan plaza; se comprueba al aceptarlas.',
                           ),
                         ),
-                      FilledButton.icon(
-                        onPressed:
-                            _busy ||
-                                !access.effective ||
-                                access.full ||
-                                _draft != null
-                            ? null
-                            : _invite,
-                        icon: const Icon(Icons.person_add_alt_1),
-                        label: const Text('Invitar alumno'),
+                      ProfessionalGuideTarget(
+                        id: TrainerGuideTargets.invite,
+                        child: FilledButton.icon(
+                          onPressed:
+                              _busy ||
+                                  !access.effective ||
+                                  access.full ||
+                                  _draft != null
+                              ? null
+                              : _invite,
+                          icon: const Icon(Icons.person_add_alt_1),
+                          label: const Text('Invitar alumno'),
+                        ),
                       ),
                     ],
                   ),

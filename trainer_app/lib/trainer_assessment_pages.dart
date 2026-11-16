@@ -1,3 +1,5 @@
+import 'trainer_guide_steps.dart';
+
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -120,10 +122,13 @@ class _TrainerAssessmentsPageState extends State<TrainerAssessmentsPage> {
         const SizedBox(height: 16),
         Align(
           alignment: Alignment.centerLeft,
-          child: FilledButton.icon(
-            onPressed: _busy || !_enabled ? null : () => _edit(),
-            icon: const Icon(Icons.add),
-            label: const Text('Crear batería'),
+          child: ProfessionalGuideTarget(
+            id: TrainerGuideTargets.assessment,
+            child: FilledButton.icon(
+              onPressed: _busy || !_enabled ? null : () => _edit(),
+              icon: const Icon(Icons.add),
+              label: const Text('Crear batería'),
+            ),
           ),
         ),
         if (_busy) const LinearProgressIndicator(),

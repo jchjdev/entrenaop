@@ -1,3 +1,5 @@
+import 'trainer_guide_steps.dart';
+
 import 'trainer_catalog_search.dart';
 import 'trainer_assignment_lifecycle_actions.dart';
 import 'trainer_catalog_trash_page.dart';
@@ -318,10 +320,13 @@ class _TrainerWorkoutLibraryPageState extends State<TrainerWorkoutLibraryPage> {
         ],
         Align(
           alignment: Alignment.centerLeft,
-          child: FilledButton.icon(
-            onPressed: _busy || _discardBusy || !_canCreate ? null : _create,
-            icon: const Icon(Icons.add),
-            label: const Text('Crear sesión privada'),
+          child: ProfessionalGuideTarget(
+            id: TrainerGuideTargets.session,
+            child: FilledButton.icon(
+              onPressed: _busy || _discardBusy || !_canCreate ? null : _create,
+              icon: const Icon(Icons.add),
+              label: const Text('Crear sesión privada'),
+            ),
           ),
         ),
         if (_busy) const LinearProgressIndicator(),
