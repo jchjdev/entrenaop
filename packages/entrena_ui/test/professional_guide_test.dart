@@ -24,6 +24,7 @@ void main() {
             home: ProfessionalGuideHost(
               controller: controller,
               offerOnEntry: home,
+              currentPath: '/agenda',
               steps: const [
                 ProfessionalGuideStep(
                   title: 'Invita a tu primer alumno',
@@ -34,6 +35,7 @@ void main() {
                 ),
                 ProfessionalGuideStep(
                   title: 'Pauta un entrenamiento',
+                  topic: 'Agenda',
                   text: 'Elige una fecha.',
                   destination: 'Agenda',
                   path: '/agenda',
@@ -41,7 +43,14 @@ void main() {
                 ),
               ],
               onNavigate: (path) => destination = path,
-              child: const Scaffold(body: ProfessionalGuideButton()),
+              child: const Scaffold(
+                body: Column(
+                  children: [
+                    ProfessionalGuideProgress(),
+                    ProfessionalGuideButton(),
+                  ],
+                ),
+              ),
             ),
           );
 
@@ -60,12 +69,19 @@ void main() {
       await tester.tap(find.text('Guía de uso'));
       await tester.pumpAndSettle();
       expect(find.text('Invita a tu primer alumno'), findsOneWidget);
-      await tester.tap(find.text('Siguiente'));
+      await tester.tap(find.text('Índice'));
+      await tester.pumpAndSettle();
+      expect(find.text('Agenda'), findsOneWidget);
+      await tester.tap(find.text('Pauta un entrenamiento'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('No volver a mostrar al entrar'));
       await tester.tap(find.text('Ir a Agenda'));
       await tester.pumpAndSettle();
       expect(destination, '/agenda');
+      expect(find.text('Elige una fecha.'), findsOneWidget);
+      await tester.tap(find.byTooltip('Cerrar recorrido'));
+      await tester.pumpAndSettle();
+      expect(find.text('Elige una fecha.'), findsNothing);
 
       final returning = create('trainer');
       await tester.pumpWidget(app(returning));

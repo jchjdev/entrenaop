@@ -4,6 +4,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
 import 'professional_theme.dart';
+import 'professional_guide.dart';
 
 /// La presentación profesional no modifica permisos ni se activa en el deportista.
 class ProfessionalWorkspaceScope extends InheritedWidget {
@@ -90,6 +91,7 @@ class ProfessionalWorkspaceShell extends StatelessWidget {
                       verticalDirection: VerticalDirection.up,
                       children: [
                         Expanded(child: child),
+                        const ProfessionalGuideProgress(),
                         const Divider(height: 1),
                         headerBuilder(context, desktop),
                       ],

@@ -3,6 +3,8 @@
 **Guía de uso en Trainer y ADMIN · 16/11/2026.** Los dos paneles ofrecen una
 guía breve con accesos directos a sus pantallas. Está disponible en el lateral
 y en Mi cuenta. Se puede posponer u ocultar por cuenta y panel en el navegador.
+El recorrido ampliado agrupa las tareas por tema y muestra el paso activo en
+la pantalla correspondiente. El índice permite consultar cualquier tarea.
 [Diseño](VISUAL_DESIGN.md#guía-de-uso-de-trainer-y-admin).
 
 **Portadas 4:3 en los catálogos de ejercicios · 13/11/2026.**

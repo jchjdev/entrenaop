@@ -210,6 +210,17 @@ void main() {
     await tester.tap(find.text('Ir a Ejercicios'));
     await tester.pumpAndSettle();
     expect(router.routeInformationProvider.value.uri.path, '/exercises');
+    expect(find.text('Publica un ejercicio oficial'), findsOneWidget);
+    await tester.tap(find.text('Siguiente paso'));
+    await tester.pumpAndSettle();
+    expect(find.text('Organiza el catálogo'), findsOneWidget);
+    await tester.tap(find.text('Siguiente paso'));
+    await tester.pumpAndSettle();
+    expect(router.routeInformationProvider.value.uri.path, '/sessions');
+    expect(find.text('Crea una sesión oficial'), findsOneWidget);
+    await tester.tap(find.byTooltip('Cerrar recorrido'));
+    await tester.pumpAndSettle();
+    expect(find.text('Crea una sesión oficial'), findsNothing);
   });
 
   testWidgets('el selector de ADMIN cambia el tema y lo conserva al navegar', (

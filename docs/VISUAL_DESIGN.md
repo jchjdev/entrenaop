@@ -2285,9 +2285,11 @@ Al llegar a Inicio o Pendientes, el panel ofrece la guía una vez por sesión.
 «Ahora no» cierra la invitación hasta la siguiente visita. «No volver a mostrar
 al entrar» guarda la elección por cuenta y panel en el navegador y puede
 desmarcarse al reabrir la guía. Está disponible en el lateral, en Mi cuenta y
-en Más de Trainer cuando se usa la navegación compacta. Cada paso tiene un
-acceso directo al apartado correspondiente. ADMIN muestra únicamente los
-pasos acordes al acceso de la cuenta.
+en Más de Trainer cuando se usa la navegación compacta. El índice permite
+elegir una tarea por tema. «Ir a» abre la pantalla real y deja visible el paso
+por encima de su contenido, con accesos al índice, al siguiente paso y a cerrar
+el recorrido. La guía describe las acciones que el usuario puede realizar.
+ADMIN muestra únicamente los pasos acordes al acceso de la cuenta.
 
 En Trainer, el icono de ayuda junto a «Actualizar pautas» explica qué sesiones
 se pueden actualizar.

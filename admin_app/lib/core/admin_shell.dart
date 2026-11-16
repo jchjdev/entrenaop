@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:workout_editor_ui/professional_tools_workspace.dart';
 
+import 'admin_guide_steps.dart';
 import 'app_config.dart';
 
 /// Solo organiza la interfaz. Cada ruta y cada operación mantienen sus permisos.
@@ -75,12 +76,15 @@ class _AdminShellState extends State<AdminShell> {
             future: _access,
             builder: (context, snapshot) => ProfessionalGuideHost(
               controller: widget.guide!,
+              currentPath: widget.path,
               offerOnEntry:
                   widget.path == (widget.hasOperations ? '/home' : '/programs'),
               steps: snapshot.data?.admin == true
-                  ? _adminGuideSteps(
+                  ? adminGuideSteps(
                       accounts: snapshot.data!.accounts,
                       operations: widget.hasOperations,
+                      guided: widget.hasGuidedPrograms,
+                      directory: widget.hasDirectory,
                     )
                   : const [],
               onNavigate: _navigate,
@@ -299,35 +303,6 @@ class AdminAccountPage extends StatelessWidget {
     ],
   );
 }
-
-List<ProfessionalGuideStep> _adminGuideSteps({
-  required bool accounts,
-  required bool operations,
-}) => [
-  if (operations)
-    const ProfessionalGuideStep(
-      title: 'Mira qué queda pendiente',
-      text: 'En Pendientes puedes retomar borradores y ver qué necesita revisión.',
-      destination: 'Pendientes',
-      path: '/home',
-      icon: Icons.dashboard_outlined,
-    ),
-  if (accounts)
-    const ProfessionalGuideStep(
-      title: 'Da acceso a un entrenador',
-      text: 'Busca su correo en Cuentas y Pro. Desde su ficha puedes darle acceso a Trainer.',
-      destination: 'Cuentas y Pro',
-      path: '/accounts',
-      icon: Icons.manage_accounts_outlined,
-    ),
-  const ProfessionalGuideStep(
-    title: 'Publica un ejercicio oficial',
-    text: 'En Ejercicios, pulsa «Nuevo ejercicio». Al guardarlo, se añade al catálogo de EntrenaOP.',
-    destination: 'Ejercicios',
-    path: '/exercises',
-    icon: Icons.fitness_center_rounded,
-  ),
-];
 
 class _EnvironmentLabel extends StatelessWidget {
   @override

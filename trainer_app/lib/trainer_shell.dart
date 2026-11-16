@@ -1,4 +1,5 @@
 import 'trainer_message_inbox_scope.dart';
+import 'trainer_guide_steps.dart';
 
 import 'dart:async';
 
@@ -211,7 +212,8 @@ class _TrainerShellState extends State<TrainerShell>
           : ProfessionalGuideHost(
               controller: widget.guide!,
               offerOnEntry: location == '/home',
-              steps: _trainerGuideSteps,
+              currentPath: location,
+              steps: trainerGuideSteps,
               onNavigate: (path) => context.go(path),
               child: Builder(builder: _buildShell),
             ),
@@ -453,35 +455,3 @@ class _TrainerShellState extends State<TrainerShell>
     );
   }
 }
-
-const _trainerGuideSteps = [
-  ProfessionalGuideStep(
-    title: 'Invita a tu primer alumno',
-    text: 'En Alumnos, pulsa «Invitar alumno» y comparte el enlace con él.',
-    destination: 'Alumnos',
-    path: '/clients',
-    icon: Icons.people_outline,
-  ),
-  ProfessionalGuideStep(
-    title: 'Pauta un entrenamiento',
-    text:
-        'En Agenda, arrastra una sesión al día que quieras y elige el alumno.',
-    destination: 'Agenda',
-    path: '/agenda',
-    icon: Icons.calendar_month_outlined,
-  ),
-  ProfessionalGuideStep(
-    title: 'Revisa cómo le ha ido',
-    text: 'Abre la ficha del alumno y entra en Resultados. Puedes comentarlo con él en Conversación.',
-    destination: 'Alumnos',
-    path: '/clients',
-    icon: Icons.people_outline,
-  ),
-  ProfessionalGuideStep(
-    title: 'Pruébalo contigo',
-    text: 'En Para mí puedes pautarte entrenamientos y hacerlos desde tu app. Tu cuenta no ocupa plaza.',
-    destination: 'Para mí',
-    path: '/self',
-    icon: Icons.person_outline,
-  ),
-];
