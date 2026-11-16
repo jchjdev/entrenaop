@@ -1204,95 +1204,131 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
     required DateTime initial,
     required String action,
     bool mondayOnly = false,
+    bool guided = false,
   }) async {
     final controller = TextEditingController(text: agendaDate(initial));
     String? error;
     var closing = false;
+    var dateEntered = false;
+    DateTime? parseDate(String input) {
+      final text = input.trim();
+      if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(text)) return null;
+      final parsed = DateTime.tryParse(text);
+      return parsed != null &&
+              agendaDate(parsed) == text &&
+              parsed.year >= 1970 &&
+              parsed.year <= 2200
+          ? parsed
+          : null;
+    }
+
     try {
       return await showDialog<DateTime>(
         context: context,
         builder: (dialogContext) => StatefulBuilder(
-          builder: (context, update) => AlertDialog(
-            title: Text(title),
-            scrollable: true,
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (mondayOnly)
-                  const Text(
-                    'Se copiará la semana completa de todos tus alumnos, aunque haya filtros. El servidor volverá a validar todas las pautas de esa semana, no solo las cargadas. Las originales se conservan.',
+          builder: (context, update) {
+            final readyToReview =
+                guided &&
+                dateEntered &&
+                parseDate(controller.text)?.weekday == DateTime.monday;
+            return AlertDialog(
+              title: Text(title),
+              scrollable: true,
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (mondayOnly)
+                    const Text(
+                      'Se copiará la semana completa de todos tus alumnos, aunque haya filtros. El servidor volverá a validar todas las pautas de esa semana, no solo las cargadas. Las originales se conservan.',
+                    ),
+                  if (!mondayOnly)
+                    const Text(
+                      'Esta fecha propone el cambio. La confirmación y las coincidencias se revisarán antes de guardarlo.',
+                    ),
+                  const SizedBox(height: 12),
+                  if (guided) ...[
+                    Text(
+                      readyToReview
+                          ? 'Pulsa «Revisar copia de semana» para ver qué se va a copiar.'
+                          : 'Elige un lunes en el campo de fecha o en el calendario. También puedes usar el que aparece.',
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  ProfessionalGuideTarget(
+                    highlighted: guided && !readyToReview,
+                    child: TextField(
+                      key: const ValueKey('agenda-date-input'),
+                      controller: controller,
+                      keyboardType: TextInputType.datetime,
+                      onChanged: guided
+                          ? (_) => update(() => dateEntered = true)
+                          : null,
+                      decoration: InputDecoration(
+                        labelText: mondayOnly
+                            ? 'Lunes de la semana destino'
+                            : 'Fecha destino',
+                        hintText: 'AAAA-MM-DD',
+                        errorText: error,
+                      ),
+                    ),
                   ),
-                if (!mondayOnly)
-                  const Text(
-                    'Esta fecha propone el cambio. La confirmación y las coincidencias se revisarán antes de guardarlo.',
+                  TextButton.icon(
+                    onPressed: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: initial,
+                        firstDate: DateTime(1970),
+                        lastDate: DateTime(2200, 12, 31),
+                      );
+                      if (picked != null && context.mounted) {
+                        update(() {
+                          controller.text = agendaDate(picked);
+                          error = null;
+                          dateEntered = true;
+                        });
+                      }
+                    },
+                    icon: const Icon(Icons.calendar_month),
+                    label: const Text('Elegir en calendario'),
                   ),
-                const SizedBox(height: 12),
-                TextField(
-                  key: const ValueKey('agenda-date-input'),
-                  controller: controller,
-                  keyboardType: TextInputType.datetime,
-                  decoration: InputDecoration(
-                    labelText: mondayOnly
-                        ? 'Lunes de la semana destino'
-                        : 'Fecha destino',
-                    hintText: 'AAAA-MM-DD',
-                    errorText: error,
-                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text('Cancelar'),
                 ),
-                TextButton.icon(
-                  onPressed: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: initial,
-                      firstDate: DateTime(1970),
-                      lastDate: DateTime(2200, 12, 31),
-                    );
-                    if (picked != null && context.mounted) {
-                      update(() {
-                        controller.text = agendaDate(picked);
-                        error = null;
-                      });
-                    }
-                  },
-                  icon: const Icon(Icons.calendar_month),
-                  label: const Text('Elegir en calendario'),
+                ProfessionalGuideTarget(
+                  highlighted: readyToReview,
+                  child: FilledButton(
+                    onPressed: () {
+                      if (closing) return;
+                      final parsed = parseDate(controller.text);
+                      if (parsed == null) {
+                        update(
+                          () =>
+                              error = 'Introduce una fecha válida: AAAA-MM-DD.',
+                        );
+                      } else if (mondayOnly &&
+                          parsed.weekday != DateTime.monday) {
+                        update(
+                          () => error = 'Elige un lunes para mantener los días de la semana.',
+                        );
+                      } else {
+                        closing = true;
+                        Navigator.pop(
+                          dialogContext,
+                          DateUtils.dateOnly(parsed),
+                        );
+                      }
+                    },
+                    child: Text(action),
+                  ),
                 ),
               ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext),
-                child: const Text('Cancelar'),
-              ),
-              FilledButton(
-                onPressed: () {
-                  if (closing) return;
-                  final text = controller.text.trim();
-                  final parsed = RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(text)
-                      ? DateTime.tryParse(text)
-                      : null;
-                  if (parsed == null ||
-                      agendaDate(parsed) != text ||
-                      parsed.year < 1970 ||
-                      parsed.year > 2200) {
-                    update(
-                      () => error = 'Introduce una fecha válida: AAAA-MM-DD.',
-                    );
-                  } else if (mondayOnly && parsed.weekday != DateTime.monday) {
-                    update(
-                      () => error =
-                          'Elige un lunes para mantener los días de la semana.',
-                    );
-                  } else {
-                    closing = true;
-                    Navigator.pop(dialogContext, DateUtils.dateOnly(parsed));
-                  }
-                },
-                child: Text(action),
-              ),
-            ],
-          ),
+            );
+          },
         ),
       );
     } finally {
@@ -1329,6 +1365,10 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
       initial: _civilOffset(source, 7),
       action: 'Revisar copia de semana',
       mondayOnly: true,
+      guided: ProfessionalGuideHost.pointsTo(
+        context,
+        TrainerGuideTargets.copyWeek,
+      ),
     );
     if (!mounted || target == null) return;
     // UTC solo calcula la diferencia entre componentes civiles, sin desplazar

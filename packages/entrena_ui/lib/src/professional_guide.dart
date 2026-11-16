@@ -72,6 +72,10 @@ class ProfessionalGuideHost extends StatefulWidget {
   static VoidCallback? openerOf(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<_GuideScope>()?.open;
 
+  static bool pointsTo(BuildContext context, String target) =>
+      context.getInheritedWidgetOfExactType<_GuideScope>()?.step?.target ==
+      target;
+
   @override
   State<ProfessionalGuideHost> createState() => _ProfessionalGuideHostState();
 }
@@ -182,11 +186,13 @@ class _GuideScope extends InheritedWidget {
 class ProfessionalGuideTarget extends StatefulWidget {
   const ProfessionalGuideTarget({
     super.key,
-    required this.id,
+    this.id,
+    this.highlighted,
     required this.child,
   });
 
   final String? id;
+  final bool? highlighted;
   final Widget child;
 
   @override
@@ -202,7 +208,8 @@ class _ProfessionalGuideTargetState extends State<ProfessionalGuideTarget> {
     final step = context
         .dependOnInheritedWidgetOfExactType<_GuideScope>()
         ?.step;
-    final highlighted = widget.id != null && step?.target == widget.id;
+    final highlighted =
+        widget.highlighted ?? (widget.id != null && step?.target == widget.id);
     if (highlighted && !_highlighted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted ||
@@ -353,6 +360,7 @@ class _GuideDialogState extends State<_GuideDialog> {
     final step = widget.steps[_index];
     final last = _index == widget.steps.length - 1;
     final topics = widget.steps.map((step) => step.topic).toSet();
+    final theme = Theme.of(context);
     return AlertDialog(
       scrollable: true,
       title: Text(_welcome || _showIndex ? 'Guía de uso' : step.title),
@@ -369,10 +377,31 @@ class _GuideDialogState extends State<_GuideDialog> {
             else if (_showIndex) ...[
               for (final topic in topics) ...[
                 Padding(
-                  padding: const EdgeInsets.only(top: 10),
-                  child: Text(
-                    topic,
-                    style: Theme.of(context).textTheme.titleSmall,
+                  padding: EdgeInsets.only(
+                    top: topic == topics.first ? 0 : 20,
+                    bottom: 4,
+                  ),
+                  child: Material(
+                    color: theme.colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(8),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        child: Semantics(
+                          header: true,
+                          child: Text(
+                            topic,
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
                 for (final (index, item) in widget.steps.indexed)

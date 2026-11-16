@@ -5,6 +5,7 @@ import 'package:trainer_access/trainer_access.dart';
 import 'package:workout_editor_ui/workout_template_content.dart';
 
 import 'trainer_groups_repository.dart';
+import 'trainer_guide_steps.dart';
 import 'trainer_workout_repository.dart';
 
 Future<bool?> showTrainerWeekCopyDialog(
@@ -12,25 +13,34 @@ Future<bool?> showTrainerWeekCopyDialog(
   TrainerGroupsRepository repository,
   DateTime weekStart,
   int offsetDays,
-) => showDialog<bool>(
-  context: context,
-  barrierDismissible: false,
-  builder: (_) => _TrainerWeekCopyDialog(
-    repository: repository,
-    weekStart: weekStart,
-    offsetDays: offsetDays,
-  ),
-);
+) {
+  final guided = ProfessionalGuideHost.pointsTo(
+    context,
+    TrainerGuideTargets.copyWeek,
+  );
+  return showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => _TrainerWeekCopyDialog(
+      repository: repository,
+      weekStart: weekStart,
+      offsetDays: offsetDays,
+      guided: guided,
+    ),
+  );
+}
 
 class _TrainerWeekCopyDialog extends StatefulWidget {
   const _TrainerWeekCopyDialog({
     required this.repository,
     required this.weekStart,
     required this.offsetDays,
+    required this.guided,
   });
   final TrainerGroupsRepository repository;
   final DateTime weekStart;
   final int offsetDays;
+  final bool guided;
   @override
   State<_TrainerWeekCopyDialog> createState() => _TrainerWeekCopyDialogState();
 }
@@ -129,6 +139,11 @@ class _TrainerWeekCopyDialogState extends State<_TrainerWeekCopyDialog> {
   @override
   Widget build(BuildContext context) {
     final preview = _preview, receipt = _receipt;
+    final showConfirmation =
+        receipt == null &&
+        preview != null &&
+        preview.items.isNotEmpty &&
+        !_definitive;
     final names = {
       for (final item in preview?.items ?? <TrainerWeekCopyItem>[])
         item.clientId: item.clientName,
@@ -163,6 +178,13 @@ class _TrainerWeekCopyDialogState extends State<_TrainerWeekCopyDialog> {
                   '${names[client.key] ?? 'Alumno'}: ${client.value} ${client.value == 1 ? 'pauta añadida' : 'pautas añadidas'}.',
                 ),
             ] else if (preview != null) ...[
+              if (widget.guided &&
+                  showConfirmation &&
+                  _operationId == null &&
+                  !_busy)
+                const Text(
+                  'Comprueba los alumnos, entrenamientos y fechas. Si cuadran, confirma la copia abajo.',
+                ),
               Text(
                 '${preview.items.length} pautas para copiar · ${preview.excludedCount} excluidas por estado o vínculo.',
               ),
@@ -211,16 +233,16 @@ class _TrainerWeekCopyDialogState extends State<_TrainerWeekCopyDialog> {
               onPressed: _busy ? null : _load,
               child: const Text('Volver a revisar'),
             ),
-          if (receipt == null &&
-              preview != null &&
-              preview.items.isNotEmpty &&
-              !_definitive)
-            FilledButton(
-              onPressed: _busy ? null : _confirm,
-              child: Text(
-                _operationId == null
-                    ? 'Confirmar ${preview.items.length} pautas'
-                    : 'Reintentar misma copia',
+          if (showConfirmation)
+            ProfessionalGuideTarget(
+              highlighted: widget.guided && !_busy && _operationId == null,
+              child: FilledButton(
+                onPressed: _busy ? null : _confirm,
+                child: Text(
+                  _operationId == null
+                      ? 'Confirmar ${preview.items.length} pautas'
+                      : 'Reintentar misma copia',
+                ),
               ),
             ),
         ],

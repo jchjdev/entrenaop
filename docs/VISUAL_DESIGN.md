@@ -2294,6 +2294,10 @@ Los pasos con un botón fijo lo resaltan al llegar y lo desplazan a la vista.
 La guía conserva la interacción original del botón. Los pasos que requieren
 elegir un alumno, un programa o un elemento muestran las instrucciones de
 esa tarea sin seleccionar por el usuario.
+En «Copiar semana», el paso señala el campo de fecha y, al introducir un
+lunes válido, «Revisar copia de semana». En la revisión final se muestran las
+pautas y se señala la confirmación si hay entrenamientos que copiar.
+El índice distingue los temas con encabezados grandes y fondo propio.
 
 En Trainer, el icono de ayuda junto a «Actualizar pautas» explica qué sesiones
 se pueden actualizar.

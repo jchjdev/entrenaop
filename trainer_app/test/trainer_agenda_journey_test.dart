@@ -4,6 +4,7 @@ import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop_trainer/trainer_agenda_page.dart';
 import 'package:entrenaop_trainer/trainer_assignment_client_field.dart';
 import 'package:entrenaop_trainer/trainer_guide_steps.dart';
+import 'package:entrenaop_trainer/trainer_week_copy_dialog.dart';
 import 'package:entrenaop_trainer/trainer_workout_pages.dart';
 import 'package:entrenaop_trainer/trainer_workout_repository.dart';
 import 'package:entrenaop_trainer/trainer_agenda_session_panel.dart';
@@ -15,6 +16,7 @@ import 'package:trainer_access/trainer_access.dart';
 import '../../packages/trainer_access/test_support/fake_trainer_repository.dart';
 import '../../test/helpers/performance_visual_review.dart';
 import 'trainer_agenda_edit_test.dart' as agenda;
+import 'trainer_groups_flow_test.dart' show GroupsFixture;
 import 'trainer_workout_flow_test.dart' show WorkoutFixture, privateRecipe;
 
 class ClientFixture extends FakeTrainerRepository {
@@ -83,6 +85,7 @@ void main() {
   testWidgets('la guía señala y deja pulsar Copiar semana en Agenda', (
     t,
   ) async {
+    final groups = GroupsFixture();
     await mount(
       t,
       ProfessionalGuideHost(
@@ -103,10 +106,19 @@ void main() {
             children: [
               const ProfessionalGuideButton(),
               Expanded(
-                child: TrainerAgendaPage(
-                  repository: agenda.AgendaEditFixture(),
-                  now: DateTime(2026, 10, 21),
-                  onCopyWeek: (_, _) async {},
+                child: Builder(
+                  builder: (context) => TrainerAgendaPage(
+                    repository: agenda.AgendaEditFixture(),
+                    now: DateTime(2026, 10, 21),
+                    onCopyWeek: (week, offset) async {
+                      await showTrainerWeekCopyDialog(
+                        context,
+                        groups,
+                        week,
+                        offset,
+                      );
+                    },
+                  ),
                 ),
               ),
             ],
@@ -133,6 +145,35 @@ void main() {
     await t.tap(button);
     await t.pumpAndSettle();
     expect(find.text('Revisar copia de semana'), findsOneWidget);
+    Finder highlightOf(Finder control) => find.descendant(
+      of: find.ancestor(
+        of: control,
+        matching: find.byType(ProfessionalGuideTarget),
+      ),
+      matching: find.byKey(const ValueKey('professional-guide-highlight')),
+    );
+    final date = find.byKey(const ValueKey('agenda-date-input'));
+    final review = find.widgetWithText(FilledButton, 'Revisar copia de semana');
+    expect(highlightOf(date), findsOneWidget);
+    expect(highlightOf(review), findsNothing);
+    await t.enterText(date, '2026-10-28');
+    await t.pumpAndSettle();
+    expect(highlightOf(date), findsOneWidget);
+    await t.enterText(date, '2026-10-26');
+    await t.pumpAndSettle();
+    expect(highlightOf(date), findsNothing);
+    expect(highlightOf(review), findsOneWidget);
+    await t.tap(review);
+    await t.pump();
+    await t.pump(const Duration(milliseconds: 400));
+    expect(find.text('Receta fijada 0'), findsOneWidget);
+    expect(
+      highlightOf(find.widgetWithText(FilledButton, 'Confirmar 2 pautas')),
+      findsOneWidget,
+    );
+    expect(groups.copies, isEmpty);
+    await t.tap(find.text('Cerrar'));
+    await t.pumpAndSettle();
   });
 
   testWidgets(

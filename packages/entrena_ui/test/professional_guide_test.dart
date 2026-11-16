@@ -72,6 +72,14 @@ void main() {
       await tester.tap(find.text('Índice'));
       await tester.pumpAndSettle();
       expect(find.text('Agenda'), findsOneWidget);
+      expect(
+        tester.widget<Text>(find.text('Agenda')).style?.fontWeight,
+        FontWeight.w700,
+      );
+      expect(
+        tester.getSize(find.text('Agenda')).height,
+        greaterThan(tester.getSize(find.text('Pauta un entrenamiento')).height),
+      );
       await tester.tap(find.text('Pauta un entrenamiento'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('No volver a mostrar al entrar'));
