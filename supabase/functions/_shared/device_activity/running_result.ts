@@ -126,9 +126,13 @@ export function proposeRunningActivityMapping(
   const {laps} = activity;
   const mapping = proposeLapMapping(steps, laps, stepIndices);
   const tail = laps.at(-1), previous = laps.at(-2), lastStep = steps.at(-1);
+  // La vuelta posterior al aviso y al guardado puede durar algo más que el
+  // desfase de las marcas FIT. Su duración y la tolerancia de frontera son independientes.
+  const maxPostWorkoutLapSeconds = 3;
   if (!exactPrescription || !activity.prescriptionStepIndices || !tail || !previous ||
       lastStep?.measure !== 'seconds' || lastStep.value === null || tail.workoutStepIndex !== null ||
-      tail.elapsedSeconds > 2 || (tail.intensity !== null && tail.intensity !== previous.intensity)) return {mapping};
+      tail.elapsedSeconds > maxPostWorkoutLapSeconds ||
+      (tail.intensity !== null && tail.intensity !== previous.intensity)) return {mapping};
 
   // FIT registra fronteras en segundos. Solo se separa la última vuelta si
   // es contigua, cierra la grabación y el tramo previo agotó su temporizador.

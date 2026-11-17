@@ -133,13 +133,13 @@ test('cierra únicamente una coincidencia completa y conserva el mapa observado'
 });
 
 test('cierra el paso cronometrado completo sin imputarle una vuelta residual posterior',async()=>{
-  const f=fixture({tail:{seconds:1.6}});await f.service.process(job);
+  const f=fixture({tail:{seconds:2.578}});await f.service.process(job);
   const complete=f.actions.find(a=>a.action==='automatic.complete');
   assert.ok(complete);
   assert.deepEqual(complete.input.mapping,[{block_order:0,item_order:0,set_order:0,
     lap_indices:[0,1],recovery_lap_indices:[],skipped:false}]);
   const activity=f.actions.find(a=>a.action==='save')!.input.activity as ObservedRunningActivity;
-  assert.equal(activity.timerSeconds,121.6);
+  assert.equal(activity.timerSeconds,122.578);
   assert.equal(activity.laps.length,3);
   assert.equal(activity.perceivedExertion,4);
   assert.equal(activityReview({snapshot:source(),activity},[0],true).post_workout_lap,2);
@@ -147,7 +147,7 @@ test('cierra el paso cronometrado completo sin imputarle una vuelta residual pos
 });
 
 test('un tramo sin acabar o una vuelta sobrante larga, distante o contradictoria conserva revisión',async()=>{
-  for(const tail of [{seconds:1.6,workSeconds:119},{seconds:2.1},{seconds:1.6,index:1},
+  for(const tail of [{seconds:1.6,workSeconds:119},{seconds:3.001},{seconds:1.6,index:1},
     {seconds:1.6,gap:3},{seconds:1.6,missingIndex:true}]){
     const f=fixture({tail});await f.service.process(job);
     assert.equal(f.actions.some(a=>a.action==='automatic.complete'),false);

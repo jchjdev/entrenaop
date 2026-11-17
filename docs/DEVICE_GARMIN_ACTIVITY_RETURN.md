@@ -1,5 +1,26 @@
 # Retorno de carrera Garmin · INT-012 · 23/10/2026
 
+## Diez series y vuelta posterior al enfriamiento · 17/11/2026
+
+La receta recibida por el reloj y devuelta en FIT contiene las diez parejas de
+400 m y descanso pasivo de 45 s dentro de una repetición nativa. El archivo
+confirma los diez descansos ejecutados y el RPE 5. Javier vio el contador al
+acabar cada serie y dejó de verlo durante el descanso. El FIT acredita los
+pasos ejecutados y deja pendiente el contraste visual en el reloj.
+
+Tras los 600 s pautados de enfriamiento, el reloj dejó una vuelta final sin
+índice de 2,578 s. El límite de dos segundos dejaba el cierre en revisión.
+El límite de duración de esa vuelta se amplía a tres segundos. Se mantienen
+la tolerancia de frontera FIT de dos segundos, la coincidencia exacta de la
+receta, el mapa completo y la duración del último paso cronometrado.
+Se conserva la vuelta en el total de la actividad.
+
+En Dev, `garmin-activity-ingest` v25 y `garmin-activities` v26 sirven el código
+comprobado. La carrera existente se concilia después de un ensayo con ROLLBACK.
+Queda una ejecución completada con las diez parejas medidas, RPE 5 y 27 vueltas
+originales. Pasan 356 pruebas de servidor, tipos estrictos, `flutter analyze`,
+16 pruebas Flutter focales y los contratos SQL de cierre y esfuerzo con ROLLBACK.
+
 ## Vuelta residual después de un paso cronometrado · 09/11/2026
 
 En el rodaje real de 30 minutos, Garmin devuelve seis vueltas con el índice
