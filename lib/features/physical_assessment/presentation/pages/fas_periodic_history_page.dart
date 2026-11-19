@@ -1,6 +1,7 @@
 import 'package:entrenaop/features/physical_assessment/data/repositories/builtin_assessment_reference_repository.dart';
 import 'package:entrenaop/features/physical_assessment/data/repositories/fas_periodic_assessment_repository.dart';
 import 'package:entrenaop/features/physical_assessment/domain/catalogs/fas_periodic_2027_reference.dart';
+import 'package:entrenaop/features/physical_assessment/domain/services/fas_periodic_score_calculator.dart';
 import 'package:entrenaop/features/physical_assessment/domain/entities/physical_assessment.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -139,7 +140,9 @@ class FasAssessmentHistoryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final storedPoints =
         entry.marks.isNotEmpty && entry.marks.every((m) => m.points != null);
-    if (!storedPoints && entry.scoringVersion != reference?.scoringVersion) {
+    if (!storedPoints &&
+        (entry.scoringPolicy != null ||
+            entry.scoringVersion != reference?.scoringVersion)) {
       return Card(
         child: ExpansionTile(
           key: PageStorageKey('fas-assessment-${entry.id}'),
@@ -169,8 +172,9 @@ class FasAssessmentHistoryCard extends StatelessWidget {
                     category: category,
                     age: entry.age,
                     mark: mark.value,
+                    policy: FasPeriodicScoringPolicy.bestThresholdV1,
                   )!
-                  .points,
+                  .points!,
     };
     final total = scores.values.fold<int>(0, (sum, result) => sum + result);
     return Card(

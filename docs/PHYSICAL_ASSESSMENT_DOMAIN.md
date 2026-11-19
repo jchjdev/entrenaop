@@ -353,8 +353,8 @@ no como dos baremos inventados. La referencia
 tabla íntegra de **0 a 100 puntos** del anexo II de la Orden DEF/15/2026:
 marca, columnas H/M y tramos 17–25 a 60+ para las cuatro pruebas. Conserva
 milisegundos para tiempos y no copia los mínimos de ingreso de Tropa. El
-calculador puro `FasPeriodicScoreCalculator` aplica el mejor umbral alcanzado;
-entre dos filas no interpola ni redondea a favor. En agilidad elimina las
+calculador puro `FasPeriodicScoreCalculator` aplica la fila literal o la
+regla de intervalo indicada abajo. En agilidad elimina las
 centésimas y usa la décima inferior, como prescribe el anexo I. Conforme al
 artículo 10, el circuito no se exige desde el mismo día en que se cumplen 45
 años, aunque el último tramo visible de su tabla se titule 41–45. La vigencia
@@ -368,14 +368,10 @@ inferida mientras no exista corrección oficial.
 
 El 19/11/2026 se cotejaron las 306 marcas y las 4.152 puntuaciones del anexo
 II con el catálogo. La revisión publicada que selecciona desarrollo coincide
-con las cuatro tablas y los tramos de edad locales. Al aplicar el mejor umbral
-alcanzado, el cálculo difiere de 14 celdas literales en filas no monótonas del
-anexo (12 de carrera y 2 de agilidad). Por ejemplo, en mujeres de 60 años o
-más, 16:02 en carrera figura con 0 puntos y el cálculo devuelve 26. En mujeres
-de 41 a 44 años, 13,6 s en agilidad figura con 98 y el cálculo devuelve 100.
-El renombrado no modifica esta regla ni el baremo. Al aceptar más de tres
-decimales en agilidad, el redondeo inicial a milisegundos también puede cruzar
-una décima antes del truncado, por ejemplo con `15,2999`.
+con las cuatro tablas y los tramos de edad locales. La regla histórica de
+mejor umbral alcanzado discrepaba de 14 celdas literales de filas no monótonas
+(12 de carrera y 2 de agilidad). Ese cálculo se conserva para leer los
+intentos antiguos sin instantánea.
 
 La calculadora gratuita está separada del registro: no requiere una
 preparación activa, no guarda marcas automáticamente ni altera el historial al simular y está disponible
@@ -393,6 +389,33 @@ La herramienta se muestra como «Calculadora TGCF», con «Baremo 2027» debajo
 en Herramientas. En Evolución se accede a «Mis tests TGCF» y la pantalla de
 registros se titula «Historial TGCF». «Mejora FAS» identifica el programa de
 entrenamiento. Se conservan los identificadores, enlaces, baremos e historial.
+
+### Puntuación literal del TGCF
+
+La política `literal_rows_v2` usa la puntuación literal para una marca exacta.
+Entre dos marcas, compara solo las filas vecinas en la columna aplicable. Si
+la fila menos exigente puntúa más, el resultado es indeterminado y no se puede
+guardar ni presentar como aprobado o suspendido. Si ambas son coherentes, se
+usa la puntuación de la fila menos exigente. En el extremo favorable se usa
+la fila extrema alcanzada y por debajo de la peor marca tabulada se obtienen
+cero puntos. Se conservan los datos publicados sin corregir marcas por inferencia.
+
+Para mujeres de 60 años o más, la carrera de 16:02 da 0 puntos, 16:22 da 26
+y 16:10 es indeterminada. Para mujeres de 41 a 44 años, agilidad de 13,6 s
+da 98 puntos. Los decimales se descartan hasta la décima inferior sin
+redondear a favor, también al introducir más de tres decimales.
+
+Los objetivos se toman de filas exactas. En columnas no monótonas, un objetivo
+que cumple el mínimo no garantiza el aprobado de cualquier marca más exigente.
+El servidor guarda la política con la puntuación y el mínimo de cada prueba.
+Los intentos anteriores mantienen su instantánea o la lectura por su política
+histórica. Un cliente anterior puede seguir guardando cuando sus puntos
+coinciden con esta regla. Si discrepan, debe actualizarse.
+
+Verificación del 19/11/2026 en desarrollo: 4.152 celdas, 11.961 marcas
+entre filas y 128 objetivos contrastados en SQL. Las pruebas de guardado y
+autoría terminaron con `ROLLBACK`. Los 11 intentos previos y sus marcas
+conservaron sus huellas antes y después de la migración.
 
 ### Edad libre en la calculadora FAS
 

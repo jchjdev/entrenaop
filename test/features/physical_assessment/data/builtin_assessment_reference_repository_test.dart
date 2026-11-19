@@ -71,6 +71,38 @@ void main() {
         {'test_id': 'run_2000_m', 'value': 700000},
       ]);
       expect(requests.last['p_completed_at'], '2026-11-05T00:00:00.000Z');
+      expect(requests.last, isNot(contains('p_fas_scoring_policy')));
+    },
+  );
+
+  test(
+    'un nuevo TGCF declara al servidor la política que mostró la app',
+    () async {
+      final c = client((request) async {
+        expect(request.url.path, endsWith('/record_builtin_assessment'));
+        final body = jsonDecode(request.body) as Map<String, dynamic>;
+        expect(body['p_fas_scoring_policy'], 'literal_rows_v2');
+        expect(body['p_age'], 60);
+        expect(body['p_marks'], [
+          {'test_id': 'run_2000_m', 'value': 962000},
+        ]);
+        return http.Response(
+          '"tgcf-id"',
+          200,
+          headers: {'content-type': 'application/json'},
+          request: request,
+        );
+      });
+      final repo = SupabaseBuiltinAssessmentReferenceRepository(c);
+      expect(
+        await repo.record(
+          revisionId: 'rev',
+          category: 'women',
+          age: 60,
+          marks: {'run_2000_m': 962000},
+        ),
+        'tgcf-id',
+      );
     },
   );
 
@@ -227,7 +259,7 @@ void main() {
           age: 25,
           mark: 14,
         )!
-        .points;
+        .points!;
     expect(points(old), 20);
     expect(points(next), 21);
     expect(points(old), 20);

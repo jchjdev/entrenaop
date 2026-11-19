@@ -15,6 +15,25 @@ void main() {
     expect(parseRepetitions('0'), 0);
   });
 
+  test(
+    'la agilidad FAS descarta la precisión submilisegundo sin redondear',
+    () {
+      expect(parseFasAgilityMilliseconds('15,2999'), 15299);
+      expect(parseFasAgilityMilliseconds('15.30'), 15300);
+      expect(parseFasAgilityMilliseconds('15,'), 15000);
+      expect(parseFasAgilityMilliseconds(',5'), 500);
+      for (final invalid in [
+        'Infinity',
+        '0,0009',
+        '-15',
+        '1e3',
+        '9223372036854775',
+      ]) {
+        expect(parseFasAgilityMilliseconds(invalid), isNull, reason: invalid);
+      }
+    },
+  );
+
   test('acepta coma decimal en tiempos expresados en segundos', () {
     expect(parseSecondsToMilliseconds('15,4'), 15400);
   });

@@ -110,8 +110,28 @@ class _FasPeriodicAssessmentPageState extends State<FasPeriodicAssessmentPage> {
       marks[test.id] = switch (test.id) {
         'upper_body_push_ups_2_min' => parseRepetitions(text)!,
         'run_2000_m' => parseClockToMilliseconds(text)!,
+        'agility_speed_circuit' => parseFasAgilityMilliseconds(text)!,
         _ => parseSecondsToMilliseconds(text)!,
       };
+    }
+    if (marks.entries.any(
+      (mark) =>
+          reference
+              .scoreFor(
+                testId: mark.key,
+                category: _category,
+                age: age,
+                mark: mark.value,
+              )
+              ?.points ==
+          null,
+    )) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Hay una marca con puntuación indeterminada.'),
+        ),
+      );
+      return;
     }
     setState(() => _saving = true);
     try {
@@ -402,6 +422,10 @@ class _FasPeriodicAssessmentPageState extends State<FasPeriodicAssessmentPage> {
                                                 parseRepetitions(value ?? ''),
                                               'run_2000_m' =>
                                                 parseClockToMilliseconds(
+                                                  value ?? '',
+                                                ),
+                                              'agility_speed_circuit' =>
+                                                parseFasAgilityMilliseconds(
                                                   value ?? '',
                                                 ),
                                               _ => parseSecondsToMilliseconds(

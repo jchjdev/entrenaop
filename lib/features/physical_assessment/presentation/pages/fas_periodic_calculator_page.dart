@@ -223,7 +223,8 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
     if (_savingAssessment ||
         _referenceChanged ||
         _updatingReference ||
-        !_validAgeInput) {
+        !_validAgeInput ||
+        _results.values.any((result) => result.points == null)) {
       return;
     }
     _dismissKeyboard();
@@ -329,6 +330,9 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
       );
     } catch (error) {
       if (!mounted) return;
+      final indeterminate =
+          error is PostgrestException &&
+          error.details == 'fas_score_indeterminate';
       final changed =
           error is PostgrestException &&
           error.details == 'builtin_reference_changed';
@@ -338,6 +342,8 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
           content: Text(
             changed
                 ? 'El baremo ha cambiado. Actualízalo antes de guardar; tus marcas se conservan.'
+                : indeterminate
+                ? 'Hay una marca con puntuación indeterminada.'
                 : 'No se pudo guardar el test.',
           ),
         ),
@@ -417,11 +423,9 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
                             ),
                           ),
                           const SizedBox(height: 6),
-                          Text(
-                            reference.revisionId == null
-                                ? 'La suma es orientativa. La aptitud general exige alcanzar al menos 20 puntos en cada prueba aplicable. La tabla II.3 contiene una secuencia no ordenada que se conserva literalmente hasta que exista una corrección oficial.'
-                                : 'La suma es orientativa. La aptitud general exige alcanzar al menos 20 puntos en cada prueba aplicable. Se utiliza la revisión indicada, conservando su tabla y su criterio de redondeo.',
-                            style: const TextStyle(
+                          const Text(
+                            'La suma es orientativa. El mínimo general es de 20 puntos por prueba aplicable. Una marca exacta toma los puntos de su fila. Si las filas vecinas se contradicen, la puntuación entre ellas queda indeterminada.',
+                            style: TextStyle(
                               color: Colors.white70,
                               fontSize: 12,
                               height: 1.4,
@@ -452,7 +456,9 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
     final expectedTests = _calculatorTests
         .where((test) => _applies(reference, test.id, age))
         .length;
-    final isComplete = _results.length == expectedTests;
+    final canSave =
+        _results.length == expectedTests &&
+        _results.values.every((result) => result.points != null);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -620,7 +626,7 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
             Expanded(
               child: FilledButton(
                 onPressed:
-                    !isComplete ||
+                    !canSave ||
                         _savingAssessment ||
                         _referenceChanged ||
                         _updatingReference ||
@@ -683,6 +689,7 @@ class _MarkControl extends StatelessWidget {
     final divisions = limits == null
         ? null
         : ((limits.maximum - limits.minimum) / step).round();
+    final points = result?.points;
     return Card(
       margin: EdgeInsets.zero,
       child: Padding(
@@ -707,7 +714,10 @@ class _MarkControl extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  result == null ? '— pt' : '${result!.points} pt',
+                  points == null ? '— pt' : '$points pt',
+                  semanticsLabel: result != null && points == null
+                      ? 'Puntuación indeterminada'
+                      : null,
                   style: TextStyle(
                     color: result == null
                         ? Colors.white54
@@ -910,12 +920,14 @@ class _Results extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final indeterminate = results.values.any((result) => result.points == null);
     final complete = results.length == expectedTests;
     final meetsAll =
-        complete && results.values.every((result) => result.meetsMinimum);
+        complete &&
+        results.values.every((result) => result.meetsMinimum == true);
     final total = results.values.fold<int>(
       0,
-      (sum, result) => sum + result.points,
+      (sum, result) => sum + (result.points ?? 0),
     );
     return Card(
       key: const ValueKey('fas-score-summary'),
@@ -940,7 +952,7 @@ class _Results extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    results.isEmpty ? '—' : '$total puntos',
+                    results.isEmpty || indeterminate ? '—' : '$total puntos',
                     style: const TextStyle(
                       color: Color(0xFFFF8A50),
                       fontSize: 28,
@@ -955,7 +967,9 @@ class _Results extends StatelessWidget {
             SizedBox(
               width: 120,
               child: Text(
-                results.isEmpty
+                indeterminate
+                    ? 'Puntuación indeterminada'
+                    : results.isEmpty
                     ? 'Introduce una marca o mueve un control'
                     : !complete
                     ? '${results.length}/$expectedTests pruebas con marca'
@@ -964,7 +978,7 @@ class _Results extends StatelessWidget {
                     : 'Hay pruebas bajo 20 puntos',
                 textAlign: TextAlign.right,
                 style: TextStyle(
-                  color: complete
+                  color: complete || indeterminate
                       ? (meetsAll ? Colors.greenAccent : Colors.orangeAccent)
                       : Colors.white70,
                   fontWeight: FontWeight.w800,
@@ -989,7 +1003,7 @@ int? _parseMark(String testId, String value) => switch (testId) {
   'upper_body_push_ups_2_min' => parseRepetitions(value),
   'abdominal_plank' => parseWholeSecondsDuration(value),
   'run_2000_m' => parseClockToMilliseconds(value),
-  'agility_speed_circuit' => parseSecondsToMilliseconds(value),
+  'agility_speed_circuit' => parseFasAgilityMilliseconds(value),
   _ => null,
 };
 

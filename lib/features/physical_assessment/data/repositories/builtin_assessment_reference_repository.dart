@@ -140,6 +140,7 @@ class SupabaseBuiltinAssessmentReferenceRepository
           for (final entry in marks.entries)
             {'test_id': entry.key, 'value': entry.value},
         ],
+        if (age != null) 'p_fas_scoring_policy': 'literal_rows_v2',
         'p_completed_at': (completedAt ?? DateTime.now())
             .toUtc()
             .toIso8601String(),

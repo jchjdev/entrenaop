@@ -1,5 +1,11 @@
 # Registro de decisiones vigentes
 
+**Puntuación literal del TGCF · 19/11/2026.** Javier confirma que manda la
+fila exacta del BOE y que un intervalo contradictorio queda indeterminado.
+Los objetivos de Mínimos y Máximos se comprueban con esa misma regla. App y
+servidor la aplican a los nuevos resultados y preservan el cálculo guardado
+en el historial. [Criterio y límites](PHYSICAL_ASSESSMENT_DOMAIN.md#puntuación-literal-del-tgcf).
+
 **Nombre visible de la calculadora TGCF · 19/11/2026.** Javier confirma
 «Calculadora TGCF» en Inicio, Herramientas, Marcas y la propia pantalla.
 Herramientas muestra «Baremo 2027» debajo. Los registros personales se

@@ -23,6 +23,22 @@ int? parseClockToMilliseconds(String input) {
   return totalSeconds > 0 ? totalSeconds * 1000 : null;
 }
 
+int? parseFasAgilityMilliseconds(String input) {
+  final match = RegExp(r'^(\d*)(?:[.,](\d*))?$').firstMatch(input.trim());
+  if (match == null) return null;
+  final whole = match[1]!;
+  final seconds = whole.isEmpty ? 0 : int.tryParse(whole);
+  // Se descartan decimales submilisegundo antes de puntuar a la décima inferior.
+  final milliseconds = int.parse(
+    (match[2] ?? '').padRight(3, '0').substring(0, 3),
+  );
+  if (seconds == null || seconds > (9007199254740991 - milliseconds) ~/ 1000) {
+    return null;
+  }
+  final value = seconds * 1000 + milliseconds;
+  return value > 0 ? value : null;
+}
+
 int? parseWholeSecondsDuration(String input) {
   final trimmed = input.trim();
   if (trimmed.contains(':')) {

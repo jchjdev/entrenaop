@@ -8,6 +8,58 @@ import '../../../helpers/evolution_fixtures.dart';
 
 void main() {
   testWidgets(
+    'lee la puntuación guardada y conserva el cálculo sin instantánea',
+    (t) async {
+      final data = (await t.runAsync(evolutionFasData))!;
+      FasPeriodicAssessmentEntry entry(
+        String id, {
+        int? points,
+        String? policy,
+      }) => FasPeriodicAssessmentEntry(
+        id: id,
+        goalId: null,
+        scoringVersion: data.fasReference!.scoringVersion,
+        scoringPolicy: policy,
+        completedAt: DateTime(2026, 11, 19),
+        category: 'women',
+        age: 60,
+        isPreEffectiveReference: true,
+        marks: [
+          FasPeriodicAssessmentMark(
+            testId: 'run_2000_m',
+            testName: 'Carrera 2.000 m',
+            unit: 'milliseconds',
+            value: 962000,
+            threshold: 1006000,
+            meetsMinimum: points != 0,
+            points: points,
+          ),
+        ],
+      );
+      await t.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Column(
+              children: [
+                FasAssessmentHistoryCard(
+                  entry: entry('antiguo'),
+                  reference: data.fasReference,
+                ),
+                FasAssessmentHistoryCard(
+                  entry: entry('nuevo', points: 0, policy: 'literal_rows_v2'),
+                  reference: data.fasReference,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      expect(find.text('26 puntos'), findsOneWidget);
+      expect(find.text('0 puntos'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
     'FAS usa el baremo versionado existente y conserva tests al fallar el refresco',
     (t) async {
       final data = (await t.runAsync(evolutionFasData))!;

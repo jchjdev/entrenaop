@@ -33,8 +33,10 @@ Publicar crea nuevas referencias; nunca actualiza los mínimos de una versión
 usada ni modifica `physical_test_definitions` compartida. El comparador y la
 consulta histórica resuelven cada versión guardada, no la última publicación.
 Los nuevos registros FAS incorporan una instantánea del cálculo en servidor;
-los anteriores mantienen sus filas y semántica. No se inventa calificación
-normativa agregada ni se altera el redondeo del calculador existente.
+los anteriores mantienen sus filas y semántica. Desde el 19/11/2026, los
+nuevos guardados FAS anotan además la política de cálculo `literal_rows_v2`,
+independiente de la versión de la tabla. La simulación de ADMIN usa el mismo
+cálculo que el servidor. [Reglas y compatibilidad](PHYSICAL_ASSESSMENT_DOMAIN.md#puntuación-literal-del-tgcf).
 
 ## Preparaciones y compatibilidad
 

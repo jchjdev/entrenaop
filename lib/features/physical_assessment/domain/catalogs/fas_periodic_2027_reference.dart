@@ -153,6 +153,7 @@ class FasPeriodic2027Reference {
     required AssessmentCategory category,
     required int age,
     required int mark,
+    FasPeriodicScoringPolicy policy = FasPeriodicScoringPolicy.literalRowsV2,
   }) {
     final table = _tableFor(testId, age);
     if (table == null) return null;
@@ -171,6 +172,7 @@ class FasPeriodic2027Reference {
     final calculation = const FasPeriodicScoreCalculator().calculate(
       scale: scale,
       mark: mark,
+      policy: policy,
     );
     return PeriodicScoreResult(
       testId: testId,
@@ -179,7 +181,10 @@ class FasPeriodic2027Reference {
       scoredMark: calculation.scoredMark,
       points: calculation.points,
       unit: table.unit,
-      meetsMinimum: calculation.points >= minimumPointsPerTest,
+      meetsMinimum: switch (calculation.points) {
+        final int points => points >= minimumPointsPerTest,
+        null => null,
+      },
     );
   }
 
@@ -337,9 +342,9 @@ class PeriodicScoreResult {
   final String ageBand;
   final int rawMark;
   final int scoredMark;
-  final int points;
+  final int? points;
   final MarkUnit unit;
-  final bool meetsMinimum;
+  final bool? meetsMinimum;
 }
 
 class PeriodicPassMark {

@@ -477,6 +477,46 @@ void main() {
     },
   );
 
+  testWidgets(
+    'una fila exacta puntúa y un intervalo contradictorio impide guardar',
+    (tester) async {
+      final repository = _Repository();
+      await _showCalculator(
+        tester,
+        reference,
+        _BirthDateRepository(DateTime(1967, 1, 1)),
+        repository,
+      );
+      await tester.tap(find.text('M · mujeres'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Mínimos'));
+      await tester.pumpAndSettle();
+      final run = find.byKey(const ValueKey('fas-mark-run_2000_m'));
+      final save = find.widgetWithText(FilledButton, 'Guardar test');
+      expect(tester.widget<TextFormField>(run).controller!.text, '16:46');
+      expect(find.text('3/3 mínimos alcanzados'), findsOneWidget);
+
+      await tester.enterText(run, '1602');
+      await tester.pumpAndSettle();
+      expect(find.text('0 pt'), findsOneWidget);
+      expect(find.text('Hay pruebas bajo 20 puntos'), findsOneWidget);
+      expect(tester.widget<FilledButton>(save).onPressed, isNotNull);
+
+      await tester.enterText(run, '1610');
+      await tester.pumpAndSettle();
+      expect(find.text('— pt'), findsOneWidget);
+      expect(find.text('Puntuación indeterminada'), findsOneWidget);
+      expect(tester.widget<FilledButton>(save).onPressed, isNull);
+      expect(repository.saveCalls, 0);
+
+      await tester.tap(find.text('Máximos'));
+      await tester.pumpAndSettle();
+      expect(find.text('300 puntos'), findsOneWidget);
+      expect(tester.widget<FilledButton>(save).onPressed, isNotNull);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('no pide agilidad desde el día en que se cumplen 45 años', (
     tester,
   ) async {

@@ -11,10 +11,12 @@ class FasPeriodicAssessmentEntry {
     required this.isPreEffectiveReference,
     required this.marks,
     this.revisionId,
+    this.scoringPolicy,
   });
 
   final String id;
   final String? revisionId;
+  final String? scoringPolicy;
   final String? goalId;
   final String scoringVersion;
   final DateTime completedAt;
@@ -111,6 +113,9 @@ class FasPeriodicAssessmentRepository {
       return FasPeriodicAssessmentEntry(
         id: item.key,
         revisionId: validSnapshot ? snapshot['revision_id'] as String : null,
+        scoringPolicy: snapshot is Map && snapshot['scoring_policy'] is String
+            ? snapshot['scoring_policy'] as String
+            : null,
         goalId: header['preparation_goal_id'] as String?,
         scoringVersion: header['scoring_version'] as String,
         completedAt: DateTime.parse(header['completed_at'] as String).toLocal(),

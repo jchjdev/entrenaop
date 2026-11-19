@@ -253,11 +253,11 @@ class _AdminBuiltinAssessmentPreviewState
             if (_error != null) Text(_error!),
             if (_result != null) ...[
               const SizedBox(height: 16),
-              Text(
-                _result!['meets_all_minimums'] == true
-                    ? 'Cumple todos los mínimos de esta versión.'
-                    : 'No cumple todos los mínimos de esta versión.',
-              ),
+              Text(switch (_result!['meets_all_minimums']) {
+                true => 'Cumple todos los mínimos de esta versión.',
+                false => 'No cumple todos los mínimos de esta versión.',
+                _ => 'Puntuación indeterminada.',
+              }),
               if (widget.revision.isFas)
                 const Text(
                   'Se muestran puntos por prueba, sin inventar una puntuación total.',
@@ -276,8 +276,11 @@ class _AdminBuiltinAssessmentPreviewState
         .cast<Map>()
         .where((item) => item['test_id'] == row['test_id'])
         .firstOrNull;
-    String outcome(Map item) =>
-        '${item['meets_minimum'] == true ? 'Cumple mínimo' : 'No cumple mínimo'}${item['points'] == null ? '' : ' · ${item['points']} puntos'}';
+    String outcome(Map item) {
+      if (item['meets_minimum'] == null) return 'Puntuación indeterminada';
+      return '${item['meets_minimum'] == true ? 'Cumple mínimo' : 'No cumple mínimo'}${item['points'] == null ? '' : ' · ${item['points']} puntos'}';
+    }
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
