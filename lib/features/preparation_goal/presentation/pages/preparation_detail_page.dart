@@ -245,7 +245,7 @@ class _Content extends StatelessWidget {
                         ),
                         title: const Text('Marcas para Mejora FAS'),
                         subtitle: const Text(
-                          'Consulta tus tests FAS guardados en el perfil y elige cuál usar en esta preparación.',
+                          'Consulta tus tests TGCF guardados en el perfil y elige cuál usar en esta preparación.',
                         ),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () => context.push(

@@ -238,7 +238,7 @@ class _FasPeriodicAssessmentPageState extends State<FasPeriodicAssessmentPage> {
                       child: Padding(
                         padding: EdgeInsets.all(14),
                         child: Text(
-                          'Los tests FAS guardados en tu perfil aparecen aquí. Puedes registrar uno nuevo o elegir expresamente uno reciente para esta preparación; las marcas antiguas quedan solo como historial.',
+                          'Los tests TGCF guardados en tu perfil aparecen aquí. Puedes registrar uno nuevo o elegir expresamente uno reciente para esta preparación; las marcas antiguas quedan solo como historial.',
                         ),
                       ),
                     ),

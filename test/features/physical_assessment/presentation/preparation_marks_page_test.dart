@@ -15,7 +15,7 @@ import '../../../helpers/evolution_fixtures.dart';
 
 void main() {
   testWidgets(
-    'la calculadora PAEF/PAFAS abre y vuelve a las marcas guardadas sin recalcularlas',
+    'la calculadora TGCF abre y vuelve a las marcas guardadas sin recalcularlas',
     (t) async {
       var reads = 0;
       final data = await t.runAsync(() => evolutionFasData());
@@ -43,8 +43,8 @@ void main() {
         MaterialApp.router(theme: EntrenaTheme.dark, routerConfig: router),
       );
       await t.pumpAndSettle();
-      await t.ensureVisible(find.text('Calculadora PAEF / PAFAS'));
-      await t.tap(find.text('Calculadora PAEF / PAFAS'));
+      await t.ensureVisible(find.text('Calculadora TGCF'));
+      await t.tap(find.text('Calculadora TGCF'));
       await t.pumpAndSettle();
       expect(find.text('Calculadora independiente'), findsOneWidget);
       router.pop();

@@ -283,7 +283,7 @@ void main() {
           250,
           scrollable: find.byType(Scrollable).first,
         );
-        expect(find.text('PAEF / PAFAS'), findsOneWidget);
+        expect(find.text('Calculadora TGCF'), findsOneWidget);
         expect(find.text('Herramientas'), findsOneWidget);
         expect(find.text('Biblioteca de entrenamientos'), findsNothing);
         expect(find.text('Ver todas'), findsNothing);

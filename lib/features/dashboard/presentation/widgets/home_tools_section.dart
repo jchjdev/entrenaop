@@ -28,8 +28,8 @@ class HomeToolsSection extends StatelessWidget {
             ),
             const _ToolCard(
               icon: Icons.calculate_outlined,
-              title: 'PAEF / PAFAS',
-              description: 'Consulta de puntos · gratis',
+              title: 'Calculadora TGCF',
+              description: 'Baremo 2027',
               route: '/assessment/fas-calculator',
             ),
           ];

@@ -1,5 +1,11 @@
 # Registro de decisiones vigentes
 
+**Nombre visible de la calculadora TGCF · 19/11/2026.** Javier confirma
+«Calculadora TGCF» en Inicio, Herramientas, Marcas y la propia pantalla.
+Herramientas muestra «Baremo 2027» debajo. Los registros personales se
+identifican como tests TGCF y el programa conserva el nombre «Mejora FAS».
+[Alcance](PHYSICAL_ASSESSMENT_DOMAIN.md#nombre-visible-de-la-calculadora-tgcf).
+
 **Guía de uso en Trainer y ADMIN · 16/11/2026.** Los dos paneles ofrecen una
 guía breve con accesos directos a sus pantallas. Está disponible en el lateral
 y en Mi cuenta. Se puede posponer u ocultar por cuenta y panel en el navegador.

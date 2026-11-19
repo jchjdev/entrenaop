@@ -366,6 +366,17 @@ anómala después de 15:14 (`16:22` a `16:54`, seguida de `16:02`). El catálogo
 conserva literalmente esas filas y no las sustituye por una progresión
 inferida mientras no exista corrección oficial.
 
+El 19/11/2026 se cotejaron las 306 marcas y las 4.152 puntuaciones del anexo
+II con el catálogo. La revisión publicada que selecciona desarrollo coincide
+con las cuatro tablas y los tramos de edad locales. Al aplicar el mejor umbral
+alcanzado, el cálculo difiere de 14 celdas literales en filas no monótonas del
+anexo (12 de carrera y 2 de agilidad). Por ejemplo, en mujeres de 60 años o
+más, 16:02 en carrera figura con 0 puntos y el cálculo devuelve 26. En mujeres
+de 41 a 44 años, 13,6 s en agilidad figura con 98 y el cálculo devuelve 100.
+El renombrado no modifica esta regla ni el baremo. Al aceptar más de tres
+decimales en agilidad, el redondeo inicial a milisegundos también puede cruzar
+una décima antes del truncado, por ejemplo con `15,2999`.
+
 La calculadora gratuita está separada del registro: no requiere una
 preparación activa, no guarda marcas automáticamente ni altera el historial al simular y está disponible
 en los accesos rápidos de Inicio. Muestra puntos por prueba, el cumplimiento
@@ -375,6 +386,13 @@ muestra además una suma matemática grande y claramente rotulada como
 orientativa; la orden no define esa suma como resultado oficial. Antes de 2027
 etiqueta el resultado como referencia futura y nunca lo presenta como
 calificación oficial.
+
+### Nombre visible de la calculadora TGCF
+
+La herramienta se muestra como «Calculadora TGCF», con «Baremo 2027» debajo
+en Herramientas. En Evolución se accede a «Mis tests TGCF» y la pantalla de
+registros se titula «Historial TGCF». «Mejora FAS» identifica el programa de
+entrenamiento. Se conservan los identificadores, enlaces, baremos e historial.
 
 ### Edad libre en la calculadora FAS
 

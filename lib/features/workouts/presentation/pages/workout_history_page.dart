@@ -162,7 +162,7 @@ class _HistoryContent extends StatelessWidget {
                   const SizedBox(height: 8),
                   _DestinationCard(
                     icon: Icons.military_tech_outlined,
-                    title: 'Pruebas FAS personales',
+                    title: 'Mis tests TGCF',
                     subtitle: 'Tus tests guardados, aunque no pertenezcan a ninguna preparación.',
                     onTap: () => context.push('/assessment/fas-history'),
                   ),

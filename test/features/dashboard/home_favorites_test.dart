@@ -81,7 +81,7 @@ void main() {
         'Mi semana',
         'Marcas y pruebas',
         'Ritmos de carrera',
-        'PAEF / PAFAS',
+        'Calculadora TGCF',
         'Biblioteca',
         'Crear ejercicio',
       ]) {

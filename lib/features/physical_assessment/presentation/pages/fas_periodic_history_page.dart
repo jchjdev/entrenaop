@@ -61,7 +61,7 @@ class _FasPeriodicHistoryPageState extends State<FasPeriodicHistoryPage> {
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      title: const Text('Historial de tests FAS'),
+      title: const Text('Historial TGCF'),
     ),
     body: FutureBuilder<_HistoryData>(
       future: _data,

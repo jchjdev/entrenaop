@@ -361,7 +361,7 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
   );
 
   Widget _buildPage(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Calculadora FAS 2027')),
+    appBar: AppBar(title: const Text('Calculadora TGCF')),
     body: FutureBuilder<FasPeriodic2027Reference>(
       future: _reference,
       builder: (context, referenceSnapshot) {

@@ -156,7 +156,7 @@ class _PreparationMarksPageState extends State<PreparationMarksPage> {
                                     '/assessment/fas-calculator',
                                   ),
                                   icon: const Icon(Icons.calculate_outlined),
-                                  label: const Text('Calculadora PAEF / PAFAS'),
+                                  label: const Text('Calculadora TGCF'),
                                 ),
                               if (data.running.isNotEmpty)
                                 OutlinedButton.icon(

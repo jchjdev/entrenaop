@@ -40,15 +40,15 @@ void main() {
           MaterialApp.router(theme: EntrenaTheme.dark, routerConfig: router),
         );
         expect(find.text('Ritmos de carrera'), findsOneWidget);
-        expect(find.text('PAEF / PAFAS'), findsOneWidget);
-        expect(find.text('Consulta de puntos · gratis'), findsOneWidget);
+        expect(find.text('Calculadora TGCF'), findsOneWidget);
+        expect(find.text('Baremo 2027'), findsOneWidget);
         expect(tester.takeException(), isNull);
         await tester.tap(find.text('Ritmos de carrera'));
         await tester.pumpAndSettle();
         expect(find.text('Destino ritmos'), findsOneWidget);
         router.pop();
         await tester.pumpAndSettle();
-        await tester.tap(find.text('PAEF / PAFAS'));
+        await tester.tap(find.text('Calculadora TGCF'));
         await tester.pumpAndSettle();
         expect(find.text('Destino calculadora'), findsOneWidget);
       },
