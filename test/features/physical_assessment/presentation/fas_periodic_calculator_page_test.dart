@@ -55,8 +55,12 @@ void main() {
   testWidgets('un error del perfil permite calcular sin guardar ni editarlo', (
     tester,
   ) async {
+    var reads = 0;
     final profile = _BirthDateRepository(DateTime(2001, 1, 1))
-      ..loader = () => Future.error(StateError('Sin conexión'));
+      ..loader = () async {
+        reads++;
+        throw StateError('Sin conexión');
+      };
     await tester.pumpWidget(
       MaterialApp(
         home: FasPeriodicCalculatorPage(
@@ -67,6 +71,9 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    final age = find.byKey(const ValueKey('fas-calculation-age'));
+    expect(tester.widget<TextField>(age).controller!.text, '25');
+    expect(reads, 2);
     expect(find.byKey(const ValueKey('fas-mark-run_2000_m')), findsOneWidget);
     await tester.enterText(
       find.byKey(const ValueKey('fas-mark-upper_body_push_ups_2_min')),
@@ -79,6 +86,39 @@ void main() {
   });
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(() async => reference = await FasPeriodic2027Reference.load());
+
+  testWidgets('recupera la edad del perfil tras un fallo de lectura', (
+    tester,
+  ) async {
+    var reads = 0;
+    final profile = _BirthDateRepository(DateTime(1975, 3, 4));
+    profile.loader = () async {
+      if (++reads == 1) throw TimeoutException('Lectura del perfil');
+      return profile.value;
+    };
+    final repository = _Repository();
+    await _showCalculator(tester, reference, profile, repository);
+
+    final age = find.byKey(const ValueKey('fas-calculation-age'));
+    final slider = find.byKey(const ValueKey('fas-age-slider'));
+    expect(reads, 2);
+    expect(tester.widget<TextField>(age).controller!.text, '51');
+    expect(tester.widget<Slider>(slider).value, 51);
+    expect(
+      find.byKey(const ValueKey('fas-mark-agility_speed_circuit')),
+      findsNothing,
+    );
+
+    await tester.enterText(age, '35');
+    await tester.pump();
+    expect(tester.widget<Slider>(slider).value, 35);
+    expect(
+      find.byKey(const ValueKey('fas-mark-agility_speed_circuit')),
+      findsOneWidget,
+    );
+    expect(profile.saveCalls, 0);
+    expect(repository.saveCalls, 0);
+  });
 
   testWidgets('calcula sin fecha de nacimiento y sin escribir datos', (
     tester,

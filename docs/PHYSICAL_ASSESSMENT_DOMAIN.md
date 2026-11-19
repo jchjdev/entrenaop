@@ -420,9 +420,11 @@ conservaron sus huellas antes y después de la migración.
 ### Edad libre en la calculadora FAS
 
 La calculadora permite escribir la edad o ajustarla con un deslizador sin
-modificar el perfil. Propone la edad del perfil cuando está disponible, pero
-funciona también sin fecha de nacimiento o si su lectura falla, con 25 años
-como punto inicial editable. Una respuesta tardía no sustituye la edad elegida.
+modificar el perfil. Propone la edad del perfil en la fecha del test. Si falla
+la primera lectura de la fecha de nacimiento, reintenta una vez mientras el
+usuario no haya editado la edad. Si falta la fecha o ambas lecturas fallan, la
+calculadora sigue disponible con 25 años como punto inicial editable. Una
+respuesta tardía no sustituye la edad elegida.
 Las marcas se conservan al cambiar de tramo, incluida la agilidad al cruzar los
 45 años. Se mantiene el diseño de tarjetas y resumen, los formatos móviles y
 la lectura de baremos versionados.

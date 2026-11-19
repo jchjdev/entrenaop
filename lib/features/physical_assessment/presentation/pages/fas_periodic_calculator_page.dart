@@ -79,7 +79,10 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
 
   Future<void> _loadProfileAge() async {
     try {
-      final birthDate = await _loadBirthDate();
+      final birthDate = await _loadBirthDate().onError<Object>((_, _) {
+        if (!mounted || _ageEdited) return null;
+        return _loadBirthDate();
+      });
       if (!mounted) return;
       _profileBirthDate = birthDate;
       if (!_ageEdited && birthDate != null) {
