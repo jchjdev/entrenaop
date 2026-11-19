@@ -74,7 +74,7 @@ test('un bucle FIT conserva la misma referencia que los pasos expandidos anterio
 const job:ActivityJob={id:'job',owner:'owner',generation:1,lease:'lease',callback:'callback',metadata:{},tokens:'tokens',
   providerUserId:'provider',accessExpiresAt:'2026-11-02T00:00:00Z',refreshExpiresAt:'2026-11-03T00:00:00Z'};
 const grant:AccessGrant={accessToken:'access',refreshToken:'refresh',expiresInSeconds:3600,refreshExpiresInSeconds:86400,scope:''};
-function fixture(options:{duplicate?:boolean;futureDuplicate?:boolean;stale?:boolean;extra?:boolean;failComplete?:boolean;stationary?:boolean;shortened?:boolean;
+function fixture(options:{duplicate?:boolean;futureDuplicate?:boolean;unmatchedCloser?:boolean;stale?:boolean;extra?:boolean;failComplete?:boolean;stationary?:boolean;shortened?:boolean;
   repeated?:boolean;loopIndices?:number[];missingLoopLap?:boolean;wrongLoopIntensity?:boolean;invalidContext?:boolean;
   tail?:{seconds:number;workSeconds?:number;index?:number;gap?:number;missingIndex?:boolean}}={}){
   const actions:{action:string;input:Record<string,unknown>}[]=[];
@@ -86,6 +86,7 @@ function fixture(options:{duplicate?:boolean;futureDuplicate?:boolean;stale?:boo
   if(options.stationary){activity.distanceMeters=0;activity.laps=activity.laps.map(lap=>({...lap,distanceMeters:0}));}
   const snapshot=source();
   if(options.futureDuplicate)snapshot.date='2026-10-28';
+  if(options.unmatchedCloser)snapshot.date='2026-11-02';
   if(options.repeated){
     const repeated=repeatedRunning();
     Object.assign(snapshot,repeated.snapshot);Object.assign(activity,repeated.activity);
@@ -115,6 +116,12 @@ function fixture(options:{duplicate?:boolean;futureDuplicate?:boolean;stale?:boo
   if(options.duplicate)candidates.push({...candidates[0],scheduled_id:'two',current:false});
   if(options.futureDuplicate)candidates.push({...candidates[0],scheduled_id:'tomorrow',
     snapshot:{...snapshot,date:'2026-11-02'},current:true});
+  if(options.unmatchedCloser){
+    const other=structuredClone(snapshot);other.date='2026-11-01';
+    other.blocks[0].items[0].sets[0].target_duration_seconds=121;
+    candidates.push({...candidates[0],scheduled_id:'different_recipe',snapshot:other});
+    activity.prescriptionReference=deliveredGarminPrescriptionReference(snapshot)!;
+  }
   const service=new ActivityReturnService({command:async(action,_owner,_session,input)=>{
     actions.push({action,input});
     if(action==='save')return {activity_id:'activity',activity_revision:'observed'};
@@ -123,7 +130,7 @@ function fixture(options:{duplicate?:boolean;futureDuplicate?:boolean;stale?:boo
     return {};
   }},{refresh:async()=>grant,userId:async()=> 'provider',permissions:async()=>({canReadActivities:true,canSendWorkouts:true})},
   {open:async<T>(value:string)=> (value==='tokens'?grant:'https://apis.garmin.com/wellness-api/rest/activityFile?id=1') as T,seal:async()=> 'rotated'},
-  {read:async()=>activity,reference:()=> options.repeated?deliveredGarminPrescriptionReference(snapshot):'reference',
+  {read:async()=>activity,reference:value=> options.repeated||options.unmatchedCloser?deliveredGarminPrescriptionReference(value):'reference',
     lapStepIndices:deliveredGarminLapStepIndices},()=>Date.parse('2026-11-01T12:00:00Z'));
   return {service,actions};
 }
@@ -248,12 +255,25 @@ test('otra cita idéntica, versión retirada o intervalos sobrantes exigen revis
   }
 });
 
-test('una receta igual para mañana impide completar silenciosamente la cita atrasada',async()=>{
+test('entre una receta igual atrasada y la de mañana elige la más próxima a la realización',async()=>{
   const f=fixture({futureDuplicate:true});await f.service.process(job);
-  assert.equal(f.actions.some(a=>a.action==='automatic.complete'),false);
-  assert.equal(f.actions.find(a=>a.action==='automatic.review')?.input.code,'ambiguous_prescription');
+  assert.equal(f.actions.find(a=>a.action==='automatic.complete')?.input.scheduled_id,'tomorrow');
+  assert.equal(f.actions.some(a=>a.action==='automatic.review'),false);
   assert.equal(f.actions.filter(a=>a.action==='save').length,1);
   assert.equal(f.actions.at(-1)?.action,'release');
+});
+
+test('un conflicto al cerrar la cita más cercana no prueba otra pauta más lejana',async()=>{
+  const f=fixture({futureDuplicate:true,failComplete:true});await f.service.process(job);
+  const attempts=f.actions.filter(a=>a.action==='automatic.complete');
+  assert.equal(attempts.length,1);assert.equal(attempts[0].input.scheduled_id,'tomorrow');
+  assert.equal(f.actions.find(a=>a.action==='automatic.review')?.input.code,'review_required');
+});
+
+test('una pauta más cercana con el mismo nombre pero distinto contenido no gana la asociación',async()=>{
+  const f=fixture({unmatchedCloser:true});await f.service.process(job);
+  assert.equal(f.actions.find(a=>a.action==='automatic.complete')?.input.scheduled_id,'one');
+  assert.equal(f.actions.some(a=>a.action==='automatic.review'),false);
 });
 
 test('un cierre fallido no invalida la importación ni vuelve a consumir el FIT',async()=>{

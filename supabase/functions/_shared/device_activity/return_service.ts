@@ -85,10 +85,9 @@ export class ActivityReturnService {
       await command('automatic.review',{code:'review_required'});return;
     }
     const matched=candidates.filter(c=>this.files.reference!(c.snapshot)===activity.prescriptionReference);
-    const schedules=new Set(matched.map(c=>c.scheduled_id));
-    if(schedules.size!==1){await command('automatic.review',{code:schedules.size?'ambiguous_prescription':'prescription_not_identified'});return;}
-    const current=matched.find(c=>c.current===true);
-    if(!current){await command('automatic.review',{code:'stale_prescription'});return;}
+    const selected=selectClosestPrescription(matched,activity);
+    if(!selected.candidate){await command('automatic.review',{code:selected.code});return;}
+    const current=selected.candidate;
     const linked={scheduled_id:current.scheduled_id,delivery_revision:current.revision};
     // Conservar una grabación sin desplazamiento, sin completar por sus
     // tiempos una pauta de carrera que el reloj no acredita haber realizado.
@@ -118,6 +117,44 @@ export class ActivityReturnService {
       mapping:rows.map(r=>({block_order:r.block_order,item_order:r.item_order,set_order:r.set_order,
         lap_indices:r.lap_indices,recovery_lap_indices:r.recovery_lap_indices??[],skipped:false}))});
   }
+}
+
+/** Desempata recetas ya identificadas; la fecha no sustituye su identidad FIT. */
+export function selectClosestPrescription(matched:readonly Json[],activity:Pick<ObservedActivity,'startedAt'|'offsetSeconds'>):
+  {candidate:Json;code:null}|{candidate:null;code:string}{
+  const blocked=(code:string)=>({candidate:null,code});
+  if(!matched.length)return blocked('prescription_not_identified');
+  const offset=activity.offsetSeconds,started=Date.parse(activity.startedAt);
+  if(offset===null||!Number.isInteger(offset)||Math.abs(offset)>50400||offset%60!==0||!Number.isFinite(started)){
+    return blocked('review_required');
+  }
+  // Días civiles en el offset medido por el reloj, nunca en el día de ingesta.
+  const localDay=Math.floor((started+offset*1000)/86400000);
+  const groups=new Map<string,{candidate:Json;distance:number}[]>();
+  for(const candidate of matched){
+    const snapshot=candidate.snapshot as Json|null,day=snapshot?.date;
+    if(typeof candidate.scheduled_id!=='string'||!candidate.scheduled_id||typeof candidate.current!=='boolean'
+      ||typeof day!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(day))return blocked('review_required');
+    const stamp=Date.parse(day+'T00:00:00.000Z');
+    if(!Number.isFinite(stamp)||new Date(stamp).toISOString().slice(0,10)!==day)return blocked('review_required');
+    const delta=stamp/86400000-localDay;
+    if(delta< -7||delta>1)return blocked('review_required');
+    const group=groups.get(candidate.scheduled_id)??[];
+    group.push({candidate,distance:Math.abs(delta)});groups.set(candidate.scheduled_id,group);
+  }
+  let nearest:{candidate:Json;distance:number}[][]=[],minimum=Infinity;
+  for(const versions of groups.values()){
+    const current=versions.filter(v=>v.candidate.current===true);
+    if(current.length>1)return blocked('review_required');
+    // Una reprogramación usa su fecha vigente. Una versión solo retirada sigue
+    // participando como conflicto: no habilita otra cita más lejana por descarte.
+    const distance=Math.min(...(current.length?current:versions).map(v=>v.distance));
+    if(distance<minimum){minimum=distance;nearest=[versions];}
+    else if(distance===minimum)nearest.push(versions);
+  }
+  if(nearest.length!==1)return blocked('ambiguous_prescription');
+  const current=nearest[0].find(v=>v.candidate.current===true)?.candidate;
+  return current?{candidate:current,code:null}:blocked('stale_prescription');
 }
 
 export function activityReview(source: Json, lapStepIndices?: readonly number[], exactPrescription=false): Json {

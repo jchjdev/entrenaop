@@ -9,9 +9,18 @@ el día anterior hasta siete días después de la fecha prevista, calculado con
 el día local de realización. Se conservan ambas fechas.
 
 La consulta automática incluye versiones actuales y retiradas del día siguiente.
-Dos citas con el mismo contenido exportable siguen siendo ambiguas: no se elige
-la más cercana por fecha. Una pauta adelantada inequívoca puede completarse;
-si comparte receta con otra, se conserva la actividad para revisión manual.
+Javier corrige el criterio inicial de mantener en revisión todas las recetas
+iguales: entre citas cuyo contenido exportable coincide exactamente se elige la
+fecha prevista más cercana al día local de realización, incluso con llegada
+tardía. Un empate entre citas mantiene revisión. La cercanía no sustituye el
+contraste nativo de la receta, las vueltas ni las comprobaciones SQL de cierre.
+
+Las versiones de una misma cita se agrupan; si coincide la vigente, se usa su
+fecha. Una coincidencia solo retirada sigue siendo candidata a conflicto y,
+si gana, queda en revisión. Un cierre rechazado por cambio, cancelación o una
+ejecución previa tampoco prueba otra pauta más lejana. La elección ocurre en
+el trabajador y conserva el contrato SQL, el margen y los recibos existentes;
+no reasocia ejecuciones ya confirmadas.
 
 La migración `20261119114534` amplía la ventana sin cambiar permisos, leases,
 referencias, revisión de fuente ni barreras de reloj futuro. Las regresiones
@@ -26,12 +35,19 @@ recibido conserva una auditoría de la confirmación anterior. No se crea otra
 ejecución ni se modifica la observación FIT.
 
 Aplicada y comprobada en Dev `20261119114534`; los siete contratos SQL pasan
-con ROLLBACK. Pasan 357 pruebas de servidor, `flutter analyze` y 1894 pruebas
-Flutter con una omitida. Una prueba de cifrado sustituía un sufijo aleatorio
-por un valor que podía coincidir: ahora altera siempre los bytes y conserva
+con ROLLBACK. La ampliación del margen pasó 1894 pruebas Flutter con una omitida.
+El desempate por proximidad pasa 371 pruebas de servidor, tipos estrictos,
+`flutter analyze` y 16 pruebas focales Flutter. Una prueba de cifrado sustituía
+un sufijo aleatorio por un valor que podía coincidir: ahora altera siempre los bytes y conserva
 la exigencia de rechazo, sin cambiar el cifrado de la aplicación.
 La app queda en `1.24.1+53` por el texto de ayuda de la ventana; la corrección
 servidora ya funciona con el cliente instalado y no requiere actualizarlo.
+
+Publicado el desempate solo en Dev: `garmin-activity-ingest` v26 y
+`garmin-activities` v27 activos. Se cotejan los 23 archivos servidos y el rechazo
+de solicitudes sin autorización. El ensayo de solo lectura sobre la recepción
+indicada elige la pauta del día siguiente frente a la de cuatro días antes,
+manteniendo las siete vueltas y el RPE. No requiere otra migración ni binario.
 
 ## Diez series y vuelta posterior al enfriamiento · 17/11/2026
 
@@ -665,12 +681,14 @@ trabajador tanto al terminar como ante errores.
 El adaptador normaliza el contenido exportable de los pasos nativos: orden,
 tipo, terminación, objetivo, variante conocida y peso. Convierte explícitamente
 las unidades FIT/API y no usa nombre o fecha como identidad. El dominio compara
-esa referencia con versiones actuales y anteriores enviadas. Dos citas con la
-misma pauta, una versión retirada o datos insuficientes quedan para revisión.
+esa referencia con versiones actuales y anteriores enviadas. Desde el 19/11,
+entre citas con la misma pauta se elige la fecha más cercana al día local
+realizado. Los empates, una versión retirada ganadora o datos insuficientes
+quedan para revisión.
 Los ejercicios sin equivalencia verificada y los conjuntos sin repeticiones o
 peso requeridos tampoco se completan automáticamente.
 
-Una coincidencia única solo se cierra si la cita, los permisos y la versión
+La coincidencia elegida solo se cierra si la cita, los permisos y la versión
 siguen vigentes y todas sus filas tienen evidencia nativa, sin intervalos activos
 sobrantes ni repartos estimados. Se admite realizarla desde el día anterior
 hasta siete días después, según el día local observado. Se reutilizan inicio,

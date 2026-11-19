@@ -3005,9 +3005,9 @@ real de realización, no la llegada de la sincronización, y se conserva revisi�
 ante candidatos dudosos. El margen ya se aplica al cierre automático y a la
 confirmación manual; fuera de él se conserva la actividad sin completar la pauta. Apple
 exige la referencia WorkoutKit y todas las fases medidas; Garmin contrasta el
-contenido exportable del FIT con las versiones enviadas. Dos citas iguales,
-referencias insuficientes o versiones retiradas conservan revisión. No se
-identifica una cita por nombre o fecha.
+contenido exportable del FIT con las versiones enviadas. Referencias insuficientes
+o versiones retiradas conservan revisión. El desempate entre citas iguales se
+actualiza el 19/11 según el criterio descrito a continuación.
 
 ## Pautas realizadas un día antes · 19/11/2026
 
@@ -3018,10 +3018,17 @@ automático y a la asociación manual de Garmin y Apple.
 
 La búsqueda Garmin incluye las versiones actuales y retiradas del día siguiente:
 excluirlas podía hacer parecer inequívoca una receta igual pendiente de días
-anteriores. Si dos citas comparten receta, se mantiene la revisión para elegir
-la pauta; la cercanía de fechas no acredita su identidad. La corrección de una
-asociación ya confirmada exige comprobar el destino indicado por el titular,
-la equivalencia de recetas y la ausencia de cambios posteriores; conserva la
+anteriores. Javier corrige el criterio inicial que dejaba siempre en revisión
+dos citas iguales: tras identificar el contenido exacto del FIT, se elige la
+cita con fecha prevista más cercana al día local de realización, no al de
+recepción. Se mantiene el margen de un día antes a siete después. Un empate
+entre citas, una versión retirada ganadora o un conflicto al cerrar exigen
+revisión; no se intenta otra pauta más lejana. Las versiones de una misma cita
+se agrupan y su versión vigente aporta la fecha del desempate. Una receta solo
+retirada sigue participando como conflicto. El nombre no acredita la receta.
+La corrección de una asociación ya confirmada exige comprobar el destino
+indicado por el titular, la equivalencia de recetas y la ausencia de cambios
+posteriores; conserva la
 misma ejecución y deja constancia de la asociación anterior.
 [Contrato y comprobación](DEVICE_GARMIN_ACTIVITY_RETURN.md#pauta-adelantada-y-recetas-iguales--19112026).
 
