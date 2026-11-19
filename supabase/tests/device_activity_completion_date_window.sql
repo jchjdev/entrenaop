@@ -105,14 +105,27 @@ begin
  exception when invalid_parameter_value then
   if sqlerrm<>'completion_window_required' then raise;end if;end;
  begin
-  update public.scheduled_workouts set scheduled_date=scheduled_date+8 where id=scheduled;
+  update public.scheduled_workouts set scheduled_date=scheduled_date+9 where id=scheduled;
   update device_private.training_deliveries set snapshot=jsonb_set(snapshot,'{date}',to_jsonb((select scheduled_date::text from public.scheduled_workouts where id=scheduled))) where owner_id=pupil;
   update device_private.training_deliveries set revision=encode(sha256(convert_to(snapshot::text,'UTF8')),'hex') where owner_id=pupil;
   preview:=public.garmin_activity_command('preview',pupil,ps,jsonb_build_object('activity_id',aid,'scheduled_id',scheduled));
   perform public.garmin_activity_command('confirm',pupil,ps,input||jsonb_build_object('source_revision',preview->>'source_revision'));
-  raise exception 'Acepta realización anterior a la pauta';
+  raise exception 'Acepta dos días de adelanto';
  exception when invalid_parameter_value then
   if sqlerrm<>'completion_window_required' then raise;end if;end;
+ -- Confirmar explícitamente una pauta de mañana conserva el día realizado.
+ begin
+  update public.scheduled_workouts set scheduled_date=scheduled_date+8 where id=scheduled;
+  update device_private.training_deliveries set snapshot=jsonb_set(snapshot,'{date}',to_jsonb((select scheduled_date::text from public.scheduled_workouts where id=scheduled))) where owner_id=pupil;
+  update device_private.training_deliveries set revision=encode(sha256(convert_to(snapshot::text,'UTF8')),'hex') where owner_id=pupil;
+  preview:=public.garmin_activity_command('preview',pupil,ps,jsonb_build_object('activity_id',aid,'scheduled_id',scheduled));
+  receipt:=public.garmin_activity_command('confirm',pupil,ps,input||jsonb_build_object('source_revision',preview->>'source_revision'));
+  if not exists(select 1 from public.scheduled_workouts s join public.workout_executions w on w.id=s.execution_id
+   where s.id=scheduled and s.status='completed' and w.performed_at=(observation->>'startedAt')::timestamptz
+    and s.scheduled_date=(((w.performed_at at time zone 'UTC')+interval '2 hours')::date+1)) then
+   raise exception 'No conserva pauta adelantada y día real';end if;
+  raise exception using errcode='Z0001',message='Deshacer solo la comprobación de adelanto';
+ exception when sqlstate 'Z0001' then null;end;
  receipt:=public.garmin_activity_command('confirm',pupil,ps,input); e:=(receipt->>'execution_id')::uuid;
  if (select status from public.scheduled_workouts where id=scheduled)<>'completed' then raise exception 'No completa semana'; end if;
  if not exists(select 1 from public.workout_execution_sets where execution_id=e and status='completed' and actual_duration_seconds=121
@@ -146,5 +159,5 @@ begin
  if exists(select 1 from public.workout_execution_sets where execution_id=e and (observed_duration_seconds is not null or observed_recovery_duration_seconds is not null)) then
   raise exception 'Una corrección manual hereda o recupera tiempo nativo'; end if;
 end $$;
-select 'Ventana manual: día siete, rechazo del ocho y rechazo anterior a la pauta'  as result;
+select 'Ventana manual: adelanto de un día y retraso de siete; rechazo de dos y ocho' as result;
 rollback;

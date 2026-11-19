@@ -92,9 +92,9 @@ progresión. El resultado explica esa limitación y no calcula una valoración
 por serie a partir del total.
 
 Se mantienen identidad y sesión viva, permiso, pauta vigente, revisión de
-fuente, ventana de cero a siete días, exclusión de pruebas y conflictos, y
-transacción idempotente. Un resultado global sin fases nativas continúa en
-revisión. El cierre con series sin atribución exige un recibo Apple privado;
+fuente, ventana de un día antes a siete días después, exclusión de pruebas
+y conflictos, y transacción idempotente. Un resultado global sin fases nativas
+continúa en revisión. El cierre con series sin atribución exige un recibo Apple privado;
 la finalización manual ordinaria sigue rechazando series pendientes. Si otra
 grabación ya completó la cita, no se crea otra ejecución ni se cambia su fuente.
 
@@ -592,8 +592,9 @@ del alcance implementado; las recetas de carrera incluyen sus fases y series.
 Javier confirma que el RPE ausente no debe bloquear un cierre acreditado: queda
 pendiente para añadirlo después. El cierre SQL automático ya está aplicado en
 Dev: exige referencia WorkoutKit, pauta vigente y correspondencia completa de
-fases nativas. El día local de realización debe estar entre la fecha prevista y
-los siete días posteriores; la llegada tardía del aviso no cambia ese día.
+fases nativas. Desde el 19/11 el día local de realización debe estar entre el día
+anterior a la fecha prevista y los siete días posteriores; la llegada tardía
+del aviso no cambia ese día.
 El mismo margen se aplica al confirmar manualmente la asociación. Fuera de él,
 la actividad se conserva sin completar esa pauta.
 

@@ -92,7 +92,11 @@ test("cifrado no se puede trasladar entre cuenta, generación ni finalidad",asyn
   for(const context of [`tokens:${owner}:2`,`tokens:another:1`,`verifier:${owner}:1`]) {
     await assert.rejects(cipher.open(first,context),/invalid_ciphertext/);
   }
-  await assert.rejects(cipher.open(first.slice(0,-2)+"AA",`tokens:${owner}:1`),/invalid_ciphertext/);
+  // Cambiar siempre un byte del cifrado: sustituir el sufijo aleatorio por AA
+  // podía producir los mismos bytes y fallar sin haber alterado el mensaje.
+  const [version,iv,data]=first.split('.');
+  const tampered=`${version}.${iv}.${data[0]==='A'?'B':'A'}${data.slice(1)}`;
+  await assert.rejects(cipher.open(tampered,`tokens:${owner}:1`),/invalid_ciphertext/);
   assert.throws(()=>new GarminCipher("invalid"));
 });
 

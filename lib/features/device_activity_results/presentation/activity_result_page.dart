@@ -512,7 +512,7 @@ String _problem(String code) => switch (code) {
   'source_not_available' || 'source_not_allowed' =>
     'La sesión ya no está disponible para completar con esta carrera.',
   'invalid_mapping' => 'Revisa las vueltas: no pueden repetirse ni faltar recuperaciones prescritas.',
-  'completion_window_required' => 'La actividad debe realizarse el día de la pauta o en los siete días posteriores. Sus datos se conservan en el historial.',
+  'completion_window_required' => 'La actividad debe realizarse desde el día anterior a la pauta hasta siete días después. Sus datos se conservan en el historial.',
   'invalid_activity_clock' ||
   'invalid_offset' => 'Revisa la fecha y la zona horaria de la actividad.',
   _ => 'No se ha podido confirmar la operación. Puedes reintentar o actualizar su estado.',

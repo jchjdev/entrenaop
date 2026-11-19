@@ -3009,6 +3009,22 @@ contenido exportable del FIT con las versiones enviadas. Dos citas iguales,
 referencias insuficientes o versiones retiradas conservan revisión. No se
 identifica una cita por nombre o fecha.
 
+## Pautas realizadas un día antes · 19/11/2026
+
+Javier confirma haber realizado hoy la carrera pautada para mañana. Se admite
+un día de adelanto, manteniendo los siete días posteriores y conservando por
+separado la fecha prevista y la realización real. El margen se aplica al cierre
+automático y a la asociación manual de Garmin y Apple.
+
+La búsqueda Garmin incluye las versiones actuales y retiradas del día siguiente:
+excluirlas podía hacer parecer inequívoca una receta igual pendiente de días
+anteriores. Si dos citas comparten receta, se mantiene la revisión para elegir
+la pauta; la cercanía de fechas no acredita su identidad. La corrección de una
+asociación ya confirmada exige comprobar el destino indicado por el titular,
+la equivalencia de recetas y la ausencia de cambios posteriores; conserva la
+misma ejecución y deja constancia de la asociación anterior.
+[Contrato y comprobación](DEVICE_GARMIN_ACTIVITY_RETURN.md#pauta-adelantada-y-recetas-iguales--19112026).
+
 ## Vídeos de ejercicios en vertical · 07/11/2026
 
 Javier confirma 9:16 como formato preferido para las nuevas demostraciones y

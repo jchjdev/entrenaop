@@ -6,7 +6,7 @@ do $$
 declare
  trainer uuid:=gen_random_uuid(); pupil uuid:=gen_random_uuid(); stranger uuid:=gen_random_uuid();
  relation uuid:=gen_random_uuid(); ps uuid:=gen_random_uuid(); ts uuid:=gen_random_uuid();
- template uuid; scheduled uuid:=gen_random_uuid(); recipe jsonb; observation jsonb;
+ template uuid; scheduled uuid:=gen_random_uuid(); older uuid:=gen_random_uuid(); recipe jsonb; observation jsonb;
  preview jsonb; claim jsonb; receipt jsonb; input jsonb; op uuid:=gen_random_uuid();
  lease uuid:=gen_random_uuid(); jid uuid:=gen_random_uuid(); aid uuid; e uuid; src jsonb; original_context jsonb;
 begin
@@ -22,7 +22,8 @@ begin
    'exercise_id','20000000-0000-4000-8000-000000000004','sets',jsonb_build_array(jsonb_build_object(
     'target_distance_meters',400,'rest_after_seconds',0,'recovery_type','walking','recovery_duration_seconds',30)))))));
  template:=trainer_private.save_trainer_workout(gen_random_uuid(),recipe);
- perform trainer_private.assign_trainer_workout(scheduled,relation,template,current_date,null);
+ perform trainer_private.assign_trainer_workout(scheduled,relation,template,
+  (((now()-interval '1 hour') at time zone 'UTC')+interval '2 hours')::date+1,null);
  if has_table_privilege('authenticated','device_private.activity_observations','SELECT')
   or has_table_privilege('service_role','device_private.activity_observations','INSERT')
   or has_function_privilege('authenticated','public.garmin_activity_command(text,uuid,uuid,jsonb)','EXECUTE') then
@@ -73,6 +74,28 @@ begin
  original_context:=public.garmin_activity_command('automatic.context',pupil,null,input);
  if original_context->>'activity_id'<>receipt->>'activity_id' then raise exception 'Conciliación sobre otra revisión';end if;
  if jsonb_array_length(original_context->'candidates')<>1 then raise exception 'No encuentra la versión enviada';end if;
+ -- La pauta de mañana ya participa en la búsqueda. Añadir una receta igual
+ -- atrasada no debe ocultarla ni ocultar sus versiones retiradas.
+ begin
+  insert into public.scheduled_workouts(id,user_id,template_id,template_name,template_version,scheduled_date,source,status)
+   select older,user_id,template_id,template_name,template_version,scheduled_date-5,source,'planned'
+   from public.scheduled_workouts where id=scheduled;
+  insert into device_private.training_deliveries(owner_id,scheduled_id,provider,connection_generation,revision,snapshot,status,workout_id,schedule_id)
+   select pupil,older,'garmin',1,repeat('b',64),jsonb_set(snapshot,'{date}',to_jsonb((select scheduled_date::text from public.scheduled_workouts where id=older))),'sent',789,987
+   from device_private.training_deliveries where owner_id=pupil and scheduled_id=scheduled;
+  insert into device_private.training_delivery_versions(delivery_id,revision,snapshot,status)
+   select id,repeat('c',64),jsonb_set(snapshot,'{date}',src->'snapshot'->'date'),'sent'
+   from device_private.training_deliveries where owner_id=pupil and scheduled_id=older;
+  insert into device_private.training_delivery_versions(delivery_id,revision,snapshot,status)
+   select id,repeat('d',64),jsonb_set(snapshot,'{date}',to_jsonb(((src->'snapshot'->>'date')::date+1)::text)),'sent'
+   from device_private.training_deliveries where owner_id=pupil and scheduled_id=older;
+  preview:=public.garmin_activity_command('automatic.context',pupil,null,input);
+  if jsonb_array_length(preview->'candidates')<>3
+   or (select count(distinct x->>'scheduled_id') from jsonb_array_elements(preview->'candidates') x)<>2
+   or not exists(select 1 from jsonb_array_elements(preview->'candidates') x where x->>'revision'=repeat('c',64) and x->>'current'='false') then
+   raise exception 'Oculta una pauta adelantada o una versión retirada: %',preview;end if;
+  raise exception using errcode='Z0001',message='Deshacer solo las candidatas adicionales';
+ exception when sqlstate 'Z0001' then null;end;
  begin
   perform public.garmin_activity_command('automatic.context',pupil,null,input||jsonb_build_object('lease_id',gen_random_uuid()));
   raise exception 'Acepta lease ajeno';
@@ -114,7 +137,7 @@ begin
   raise exception 'Completa una versión retirada';
  exception when serialization_failure then null;end;
  begin
-  update device_private.activity_observations ao set observation=jsonb_set(ao.observation,'{startedAt}',to_jsonb((now()+interval '8 days')::text)) where owner_id=pupil;
+  update device_private.activity_observations ao set observation=jsonb_set(ao.observation,'{startedAt}',to_jsonb((now()+interval '9 days')::text)) where owner_id=pupil;
   perform public.garmin_activity_command('automatic.complete',pupil,null,input);
   raise exception 'Completa fuera de siete días';
  exception when serialization_failure then null;end;

@@ -1,5 +1,38 @@
 # Retorno de carrera Garmin · INT-012 · 23/10/2026
 
+## Pauta adelantada y recetas iguales · 19/11/2026
+
+Una carrera realizada un día antes de su pauta llegó correctamente, pero la
+búsqueda excluía la cita del día siguiente y completó otra receta idéntica
+pendiente de días anteriores. El margen común de asociación pasa a ser desde
+el día anterior hasta siete días después de la fecha prevista, calculado con
+el día local de realización. Se conservan ambas fechas.
+
+La consulta automática incluye versiones actuales y retiradas del día siguiente.
+Dos citas con el mismo contenido exportable siguen siendo ambiguas: no se elige
+la más cercana por fecha. Una pauta adelantada inequívoca puede completarse;
+si comparte receta con otra, se conserva la actividad para revisión manual.
+
+La migración `20261119114534` amplía la ventana sin cambiar permisos, leases,
+referencias, revisión de fuente ni barreras de reloj futuro. Las regresiones
+SQL comprueban el adelanto único, recetas iguales atrasada/futura, versiones
+retiradas, exclusión de dos días de adelanto y ocho de retraso, zonas horarias,
+confirmación manual y cierre Apple. Los ensayos terminan con ROLLBACK.
+
+La reasociación indicada por el titular se ensaya con ROLLBACK antes de aplicarla
+solo en Dev. Se conserva la misma ejecución, sus parciales, totales y RPE;
+la cita anterior vuelve a pendiente y la correcta queda completada. El trabajo
+recibido conserva una auditoría de la confirmación anterior. No se crea otra
+ejecución ni se modifica la observación FIT.
+
+Aplicada y comprobada en Dev `20261119114534`; los siete contratos SQL pasan
+con ROLLBACK. Pasan 357 pruebas de servidor, `flutter analyze` y 1894 pruebas
+Flutter con una omitida. Una prueba de cifrado sustituía un sufijo aleatorio
+por un valor que podía coincidir: ahora altera siempre los bytes y conserva
+la exigencia de rechazo, sin cambiar el cifrado de la aplicación.
+La app queda en `1.24.1+53` por el texto de ayuda de la ventana; la corrección
+servidora ya funciona con el cliente instalado y no requiere actualizarlo.
+
 ## Diez series y vuelta posterior al enfriamiento · 17/11/2026
 
 La receta recibida por el reloj y devuelta en FIT contiene las diez parejas de
@@ -107,8 +140,9 @@ nativos continuos de la secuencia expandida y tipos compatibles, se acepta la
 correspondencia aunque la distancia sea menor o mayor. Auto Lap conserva sus
 segmentos y no se reparte un total entre pasos. Sin esa identidad se mantiene
 la candidatura conservadora; no se relajan receta exacta, ambigüedad entre
-citas, versión vigente, permisos, ventana de siete días, cobertura de vueltas
-ni revisión de una grabación sin desplazamiento. No se cambia fuerza o Apple.
+citas, versión vigente, permisos, ventana de un día antes a siete después,
+cobertura de vueltas ni revisión de una grabación sin desplazamiento. No se
+cambia fuerza o Apple.
 
 La ejecución conserva distancia/tiempo real frente a la pauta original. Una
 serie registrada puede estar completada administrativamente y no haber cumplido
@@ -638,8 +672,9 @@ peso requeridos tampoco se completan automáticamente.
 
 Una coincidencia única solo se cierra si la cita, los permisos y la versión
 siguen vigentes y todas sus filas tienen evidencia nativa, sin intervalos activos
-sobrantes ni repartos estimados. Se admite realizarla hasta siete días después,
-según el día local observado. Se reutilizan inicio, correspondencias y cierre
+sobrantes ni repartos estimados. Se admite realizarla desde el día anterior
+hasta siete días después, según el día local observado. Se reutilizan inicio,
+correspondencias y cierre
 Core, conservando precisión, totales y pulso. El RPE ausente queda NULL; añadirlo
 después es una operación del titular que no reabre ni duplica el entrenamiento.
 

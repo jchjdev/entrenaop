@@ -74,7 +74,7 @@ test('un bucle FIT conserva la misma referencia que los pasos expandidos anterio
 const job:ActivityJob={id:'job',owner:'owner',generation:1,lease:'lease',callback:'callback',metadata:{},tokens:'tokens',
   providerUserId:'provider',accessExpiresAt:'2026-11-02T00:00:00Z',refreshExpiresAt:'2026-11-03T00:00:00Z'};
 const grant:AccessGrant={accessToken:'access',refreshToken:'refresh',expiresInSeconds:3600,refreshExpiresInSeconds:86400,scope:''};
-function fixture(options:{duplicate?:boolean;stale?:boolean;extra?:boolean;failComplete?:boolean;stationary?:boolean;shortened?:boolean;
+function fixture(options:{duplicate?:boolean;futureDuplicate?:boolean;stale?:boolean;extra?:boolean;failComplete?:boolean;stationary?:boolean;shortened?:boolean;
   repeated?:boolean;loopIndices?:number[];missingLoopLap?:boolean;wrongLoopIntensity?:boolean;invalidContext?:boolean;
   tail?:{seconds:number;workSeconds?:number;index?:number;gap?:number;missingIndex?:boolean}}={}){
   const actions:{action:string;input:Record<string,unknown>}[]=[];
@@ -85,6 +85,7 @@ function fixture(options:{duplicate?:boolean;stale?:boolean;extra?:boolean;failC
     activity.laps.push({...activity.laps[0],index:1,startedAt:'2026-11-01T10:02:00Z',workoutStepIndex:1});}
   if(options.stationary){activity.distanceMeters=0;activity.laps=activity.laps.map(lap=>({...lap,distanceMeters:0}));}
   const snapshot=source();
+  if(options.futureDuplicate)snapshot.date='2026-10-28';
   if(options.repeated){
     const repeated=repeatedRunning();
     Object.assign(snapshot,repeated.snapshot);Object.assign(activity,repeated.activity);
@@ -112,6 +113,8 @@ function fixture(options:{duplicate?:boolean;stale?:boolean;extra?:boolean;failC
   }
   const candidates=[{scheduled_id:'one',revision:'revision',snapshot,current:!options.stale}];
   if(options.duplicate)candidates.push({...candidates[0],scheduled_id:'two',current:false});
+  if(options.futureDuplicate)candidates.push({...candidates[0],scheduled_id:'tomorrow',
+    snapshot:{...snapshot,date:'2026-11-02'},current:true});
   const service=new ActivityReturnService({command:async(action,_owner,_session,input)=>{
     actions.push({action,input});
     if(action==='save')return {activity_id:'activity',activity_revision:'observed'};
@@ -244,6 +247,15 @@ test('otra cita idéntica, versión retirada o intervalos sobrantes exigen revis
     assert.equal(f.actions.find(a=>a.action==='automatic.review')?.input.code,code);
   }
 });
+
+test('una receta igual para mañana impide completar silenciosamente la cita atrasada',async()=>{
+  const f=fixture({futureDuplicate:true});await f.service.process(job);
+  assert.equal(f.actions.some(a=>a.action==='automatic.complete'),false);
+  assert.equal(f.actions.find(a=>a.action==='automatic.review')?.input.code,'ambiguous_prescription');
+  assert.equal(f.actions.filter(a=>a.action==='save').length,1);
+  assert.equal(f.actions.at(-1)?.action,'release');
+});
+
 test('un cierre fallido no invalida la importación ni vuelve a consumir el FIT',async()=>{
   const f=fixture({failComplete:true});await f.service.process(job);
   assert.equal(f.actions.filter(a=>a.action==='save').length,1);

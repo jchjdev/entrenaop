@@ -19,7 +19,8 @@ begin
     'target_duration_seconds',120,'rest_after_seconds',0,'target_pace_min_seconds_per_km',300,'target_pace_max_seconds_per_km',360,
     'recovery_type','walking','recovery_duration_seconds',30)))))));
  template:=trainer_private.save_trainer_workout(gen_random_uuid(),recipe);
- perform trainer_private.assign_trainer_workout(scheduled,relation,template,current_date,null);
+ perform trainer_private.assign_trainer_workout(scheduled,relation,template,
+  (((now()-interval '3 minutes') at time zone 'UTC')+interval '1 hour')::date+1,null);
  perform trainer_private.assign_trainer_workout(second,relation,template,current_date+2,null);
 
  perform set_config('fixture.owner',pupil::text,true);perform set_config('fixture.session',ps::text,true);
@@ -80,12 +81,16 @@ do $$declare execution uuid:=current_setting('fixture.execution')::uuid;owner uu
  select * into e from public.workout_executions where id=execution;
  if e.status<>'completed' or e.final_rpe<>4 or e.observed_timer_seconds<>117.3 or e.observed_distance_meters<>420 then
   raise exception 'Pierde datos medidos o la valoración humana';end if;
- if (select status from public.scheduled_workouts where id=current_setting('fixture.scheduled')::uuid)<>'completed' then
+ if not exists(select 1 from public.scheduled_workouts where id=current_setting('fixture.scheduled')::uuid and status='completed'
+  and scheduled_date=(((e.performed_at at time zone 'UTC')+interval '1 hour')::date+1)) then
   raise exception 'No completa la semana';end if;
  if (select count(*) from device_private.apple_activity_confirmations where owner_id=owner)<>1 then raise exception 'Duplica confirmación';end if;
  if not device_private.activity_in_completion_window('2026-11-08T23:30:00Z',0,'2026-11-01') or
   device_private.activity_in_completion_window('2026-11-09T00:00:00Z',0,'2026-11-01') or
-  device_private.activity_in_completion_window('2026-10-31T12:00:00Z',0,'2026-11-01') or
+  not device_private.activity_in_completion_window('2026-10-31T12:00:00Z',0,'2026-11-01') or
+  device_private.activity_in_completion_window('2026-10-30T23:59:59Z',0,'2026-11-01') or
+  not device_private.activity_in_completion_window('2026-10-30T23:30:00Z',60,'2026-11-01') or
+  device_private.activity_in_completion_window('2026-10-31T00:30:00Z',-60,'2026-11-01') or
   device_private.activity_in_completion_window('2026-11-01T12:00:00Z',null,'2026-11-01') then raise exception 'Ventana incorrecta';end if;
  if has_function_privilege('anon','public.add_device_workout_effort(uuid,uuid,integer)','EXECUTE') or
   has_function_privilege('authenticated','device_private.complete_apple_result_automatically(uuid,uuid)','EXECUTE') then raise exception 'Privilegios excesivos';end if;
