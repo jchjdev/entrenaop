@@ -219,6 +219,10 @@ class _FakeRepository implements FasPeriodicAssessmentRepository {
       entries;
 
   @override
+  Future<bool> deleteIndependent(String assessmentId) =>
+      throw UnsupportedError('La preparación no elimina tests.');
+
+  @override
   Future<String> save({
     String? goalId,
     required String category,

@@ -7,6 +7,92 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../../helpers/evolution_fixtures.dart';
 
 void main() {
+  testWidgets('confirma con la fecha y elimina solo el test independiente', (
+    t,
+  ) async {
+    final data = (await t.runAsync(evolutionFasData))!;
+    final linked = data.fas.single;
+    final independent = _independent(linked);
+    final repository = _Repository([independent, linked]);
+    await t.pumpWidget(
+      MaterialApp(
+        home: FasPeriodicHistoryPage(
+          repository: repository,
+          reference: data.fasReference,
+        ),
+      ),
+    );
+    await t.pumpAndSettle();
+    final linkedCard = find.byKey(ValueKey(linked.id));
+    await t.tap(
+      find.descendant(of: linkedCard, matching: find.byType(ExpansionTile)),
+    );
+    await t.pumpAndSettle();
+    expect(find.text('Eliminar test'), findsNothing);
+    await t.tap(
+      find.descendant(of: linkedCard, matching: find.byType(ExpansionTile)),
+    );
+    await t.pumpAndSettle();
+
+    final independentCard = find.byKey(ValueKey(independent.id));
+    await t.tap(
+      find.descendant(
+        of: independentCard,
+        matching: find.byType(ExpansionTile),
+      ),
+    );
+    await t.pumpAndSettle();
+    final delete = find.text('Eliminar test');
+    await t.ensureVisible(delete);
+    await t.tap(delete);
+    await t.pumpAndSettle();
+    expect(find.text('¿Eliminar el test del 19-11-2026?'), findsOneWidget);
+    await t.tap(find.text('Cancelar'));
+    await t.pumpAndSettle();
+    expect(repository.deleteCalls, isEmpty);
+
+    await t.tap(delete);
+    await t.pumpAndSettle();
+    await t.tap(find.text('Eliminar'));
+    await t.pumpAndSettle();
+    expect(repository.deleteCalls, [independent.id]);
+    expect(independentCard, findsNothing);
+    expect(linkedCard, findsOneWidget);
+    expect(find.text('Test eliminado.'), findsOneWidget);
+  });
+
+  testWidgets('un fallo al refrescar no hace reaparecer el test borrado', (
+    t,
+  ) async {
+    final data = (await t.runAsync(evolutionFasData))!;
+    final independent = _independent(data.fas.single);
+    final repository = _Repository([independent]);
+    await t.pumpWidget(
+      MaterialApp(
+        home: FasPeriodicHistoryPage(
+          repository: repository,
+          reference: data.fasReference,
+        ),
+      ),
+    );
+    await t.pumpAndSettle();
+    await t.tap(find.byType(ExpansionTile));
+    await t.pumpAndSettle();
+    await t.tap(find.text('Eliminar test'));
+    await t.pumpAndSettle();
+    repository.fail = true;
+    await t.tap(find.text('Eliminar'));
+    await t.pumpAndSettle();
+
+    expect(repository.deleteCalls, [independent.id]);
+    expect(find.text('Test eliminado.'), findsOneWidget);
+    expect(find.byKey(ValueKey(independent.id)), findsNothing);
+    expect(
+      find.text('No se pudieron actualizar los tests. Reintentar.'),
+      findsOneWidget,
+    );
+  });
+
   testWidgets(
     'lee la puntuación guardada y conserva el cálculo sin instantánea',
     (t) async {
@@ -124,9 +210,22 @@ void main() {
   });
 }
 
+FasPeriodicAssessmentEntry _independent(FasPeriodicAssessmentEntry entry) =>
+    FasPeriodicAssessmentEntry(
+      id: 'independent-test',
+      goalId: null,
+      scoringVersion: entry.scoringVersion,
+      completedAt: DateTime(2026, 11, 19),
+      category: entry.category,
+      age: entry.age,
+      isPreEffectiveReference: entry.isPreEffectiveReference,
+      marks: entry.marks,
+    );
+
 class _Repository implements FasPeriodicAssessmentRepository {
   _Repository(this.rows);
-  final List<FasPeriodicAssessmentEntry> rows;
+  List<FasPeriodicAssessmentEntry> rows;
+  final deleteCalls = <String>[];
   bool fail = false;
   int calls = 0;
   @override
@@ -134,6 +233,13 @@ class _Repository implements FasPeriodicAssessmentRepository {
     calls++;
     if (fail) throw StateError('offline');
     return rows;
+  }
+
+  @override
+  Future<bool> deleteIndependent(String assessmentId) async {
+    deleteCalls.add(assessmentId);
+    rows = rows.where((entry) => entry.id != assessmentId).toList();
+    return true;
   }
 
   @override

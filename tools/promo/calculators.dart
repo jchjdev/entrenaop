@@ -29,4 +29,6 @@ class DemoFasResults implements FasPeriodicAssessmentRepository {
     required String assessmentId,
     required String goalId,
   }) async {}
+  @override
+  Future<bool> deleteIndependent(String assessmentId) async => false;
 }

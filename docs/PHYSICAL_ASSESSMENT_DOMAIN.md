@@ -390,6 +390,18 @@ en Herramientas. En Evolución se accede a «Mis tests TGCF» y la pantalla de
 registros se titula «Historial TGCF». «Mejora FAS» identifica el programa de
 entrenamiento. Se conservan los identificadores, enlaces, baremos e historial.
 
+### Borrado individual en Historial TGCF
+
+La ficha desplegada de un test propio independiente ofrece «Eliminar test».
+La confirmación muestra la fecha del test y avisa de que el borrado es
+definitivo. La ficha de un test asociado a Mejora FAS conserva sus acciones.
+
+La operación autenticada `delete_independent_fas_assessment` recibe un solo
+identificador. PostgreSQL verifica titular y ausencia de preparación en el
+mismo borrado, incluso si la asociación se hizo después de abrir el historial.
+El borrado elimina también las marcas de ese intento mediante la clave foránea.
+Repetir la solicitud devuelve que el test ya no está disponible.
+
 ### Puntuación literal del TGCF
 
 La política `literal_rows_v2` usa la puntuación literal para una marca exacta.

@@ -163,6 +163,14 @@ class FasPeriodicAssessmentRepository {
       params: {'p_assessment_id': assessmentId, 'p_goal_id': goalId},
     );
   }
+
+  Future<bool> deleteIndependent(String assessmentId) async {
+    final deleted = await _client.rpc(
+      'delete_independent_fas_assessment',
+      params: {'p_assessment_id': assessmentId},
+    );
+    return deleted == true;
+  }
 }
 
 int _testOrder(String id) => switch (id) {

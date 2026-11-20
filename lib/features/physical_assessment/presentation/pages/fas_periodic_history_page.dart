@@ -25,6 +25,7 @@ class FasPeriodicHistoryPage extends StatefulWidget {
 class _FasPeriodicHistoryPageState extends State<FasPeriodicHistoryPage> {
   late Future<_HistoryData> _data;
   _HistoryData? _cached;
+  bool _deleting = false;
 
   @override
   void initState() {
@@ -58,6 +59,60 @@ class _FasPeriodicHistoryPageState extends State<FasPeriodicHistoryPage> {
     }
   }
 
+  Future<void> _delete(FasPeriodicAssessmentEntry entry) async {
+    if (_deleting || entry.goalId != null) return;
+    final date = DateFormat('dd-MM-yyyy').format(entry.completedAt);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('¿Eliminar el test del $date?'),
+        content: const Text('Se borrará del historial de forma definitiva.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted || confirmed != true || _deleting) return;
+
+    setState(() => _deleting = true);
+    try {
+      final deleted = await widget.repository.deleteIndependent(entry.id);
+      if (!mounted) return;
+      if (_cached case final data? when deleted) {
+        _cached = _HistoryData(
+          entries: data.entries.where((item) => item.id != entry.id).toList(),
+          references: data.references,
+        );
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            deleted ? 'Test eliminado.' : 'Este test ya no se puede eliminar.',
+          ),
+        ),
+      );
+      await _refresh();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No se pudo confirmar el borrado.')),
+      );
+      await _refresh();
+    } finally {
+      if (mounted) setState(() => _deleting = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
@@ -68,7 +123,9 @@ class _FasPeriodicHistoryPageState extends State<FasPeriodicHistoryPage> {
       future: _data,
       builder: (context, snapshot) {
         final loading = snapshot.connectionState != ConnectionState.done;
-        final data = snapshot.data ?? _cached;
+        final fresh = loading ? null : snapshot.data;
+        if (fresh != null) _cached = fresh;
+        final data = _cached;
         if (loading && data == null) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -80,9 +137,6 @@ class _FasPeriodicHistoryPageState extends State<FasPeriodicHistoryPage> {
               label: const Text('Reintentar'),
             ),
           );
-        }
-        if (snapshot.hasData) {
-          _cached = snapshot.data;
         }
         if (data.entries.isEmpty && !snapshot.hasError) {
           return const Center(
@@ -115,6 +169,18 @@ class _FasPeriodicHistoryPageState extends State<FasPeriodicHistoryPage> {
                   key: ValueKey(entry.id),
                   entry: entry,
                   reference: data.references[entry.scoringVersion],
+                  deleteAction: entry.goalId == null
+                      ? TextButton.icon(
+                          onPressed: _deleting ? null : () => _delete(entry),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Theme.of(context)
+                                .colorScheme
+                                .error,
+                          ),
+                          icon: const Icon(Icons.delete_outline),
+                          label: const Text('Eliminar test'),
+                        )
+                      : null,
                 ),
                 const SizedBox(height: 12),
               ],
@@ -130,11 +196,13 @@ class FasAssessmentHistoryCard extends StatelessWidget {
   const FasAssessmentHistoryCard({
     required this.entry,
     required this.reference,
+    this.deleteAction,
     super.key,
   });
 
   final FasPeriodicAssessmentEntry entry;
   final FasPeriodic2027Reference? reference;
+  final Widget? deleteAction;
 
   @override
   Widget build(BuildContext context) {
@@ -157,6 +225,7 @@ class FasAssessmentHistoryCard extends StatelessWidget {
                 title: Text(mark.testName),
                 subtitle: Text(_formatStoredMark(mark)),
               ),
+            ?deleteAction,
           ],
         ),
       );
@@ -199,6 +268,7 @@ class FasAssessmentHistoryCard extends StatelessWidget {
                 style: const TextStyle(fontWeight: FontWeight.w800),
               ),
             ),
+          ?deleteAction,
         ],
       ),
     );

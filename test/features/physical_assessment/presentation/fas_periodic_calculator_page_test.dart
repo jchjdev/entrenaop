@@ -865,6 +865,10 @@ class _Repository implements FasPeriodicAssessmentRepository {
       [];
 
   @override
+  Future<bool> deleteIndependent(String assessmentId) =>
+      throw UnsupportedError('La calculadora no elimina tests.');
+
+  @override
   Future<String> save({
     String? goalId,
     required String category,

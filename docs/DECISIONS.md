@@ -1,5 +1,11 @@
 # Registro de decisiones vigentes
 
+**Borrado individual en Historial TGCF · 20/11/2026.** Javier aprueba que
+el deportista pueda eliminar un test propio independiente desde su ficha,
+con confirmación que muestra la fecha. Los tests asociados a Mejora FAS
+conservan su recorrido y quedan protegidos también en el servidor.
+[Contrato](PHYSICAL_ASSESSMENT_DOMAIN.md#borrado-individual-en-historial-tgcf).
+
 **Puntuación literal del TGCF · 19/11/2026.** Javier confirma que manda la
 fila exacta del BOE y que un intervalo contradictorio queda indeterminado.
 Los objetivos de Mínimos y Máximos se comprueban con esa misma regla. App y
