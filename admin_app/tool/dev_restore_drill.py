@@ -14,7 +14,7 @@ IMAGE = "supabase/postgres:17.6.1.166@sha256:b3bfedb107413abb3b8cb0d0874b0414a1d
 BACKUP_SCHEMAS = ("public", "auth", "storage", "admin_ops_private", "trainer_private",
                   "editor_private", "device_private", "admin_work_private", "push_private", "profile_private",
                   "commerce_private", "directory_private", "builtin_assessment_private", "workout_private",
-                  "supabase_migrations")
+                  "preparation_admin_private", "supabase_migrations")
 
 
 class RestoreError(RuntimeError):
