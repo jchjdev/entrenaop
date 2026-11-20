@@ -768,6 +768,18 @@ inicial, con el piloto comercial y la aceptación física pendientes.
 Lectura final en Dev:
 publicación deshabilitada, cero ofertas elegibles y cero fichas publicadas.
 
+### Separación de campos del directorio · 20/11/2026
+
+El buscador y el editor de la ficha reservan espacio entre campos para las
+etiquetas flotantes, los contadores y los textos de ayuda. La ayuda de ubicación
+admite hasta seis líneas para que se lea también con texto ampliado. Se
+comprueban los dos formularios con el tema real a 390 px y a 320 px con texto
+doble, además del acabado de escritorio. Las regresiones verifican la separación
+geométrica, la búsqueda y el guardado de localidad y modalidad.
+Verificación local con análisis limpios en raíz y Trainer, 30 pruebas del
+directorio en la app y 10 del editor y los avisos en Trainer. Capturas revisadas
+de los widgets reales con datos simulados. App `1.25.1+58` y Trainer `0.14.1+35`.
+
 ### Formulario de denuncia en móvil · 02/11/2026
 
 Se corrige el solapamiento entre la explicación, el motivo y el comentario en

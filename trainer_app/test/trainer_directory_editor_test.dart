@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trainer_access/directory/domain.dart';
 import 'package:entrenaop_trainer/trainer_directory_editor.dart';
+import 'package:entrena_ui/entrena_ui.dart';
+
+import '../../test/helpers/performance_visual_review.dart';
 
 class DraftRepository implements DirectoryRepository {
   int writes = 0;
@@ -61,7 +64,19 @@ class DraftRepository implements DirectoryRepository {
 }
 
 void main() {
-  Widget editor(DraftRepository repository) => MaterialApp(
+  setUpAll(() => loadReviewFont(always: true));
+  Widget editor(
+    DraftRepository repository, {
+    ThemeData? theme,
+    double scale = 1,
+  }) => MaterialApp(
+    debugShowCheckedModeBanner: false,
+    theme: theme,
+    builder: (context, child) => MediaQuery(
+      data: MediaQuery.of(context)
+          .copyWith(textScaler: TextScaler.linear(scale)),
+      child: child!,
+    ),
     home: TrainerDirectoryEditor(
       repository: repository,
       photo: (_) async => Uint8List(0),
@@ -82,6 +97,88 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  for (final (width, scale, desktop) in [
+    (390.0, 1.0, false),
+    (320.0, 2.0, false),
+    (1200.0, 1.0, true),
+    (1200.0, 2.0, true),
+  ]) {
+    testWidgets(
+      'ficha separa localidad, ayuda y desplegables a $width/$scale',
+      (tester) async {
+        tester.view.physicalSize = Size(width, 1100);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        final repository = DraftRepository();
+        await tester.pumpWidget(
+          RepaintBoundary(
+            key: const ValueKey('review-boundary'),
+            child: editor(
+              repository,
+              theme: desktop
+                  ? ProfessionalAppearance.desktop(EntrenaTheme.dark)
+                  : EntrenaTheme.dark,
+              scale: scale,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final location = find.widgetWithText(TextField, 'Localidad (opcional)');
+        await tester.scrollUntilVisible(
+          location,
+          300,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.enterText(location, 'León');
+        FocusManager.instance.primaryFocus?.unfocus();
+        await tester.pumpAndSettle();
+        for (final label in ['Modalidad', 'Dónde quieres aparecer']) {
+          await tester.scrollUntilVisible(
+            find.text(label),
+            150,
+            scrollable: find.byType(Scrollable).first,
+          );
+          await Scrollable.ensureVisible(
+            tester.element(find.text(label)),
+            alignment: 1,
+          );
+          await tester.pumpAndSettle();
+          final previous = label == 'Modalidad'
+              ? 'Si la dejas vacía, aparecerá tu provincia y la isla que indiques.'
+              : 'online';
+          expect(
+            tester.getRect(find.text(label)).top,
+            greaterThanOrEqualTo(
+              tester.getRect(find.text(previous)).bottom + 8,
+            ),
+            reason: '$previous → $label',
+          );
+          if (label == 'Modalidad') {
+            expect(
+              tester.getRect(find.text(label)).top,
+              greaterThanOrEqualTo(
+                tester.getRect(find.text('4/80')).bottom + 8,
+              ),
+            );
+          }
+        }
+        await capturePerformanceWidget(
+          tester,
+          'directorio-ficha-${width.toInt()}-$scale',
+        );
+        await tester.tap(find.text('online'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('ambas').last);
+        await tester.pumpAndSettle();
+        await pressSave(tester);
+        expect(repository.submitted!.city, 'León');
+        expect(repository.submitted!.mode, DirectoryMode.ambas);
+        expect(repository.published, isFalse);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   testWidgets(
     'guarda provincia sin localidad y limpia isla al cambiar provincia',
     (tester) async {
@@ -95,6 +192,8 @@ void main() {
           250,
           scrollable: find.byType(Scrollable).first,
         );
+        await Scrollable.ensureVisible(tester.element(field), alignment: .5);
+        await tester.pumpAndSettle();
         await tester.tap(field);
         await tester.pumpAndSettle();
         await tester.scrollUntilVisible(

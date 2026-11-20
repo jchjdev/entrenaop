@@ -374,6 +374,7 @@ class _TrainerDirectoryPageState extends State<TrainerDirectoryPage>
                   label: const Text('Mis contactos y solicitudes'),
                 ),
               if (widget.profileId == null) ...[
+                const SizedBox(height: 24),
                 TextField(
                   controller: _query,
                   maxLength: 120,
@@ -382,16 +383,18 @@ class _TrainerDirectoryPageState extends State<TrainerDirectoryPage>
                   ),
                   onSubmitted: (_) => _load(),
                 ),
+                const SizedBox(height: 24),
                 TextField(
                   controller: _city,
                   maxLength: 80,
                   decoration: const InputDecoration(
                     labelText: 'Provincia, isla o localidad',
                     helperText: 'Puedes buscar solo por provincia o por parte del nombre.',
-                    helperMaxLines: 3,
+                    helperMaxLines: 6,
                   ),
                   onSubmitted: (_) => _load(),
                 ),
+                const SizedBox(height: 24),
                 DropdownButtonFormField<DirectoryMode?>(
                   isExpanded: true,
                   itemHeight: null,

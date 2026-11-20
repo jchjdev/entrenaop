@@ -7,7 +7,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:trainer_access/directory/data.dart';
 import 'package:trainer_access/directory/domain.dart';
 import 'package:trainer_access/directory/locations.dart';
+import 'package:entrena_ui/entrena_ui.dart' show EntrenaTheme;
+import 'package:trainer_access/directory/presentation.dart';
 
+import '../../helpers/performance_visual_review.dart';
 import 'trainer_directory_test.dart';
 
 class _Transport extends http.BaseClient {
@@ -53,6 +56,90 @@ class _Transport extends http.BaseClient {
 }
 
 void main() {
+  setUpAll(() => loadReviewFont(always: true));
+  for (final (width, scale) in [(390.0, 1.0), (320.0, 2.0), (1200.0, 1.0)]) {
+    testWidgets(
+      'buscador separa etiquetas, ayuda y contadores a $width/$scale',
+      (tester) async {
+        tester.view.physicalSize = Size(width, 1100);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        final repository = FakeDirectory();
+        await tester.pumpWidget(
+          RepaintBoundary(
+            key: const ValueKey('review-boundary'),
+            child: MaterialApp(
+              debugShowCheckedModeBanner: false,
+              theme: EntrenaTheme.dark,
+              builder: (context, child) => MediaQuery(
+                data: MediaQuery.of(context)
+                    .copyWith(textScaler: TextScaler.linear(scale)),
+                child: child!,
+              ),
+              home: TrainerDirectoryPage(
+                repository: repository,
+                loadPhoto: (_) async => throw const FormatException('Sin foto'),
+                onOpen: (_) {},
+                onContact: (_) async => true,
+                onContacts: () {},
+                publicBase: Uri.parse('https://example.test/directory'),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final query = find.widgetWithText(
+          TextField,
+          'Nombre, preparación o especialidad',
+        );
+        await tester.enterText(query, 'Carrera');
+        final location = find.widgetWithText(
+          TextField,
+          'Provincia, isla o localidad',
+        );
+        await tester.enterText(location, 'Gran Canaria');
+        FocusManager.instance.primaryFocus?.unfocus();
+        await tester.pumpAndSettle();
+        for (final (previous, label) in [
+          ('Mis contactos y solicitudes', 'Nombre, preparación o especialidad'),
+          ('7/120', 'Provincia, isla o localidad'),
+          (
+            'Puedes buscar solo por provincia o por parte del nombre.',
+            'Modalidad',
+          ),
+          ('12/80', 'Modalidad'),
+        ]) {
+          expect(
+            tester.getRect(find.text(label)).top,
+            greaterThanOrEqualTo(
+              tester.getRect(find.text(previous)).bottom + 8,
+            ),
+            reason: '$previous → $label',
+          );
+        }
+        await capturePerformanceWidget(
+          tester,
+          'directorio-buscador-${width.toInt()}-$scale',
+        );
+        await tester.ensureVisible(find.text('Buscar').last);
+        await tester.tap(find.text('Buscar').last);
+        await tester.pumpAndSettle();
+        expect(repository.calls, 2);
+        await tester.scrollUntilVisible(
+          query,
+          -200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        expect(tester.widget<TextField>(query).controller!.text, 'Carrera');
+        expect(
+          tester.widget<TextField>(location).controller!.text,
+          'Gran Canaria',
+        );
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   test('catálogo completo y provincias de ambos archipiélagos', () {
     expect(directoryProvinces.map((p) => p.code).toSet(), {
       for (var i = 1; i <= 52; i++) i.toString().padLeft(2, '0'),

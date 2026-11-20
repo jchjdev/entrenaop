@@ -318,7 +318,7 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
                   (8, 'Precio orientativo (opcional)', 120, 1),
                 ])
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    padding: const EdgeInsets.only(top: 16, bottom: 8),
                     child: TextField(
                       controller: _fields[entry.$1],
                       maxLength: entry.$3,
@@ -389,10 +389,11 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
                   decoration: const InputDecoration(
                     labelText: 'Localidad (opcional)',
                     helperText: 'Si la dejas vacía, aparecerá tu provincia y la isla que indiques.',
-                    helperMaxLines: 3,
+                    helperMaxLines: 6,
                   ),
                   onChanged: (_) => setState(() => _dirty = true),
                 ),
+                const SizedBox(height: 24),
                 DropdownButtonFormField<DirectoryMode>(
                   isExpanded: true,
                   itemHeight: null,
@@ -410,6 +411,7 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
                           _dirty = true;
                         }),
                 ),
+                const SizedBox(height: 24),
                 DropdownButtonFormField<DirectoryVisibility>(
                   isExpanded: true,
                   itemHeight: null,
