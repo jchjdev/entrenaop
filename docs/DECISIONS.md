@@ -1,5 +1,12 @@
 # Registro de decisiones vigentes
 
+**Primera beta interna en Google Play · 20/11/2026.** Javier encarga preparar
+la distribución privada por enlace. Se mantiene la firma de distribución de
+Google Play y se acepta que la APK previa requiere instalación limpia para
+cambiar a Play. Compilación 57 publicada en el canal interno de Dev y enlace
+habilitado. Pendientes la lista de testers y la aceptación en un Android.
+[Estado y condiciones](STORE_LAUNCH.md#primera-prueba-interna-de-google-play--20112026).
+
 **Borrado individual en Historial TGCF · 20/11/2026.** Javier aprueba que
 el deportista pueda eliminar un test propio independiente desde su ficha,
 con confirmación que muestra la fecha. Los tests asociados a Mejora FAS

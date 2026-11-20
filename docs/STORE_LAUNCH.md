@@ -1,5 +1,22 @@
 # Preparación del lanzamiento en tiendas
 
+## Primera prueba interna de Google Play · 20/11/2026
+
+Javier decide comenzar por una beta privada mediante enlace. EntrenaOP ya está
+creada en Play Console. Google ha procesado el AAB de desarrollo
+`1.25.0-beta.1` (compilación 57), revisión `fe8e8bdb`, y muestra la versión
+como disponible para testers internos. El canal figura inactivo mientras falta
+la lista de correos de las cuentas de Google de los participantes. Play Console
+ya habilita el enlace de adhesión. Sigue pendiente comprobar la instalación y
+el arranque desde Play Store con una cuenta incluida en la lista.
+
+Se conserva la clave de distribución asignada por Google Play. Su certificado
+difiere del de las APK beta firmadas localmente. Quien tenga la APK previa
+necesitará una instalación limpia para pasar al canal interno. Antes de
+desinstalar, debe sincronizar lo que quiera conservar y tener en cuenta los
+borradores locales. La ficha utiliza el nombre temporal del paquete hasta
+completar su configuración y revisión. El alcance es la prueba interna en Dev.
+
 ## Alta personal realizada · 05/11/2026
 
 Javier completa y paga el registro de una cuenta personal de Google Play.
