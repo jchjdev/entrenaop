@@ -1,5 +1,10 @@
 # Registro de decisiones vigentes
 
+**Nombre editable de las preparaciones en ADMIN · 20/11/2026.** Javier pide
+editar el título de la preparación desde su ficha en ADMIN. Se guarda sobre la
+misma preparación y el nombre del catálogo sigue en el editor del baremo.
+[Alcance](PHYSICAL_ASSESSMENT_DOMAIN.md#editar-el-nombre-de-una-preparación).
+
 **Moderación directa de fichas en ADMIN · 20/11/2026.** Javier aprueba que el
 responsable de cuentas pueda suspender o restablecer una ficha del directorio
 desde Cuentas y Pro, aunque nadie la haya denunciado. Cada cambio guarda un

@@ -390,6 +390,15 @@ en Herramientas. En Evolución se accede a «Mis tests TGCF» y la pantalla de
 registros se titula «Historial TGCF». «Mejora FAS» identifica el programa de
 entrenamiento. Se conservan los identificadores, enlaces, baremos e historial.
 
+### Editar el nombre de una preparación
+
+En ADMIN, dentro de **Preparaciones**, el botón **Editar nombre de la preparación**
+cambia el título que usa el listado, la ficha y las pantallas del deportista que
+muestran esa preparación. Está disponible para borradores y publicadas, incluidas
+las integradas de Tropa y Evaluación periódica FAS. Guardar requiere segundo factor,
+conserva el identificador y no modifica catálogos, baremos, intentos ni resultados.
+El nombre del catálogo se sigue editando y publicando con su propia revisión.
+
 ### Borrado individual en Historial TGCF
 
 La ficha desplegada de un test propio independiente ofrece «Eliminar test».

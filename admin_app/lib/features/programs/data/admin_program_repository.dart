@@ -343,6 +343,11 @@ abstract class AdminProgramRepository {
   );
   Future<bool> hasAccess();
   Future<List<AdminProgram>> listPrograms();
+  Future<void> renameProgram(
+    String programId, {
+    required String expectedName,
+    required String name,
+  });
   Future<void> createDraft({required String name, required String kind});
   Future<List<String>> assessmentIssues(String programId);
   Future<void> publishAssessment(String programId);
@@ -446,6 +451,22 @@ class SupabaseAdminProgramRepository implements AdminProgramRepository {
         .select('id,name,kind,enabled')
         .order('name');
     return rows.map(AdminProgram.fromJson).toList();
+  }
+
+  @override
+  Future<void> renameProgram(
+    String programId, {
+    required String expectedName,
+    required String name,
+  }) async {
+    await _client.rpc(
+      'admin_rename_preparation_program',
+      params: {
+        'p_program_id': programId,
+        'p_expected_name': expectedName,
+        'p_name': name,
+      },
+    );
   }
 
   @override

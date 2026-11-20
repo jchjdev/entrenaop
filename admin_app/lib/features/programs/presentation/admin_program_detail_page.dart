@@ -42,6 +42,8 @@ class AdminProgramDetailPage extends StatefulWidget {
 }
 
 class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
+  String? _renamedProgram;
+  String get _programName => _renamedProgram ?? widget.program.name;
   late Future<List<AdminProgramTest>> _tests = widget.repository.listTests(
     widget.program.id,
   );
@@ -78,6 +80,84 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
     icon: Icon(icon),
     label: Text(label),
   );
+
+  Future<void> _renameProgram() async {
+    final previousName = _programName;
+    final form = GlobalKey<FormState>();
+    var name = previousName;
+    final savedName = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => RetainedSaveDialog<String>(
+        save: (value) => widget.repository.renameProgram(
+          widget.program.id,
+          expectedName: previousName,
+          name: value,
+        ),
+        errorMessage: 'No se pudo guardar el nombre. Puedes reintentar o volver a abrir la preparación para comprobar si el título ha cambiado.',
+        builder: (context, submit, saving, error, markDirty) => AlertDialog(
+          scrollable: true,
+          title: const Text('Editar nombre de la preparación'),
+          content: SizedBox(
+            width: 460,
+            child: Form(
+              key: form,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Este título se muestra en Preparaciones y en la app del deportista. El nombre del baremo se edita en Evaluación.',
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    initialValue: previousName,
+                    maxLength: 120,
+                    decoration: const InputDecoration(
+                      labelText: 'Nombre de la preparación',
+                    ),
+                    onChanged: (value) {
+                      name = value.trim();
+                      markDirty(name != previousName);
+                    },
+                    validator: (value) {
+                      final length = value?.trim().runes.length ?? 0;
+                      return length < 3 || length > 120
+                          ? 'Escribe entre 3 y 120 caracteres.'
+                          : null;
+                    },
+                  ),
+                  if (error != null)
+                    Text(
+                      error,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: saving ? null : () => Navigator.of(context).maybePop(),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: saving
+                  ? null
+                  : () {
+                      if (form.currentState!.validate()) submit(name);
+                    },
+              child: Text(saving ? 'Guardando…' : 'Guardar nombre'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (!mounted || savedName == null) return;
+    setState(() => _renamedProgram = savedName);
+  }
 
   Future<void> _setRunningModule(String testId, {required bool enabled}) async {
     setState(() => _saving = true);
@@ -117,7 +197,7 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
         ),
         errorMessage: 'No se pudo crear la versión. Revisa sus datos e inténtalo otra vez.',
         builder: (_, submit, saving, error, markDirty) => _CloneVersionDialog(
-          initialName: '${widget.program.name} · nueva edición',
+          initialName: '$_programName · nueva edición',
           oldVersion: rule.version,
           initialVersion: '${rule.version}_v2',
           onSubmit: submit,
@@ -395,7 +475,7 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text(widget.program.name)),
+    appBar: AppBar(title: Text(_programName)),
     body: Center(
       child: ConstrainedBox(
         constraints: ProfessionalWorkspaceScope.pageConstraints(
@@ -449,7 +529,7 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          widget.program.name,
+          _programName,
           key: _contentSection,
           style: Theme.of(context).textTheme.headlineMedium,
         ),
@@ -460,6 +540,15 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
               : widget.program.enabled
               ? 'Programa publicado · las pruebas existentes se conservan.'
               : 'Borrador · define sus pruebas antes de publicarlo.',
+        ),
+        const SizedBox(height: 12),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: OutlinedButton.icon(
+            onPressed: _saving ? null : _renameProgram,
+            icon: const Icon(Icons.edit_outlined),
+            label: const Text('Editar nombre de la preparación'),
+          ),
         ),
         if (!widget.program.enabled && !_builtin) ...[
           const SizedBox(height: 12),
@@ -497,7 +586,7 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
                   insetPadding: const EdgeInsets.all(20),
                   child: ProgramCoverEditor(
                     programId: widget.program.id,
-                    programName: widget.program.name,
+                    programName: _programName,
                     repository: widget.coverRepository!,
                   ),
                 ),

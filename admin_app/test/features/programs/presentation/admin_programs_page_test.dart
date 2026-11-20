@@ -94,6 +94,24 @@ class _FakeRepository implements AdminProgramRepository {
   }
 
   @override
+  Future<void> renameProgram(
+    String programId, {
+    required String expectedName,
+    required String name,
+  }) async {
+    await _beforeSave('rename');
+    final index = programs.indexWhere((program) => program.id == programId);
+    final current = programs[index];
+    if (current.name != expectedName) throw StateError('Nombre desfasado');
+    programs[index] = AdminProgram(
+      id: current.id,
+      name: name,
+      kind: current.kind,
+      enabled: current.enabled,
+    );
+  }
+
+  @override
   Future<void> createDraft({required String name, required String kind}) async {
     createCalls++;
     if (failCreate) throw StateError('Sin conexión');
@@ -1164,6 +1182,60 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(AdminProgramsPage), findsOneWidget);
       expect(router.routeInformationProvider.value.uri.path, '/programs');
+    },
+  );
+
+  testWidgets(
+    'el título de una preparación integrada se guarda y se vuelve a listar',
+    (tester) async {
+      const oldName = 'Evaluación periódica FAS · 2027 (PAFAS/PAEF)';
+      const newName = 'Evaluación periódica FAS · TGCF 2027';
+      final repository = _FakeRepository(allowed: true)
+        ..programs.add(
+          const AdminProgram(
+            id: 'fas_periodic_assessment',
+            name: oldName,
+            kind: 'internal_assessment',
+            enabled: true,
+          ),
+        )
+        ..failSaves.add('rename');
+      final router = createAdminRouter(
+        programs: repository,
+        workouts: _FakeWorkouts(),
+        exercises: _FakeExercises(),
+        onSignOut: () {},
+        initialLocation: '/programs',
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+      await _tapVisible(tester, oldName);
+      await _tapVisible(tester, 'Editar nombre de la preparación');
+      final nameField = find.widgetWithText(
+        TextFormField,
+        'Nombre de la preparación',
+      );
+      await tester.enterText(nameField, newName);
+      await _tapVisible(tester, 'Guardar nombre');
+      expect(
+        find.textContaining('No se pudo guardar el nombre'),
+        findsOneWidget,
+      );
+      expect(find.text(newName), findsOneWidget);
+      expect(repository.programs.single.name, oldName);
+
+      repository.failSaves.clear();
+      await _tapVisible(tester, 'Guardar nombre');
+      expect(find.text(newName), findsNWidgets(2));
+      expect(repository.programs.single.enabled, isTrue);
+      expect(repository.programs.single.id, 'fas_periodic_assessment');
+
+      router.pop();
+      await tester.pumpAndSettle();
+      expect(find.byType(AdminProgramsPage), findsOneWidget);
+      expect(find.text(newName), findsOneWidget);
+      expect(find.text(oldName), findsNothing);
     },
   );
 
