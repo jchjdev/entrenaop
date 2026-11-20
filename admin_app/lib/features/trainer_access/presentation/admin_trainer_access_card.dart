@@ -17,7 +17,9 @@ class AdminTrainerAccessCard extends StatefulWidget {
 class _AdminTrainerAccessCardState extends State<AdminTrainerAccessCard> {
   final _limit = TextEditingController(), _reason = TextEditingController();
   final _suspensionReason = TextEditingController();
+  final _directoryReason = TextEditingController();
   TrainerManagement? _management;
+  DirectoryModerationStatus? _directoryModeration;
   TrainerAccessChange? _pending;
   TrainerSuspensionChange? _pendingSuspension;
   bool _busy = true, _enabled = false;
@@ -34,6 +36,7 @@ class _AdminTrainerAccessCardState extends State<AdminTrainerAccessCard> {
     _limit.dispose();
     _reason.dispose();
     _suspensionReason.dispose();
+    _directoryReason.dispose();
     super.dispose();
   }
 
@@ -48,6 +51,7 @@ class _AdminTrainerAccessCardState extends State<AdminTrainerAccessCard> {
       if (!mounted) return;
       setState(() {
         _management = management;
+        _directoryModeration = management.directoryModeration;
         _pending = null;
         _pendingSuspension = null;
         _enabled = management.manualEnabled;
@@ -217,6 +221,75 @@ class _AdminTrainerAccessCardState extends State<AdminTrainerAccessCard> {
     }
   }
 
+  Future<void> _moderateDirectory(DirectoryModerationStatus status) async {
+    if (_busy) return;
+    final suspend = !status.suspended;
+    _directoryReason.clear();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, update) => EntrenaDialog(
+          title: Text(suspend ? 'Suspender ficha' : 'Restablecer ficha'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                suspend
+                    ? 'La ficha quedará oculta en el directorio. El entrenador podrá seguir usando Trainer.'
+                    : 'Si la ficha sigue publicada y tiene permiso para aparecer, volverá a verse en el directorio.',
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _directoryReason,
+                maxLength: 1000,
+                minLines: 2,
+                maxLines: 4,
+                onChanged: (_) => update(() {}),
+                decoration: const InputDecoration(
+                  labelText: 'Motivo de la decisión',
+                  helperText: 'Mínimo 5 caracteres',
+                ),
+              ),
+              const SizedBox(height: 16),
+              EntrenaDialogActions(
+                primaryLabel: suspend ? 'Confirmar suspensión' : 'Restablecer',
+                onPrimary: _directoryReason.text.trim().length >= 5
+                    ? () => Navigator.pop(context, true)
+                    : null,
+                secondary: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('Volver'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          actions: const [],
+        ),
+      ),
+    );
+    if (confirmed != true || !mounted || _busy) return;
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      final updated = await widget.repository.moderateDirectoryProfile(
+        widget.userId,
+        suspend: suspend,
+        revision: status.revision,
+        reason: _directoryReason.text.trim(),
+      );
+      if (mounted) setState(() => _directoryModeration = updated);
+    } catch (e) {
+      if (mounted) setState(() => _error = trainerError(e));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final editable =
@@ -281,6 +354,26 @@ class _AdminTrainerAccessCardState extends State<AdminTrainerAccessCard> {
                 const Text(
                   'Hay una operación sin confirmar. Reintenta la misma petición o actualiza para consultar su estado.',
                 ),
+              if (_directoryModeration case final status?) ...[
+                const Divider(height: 32),
+                Text(
+                  'Ficha del directorio',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                Text(
+                  status.suspended
+                      ? 'Ficha suspendida'
+                      : 'Sin suspensión de moderación',
+                ),
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  onPressed: _busy ? null : () => _moderateDirectory(status),
+                  icon: Icon(status.suspended ? Icons.lock_open : Icons.block),
+                  label: Text(
+                    status.suspended ? 'Restablecer ficha' : 'Suspender ficha',
+                  ),
+                ),
+              ],
               const Divider(height: 32),
               Text(
                 'Acceso regalado',

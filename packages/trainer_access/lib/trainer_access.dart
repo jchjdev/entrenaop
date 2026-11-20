@@ -102,6 +102,15 @@ class TrainerInvitationPreview {
   final DateTime expiresAt;
 }
 
+class DirectoryModerationStatus {
+  DirectoryModerationStatus.fromJson(Json json)
+    : suspended = json['suspended'] == true,
+      revision = (json['revision'] as num).toInt();
+
+  final bool suspended;
+  final int revision;
+}
+
 class TrainerManagement {
   TrainerManagement.fromJson(Json json)
     : access = TrainerAccess.fromJson(Json.from(json['access'] as Map)),
@@ -111,7 +120,12 @@ class TrainerManagement {
       directorySource = json['directory_source'] as String?,
       manualLimit = (json['manual_client_limit'] as num?)?.toInt() ?? 1,
       manualValidUntil = _date(json['manual_valid_until']),
-      suspensionReason = json['suspension_reason'] as String?;
+      suspensionReason = json['suspension_reason'] as String?,
+      directoryModeration = json['directory_moderation'] is Map
+          ? DirectoryModerationStatus.fromJson(
+              Json.from(json['directory_moderation'] as Map),
+            )
+          : null;
   final TrainerAccess access;
   final bool enabled;
   final bool manualEnabled;
@@ -120,6 +134,7 @@ class TrainerManagement {
   final int manualLimit;
   final DateTime? manualValidUntil;
   final String? suspensionReason;
+  final DirectoryModerationStatus? directoryModeration;
 }
 
 // Identidad y secreto se conservan juntos en memoria al reintentar una creación
@@ -223,6 +238,12 @@ abstract class TrainerRepository {
   Future<TrainerManagement> management(String trainerId);
   Future<TrainerAccess> changeAccess(TrainerAccessChange change);
   Future<TrainerAccess> changeSuspension(TrainerSuspensionChange change);
+  Future<DirectoryModerationStatus> moderateDirectoryProfile(
+    String trainerId, {
+    required bool suspend,
+    required int revision,
+    required String reason,
+  });
 }
 
 class SupabaseTrainerRepository implements TrainerRepository {
@@ -397,6 +418,24 @@ class SupabaseTrainerRepository implements TrainerRepository {
         'p_suspended': change.suspended,
         'p_expected_revision': change.revision,
         'p_reason': change.reason,
+      }),
+    ),
+  );
+
+  @override
+  Future<DirectoryModerationStatus> moderateDirectoryProfile(
+    String trainerId, {
+    required bool suspend,
+    required int revision,
+    required String reason,
+  }) async => DirectoryModerationStatus.fromJson(
+    _json(
+      await _rpc('directory_moderate_profile', {
+        'p_expected_owner': userId,
+        'p_trainer_id': trainerId,
+        'p_suspend': suspend,
+        'p_expected_revision': revision,
+        'p_reason': reason,
       }),
     ),
   );

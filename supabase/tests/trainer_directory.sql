@@ -3,6 +3,7 @@ set local statement_timeout='30s';
 do $$
 declare coach uuid:=gen_random_uuid(); pupil uuid:=gen_random_uuid(); stranger uuid:=gen_random_uuid();
  offer uuid:=gen_random_uuid(); j jsonb; data jsonb; pid uuid; rev integer; report_id uuid; manager uuid:=gen_random_uuid();
+ access_before jsonb;
 begin
  perform set_config('storage.operation','object.get_authenticated',true);
  insert into auth.users(id,email,email_confirmed_at) values(coach,coach||'@directory.invalid',now()),(pupil,pupil||'@directory.invalid',now()),(stranger,stranger||'@directory.invalid',now());
@@ -42,6 +43,40 @@ begin
  if jsonb_array_length(public.directory_search(p_web_only=>false)->'items')<>0 then raise exception 'Anon ve solo app';end if;
  begin perform public.directory_profile(pid,false);raise exception 'Anon abre solo app';exception when insufficient_privilege then null;end;
  if exists(select 1 from storage.objects where bucket_id='trainer-directory' and name=data->>'photo_path') then raise exception 'Anon ve foto privada';end if;
+ reset role;
+ perform set_config('request.jwt.claim.sub',coach::text,true);perform set_config('request.jwt.claims',jsonb_build_object('sub',coach,'role','authenticated','aal','aal2')::text,true);
+ set local role authenticated;
+ begin perform public.directory_moderate_profile(coach,coach,true,rev,'Motivo ajeno');raise exception 'Entrenador puede moderar';exception when insufficient_privilege then null;end;
+ reset role;
+ perform set_config('request.jwt.claim.sub',manager::text,true);perform set_config('request.jwt.claims',jsonb_build_object('sub',manager,'role','authenticated','aal','aal1')::text,true);
+ set local role authenticated;
+ begin perform public.directory_moderate_profile(manager,coach,true,rev,'Motivo sin MFA');raise exception 'Admin pudo moderar sin MFA';exception when insufficient_privilege then null;end;
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',manager,'role','authenticated','aal','aal2')::text,true);
+ j:=public.get_trainer_management_status(coach);
+ access_before:=j->'access';
+ if (j->'directory_moderation') is distinct from jsonb_build_object('suspended',false,'revision',rev)
+   or (public.get_trainer_management_status(stranger)->'directory_moderation') is distinct from 'null'::jsonb then
+   raise exception 'Estado de moderación incorrecto en la cuenta';end if;
+ begin perform public.directory_moderate_profile(manager,coach,true,rev,'   ');raise exception 'Aceptó motivo vacío';exception when invalid_parameter_value then null;end;
+ j:=public.directory_moderate_profile(manager,coach,true,rev,'  Suspensión sin denuncia  ');
+ if j is distinct from jsonb_build_object('suspended',true,'revision',rev+1) then raise exception 'No suspendió la ficha';end if;
+ begin perform public.directory_moderate_profile(manager,coach,false,rev,'Estado desfasado');raise exception 'Aceptó revisión antigua';exception when serialization_failure then null;end;
+ reset role;
+ if exists(select 1 from directory_private.reports where profile_id=pid)
+   or not exists(select 1 from directory_private.moderation_events e
+     where e.profile_id=pid and e.report_id is null and e.actor_id=manager
+       and e.suspended and e.reason='Suspensión sin denuncia') then
+   raise exception 'La moderación directa no guardó la decisión correctamente';end if;
+ perform set_config('request.jwt.claim.sub',pupil::text,true);perform set_config('request.jwt.claims',jsonb_build_object('sub',pupil,'role','authenticated','aal','aal1')::text,true);
+ set local role authenticated;
+ begin perform public.directory_profile(pid,false);raise exception 'La suspensión directa dejó abierta la ficha';exception when insufficient_privilege then null;end;
+ reset role;
+ perform set_config('request.jwt.claim.sub',manager::text,true);perform set_config('request.jwt.claims',jsonb_build_object('sub',manager,'role','authenticated','aal','aal2')::text,true);
+ set local role authenticated;
+ j:=public.directory_moderate_profile(manager,coach,false,rev+1,'Restitución directa');
+ if j is distinct from jsonb_build_object('suspended',false,'revision',rev+2)
+   or (public.get_trainer_management_status(coach)->'access') is distinct from access_before then
+   raise exception 'La moderación alteró el acceso profesional o no restableció la ficha';end if;
  reset role;
  perform set_config('request.jwt.claim.sub',pupil::text,true);perform set_config('request.jwt.claims',jsonb_build_object('sub',pupil,'role','authenticated','aal','aal1')::text,true);
  set local role authenticated;

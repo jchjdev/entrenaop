@@ -14,6 +14,9 @@ class FakeTrainerRepository implements TrainerRepository {
   List<TrainerInvitationDraft> drafts = [];
   List<TrainerAccessChange> changes = [];
   List<TrainerSuspensionChange> suspensionChanges = [];
+  final directoryModerationCalls =
+      <({String trainerId, bool suspend, int revision, String reason})>[];
+  Map<String, dynamic>? directoryModeration;
   bool manualEnabled = true;
   bool manualDirectoryEnabled = false;
   String? directorySource;
@@ -139,6 +142,7 @@ class FakeTrainerRepository implements TrainerRepository {
         'manual_client_limit': manualLimit,
         'manual_valid_until': manualValidUntil?.toIso8601String(),
         'suspension_reason': suspensionReason,
+        'directory_moderation': directoryModeration,
         'access': {
           'trainer_id': trainerId,
           'enabled': current.enabled,
@@ -172,6 +176,24 @@ class FakeTrainerRepository implements TrainerRepository {
     });
     suspensionReason = change.suspended ? change.reason : null;
     return current;
+  }
+
+  @override
+  Future<DirectoryModerationStatus> moderateDirectoryProfile(
+    String trainerId, {
+    required bool suspend,
+    required int revision,
+    required String reason,
+  }) async {
+    directoryModerationCalls.add((
+      trainerId: trainerId,
+      suspend: suspend,
+      revision: revision,
+      reason: reason,
+    ));
+    if (saveError != null) throw saveError!;
+    directoryModeration = {'suspended': suspend, 'revision': revision + 1};
+    return DirectoryModerationStatus.fromJson(directoryModeration!);
   }
 
   @override

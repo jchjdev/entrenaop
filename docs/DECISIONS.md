@@ -1,5 +1,11 @@
 # Registro de decisiones vigentes
 
+**Moderación directa de fichas en ADMIN · 20/11/2026.** Javier aprueba que el
+responsable de cuentas pueda suspender o restablecer una ficha del directorio
+desde Cuentas y Pro, aunque nadie la haya denunciado. Cada cambio guarda un
+motivo y afecta solo a la ficha. La baja definitiva sigue fuera de este alcance.
+[Contrato](TRAINER_PLATFORM.md#moderación-directa-de-fichas-en-admin).
+
 **Primera beta interna en Google Play · 20/11/2026.** Javier encarga preparar
 la distribución privada por enlace. Se mantiene la firma de distribución de
 Google Play y se acepta que la APK previa requiere instalación limpia para

@@ -224,6 +224,53 @@ void main() {
     },
   );
 
+  testWidgets('modera la ficha directamente y conserva el acceso profesional', (
+    tester,
+  ) async {
+    final repo = FakeTrainerRepository()
+      ..directoryModeration = {'suspended': false, 'revision': 7};
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: ListView(
+            children: [
+              AdminTrainerAccessCard(repository: repo, userId: 'trainer-a'),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await press(tester, 'Suspender ficha');
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.widgetWithText(FilledButton, 'Confirmar suspensión'),
+          )
+          .onPressed,
+      isNull,
+    );
+    final reasonField = find.widgetWithText(TextField, 'Motivo de la decisión');
+    await tester.enterText(reasonField, '   Información engañosa   ');
+    await press(tester, 'Confirmar suspensión');
+    expect(repo.directoryModerationCalls.single, (
+      trainerId: 'trainer-a',
+      suspend: true,
+      revision: 7,
+      reason: 'Información engañosa',
+    ));
+    expect(find.text('Ficha suspendida'), findsOneWidget);
+
+    await press(tester, 'Restablecer ficha');
+    await tester.enterText(reasonField, 'Información corregida');
+    await press(tester, 'Restablecer');
+    expect(repo.directoryModerationCalls.last.suspend, isFalse);
+    expect(repo.directoryModerationCalls.last.revision, 8);
+    expect(find.text('Sin suspensión de moderación'), findsOneWidget);
+    expect(repo.suspensionChanges, isEmpty);
+    expect(repo.changes, isEmpty);
+  });
+
   testWidgets(
     'reintenta exactamente la suspensión tras una respuesta incierta',
     (tester) async {

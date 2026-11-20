@@ -780,6 +780,20 @@ Verificación local con análisis limpios en raíz y Trainer, 30 pruebas del
 directorio en la app y 10 del editor y los avisos en Trainer. Capturas revisadas
 de los widgets reales con datos simulados. App `1.25.1+58` y Trainer `0.14.1+35`.
 
+### Moderación directa de fichas en ADMIN
+
+En **Cuentas y Pro**, el responsable de cuentas puede abrir la cuenta de un
+entrenador y usar **Ficha del directorio → Suspender ficha** o **Restablecer
+ficha** si ya existe una ficha. Cada cambio requiere MFA y un motivo de 5 a
+1000 caracteres. Quedan registrados la ficha, el administrador, el motivo y
+la fecha. Desde **Denuncias del directorio** se conserva el proceso de revisión
+de las denuncias existentes.
+
+Suspender oculta la ficha en búsquedas, favoritos y enlaces directos, incluida
+su foto en nuevas peticiones. Restablecer recupera la visibilidad si la ficha
+sigue publicada y cumple los requisitos de su canal. La operación conserva el
+acceso a Trainer, la cuenta de deportista, el historial y la suscripción.
+
 ### Formulario de denuncia en móvil · 02/11/2026
 
 Se corrige el solapamiento entre la explicación, el motivo y el comentario en
