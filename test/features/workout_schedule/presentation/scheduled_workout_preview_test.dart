@@ -22,6 +22,36 @@ import 'package:go_router/go_router.dart';
 import 'package:workout_core/performance_set.dart';
 
 void main() {
+  for (final withPhone in [false, true]) {
+    final action = withPhone ? 'Empezar con el móvil' : 'Registrar manualmente';
+    testWidgets(
+      'el rodaje permite elegir $action en la pauta',
+      (tester) async {
+        final repository = _PreviewRepository()
+          ..preview = scheduledWorkoutPreviewFixture(blocks: [_continuousRun]);
+        final cubit = _cubit(repository);
+        final router = _router(cubit, direct: true);
+        addTearDown(cubit.close);
+        addTearDown(router.dispose);
+        await cubit.load();
+        await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Registrar manualmente'), findsOneWidget);
+        expect(find.text('Empezar con el móvil'), findsOneWidget);
+        await tester.tap(find.text(action));
+        await tester.pumpAndSettle();
+
+        expect(repository.startedRevisions, ['revision-3']);
+        expect(cubit.state.startWithPhone, withPhone);
+        expect(router.state.extra, withPhone ? true : null);
+      },
+      variant: TargetPlatformVariant.only(
+        withPhone ? TargetPlatform.android : TargetPlatform.iOS,
+      ),
+    );
+  }
+
   testWidgets(
     'una pauta pendiente abre la ficha actual sin iniciar la sesión',
     (tester) async {
@@ -38,6 +68,7 @@ void main() {
       await cubit.load();
       await tester.pumpWidget(MaterialApp.router(routerConfig: router));
       await tester.pumpAndSettle();
+      expect(find.text('Empezar con el móvil'), findsNothing);
       final action = find.byTooltip('Ver ficha de Sentadilla');
       await tester.ensureVisible(action);
       await tester.pumpAndSettle();
@@ -630,12 +661,36 @@ class _ExerciseDetails extends Fake implements ExerciseRepository {
   }
 }
 
+const _continuousRun = WorkoutBlock(
+  id: 'continuous',
+  name: 'Rodaje fácil',
+  format: WorkoutBlockFormat.running,
+  rounds: 1,
+  restAfterSeconds: 0,
+  items: [
+    WorkoutItem(
+      id: 'run',
+      exerciseId: runningExerciseId,
+      exerciseName: 'Carrera',
+      sets: [
+        WorkoutSet(
+          id: 'work',
+          order: 0,
+          targetDurationSeconds: 1800,
+          restAfterSeconds: 0,
+        ),
+      ],
+    ),
+  ],
+);
+
 ScheduledWorkoutPreview scheduledWorkoutPreviewFixture({
   int version = 3,
   ScheduledWorkoutStatus status = ScheduledWorkoutStatus.planned,
   DateTime? scheduledDate,
   bool proRequired = false,
   ScheduledWorkoutSource source = ScheduledWorkoutSource.coach,
+  List<WorkoutBlock>? blocks,
 }) => ScheduledWorkoutPreview(
   proRequired: proRequired,
   scheduled: ScheduledWorkout(
@@ -660,7 +715,7 @@ ScheduledWorkoutPreview scheduledWorkoutPreviewFixture({
     description: 'Pauta individual',
     estimatedDurationMinutes: 45,
     version: version,
-    blocks: const [
+    blocks: blocks ?? const [
       WorkoutBlock(
         id: 'strength',
         name: 'Fuerza pautada',

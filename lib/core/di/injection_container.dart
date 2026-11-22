@@ -10,6 +10,12 @@ import 'package:entrenaop/features/workouts/domain/usecases/workout_result_revie
 import 'package:trainer_access/profile_photo/domain.dart';
 import 'package:trainer_access/profile_photo/data.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_session_draft_store.dart';
+
+import '../../features/workouts/data/services/method_channel_phone_run_location.dart';
+import '../../features/workouts/data/services/shared_preferences_phone_run_checkpoints.dart';
+import '../../features/workouts/domain/services/phone_running.dart';
+import '../../features/workouts/presentation/bloc/phone_run_cubit.dart';
+
 import 'package:entrenaop/features/guided_programs/domain/guided_program_repository.dart';
 import 'package:entrenaop/features/guided_programs/data/supabase_guided_program_repository.dart';
 
@@ -177,6 +183,22 @@ Future<void> initDependencies() async {
     () => SharedPreferencesWorkoutSessionDraftStore(
       sharedPreferences,
       userId: sl<SupabaseClient>().auth.currentUser?.id,
+    ),
+  );
+  sl.registerLazySingleton<PhoneRunLocationSource>(
+    MethodChannelPhoneRunLocation.new,
+  );
+  sl.registerFactory<PhoneRunCheckpoints>(
+    () => SharedPreferencesPhoneRunCheckpoints(
+      sharedPreferences,
+      userId: sl<SupabaseClient>().auth.currentUser?.id,
+    ),
+  );
+  sl.registerFactoryParam<PhoneRunCubit, String, void>(
+    (executionId, _) => PhoneRunCubit(
+      executionId: executionId,
+      location: sl(),
+      checkpoints: sl(),
     ),
   );
   sl.registerFactory<WorkoutAmrapDraftStore>(

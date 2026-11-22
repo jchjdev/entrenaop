@@ -46,6 +46,7 @@ import 'package:entrenaop/features/trainers/presentation/pages/student_assigned_
 import 'package:entrenaop/features/trainers/presentation/pages/professional_hub_page.dart';
 import 'package:entrenaop/features/trainers/presentation/pages/professional_technique_page.dart';
 import 'package:entrenaop/features/workouts/data/services/client_technique_repository.dart';
+import 'package:entrenaop/features/workouts/domain/services/phone_running.dart';
 
 import 'package:entrenaop/core/router/material_app_route.dart';
 import 'package:entrenaop/core/router/device_activities_route.dart';
@@ -601,6 +602,10 @@ class AppRouter {
                                 child: ActiveWorkoutPage(
                                   timerStore: sl(),
                                   cueService: sl(),
+                                  createPhoneRun: (id) => sl(param1: id),
+                                  clearPhoneRun: (id) =>
+                                      sl<PhoneRunCheckpoints>().clear(id),
+                                  startWithPhone: state.extra == true,
                                 ),
                               ),
                             ),
@@ -615,6 +620,9 @@ class AppRouter {
                             child: ActiveWorkoutPage(
                               timerStore: sl(),
                               cueService: sl(),
+                              createPhoneRun: (id) => sl(param1: id),
+                              clearPhoneRun: (id) =>
+                                  sl<PhoneRunCheckpoints>().clear(id),
                             ),
                           ),
                         ),

@@ -1,5 +1,37 @@
 # Sesión, tiempo y ancho de Mi semana · UI-019/020 · 08/10/2026
 
+## Rodaje pautado con el móvil
+
+En **Mi semana → Ver entrenamiento**, la ficha de un rodaje de un solo tramo
+continuo por tiempo ofrece **Registrar manualmente** y **Empezar con el
+móvil** en Android e iOS. Ambas opciones abren la misma ejecución pautada
+y conservan sus comprobaciones de revisión, acceso e historial. El GPS se
+solicita al elegir el móvil. Android usa un servicio de ubicación con
+notificación e iOS usa Core Location con autorización de uso e indicador
+del sistema durante la sesión activa.
+
+El cronómetro empieza al obtener la primera posición válida y vuelve a
+esperar señal tras una pausa. **Pausar**, **Terminar grabación** y salir del
+ejecutor cancelan las actualizaciones de ubicación. Los cambios de señal
+conservan el tiempo activo. Si falta un tramo de la medición, se muestra la
+distancia parcial y el deportista puede llevar el tiempo al registro manual
+para introducir una distancia conocida. La grabación guarda periódicamente
+tiempo y distancia agregados en un borrador local por cuenta y ejecución.
+Tras una interrupción, abre en pausa y pide revisar la distancia. Las
+coordenadas se usan en memoria. El resultado confirmado sigue el contrato de
+registro propio, con la distancia en metros, el tiempo en segundos y el
+esfuerzo declarado en el cierre habitual.
+
+La aceptación física compara ambos móviles en la calle 1 de una pista
+medida. Se esperan señal y cronómetro, se corre con las pantallas
+bloqueadas, se pausa y se comprueba la salida del indicador de ubicación.
+Al reanudar se excluyen el tiempo y el desplazamiento de la pausa. Al terminar
+se compara la distancia con las vueltas medidas y se revisa el resultado en
+Mi semana. Para grabar simultáneamente, usar dos cuentas de Dev con pautas
+independientes y comprobar ambos guardados.
+La precisión y el consumo quedan pendientes de esa prueba. El guiado de
+series y los avisos por tramo se decidirán después del rodaje.
+
 ## Carga real opcional en fuerza
 
 Desde el 12/11/2026 el registro de una serie de fuerza permite indicar los

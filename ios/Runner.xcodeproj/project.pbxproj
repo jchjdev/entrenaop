@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		A10C20261010000100000001 /* WorkoutVibration.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10C20261010000100000002 /* WorkoutVibration.swift */; };
+		A10C20261122000100000001 /* PhoneRunLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10C20261122000100000002 /* PhoneRunLocation.swift */; };
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
 		331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C807B294A618700263BE5 /* RunnerTests.swift */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
@@ -43,6 +44,7 @@
 
 /* Begin PBXFileReference section */
 		A10C20261010000100000002 /* WorkoutVibration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutVibration.swift; sourceTree = "<group>"; };
+		A10C20261122000100000002 /* PhoneRunLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneRunLocation.swift; sourceTree = "<group>"; };
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
 		331C807B294A618700263BE5 /* RunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunnerTests.swift; sourceTree = "<group>"; };
@@ -123,6 +125,7 @@
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				A10C20261010000100000002 /* WorkoutVibration.swift */,
+				A10C20261122000100000002 /* PhoneRunLocation.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 			);
 			path = Runner;
@@ -286,6 +289,7 @@
 			files = (
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
 				A10C20261010000100000001 /* WorkoutVibration.swift in Sources */,
+				A10C20261122000100000001 /* PhoneRunLocation.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -45,6 +45,12 @@
 	<string>Selecciona imágenes de tu galería para tu foto de perfil y tus ejercicios personales.</string>
 	<key>NSHealthShareUsageDescription</key>
 	<string>EntrenaOP lee tus carreras, pulsaciones y esfuerzo que autorices para mostrar sus datos. Si activas la recogida automática, vincula tus pautas y comparte sus resultados con tu preparador.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>EntrenaOP usa tu ubicación precisa durante la grabación de una carrera con el móvil para medir la distancia, incluso con la pantalla bloqueada.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

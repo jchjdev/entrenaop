@@ -22,6 +22,7 @@ class ScheduledWorkoutPreviewState extends Equatable {
     this.executionId,
     this.message,
     this.refreshRequired = false,
+    this.startWithPhone = false,
   });
 
   final ScheduledWorkoutPreviewStatus status;
@@ -29,6 +30,7 @@ class ScheduledWorkoutPreviewState extends Equatable {
   final String? executionId;
   final String? message;
   final bool refreshRequired;
+  final bool startWithPhone;
 
   bool get busy =>
       status == ScheduledWorkoutPreviewStatus.loading ||
@@ -47,6 +49,7 @@ class ScheduledWorkoutPreviewState extends Equatable {
     executionId,
     message,
     refreshRequired,
+    startWithPhone,
   ];
 }
 
@@ -112,7 +115,7 @@ class ScheduledWorkoutPreviewCubit extends Cubit<ScheduledWorkoutPreviewState> {
     }
   }
 
-  Future<void> start() async {
+  Future<void> start({bool withPhone = false}) async {
     if (isClosed || !state.canStart) return;
     final preview = state.preview!;
     final request = ++_request;
@@ -130,6 +133,7 @@ class ScheduledWorkoutPreviewCubit extends Cubit<ScheduledWorkoutPreviewState> {
           status: ScheduledWorkoutPreviewStatus.ready,
           preview: preview,
           executionId: executionId,
+          startWithPhone: withPhone,
         ),
       );
     } on OpenWorkoutConflict {

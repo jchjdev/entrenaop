@@ -9,6 +9,8 @@ import '../../../../core/presentation/app_dates.dart';
 import '../../../../core/presentation/widgets/entrena_card.dart';
 import '../../../exercises/domain/entities/exercise_entity.dart';
 import '../../../exercises/presentation/widgets/exercise_detail_sheet.dart';
+import '../../../workouts/domain/services/phone_running.dart';
+import '../../../workouts/presentation/widgets/phone_run_panel.dart';
 import '../../../workouts/presentation/pages/workout_preview_page.dart';
 import '../../../workouts/presentation/open_workout_prompt.dart';
 import '../../../pro/domain/pro_offer.dart';
@@ -88,7 +90,10 @@ class ScheduledWorkoutPreviewPage extends StatelessWidget {
         current.executionId != null &&
         current.executionId != previous.executionId,
     listener: (context, state) async {
-      await context.push('$routeBase/active/${state.executionId}');
+      await context.push(
+        '$routeBase/active/${state.executionId}',
+        extra: state.startWithPhone ? true : null,
+      );
       if (context.mounted) {
         await context.read<ScheduledWorkoutPreviewCubit>().load();
       }
@@ -222,6 +227,8 @@ class _PreviewAction extends StatelessWidget {
     final cubit = context.read<ScheduledWorkoutPreviewCubit>();
     final resuming =
         preview.scheduled.status == ScheduledWorkoutStatus.inProgress;
+    final canRecordWithPhone =
+        phoneRunSupported && isContinuousPhoneRun(preview.workout);
     return Material(
       color: Theme.of(context).colorScheme.surface,
       elevation: 8,
@@ -270,7 +277,7 @@ class _PreviewAction extends StatelessWidget {
                     onPressed: state.busy ? null : cubit.load,
                     child: const Text('Actualizar acceso'),
                   ),
-                ] else if (preview.canStart)
+                ] else if (preview.canStart) ...[
                   FilledButton.icon(
                     key: const ValueKey('scheduled-preview-start'),
                     onPressed: state.canStart
@@ -285,12 +292,29 @@ class _PreviewAction extends StatelessWidget {
                     label: Text(
                       state.busy
                           ? 'Preparando entrenamiento…'
+                          : canRecordWithPhone
+                          ? 'Registrar manualmente'
                           : resuming
                           ? 'Continuar entrenamiento'
                           : 'Comenzar entrenamiento',
                     ),
-                  )
-                else if (preview.hasResult)
+                  ),
+                  if (canRecordWithPhone)
+                    OutlinedButton.icon(
+                      onPressed: state.canStart
+                          ? () => startWithOpenWorkoutPrompt(
+                              context,
+                              () => cubit.start(withPhone: true),
+                            )
+                          : null,
+                      icon: const Icon(Icons.gps_fixed_rounded),
+                      label: Text(
+                        resuming
+                            ? 'Continuar con el móvil'
+                            : 'Empezar con el móvil',
+                      ),
+                    ),
+                ] else if (preview.hasResult)
                   FilledButton.icon(
                     onPressed: () => context.push(
                       '/assessment/history/workouts/${preview.scheduled.executionId}',

@@ -14,6 +14,7 @@ class MainActivity : FlutterActivity() {
     private val workoutVibration by lazy { WorkoutVibration(this) }
     private var vibrationChannel: MethodChannel? = null
     private var screenChannel: MethodChannel? = null
+    private var phoneRunLocation: PhoneRunLocationChannel? = null
     private var notificationPermissionResult: MethodChannel.Result? = null
     private var isForeground = false
     private val isDebug by lazy {
@@ -22,6 +23,7 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        phoneRunLocation = PhoneRunLocationChannel(this, flutterEngine.dartExecutor.binaryMessenger)
         screenChannel = MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             "es.entrenaop/clock_screen",
@@ -121,6 +123,7 @@ class MainActivity : FlutterActivity() {
         grantResults: IntArray,
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        phoneRunLocation?.onPermissionResult(requestCode)
         if (requestCode == NOTIFICATION_PERMISSION_REQUEST) {
             val result = notificationPermissionResult
             notificationPermissionResult = null
@@ -140,6 +143,8 @@ class MainActivity : FlutterActivity() {
     }
 
     override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
+        phoneRunLocation?.close()
+        phoneRunLocation = null
         screenChannel?.setMethodCallHandler(null)
         screenChannel = null
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)

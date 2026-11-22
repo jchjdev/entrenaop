@@ -1,5 +1,12 @@
 # Registro de decisiones vigentes
 
+**Rodaje pautado con el móvil · 22/11/2026.** Javier pide grabar un
+rodaje de Mi semana en Android e iOS con la pantalla bloqueada y detener el
+GPS al pausar o terminar. Confirma que la ficha debe ofrecer el registro
+manual existente junto a la grabación con el móvil. Las series y las señales
+de audio quedan para una decisión posterior.
+[Contrato](SESSION_CONTROLS_2026_10_08.md#rodaje-pautado-con-el-móvil).
+
 **Nombre editable de las preparaciones en ADMIN · 20/11/2026.** Javier pide
 editar el título de la preparación desde su ficha en ADMIN. Se guarda sobre la
 misma preparación y el nombre del catálogo sigue en el editor del baremo.

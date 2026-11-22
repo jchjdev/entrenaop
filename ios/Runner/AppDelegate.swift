@@ -6,6 +6,7 @@ import device_health
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
   private var workoutVibration: WorkoutVibration?
+  private var phoneRunLocation: PhoneRunLocation?
 
   override func application(
     _ application: UIApplication,
@@ -18,6 +19,9 @@ import device_health
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "PhoneRunLocation") {
+      phoneRunLocation = PhoneRunLocation(messenger: registrar.messenger())
+    }
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "WorkoutVibration") {
       workoutVibration = WorkoutVibration(messenger: registrar.messenger())
     }

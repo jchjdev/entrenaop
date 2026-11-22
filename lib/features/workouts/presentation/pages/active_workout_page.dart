@@ -1,6 +1,7 @@
 import 'package:workout_editor_ui/responsive_field_group.dart';
 
 import '../widgets/workout_amrap_entry.dart';
+import '../widgets/phone_run_panel.dart';
 import '../widgets/workout_tabata_entry.dart';
 import '../../domain/entities/workout_amrap_draft.dart';
 import '../widgets/workout_session_records.dart';
@@ -8,6 +9,8 @@ import '../widgets/workout_set_entry.dart';
 import '../widgets/workout_execution_labels.dart';
 import '../widgets/workout_exercise_technique.dart';
 import '../open_workout_prompt.dart';
+import '../../domain/services/phone_running.dart';
+import '../bloc/phone_run_cubit.dart';
 
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_execution_layout.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
@@ -30,18 +33,56 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_closure.dart';
 
-class ActiveWorkoutPage extends StatelessWidget {
+class ActiveWorkoutPage extends StatefulWidget {
   const ActiveWorkoutPage({
     required this.timerStore,
     required this.cueService,
+    this.createPhoneRun,
+    this.clearPhoneRun,
+    this.startWithPhone = false,
     super.key,
   });
 
   final WorkoutTimerStore timerStore;
   final WorkoutCueService cueService;
+  final PhoneRunCubit Function(String executionId)? createPhoneRun;
+  final Future<void> Function(String executionId)? clearPhoneRun;
+  final bool startWithPhone;
+
+  @override
+  State<ActiveWorkoutPage> createState() => _ActiveWorkoutPageState();
+}
+
+class _ActiveWorkoutPageState extends State<ActiveWorkoutPage> {
+  final _phonePanel = GlobalKey<PhoneRunPanelState>();
+  late bool _usingPhone = widget.startWithPhone;
+  late final AppLifecycleListener _lifecycle;
+
+  @override
+  void initState() {
+    super.initState();
+    _lifecycle = AppLifecycleListener(
+      onResume: context.read<ActiveWorkoutCubit>().checkDiscardOnResume,
+    );
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    super.dispose();
+  }
+
+  WorkoutExecutionSet? _phoneSet(WorkoutExecution? execution) =>
+      widget.createPhoneRun != null && phoneRunSupported && execution != null
+      ? continuousPhoneRunSet(execution)
+      : null;
 
   @override
   Widget build(BuildContext context) => WorkflowDraftGuard(
+    beforeExit: () async {
+      await _phonePanel.currentState?.pause();
+      return true;
+    },
     hasUnsavedChanges: () {
       final state = context.read<ActiveWorkoutCubit>().state;
       return state.execution != null &&
@@ -137,6 +178,12 @@ class ActiveWorkoutPage extends StatelessWidget {
   }
 
   Widget _buildContent(BuildContext context) {
+    final phoneMode =
+        _usingPhone &&
+        context.select(
+          (ActiveWorkoutCubit cubit) =>
+              _phoneSet(cubit.state.execution) != null,
+        );
     return Scaffold(
       // AMRAP introduce datos en su propio panel, que gestiona el teclado.
       // Reducir también el circuito de fondo puede colapsarlo en móviles bajos.
@@ -173,30 +220,52 @@ class ActiveWorkoutPage extends StatelessWidget {
           }),
         ),
         actions: [
-          WorkoutCueSettingsButton(cueService: cueService),
-          PopupMenuButton<String>(
-            tooltip: 'Opciones de sesión',
-            onSelected: (action) async {
-              if (action == 'abandon') {
-                await _requestWorkoutAbandonment(context);
-              }
-              if (action == 'discard' && context.mounted) {
-                if (await _requestWorkoutDiscard(context) && context.mounted) {
-                  _leaveDiscardedWorkout(context);
+          if (!phoneMode)
+            WorkoutCueSettingsButton(cueService: widget.cueService),
+          if (!phoneMode)
+            PopupMenuButton<String>(
+              tooltip: 'Opciones de sesión',
+              onSelected: (action) async {
+                if (action == 'abandon') {
+                  await _requestWorkoutAbandonment(context);
                 }
-              }
-            },
-            itemBuilder: (_) => const [
-              PopupMenuItem(
-                value: 'abandon',
-                child: Text('Finalizar y conservar lo realizado'),
-              ),
-              PopupMenuItem(value: 'discard', child: Text('Descartar sesión')),
-            ],
-          ),
+                if (action == 'discard' && context.mounted) {
+                  if (await _requestWorkoutDiscard(context) &&
+                      context.mounted) {
+                    _leaveDiscardedWorkout(context);
+                  }
+                }
+              },
+              itemBuilder: (_) => const [
+                PopupMenuItem(
+                  value: 'abandon',
+                  child: Text('Finalizar y conservar lo realizado'),
+                ),
+                PopupMenuItem(
+                  value: 'discard',
+                  child: Text('Descartar sesión'),
+                ),
+              ],
+            ),
         ],
       ),
-      body: BlocBuilder<ActiveWorkoutCubit, ActiveWorkoutState>(
+      body: BlocConsumer<ActiveWorkoutCubit, ActiveWorkoutState>(
+        listenWhen: (previous, current) =>
+            widget.clearPhoneRun != null &&
+            phoneRunSupported &&
+            previous.status != current.status &&
+            const {
+              ActiveWorkoutStatus.completed,
+              ActiveWorkoutStatus.abandoned,
+              ActiveWorkoutStatus.discarded,
+            }.contains(current.status),
+        listener: (context, state) {
+          unawaited(
+            _forgetPhoneRecording(
+              context.read<ActiveWorkoutCubit>().executionId,
+            ),
+          );
+        },
         builder: (context, state) {
           if (state.status == ActiveWorkoutStatus.initial ||
               state.status == ActiveWorkoutStatus.loading) {
@@ -240,17 +309,73 @@ class ActiveWorkoutPage extends StatelessWidget {
               pendingSyncCount: state.pendingSyncCount,
             );
           }
+          final phoneSet = _phoneSet(execution);
+          if (_usingPhone && phoneSet != null) {
+            final cubit = context.read<ActiveWorkoutCubit>();
+            return SafeArea(
+              child: PhoneRunPanel(
+                key: _phonePanel,
+                createRecorder: () => widget.createPhoneRun!(execution.id),
+                set: phoneSet,
+                onSave: (result) async {
+                  await cubit.completeCurrentSet(result);
+                  return cubit.state.execution?.sets.singleOrNull?.status ==
+                      WorkoutSetStatus.completed;
+                },
+                onManual: (totals) => _useManual(cubit, phoneSet.id, totals),
+              ),
+            );
+          }
           return WorkoutCuePermissionPrompt(
-            cueService: cueService,
+            cueService: widget.cueService,
             child: _ActiveContent(
               state: state,
-              timerStore: timerStore,
-              cueService: cueService,
+              timerStore: widget.timerStore,
+              cueService: widget.cueService,
+              onStartPhoneRun: phoneSet == null
+                  ? null
+                  : () => setState(() => _usingPhone = true),
             ),
           );
         },
       ),
     );
+  }
+
+  Future<void> _forgetPhoneRecording(String executionId) async {
+    await _phonePanel.currentState?.pause();
+    await widget.clearPhoneRun?.call(executionId).catchError((Object _) {});
+  }
+
+  Future<void> _useManual(
+    ActiveWorkoutCubit cubit,
+    String setId,
+    PhoneRunTotals totals,
+  ) async {
+    if (totals.seconds > 0) {
+      final draft = cubit.state.drafts[setId];
+      final old = draft?.result;
+      final measuredMeters =
+          totals.distanceReliable && totals.distanceMeters >= 1
+          ? totals.distanceMeters.roundToDouble()
+          : null;
+      final duration = old?.actualDurationSeconds ?? totals.seconds;
+      final distance = old?.actualDistanceMeters ?? measuredMeters;
+      await cubit.updateDraft(
+        WorkoutSetResultInput(
+          resultId: setId,
+          actualDurationSeconds: duration,
+          actualDistanceMeters: distance,
+          actualRpe: old?.actualRpe,
+        ),
+        {
+          ...?draft?.fields,
+          'duration': workoutClock(duration),
+          if (distance != null) 'distance': workoutNumber(distance),
+        },
+      );
+    }
+    if (mounted) setState(() => _usingPhone = false);
   }
 }
 
@@ -259,18 +384,19 @@ class _ActiveContent extends StatefulWidget {
     required this.state,
     required this.timerStore,
     required this.cueService,
+    this.onStartPhoneRun,
   });
 
   final ActiveWorkoutState state;
   final WorkoutTimerStore timerStore;
   final WorkoutCueService cueService;
+  final VoidCallback? onStartPhoneRun;
 
   @override
   State<_ActiveContent> createState() => _ActiveContentState();
 }
 
 class _ActiveContentState extends State<_ActiveContent> {
-  late final AppLifecycleListener _lifecycle;
   int? _finalRpe;
   int? _tabataBlockOrder;
   final _notesController = TextEditingController();
@@ -278,16 +404,7 @@ class _ActiveContentState extends State<_ActiveContent> {
   final _maxHeartRateController = TextEditingController();
 
   @override
-  void initState() {
-    super.initState();
-    _lifecycle = AppLifecycleListener(
-      onResume: context.read<ActiveWorkoutCubit>().checkDiscardOnResume,
-    );
-  }
-
-  @override
   void dispose() {
-    _lifecycle.dispose();
     _notesController.dispose();
     _averageHeartRateController.dispose();
     _maxHeartRateController.dispose();
@@ -507,6 +624,12 @@ class _ActiveContentState extends State<_ActiveContent> {
                 ),
               ),
               Expanded(child: body),
+              if (widget.onStartPhoneRun case final start?)
+                TextButton.icon(
+                  onPressed: saving ? null : start,
+                  icon: const Icon(Icons.gps_fixed_rounded),
+                  label: const Text('Empezar con el móvil'),
+                ),
               if (execution.canFinishWithoutFullRecording && current != null)
                 SafeArea(
                   top: false,
