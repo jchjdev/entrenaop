@@ -41,6 +41,12 @@ class FakeDirectory implements DirectoryRepository {
   bool saved = false, fail = false;
   int calls = 0, reportsSent = 0;
   (String, DirectoryReportReason, String)? lastReport;
+  Set<String> selectedSpecialties = {};
+  @override
+  Future<List<DirectorySpecialty>> specialtyCatalog() async => const [
+    DirectorySpecialty('running', 'Carrera'),
+    DirectorySpecialty('swimming', 'Natación'),
+  ];
   @override
   Future<DirectoryPage> search({
     String query = '',
@@ -48,8 +54,10 @@ class FakeDirectory implements DirectoryRepository {
     String city = '',
     bool favorites = false,
     String? after,
+    Set<String> specialtyIds = const {},
   }) async {
     calls++;
+    selectedSpecialties = specialtyIds;
     if (fail) throw const DirectoryFailure('Sin conexión de prueba');
     return DirectoryPage(
       favorites && !saved ? [] : [sampleDirectoryProfile(favorite: saved)],
@@ -106,6 +114,26 @@ Widget directory(FakeDirectory repository, {String? id}) => MaterialApp(
 );
 
 void main() {
+  testWidgets('filtra por varias especialidades del mismo catálogo', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(900, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final repository = FakeDirectory();
+    await tester.pumpWidget(directory(repository));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Filtrar por especialidades'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(CheckboxListTile, 'Carrera'));
+    await tester.tap(find.widgetWithText(CheckboxListTile, 'Natación'));
+    await tester.tap(find.text('Aplicar'));
+    await tester.pumpAndSettle();
+    expect(repository.selectedSpecialties, {'running', 'swimming'});
+    expect(find.text('Especialidades (2)'), findsOneWidget);
+  });
+
   testWidgets('copiar ficha web conserva la ruta pública del portal', (
     tester,
   ) async {

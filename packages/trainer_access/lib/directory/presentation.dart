@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import 'domain.dart';
 import 'policy_presentation.dart';
+import 'specialty_picker.dart';
 
 typedef DirectoryPhotoLoader = Future<Uint8List> Function(String path);
 
@@ -93,6 +94,9 @@ class _TrainerDirectoryPageState extends State<TrainerDirectoryPage>
     with WidgetsBindingObserver {
   final _query = TextEditingController(), _city = TextEditingController();
   DirectoryMode? _mode;
+  Set<String> _specialtyIds = {};
+  List<DirectorySpecialty> _selectedSpecialties = [];
+  bool _openingSpecialties = false;
   bool _favorites = false, _busy = false, _action = false;
   String? _error, _next;
   List<DirectoryProfile> _items = [];
@@ -154,6 +158,7 @@ class _TrainerDirectoryPageState extends State<TrainerDirectoryPage>
           mode: _mode,
           favorites: _favorites,
           after: more ? _next : null,
+          specialtyIds: _specialtyIds,
         );
         if (mounted && generation == _generation) {
           setState(() {
@@ -168,6 +173,36 @@ class _TrainerDirectoryPageState extends State<TrainerDirectoryPage>
       }
     } finally {
       if (mounted && generation == _generation) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _pickSpecialties() async {
+    if (_openingSpecialties) return;
+    _openingSpecialties = true;
+    final repo = widget.repository;
+    try {
+      final catalog = await repo.specialtyCatalog();
+      if (!mounted || repo != widget.repository) return;
+      final selected = await pickDirectorySpecialties(
+        context,
+        catalog: catalog,
+        selected: _specialtyIds,
+      );
+      if (!mounted || repo != widget.repository || selected == null) return;
+      setState(() {
+        _specialtyIds = selected;
+        _selectedSpecialties = catalog
+            .where((item) => selected.contains(item.id))
+            .toList();
+      });
+      await _load();
+    } catch (e) {
+      if (mounted && repo == widget.repository) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(directoryError(e))));
+      }
+    } finally {
+      _openingSpecialties = false;
     }
   }
 
@@ -425,11 +460,34 @@ class _TrainerDirectoryPageState extends State<TrainerDirectoryPage>
                             _load();
                           },
                   ),
-                FilledButton.icon(
-                  onPressed: _busy ? null : () => _load(),
-                  icon: const Icon(Icons.search),
-                  label: const Text('Buscar'),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: _busy ? null : _pickSpecialties,
+                      icon: const Icon(Icons.filter_list),
+                      label: Text(
+                        _specialtyIds.isEmpty
+                            ? 'Filtrar por especialidades'
+                            : 'Especialidades (${_specialtyIds.length})',
+                      ),
+                    ),
+                    FilledButton.icon(
+                      onPressed: _busy ? null : () => _load(),
+                      icon: const Icon(Icons.search),
+                      label: const Text('Buscar'),
+                    ),
+                  ],
                 ),
+                if (_selectedSpecialties.isNotEmpty)
+                  Wrap(
+                    spacing: 8,
+                    children: [
+                      for (final item in _selectedSpecialties)
+                        Chip(label: Text(item.name)),
+                    ],
+                  ),
                 const SizedBox(height: 12),
               ],
               if (_busy) const LinearProgressIndicator(),

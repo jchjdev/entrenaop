@@ -12,6 +12,9 @@ DirectoryProfile _directoryProfileFromJson(_Json j) => DirectoryProfile(
   name: j['name'] as String,
   description: j['description'] as String,
   specialties: List<String>.from(j['specialties'] as List),
+  specialtyIds: (j['specialty_ids'] as List?)?.cast<String>(),
+  legacySpecialties:
+      (j['legacy_specialties'] as List?)?.cast<String>() ?? const [],
   services: List<String>.from(j['services'] as List),
   mode: DirectoryMode.values.byName(j['mode'] as String),
   city: j['city'] as String,
@@ -33,6 +36,7 @@ _Json _directoryProfileToJson(DirectoryProfile p) => {
   'name': p.name.trim(),
   'description': p.description.trim(),
   'specialties': p.specialties.map((s) => s.trim()).toSet().toList(),
+  'specialty_ids': ?p.specialtyIds,
   'services': p.services.map((s) => s.trim()).toSet().toList(),
   'mode': p.mode.name,
   'city': p.city.trim(),
@@ -48,7 +52,11 @@ _Json _directoryProfileToJson(DirectoryProfile p) => {
   'app_contact_enabled': p.appContactEnabled,
 };
 
-class SupabaseDirectoryRepository implements DirectoryRepository {
+class SupabaseDirectoryRepository
+    implements
+        DirectoryRepository,
+        DirectorySpecialtySuggestions,
+        DirectorySpecialtyReview {
   SupabaseDirectoryRepository(
     this.client, {
     required this.owner,
@@ -76,6 +84,8 @@ class SupabaseDirectoryRepository implements DirectoryRepository {
             ? 'La ficha ha cambiado. Recarga antes de guardar.'
             : e.code == '42501'
             ? 'Esta cuenta no tiene acceso o el perfil ya no está disponible.'
+            : e.code == '23505'
+            ? 'Esa especialidad ya existe en el catálogo. Selecciónala en la lista.'
             : 'No se pudo confirmar la operación. Revisa los datos y reintenta.',
       );
     }
@@ -90,16 +100,23 @@ class SupabaseDirectoryRepository implements DirectoryRepository {
     String city = '',
     bool favorites = false,
     String? after,
+    Set<String> specialtyIds = const {},
   }) async {
     final j = _Json.from(
-      await _rpc('directory_search', {
-        'p_query': query.trim(),
-        'p_mode': mode?.name,
-        'p_city': city.trim(),
-        'p_favorites': favorites,
-        'p_after': after,
-        'p_web_only': webOnly,
-      }) as Map,
+      await _rpc(
+        specialtyIds.isEmpty
+            ? 'directory_search'
+            : 'directory_search_with_specialties',
+        {
+          'p_query': query.trim(),
+          'p_mode': mode?.name,
+          'p_city': city.trim(),
+          'p_favorites': favorites,
+          'p_after': after,
+          'p_web_only': webOnly,
+          if (specialtyIds.isNotEmpty) 'p_specialty_ids': specialtyIds.toList(),
+        },
+      ) as Map,
     );
     return DirectoryPage(
       (j['items'] as List)
@@ -107,6 +124,72 @@ class SupabaseDirectoryRepository implements DirectoryRepository {
           .toList(),
       j['next'] as String?,
     );
+  }
+
+  @override
+  Future<List<DirectorySpecialty>> specialtyCatalog() async =>
+      (await _rpc('directory_specialty_catalog', {}) as List)
+          .map(
+            (row) =>
+                DirectorySpecialty(row['id'] as String, row['name'] as String),
+          )
+          .toList();
+
+  Future<List<DirectorySpecialtySuggestion>> _specialtySuggestions({
+    required bool pending,
+  }) async =>
+      (await _rpc('directory_specialty_suggestions', {
+            'p_owner': owner,
+            'p_pending': pending,
+          }) as List)
+          .map(
+            (row) => DirectorySpecialtySuggestion(
+              id: row['id'] as String,
+              name: row['name'] as String,
+              details: row['details'] as String,
+              state: SpecialtySuggestionState.values.byName(
+                row['state'] as String,
+              ),
+              note: row['note'] as String,
+              approvedName: row['approved_name'] as String?,
+              proposer: row['proposer'] as String?,
+            ),
+          )
+          .toList();
+
+  @override
+  Future<List<DirectorySpecialtySuggestion>> mySpecialtySuggestions() =>
+      _specialtySuggestions(pending: false);
+
+  @override
+  Future<List<DirectorySpecialtySuggestion>> pendingSpecialtySuggestions() =>
+      _specialtySuggestions(pending: true);
+
+  @override
+  Future<void> suggestSpecialty(String name, String details) async {
+    await _rpc('directory_suggest_specialty', {
+      'p_owner': owner,
+      'p_name': name.trim(),
+      'p_details': details.trim(),
+    });
+  }
+
+  @override
+  Future<void> reviewSpecialtySuggestion(
+    String id, {
+    required bool approve,
+    String? existingId,
+    String? name,
+    required String note,
+  }) async {
+    await _rpc('directory_review_specialty', {
+      'p_owner': owner,
+      'p_id': id,
+      'p_approve': approve,
+      'p_existing': existingId,
+      'p_name': name?.trim(),
+      'p_note': note.trim(),
+    });
   }
 
   @override

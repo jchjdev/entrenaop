@@ -4,6 +4,7 @@ do $$
 declare coach uuid:=gen_random_uuid(); pupil uuid:=gen_random_uuid(); stranger uuid:=gen_random_uuid();
  offer uuid:=gen_random_uuid(); j jsonb; data jsonb; pid uuid; rev integer; report_id uuid; manager uuid:=gen_random_uuid();
  access_before jsonb;
+ suggestion uuid; link_suggestion uuid; decline_suggestion uuid; approved_specialty text;
 begin
  perform set_config('storage.operation','object.get_authenticated',true);
  insert into auth.users(id,email,email_confirmed_at) values(coach,coach||'@directory.invalid',now()),(pupil,pupil||'@directory.invalid',now()),(stranger,stranger||'@directory.invalid',now());
@@ -33,6 +34,23 @@ begin
  set local role authenticated;
  begin perform public.directory_save(coach,rev,data,true,false);raise exception 'Publicó sin aceptación';exception when insufficient_privilege then null;end;
  j:=public.directory_save(coach,rev,data,true,true);rev:=(j->>'revision')::integer;
+ if j->'profile'->'specialty_ids' is distinct from '["running"]'::jsonb then raise exception 'No identificó Carrera desde el cliente antiguo';end if;
+ begin perform public.directory_save(coach,rev,data||jsonb_build_object('specialty_ids',array['inventada']),true,true);
+   raise exception 'Aceptó una especialidad fuera del catálogo';exception when invalid_parameter_value then null;end;
+ begin perform public.directory_save(coach,rev,data||jsonb_build_object('specialty_ids',array['running','running']),true,true);
+   raise exception 'Aceptó una especialidad repetida';exception when invalid_parameter_value then null;end;
+ perform public.directory_suggest_specialty(coach,'Orientación deportiva','Preparo competiciones');
+ perform public.directory_suggest_specialty(coach,'orientacion deportiva','Reintento');
+ if jsonb_array_length(public.directory_specialty_suggestions(coach,false))<>1 then raise exception 'Duplicó una sugerencia';end if;
+ suggestion:=(public.directory_specialty_suggestions(coach,false)->0->>'id')::uuid;
+ begin perform public.directory_specialty_suggestions(coach,true);raise exception 'Entrenador accede a la cola de ADMIN';exception when insufficient_privilege then null;end;
+ begin perform public.directory_review_specialty(coach,suggestion,true,null,'Orientación deportiva','');
+   raise exception 'Entrenador aprobó su propia sugerencia';exception when insufficient_privilege then null;end;
+ if exists(select 1 from jsonb_array_elements(public.directory_specialty_catalog()) s where s->>'name'='Orientación deportiva') then raise exception 'La sugerencia se publicó sola';end if;
+ perform public.directory_suggest_specialty(coach,'Fondo en piscina','');
+ perform public.directory_suggest_specialty(coach,'Movilidad avanzada','');
+ select (s->>'id')::uuid into strict link_suggestion from jsonb_array_elements(public.directory_specialty_suggestions(coach,false)) s where s->>'name'='Fondo en piscina';
+ select (s->>'id')::uuid into strict decline_suggestion from jsonb_array_elements(public.directory_specialty_suggestions(coach,false)) s where s->>'name'='Movilidad avanzada';
  begin perform public.directory_save(coach,rev-1,data,false,false);raise exception 'Aceptó revisión antigua';exception when serialization_failure then null;end;
  begin perform public.directory_save(stranger,0,data,true,true);raise exception 'Suplantó propietario';exception when insufficient_privilege then null;end;
  if jsonb_array_length(public.directory_search(p_web_only=>true)->'items')<>0 then raise exception 'Solo app apareció en web';end if;
@@ -81,6 +99,9 @@ begin
  perform set_config('request.jwt.claim.sub',pupil::text,true);perform set_config('request.jwt.claims',jsonb_build_object('sub',pupil,'role','authenticated','aal','aal1')::text,true);
  set local role authenticated;
  if public.directory_profile(pid,false)->>'name'<>'Preparador prueba' then raise exception 'Usuario no puede consultar';end if;
+ if jsonb_array_length(public.directory_search_with_specialties('Preparador prueba',null,'',false,null,false,array['swimming','running'])->'items')<>1
+   or jsonb_array_length(public.directory_search_with_specialties('Preparador prueba',null,'',false,null,false,array['swimming','yoga'])->'items')<>0 then
+   raise exception 'El filtro múltiple no usa alguna de las especialidades antes de paginar';end if;
  perform public.directory_favorite(pupil,pid,true);perform public.directory_favorite(pupil,pid,true);
  if jsonb_array_length(public.directory_search(p_favorites=>true,p_web_only=>false)->'items')<>1 then raise exception 'Favorito incorrecto';end if;
  perform public.directory_report(pupil,pid,'spam','Ensayo de denuncia');perform public.directory_report(pupil,pid,'spam','Reintento');
@@ -93,7 +114,27 @@ begin
  perform set_config('request.jwt.claim.sub',manager::text,true);perform set_config('request.jwt.claims',jsonb_build_object('sub',manager,'role','authenticated','aal','aal2')::text,true);
  set local role authenticated;
  if jsonb_array_length(public.directory_reports(manager))<>1 then raise exception 'Responsable no ve incidencia';end if;
+ if not exists(select 1 from jsonb_array_elements(public.directory_specialty_suggestions(manager,true)) s where s->>'id'=suggestion::text) then raise exception 'ADMIN no recibe la sugerencia';end if;
+ perform public.directory_review_specialty(manager,suggestion,true,null,'Orientación deportiva','Gracias por sugerirla');
+ perform public.directory_review_specialty(manager,link_suggestion,true,'swimming',null,'Queda dentro de Natación');
+ begin perform public.directory_review_specialty(manager,decline_suggestion,false,null,null,'');
+   raise exception 'Rechazó sin motivo';exception when invalid_parameter_value then null;end;
+ perform public.directory_review_specialty(manager,decline_suggestion,false,null,null,'Usa el campo de presentación');
+ select s->>'id' into strict approved_specialty from jsonb_array_elements(public.directory_specialty_catalog()) s where s->>'name'='Orientación deportiva';
  perform public.directory_moderate(manager,report_id,true,'Suspensión de prueba');
+ reset role;
+ perform set_config('request.jwt.claim.sub',coach::text,true);perform set_config('request.jwt.claims',jsonb_build_object('sub',coach,'role','authenticated','aal','aal2')::text,true);
+ set local role authenticated;
+ select s into strict j from jsonb_array_elements(public.directory_specialty_suggestions(coach,false)) s where s->>'id'=suggestion::text;
+ if j->>'state'<>'approved' or j->>'approved_name'<>'Orientación deportiva' then raise exception 'No aparece la respuesta al entrenador';end if;
+ select s into strict j from jsonb_array_elements(public.directory_specialty_suggestions(coach,false)) s where s->>'id'=link_suggestion::text;
+ if j->>'state'<>'approved' or j->>'approved_name'<>'Natación' then raise exception 'No se vinculó a la especialidad existente';end if;
+ select s into strict j from jsonb_array_elements(public.directory_specialty_suggestions(coach,false)) s where s->>'id'=decline_suggestion::text;
+ if j->>'state'<>'declined' or j->>'note'<>'Usa el campo de presentación' then raise exception 'No se guardó el motivo del rechazo';end if;
+ j:=public.directory_own(coach);
+ if j->'profile'->'specialty_ids' is distinct from '["running"]'::jsonb then raise exception 'La aprobación editó la ficha automáticamente';end if;
+ j:=public.directory_save(coach,(j->>'revision')::integer,data||jsonb_build_object('specialty_ids',array['running',approved_specialty]),true,true);
+ if not ((j->'profile'->'specialty_ids') ? approved_specialty) then raise exception 'El entrenador no pudo marcar la especialidad aprobada';end if;
  reset role;
  if (select count(*) from directory_private.moderation_events e where e.report_id=(select r.id from directory_private.reports r where r.reporter_id=pupil))<>1 then raise exception 'Falta auditoría';end if;
  perform set_config('request.jwt.claim.sub',pupil::text,true);perform set_config('request.jwt.claims',jsonb_build_object('sub',pupil,'role','authenticated','aal','aal1')::text,true);

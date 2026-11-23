@@ -780,6 +780,24 @@ Verificación local con análisis limpios en raíz y Trainer, 30 pruebas del
 directorio en la app y 10 del editor y los avisos en Trainer. Capturas revisadas
 de los widgets reales con datos simulados. App `1.25.1+58` y Trainer `0.14.1+35`.
 
+### Especialidades del directorio
+
+Trainer permite elegir entre una y ocho especialidades de un catálogo común.
+El filtro de la app y del directorio web admite varias y muestra preparadores
+que ofrecen alguna de ellas, junto con los criterios de texto, modalidad y
+ubicación. La publicación y la visibilidad siguen las reglas de cada ficha.
+Las coincidencias claras de las fichas existentes entran en el filtro desde
+la migración. Los textos anteriores sin equivalencia se conservan para que
+el propietario los revise al editar su ficha.
+
+Desde **Mi ficha pública**, un preparador puede sugerir una especialidad y
+consultar el estado y la respuesta en **Mis sugerencias**. La portada de Trainer
+enlaza a esta sección cuando hay respuestas. En **Pendientes**
+de ADMIN, el responsable de cuentas puede añadirla al catálogo con el nombre
+que decida, vincularla a una existente o rechazarla con un motivo. Si la
+sugerencia se aprueba, el preparador puede marcarla al volver a editar su
+ficha. La aprobación por sí sola no modifica perfiles publicados.
+
 ### Moderación directa de fichas en ADMIN
 
 En **Cuentas y Pro**, el responsable de cuentas puede abrir la cuenta de un

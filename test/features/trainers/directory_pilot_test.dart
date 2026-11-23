@@ -19,6 +19,7 @@ class _TwoCoaches extends FakeDirectory {
     String city = '',
     bool favorites = false,
     String? after,
+    Set<String> specialtyIds = const {},
   }) async {
     lastCity = city;
     return DirectoryPage([

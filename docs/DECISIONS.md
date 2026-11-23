@@ -1,5 +1,10 @@
 # Registro de decisiones vigentes
 
+**Especialidades del directorio · 23/11/2026.** Javier aprueba un catálogo
+común con selección múltiple en Trainer y filtro en la app del deportista.
+Los entrenadores pueden sugerir nuevas especialidades y ADMIN resuelve las
+peticiones desde Pendientes. [Contrato](TRAINER_PLATFORM.md#especialidades-del-directorio).
+
 **Repetir una sesión pautada · 23/11/2026.** Javier aprueba que una pauta
 completada o abandonada de Mi semana pueda repetirse con su prescripción
 guardada. La repetición abre otro intento y conserva el anterior en el

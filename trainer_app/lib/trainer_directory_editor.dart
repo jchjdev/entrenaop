@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show setEquals;
 import 'package:flutter/material.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:trainer_access/directory/domain.dart';
@@ -7,8 +8,11 @@ import 'package:trainer_access/directory/locations.dart';
 import 'package:trainer_access/directory/presentation.dart';
 import 'package:trainer_access/directory/policy.dart';
 import 'package:trainer_access/directory/policy_presentation.dart';
+import 'package:trainer_access/directory/specialty_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:workout_editor_ui/program_cover_image_draft.dart';
+
+import 'trainer_specialty_suggestions.dart';
 
 class TrainerDirectoryEditor extends StatefulWidget {
   const TrainerDirectoryEditor({
@@ -18,8 +22,10 @@ class TrainerDirectoryEditor extends StatefulWidget {
     required this.uploadPhoto,
     required this.discardPhoto,
     required this.cleanupPhotoDrafts,
+    this.suggestions,
   });
   final DirectoryRepository repository;
+  final DirectorySpecialtySuggestions? suggestions;
   final DirectoryPhotoLoader photo;
   final Future<String> Function(Uint8List, String) uploadPhoto;
   final Future<void> Function(String) discardPhoto;
@@ -29,7 +35,10 @@ class TrainerDirectoryEditor extends StatefulWidget {
 }
 
 class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
-  final _fields = List.generate(9, (_) => TextEditingController());
+  final _fields = List.generate(8, (_) => TextEditingController());
+  List<DirectorySpecialty> _catalog = [];
+  Set<String> _specialtyIds = {};
+  bool _openingSpecialties = false;
   DirectoryOwnerProfile? _state;
   DirectoryMode _mode = DirectoryMode.online;
   DirectoryVisibility _visibility = DirectoryVisibility.app;
@@ -62,7 +71,6 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
     final values = [
       p?.name ?? '',
       p?.description ?? '',
-      p?.specialties.join(', ') ?? '',
       p?.services.join(', ') ?? '',
       p?.city ?? '',
       p?.email ?? '',
@@ -73,6 +81,7 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
     for (var i = 0; i < values.length; i++) {
       _fields[i].text = values[i];
     }
+    _specialtyIds = p?.specialtyIds?.toSet() ?? {};
     _mode = p?.mode ?? DirectoryMode.online;
     _provinceCode = p?.provinceCode ?? '';
     _island = p?.island ?? '';
@@ -103,12 +112,45 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
   Future<void> _load() async {
     setState(() => _busy = true);
     try {
-      final value = await widget.repository.own();
-      if (mounted) setState(() => _accept(value));
+      final (value, catalog) = await (
+        widget.repository.own(),
+        widget.repository.specialtyCatalog(),
+      ).wait;
+      if (mounted) {
+        setState(() {
+          _catalog = catalog;
+          _accept(value);
+        });
+      }
     } catch (e) {
       _showError(directoryError(e));
     } finally {
       if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _pickSpecialties() async {
+    if (_openingSpecialties) return;
+    _openingSpecialties = true;
+    try {
+      final catalog = await widget.repository.specialtyCatalog();
+      if (!mounted || _busy) return;
+      final selected = await pickDirectorySpecialties(
+        context,
+        catalog: catalog,
+        selected: _specialtyIds,
+        maxSelections: maxDirectorySpecialties,
+      );
+      if (selected == null || !mounted) return;
+      setState(() {
+        _catalog = catalog;
+        if (!setEquals(selected, _specialtyIds)) _dirty = true;
+        _specialtyIds = selected;
+      });
+    } catch (e) {
+      _showError(directoryError(e));
+    } finally {
+      _openingSpecialties = false;
     }
   }
 
@@ -184,23 +226,23 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
     id: _state?.profile?.id ?? '',
     name: _fields[0].text.trim(),
     description: _fields[1].text.trim(),
-    specialties: _fields[2].text
+    specialties: [
+      for (final item in _catalog)
+        if (_specialtyIds.contains(item.id)) item.name,
+    ],
+    specialtyIds: _specialtyIds.toList(),
+    services: _fields[2].text
         .split(',')
         .map((s) => s.trim())
         .where((s) => s.isNotEmpty)
         .toList(),
-    services: _fields[3].text
-        .split(',')
-        .map((s) => s.trim())
-        .where((s) => s.isNotEmpty)
-        .toList(),
-    city: _fields[4].text.trim(),
+    city: _fields[3].text.trim(),
     provinceCode: _provinceCode,
     island: _island,
-    email: _fields[5].text.trim(),
-    website: _fields[6].text.trim(),
-    whatsapp: _fields[7].text.trim(),
-    price: _fields[8].text.trim(),
+    email: _fields[4].text.trim(),
+    website: _fields[5].text.trim(),
+    whatsapp: _fields[6].text.trim(),
+    price: _fields[7].text.trim(),
     mode: _mode,
     visibility: _visibility,
     photoPath: _photo,
@@ -302,20 +344,43 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
                   onPressed: _busy ? null : _cleanup,
                   child: const Text('Limpiar fotos no guardadas'),
                 ),
+                const SizedBox(height: 12),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: OutlinedButton.icon(
+                    onPressed: _busy ? null : _pickSpecialties,
+                    icon: const Icon(Icons.checklist),
+                    label: Text(
+                      _specialtyIds.isEmpty
+                          ? 'Elegir especialidades'
+                          : 'Editar especialidades (${_specialtyIds.length})',
+                    ),
+                  ),
+                ),
+                if (_specialtyIds.isNotEmpty)
+                  Wrap(
+                    spacing: 8,
+                    children: [
+                      for (final item in _catalog)
+                        if (_specialtyIds.contains(item.id))
+                          Chip(label: Text(item.name)),
+                    ],
+                  ),
+                if (state.profile case final profile?
+                    when profile.legacySpecialties.isNotEmpty)
+                  Text(
+                    'Especialidades anteriores para revisar: ${profile.legacySpecialties.join(', ')}.',
+                  ),
+                if (widget.suggestions case final suggestions?)
+                  TrainerSpecialtySuggestions(repository: suggestions),
                 for (final entry in [
                   (0, 'Nombre profesional', 80, 1),
                   (1, 'Presentación', 1200, 5),
-                  (
-                    2,
-                    'Especialidades o preparaciones (separadas por comas)',
-                    480,
-                    2,
-                  ),
-                  (3, 'Servicios (separados por comas)', 480, 2),
-                  (5, 'Correo profesional de contacto', 254, 1),
-                  (6, 'Web HTTPS', 500, 1),
-                  (7, 'WhatsApp con prefijo, solo números', 15, 1),
-                  (8, 'Precio orientativo (opcional)', 120, 1),
+                  (2, 'Servicios (separados por comas)', 480, 2),
+                  (4, 'Correo profesional de contacto', 254, 1),
+                  (5, 'Web HTTPS', 500, 1),
+                  (6, 'WhatsApp con prefijo, solo números', 15, 1),
+                  (7, 'Precio orientativo (opcional)', 120, 1),
                 ])
                   Padding(
                     padding: const EdgeInsets.only(top: 16, bottom: 8),
@@ -383,7 +448,7 @@ class _TrainerDirectoryEditorState extends State<TrainerDirectoryEditor> {
                 ],
                 const SizedBox(height: 12),
                 TextField(
-                  controller: _fields[4],
+                  controller: _fields[3],
                   maxLength: 80,
                   enabled: !_busy,
                   decoration: const InputDecoration(

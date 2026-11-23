@@ -75,6 +75,7 @@ GoRouter createAdminRouter({
   bool Function()? isAuthenticated,
   WidgetBuilder? loginBuilder,
   WidgetBuilder? directoryBuilder,
+  WidgetBuilder? directorySuggestionsBuilder,
   WidgetBuilder? securityBuilder,
   Future<bool> Function()? needsSecurity,
 }) {
@@ -351,6 +352,8 @@ GoRouter createAdminRouter({
                   operations: operations,
                   sessions: sessionWork,
                   programs: guidedWork,
+                  directorySuggestions: directorySuggestionsBuilder,
+                  canReviewDirectory: proAccess?.canManageAccounts,
                 ),
               ),
             ),

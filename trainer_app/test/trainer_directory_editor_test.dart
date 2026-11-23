@@ -19,6 +19,7 @@ class DraftRepository implements DirectoryRepository {
       name: 'Preparador de prueba',
       description: 'Carrera para oposiciones',
       specialties: ['Carrera'],
+      specialtyIds: ['running'],
       services: ['Seguimiento'],
       mode: DirectoryMode.online,
       city: '',
@@ -34,6 +35,12 @@ class DraftRepository implements DirectoryRepository {
   );
   @override
   Future<DirectoryOwnerProfile> own() async => value;
+  @override
+  Future<List<DirectorySpecialty>> specialtyCatalog() async => const [
+    DirectorySpecialty('running', 'Carrera'),
+    DirectorySpecialty('hyrox', 'HYROX'),
+    DirectorySpecialty('swimming', 'Natación'),
+  ];
   @override
   Future<DirectoryOwnerProfile> save(
     DirectoryProfile profile, {
@@ -96,6 +103,22 @@ void main() {
     await tester.tap(find.text('Guardar ficha'));
     await tester.pumpAndSettle();
   }
+
+  testWidgets('guarda varias especialidades con sus identificadores', (
+    tester,
+  ) async {
+    final repo = DraftRepository();
+    await tester.pumpWidget(editor(repo));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Editar especialidades (1)'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(CheckboxListTile, 'HYROX'));
+    await tester.tap(find.text('Aplicar'));
+    await tester.pumpAndSettle();
+    await pressSave(tester);
+    expect(repo.submitted?.specialtyIds, ['running', 'hyrox']);
+    expect(repo.submitted?.specialties, ['Carrera', 'HYROX']);
+  });
 
   for (final (width, scale, desktop) in [
     (390.0, 1.0, false),

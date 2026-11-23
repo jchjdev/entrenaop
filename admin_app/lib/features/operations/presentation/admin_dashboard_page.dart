@@ -12,16 +12,37 @@ class AdminDashboardPage extends StatefulWidget {
     required this.operations,
     this.sessions,
     this.programs,
+    this.directorySuggestions,
+    this.canReviewDirectory,
   });
   final AdminOperationsRepository operations;
   final WorkoutEditorWorkRepository? sessions;
   final AdminGuidedWorkRepository? programs;
+  final WidgetBuilder? directorySuggestions;
+  final Future<bool> Function()? canReviewDirectory;
   @override
   State<AdminDashboardPage> createState() => _AdminDashboardPageState();
 }
 
 class _AdminDashboardPageState extends State<AdminDashboardPage> {
   int _refresh = 0;
+  bool _canReviewDirectory = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.directorySuggestions != null) _loadDirectoryPermission();
+  }
+
+  Future<void> _loadDirectoryPermission() async {
+    try {
+      final allowed = await widget.canReviewDirectory?.call();
+      if (mounted) setState(() => _canReviewDirectory = allowed == true);
+    } catch (_) {
+      if (mounted) setState(() => _canReviewDirectory = false);
+    }
+  }
+
   Future<void> _open(String path) async {
     await context.push(path);
     if (mounted) setState(() => _refresh++);
@@ -50,7 +71,12 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                       : Theme.of(context).textTheme.headlineMedium,
                 ),
                 OutlinedButton.icon(
-                  onPressed: () => setState(() => _refresh++),
+                  onPressed: () {
+                    setState(() => _refresh++);
+                    if (widget.directorySuggestions != null) {
+                      _loadDirectoryPermission();
+                    }
+                  },
                   icon: const Icon(Icons.refresh),
                   label: const Text('Actualizar pendientes'),
                 ),
@@ -66,6 +92,12 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
               minCardWidth: 420,
               maxColumns: 3,
               children: [
+                if (widget.directorySuggestions case final builder?
+                    when _canReviewDirectory)
+                  KeyedSubtree(
+                    key: ValueKey('directory-suggestions-$_refresh'),
+                    child: builder(context),
+                  ),
                 AdminSessionWorkList(
                   key: ValueKey('sessions-$_refresh'),
                   repository: widget.sessions,

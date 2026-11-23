@@ -591,6 +591,7 @@ class _TrainerAppState extends State<TrainerApp> {
                   TrainerDirectoryEditor(
                     key: ValueKey('directory-editor-$identity'),
                     repository: repository,
+                    suggestions: repository,
                     photo: repository.photo,
                     uploadPhoto: repository.uploadPhoto,
                     discardPhoto: repository.discardPhoto,
@@ -919,6 +920,7 @@ class _TrainerAppState extends State<TrainerApp> {
                 access: access(),
                 agenda: agenda(),
                 operations: operations(),
+                specialtySuggestions: directory(),
               ),
             ),
             GoRoute(

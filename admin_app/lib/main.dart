@@ -31,6 +31,9 @@ import 'package:entrenaop_admin/core/admin_router.dart';
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:trainer_access/directory/data.dart';
+
+import 'features/operations/presentation/admin_specialty_suggestions.dart';
+
 import 'package:trainer_access/directory/moderation_page.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -115,6 +118,12 @@ class _AdminAppState extends State<AdminApp> {
             client.auth.currentUser!.id,
           );
     return createAdminRouter(
+      directorySuggestionsBuilder: (_) => AdminSpecialtySuggestions(
+        repository: SupabaseDirectoryRepository(
+          client,
+          owner: client.auth.currentUser?.id,
+        ),
+      ),
       directoryBuilder: (_) {
         final repository = SupabaseDirectoryRepository(
           client,

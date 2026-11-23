@@ -1,6 +1,7 @@
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:trainer_access/directory/domain.dart';
 import 'package:trainer_access/trainer_access.dart';
 
 import 'trainer_agenda_page.dart';
@@ -13,11 +14,13 @@ class TrainerHomePage extends StatefulWidget {
     required this.access,
     required this.agenda,
     required this.operations,
+    this.specialtySuggestions,
     this.now,
   });
   final TrainerRepository access;
   final TrainerAgendaRepository agenda;
   final TrainerOperationsRepository operations;
+  final DirectorySpecialtySuggestions? specialtySuggestions;
   final DateTime? now;
   @override
   State<TrainerHomePage> createState() => _TrainerHomePageState();
@@ -29,6 +32,7 @@ class _TrainerHomePageState extends State<TrainerHomePage> {
   List<TrainerAgendaItem> _upcoming = [];
   bool _busy = true;
   String? _error;
+  Future<List<DirectorySpecialtySuggestion>>? _specialtyResponses;
   late final DateTime _today = DateUtils.dateOnly(widget.now ?? DateTime.now());
   @override
   void initState() {
@@ -40,6 +44,9 @@ class _TrainerHomePageState extends State<TrainerHomePage> {
     setState(() {
       _busy = true;
       _error = null;
+      _specialtyResponses = widget.specialtySuggestions
+          ?.mySpecialtySuggestions();
+      _specialtyResponses?.ignore();
     });
     try {
       // Cada lectura conserva su autorización; la portada no abre otros historiales.
@@ -89,6 +96,29 @@ class _TrainerHomePageState extends State<TrainerHomePage> {
               Text(_error!),
               TextButton(onPressed: _load, child: const Text('Reintentar')),
             ],
+            if (_specialtyResponses case final responses?)
+              FutureBuilder<List<DirectorySpecialtySuggestion>>(
+                future: responses,
+                builder: (context, snapshot) {
+                  final hasResponse =
+                      snapshot.data?.any(
+                        (item) =>
+                            item.state != SpecialtySuggestionState.pending,
+                      ) ??
+                      false;
+                  if (!hasResponse) return const SizedBox.shrink();
+                  return Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.forum_outlined),
+                      title: const Text(
+                        'Respuestas a tus sugerencias de especialidades',
+                      ),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => context.push('/directory-profile'),
+                    ),
+                  );
+                },
+              ),
             if (_access case final access?) ...[
               Text(
                 access.status,

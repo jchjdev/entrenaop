@@ -26,6 +26,8 @@ class DirectoryProfile {
     this.isOwner = false,
     this.provinceCode = '',
     this.island = '',
+    this.specialtyIds,
+    this.legacySpecialties = const [],
   });
   final String id, name, description, city, email, website, whatsapp, price;
   final String provinceCode, island;
@@ -36,6 +38,8 @@ class DirectoryProfile {
     province?.name ?? '',
   ].where((part) => part.isNotEmpty).toSet().join(' · ');
   final List<String> specialties, services;
+  final List<String>? specialtyIds;
+  final List<String> legacySpecialties;
   final String? photoPath;
   final DirectoryMode mode;
   final DirectoryVisibility visibility;
@@ -57,7 +61,14 @@ class DirectoryProfile {
     if (description.trim().isEmpty || description.trim().length > 1200) {
       return 'Escribe una descripción de hasta 1.200 caracteres.';
     }
-    for (final tags in [specialties, services]) {
+    if (specialtyIds case final ids?) {
+      if (ids.isEmpty ||
+          ids.length > maxDirectorySpecialties ||
+          ids.toSet().length != ids.length) {
+        return 'Elige entre una y ocho especialidades.';
+      }
+    }
+    for (final tags in [if (specialtyIds == null) specialties, services]) {
       if (tags.isEmpty ||
           tags.length > 8 ||
           tags.any((v) => v.trim().isEmpty || v.length > 60)) {
@@ -136,6 +147,48 @@ class DirectoryPage {
   final String? next;
 }
 
+const maxDirectorySpecialties = 8;
+
+class DirectorySpecialty {
+  const DirectorySpecialty(this.id, this.name);
+  final String id, name;
+}
+
+enum SpecialtySuggestionState { pending, approved, declined }
+
+class DirectorySpecialtySuggestion {
+  const DirectorySpecialtySuggestion({
+    required this.id,
+    required this.name,
+    required this.details,
+    required this.state,
+    required this.note,
+    this.approvedName,
+    this.proposer,
+  });
+
+  final String id, name, details, note;
+  final SpecialtySuggestionState state;
+  final String? approvedName, proposer;
+}
+
+abstract interface class DirectorySpecialtySuggestions {
+  Future<List<DirectorySpecialtySuggestion>> mySpecialtySuggestions();
+  Future<void> suggestSpecialty(String name, String details);
+}
+
+abstract interface class DirectorySpecialtyReview {
+  Future<List<DirectorySpecialty>> specialtyCatalog();
+  Future<List<DirectorySpecialtySuggestion>> pendingSpecialtySuggestions();
+  Future<void> reviewSpecialtySuggestion(
+    String id, {
+    required bool approve,
+    String? existingId,
+    String? name,
+    required String note,
+  });
+}
+
 enum DirectoryReportReason {
   explicit,
   harassment,
@@ -161,12 +214,14 @@ class DirectoryReport {
 
 abstract class DirectoryRepository {
   bool get signedIn;
+  Future<List<DirectorySpecialty>> specialtyCatalog();
   Future<DirectoryPage> search({
     String query = '',
     DirectoryMode? mode,
     String city = '',
     bool favorites = false,
     String? after,
+    Set<String> specialtyIds = const {},
   });
   Future<DirectoryProfile> profile(String id);
   Future<void> favorite(String id, bool value);
