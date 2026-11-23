@@ -470,4 +470,7 @@ class _ScheduleRepository implements WorkoutScheduleRepository {
 
   @override
   Future<String> start(String scheduledId) => throw UnimplementedError();
+
+  @override
+  Future<String> repeat(String scheduledId) => throw UnimplementedError();
 }

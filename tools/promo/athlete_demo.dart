@@ -380,6 +380,7 @@ WorkoutScheduleCubit createSchedule(DemoOverview overview) {
     rescheduleWorkout: RescheduleWorkoutUseCase(schedule),
     cancelWorkout: CancelScheduledWorkoutUseCase(schedule),
     startWorkout: StartScheduledWorkoutUseCase(schedule),
+    repeatWorkout: RepeatScheduledWorkoutUseCase(schedule),
     getPublicWorkouts: GetPublicWorkoutsUseCase(templates),
     getPersonalWorkouts: GetPersonalWorkoutsUseCase(templates),
     programs: DemoPrograms(),

@@ -1,5 +1,11 @@
 # Registro de decisiones vigentes
 
+**Repetir una sesión pautada · 23/11/2026.** Javier aprueba que una pauta
+completada o abandonada de Mi semana pueda repetirse con su prescripción
+guardada. La repetición abre otro intento y conserva el anterior en el
+historial. El resultado de la cita cambia cuando se completa el nuevo registro.
+[Contrato](SESSION_CONTROLS_2026_10_08.md#repetir-una-sesión-pautada).
+
 **Rodaje pautado con el móvil · 22/11/2026.** Javier pide grabar un
 rodaje de Mi semana en Android e iOS con la pantalla bloqueada y detener el
 GPS al pausar o terminar. Confirma que la ficha debe ofrecer el registro

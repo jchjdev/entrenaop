@@ -22,20 +22,8 @@ class WorkoutScheduleRemoteDataSourceImpl
     await supabaseClient.rpc('cleanup_own_legacy_preparation_links');
     final response = await supabaseClient
         .from('scheduled_workouts')
-        .select('''
-          id,
-          template_id,
-          template_name,
-          template_version,
-          estimated_duration_minutes,
-          preparation_goal_id,
-          execution_id,
-          scheduled_date,
-          scheduled_time,
-          source,
-          status,
-          trainer_assignments(note)
-        ''')
+        // La lectura sigue disponible en entornos sin la columna de repetición.
+        .select('*, trainer_assignments(note)')
         .eq('user_id', userId)
         .gte('scheduled_date', start)
         .lte('scheduled_date', end)
@@ -132,14 +120,30 @@ class WorkoutScheduleRemoteDataSourceImpl
   );
 
   @override
-  Future<String> start(String scheduledId) async {
+  Future<String> start(String scheduledId) => _open(
+    () => supabaseClient.rpc(
+      'start_scheduled_workout',
+      params: {'p_scheduled_id': scheduledId},
+    ),
+  );
+
+  @override
+  Future<String> repeat(String scheduledId) async {
+    final userId = supabaseClient.auth.currentUser?.id;
+    if (userId == null) throw const AuthException('No hay sesión activa.');
+    return _open(
+      () => authenticatedTrainerRpc(
+        supabaseClient,
+        userId,
+        'repeat_scheduled_workout',
+        params: {'p_expected_owner': userId, 'p_scheduled_id': scheduledId},
+      ),
+    );
+  }
+
+  Future<String> _open(Future<dynamic> Function() operation) async {
     try {
-      final response = await mapOpenWorkoutConflict(
-        () => supabaseClient.rpc(
-          'start_scheduled_workout',
-          params: {'p_scheduled_id': scheduledId},
-        ),
-      );
+      final response = await mapOpenWorkoutConflict(operation);
       return response as String;
     } on PostgrestException catch (error) {
       final denied = ProAccessDenied.fromDetails(error.details);

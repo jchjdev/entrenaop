@@ -15,6 +15,7 @@ class WorkoutScheduleCubit extends Cubit<WorkoutScheduleState> {
     required RescheduleWorkoutUseCase rescheduleWorkout,
     required CancelScheduledWorkoutUseCase cancelWorkout,
     required StartScheduledWorkoutUseCase startWorkout,
+    required RepeatScheduledWorkoutUseCase repeatWorkout,
     required GetPublicWorkoutsUseCase getPublicWorkouts,
     required GetPersonalWorkoutsUseCase getPersonalWorkouts,
     required PreparationTrainingRepository programs,
@@ -26,6 +27,7 @@ class WorkoutScheduleCubit extends Cubit<WorkoutScheduleState> {
        _rescheduleWorkout = rescheduleWorkout,
        _cancelWorkout = cancelWorkout,
        _startWorkout = startWorkout,
+       _repeatWorkout = repeatWorkout,
        _getPublicWorkouts = getPublicWorkouts,
        _getPersonalWorkouts = getPersonalWorkouts,
        _now = now ?? DateTime.now,
@@ -37,6 +39,7 @@ class WorkoutScheduleCubit extends Cubit<WorkoutScheduleState> {
   final RescheduleWorkoutUseCase _rescheduleWorkout;
   final CancelScheduledWorkoutUseCase _cancelWorkout;
   final StartScheduledWorkoutUseCase _startWorkout;
+  final RepeatScheduledWorkoutUseCase _repeatWorkout;
   final GetPublicWorkoutsUseCase _getPublicWorkouts;
   final GetPersonalWorkoutsUseCase _getPersonalWorkouts;
   final DateTime Function() _now;
@@ -182,10 +185,28 @@ class WorkoutScheduleCubit extends Cubit<WorkoutScheduleState> {
     }
   }
 
-  Future<String?> start(String scheduledId) async {
+  Future<String?> start(String scheduledId) => _openExecution(
+    scheduledId,
+    _startWorkout.call,
+    'No hemos podido iniciar la sesión programada.',
+  );
+
+  Future<String?> repeat(String scheduledId) => _openExecution(
+    scheduledId,
+    _repeatWorkout.call,
+    'No hemos podido repetir esta pauta. Comprueba que sigue disponible.',
+  );
+
+  Future<String?> _openExecution(
+    String scheduledId,
+    Future<String> Function(String) open,
+    String failureMessage,
+  ) async {
+    if (isClosed || state.busyItemId != null) return null;
     emit(state.copyWith(busyItemId: scheduledId, clearError: true));
     try {
-      final executionId = await _startWorkout(scheduledId);
+      final executionId = await open(scheduledId);
+      if (isClosed) return null;
       await _reloadItems();
       return executionId;
     } on OpenWorkoutConflict {
@@ -193,12 +214,13 @@ class WorkoutScheduleCubit extends Cubit<WorkoutScheduleState> {
       emit(state.copyWith(clearBusy: true));
       rethrow;
     } catch (error) {
+      if (isClosed) return null;
       emit(
         state.copyWith(
           clearBusy: true,
           errorMessage: error is ProAccessDenied
               ? error.message
-              : 'No hemos podido iniciar la sesión programada.',
+              : failureMessage,
         ),
       );
       return null;

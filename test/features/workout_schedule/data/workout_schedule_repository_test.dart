@@ -133,4 +133,7 @@ class _FakeRemoteDataSource implements WorkoutScheduleRemoteDataSource {
 
   @override
   Future<String> start(String scheduledId) async => 'execution-1';
+
+  @override
+  Future<String> repeat(String scheduledId) async => 'execution-repeat';
 }

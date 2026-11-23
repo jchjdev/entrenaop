@@ -24,6 +24,8 @@ class ScheduledWorkout extends Equatable {
     this.scheduledTime,
     this.estimatedDurationMinutes,
     this.executionId,
+    this.repeatExecutionId,
+    this.repeatAvailable = false,
     this.coachNote,
     this.coachName,
     this.isSelfAssigned = false,
@@ -41,10 +43,19 @@ class ScheduledWorkout extends Equatable {
   final ScheduledWorkoutStatus status;
   final String? preparationGoalId;
   final String? executionId;
+  final String? repeatExecutionId;
+  final bool repeatAvailable;
   final String? coachNote;
   final String? coachName;
   final bool isSelfAssigned;
   final List<DeviceActivitySummary> deviceResults;
+
+  bool get hasResult =>
+      executionId != null &&
+      (status == ScheduledWorkoutStatus.completed ||
+          status == ScheduledWorkoutStatus.abandoned);
+
+  bool get canRepeat => repeatAvailable && hasResult;
 
   @override
   List<Object?> get props => [
@@ -59,6 +70,8 @@ class ScheduledWorkout extends Equatable {
     status,
     preparationGoalId,
     executionId,
+    repeatExecutionId,
+    repeatAvailable,
     coachNote,
     coachName,
     isSelfAssigned,

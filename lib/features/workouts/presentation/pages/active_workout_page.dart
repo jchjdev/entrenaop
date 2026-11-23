@@ -278,7 +278,7 @@ class _ActiveWorkoutPageState extends State<ActiveWorkoutPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text(
-                    'Sesión descartada. Si estaba en tu agenda, vuelve a estar pendiente.',
+                    'Sesión descartada. Los resultados de otros intentos se conservan.',
                   ),
                   const SizedBox(height: 20),
                   FilledButton(

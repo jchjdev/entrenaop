@@ -655,15 +655,31 @@ class _ScheduledWorkoutCard extends StatelessWidget {
                   ),
                 ),
               ],
-              if ((item.status == ScheduledWorkoutStatus.completed ||
-                      item.status == ScheduledWorkoutStatus.abandoned) &&
-                  item.executionId != null) ...[
+              if (item.hasResult) ...[
                 const SizedBox(height: 16),
                 OutlinedButton.icon(
                   onPressed: busy ? null : () => _open(context),
                   icon: const Icon(Icons.receipt_long_rounded),
                   label: const Text('Ver resultado'),
                 ),
+                if (item.canRepeat) ...[
+                  const SizedBox(height: 8),
+                  FilledButton.icon(
+                    onPressed: busy
+                        ? null
+                        : () => _start(context, repeat: true),
+                    icon: Icon(
+                      item.repeatExecutionId == null
+                          ? Icons.replay_rounded
+                          : Icons.play_arrow_rounded,
+                    ),
+                    label: Text(
+                      item.repeatExecutionId == null
+                          ? 'Repetir entrenamiento'
+                          : 'Continuar repetición',
+                    ),
+                  ),
+                ],
               ],
             ],
           ),
@@ -673,9 +689,7 @@ class _ScheduledWorkoutCard extends StatelessWidget {
   }
 
   Future<void> _open(BuildContext context) async {
-    if ((item.status == ScheduledWorkoutStatus.completed ||
-            item.status == ScheduledWorkoutStatus.abandoned) &&
-        item.executionId != null) {
+    if (item.hasResult) {
       await context.push('/assessment/history/workouts/${item.executionId}');
       if (context.mounted) await context.read<WorkoutScheduleCubit>().load();
       return;
@@ -694,15 +708,20 @@ class _ScheduledWorkoutCard extends StatelessWidget {
     if (context.mounted) await context.read<WorkoutScheduleCubit>().load();
   }
 
-  Future<void> _start(BuildContext context) => startWithOpenWorkoutPrompt(
-    context,
-    () => _startRequestedWorkout(context),
-  );
+  Future<void> _start(BuildContext context, {bool repeat = false}) =>
+      startWithOpenWorkoutPrompt(
+        context,
+        () => _startRequestedWorkout(context, repeat: repeat),
+      );
 
-  Future<void> _startRequestedWorkout(BuildContext context) async {
-    final executionId = await context.read<WorkoutScheduleCubit>().start(
-      item.id,
-    );
+  Future<void> _startRequestedWorkout(
+    BuildContext context, {
+    required bool repeat,
+  }) async {
+    final cubit = context.read<WorkoutScheduleCubit>();
+    final executionId = await (repeat
+        ? cubit.repeat(item.id)
+        : cubit.start(item.id));
     if (executionId != null && context.mounted) {
       await context.push('/plan/week/active/$executionId');
       if (context.mounted) await context.read<WorkoutScheduleCubit>().load();

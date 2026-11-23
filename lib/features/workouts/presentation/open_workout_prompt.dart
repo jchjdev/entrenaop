@@ -78,7 +78,8 @@ Future<bool> confirmWorkoutDiscard(
           title: const Text('¿Descartar esta sesión?'),
           content: const Text(
             'Se eliminarán esta sesión y sus series registradas. No quedará en el '
-            'historial. Si estaba en tu agenda, volverá a estar pendiente.\n\n'
+            'historial. Si la pauta ya tenía un resultado, lo conservarás. '
+            'Si era su primera ejecución, volverá a estar pendiente.\n\n'
             'No se puede deshacer y necesita conexión.',
           ),
           actions: [

@@ -29,6 +29,10 @@ class WorkoutScheduleRepositoryImpl implements WorkoutScheduleRepository {
   @override
   Future<String> start(String scheduledId) =>
       remoteDataSource.start(scheduledId);
+
+  @override
+  Future<String> repeat(String scheduledId) =>
+      remoteDataSource.repeat(scheduledId);
 }
 
 String _date(DateTime value) =>

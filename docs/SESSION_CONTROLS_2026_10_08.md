@@ -1,5 +1,22 @@
 # Sesión, tiempo y ancho de Mi semana · UI-019/020 · 08/10/2026
 
+## Repetir una sesión pautada
+
+**Mi semana** ofrece **Repetir entrenamiento** debajo de **Ver resultado** al
+cerrar una pauta por finalización o abandono. El servidor comprueba propiedad,
+acceso vigente del preparador y Pro cuando se trata de una pauta adaptativa.
+Crea una ejecución con las series prescritas del resultado guardado y datos
+reales vacíos. Si ya hay una repetición abierta, la tarjeta ofrece
+**Continuar repetición**. Otro entrenamiento en curso conserva la advertencia
+de sesión abierta habitual.
+
+Mientras se repite, **Ver resultado** abre el resultado anterior. Al completar
+el registro, la misma cita apunta al nuevo resultado. Si la repetición se
+descarta, caduca, se abandona o termina sin completar el registro, la cita
+conserva el resultado previo. Los intentos cerrados quedan en el historial.
+Cada cita aporta un solo resultado al plan. El botón depende de que el
+servidor admita la operación.
+
 ## Rodaje pautado con el móvil
 
 En **Mi semana → Ver entrenamiento**, la ficha de un rodaje de un solo tramo

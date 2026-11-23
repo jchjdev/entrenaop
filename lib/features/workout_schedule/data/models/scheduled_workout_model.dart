@@ -29,6 +29,8 @@ abstract final class ScheduledWorkoutModel {
         final value => throw FormatException('Estado desconocido: $value'),
       },
       executionId: json['execution_id'] as String?,
+      repeatExecutionId: json['repeat_execution_id'] as String?,
+      repeatAvailable: json.containsKey('repeat_execution_id'),
       coachNote: (json['trainer_assignments'] as Map?)?['note'] as String?,
       coachName: json['trainer_name'] as String?,
       isSelfAssigned: json['is_self'] == true && json['source'] == 'coach',

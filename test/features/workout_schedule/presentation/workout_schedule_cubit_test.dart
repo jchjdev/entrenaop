@@ -531,6 +531,7 @@ void main() {
         rescheduleWorkout: RescheduleWorkoutUseCase(_FakeScheduleRepository()),
         cancelWorkout: CancelScheduledWorkoutUseCase(_FakeScheduleRepository()),
         startWorkout: StartScheduledWorkoutUseCase(_FakeScheduleRepository()),
+        repeatWorkout: RepeatScheduledWorkoutUseCase(_FakeScheduleRepository()),
         getPublicWorkouts: GetPublicWorkoutsUseCase(_FakeWorkoutRepository()),
         getPersonalWorkouts: GetPersonalWorkoutsUseCase(
           _FakeWorkoutRepository(),
@@ -691,13 +692,13 @@ void main() {
   }
 
   testWidgets(
-    'una sesión completada abre su resultado en una pantalla estrecha',
+    'una pauta cerrada conserva su resultado y permite iniciar otra ejecución',
     (tester) async {
       tester.view.physicalSize = const Size(360, 800);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
-      final item = ScheduledWorkout(
+      ScheduledWorkout closedWorkout({String? repeatId}) => ScheduledWorkout(
         id: 'scheduled-completed',
         templateId: 'algorithm-template',
         templateName: 'Carrera · fácil',
@@ -707,9 +708,13 @@ void main() {
         status: ScheduledWorkoutStatus.completed,
         preparationGoalId: 'goal-1',
         executionId: 'execution-1',
+        repeatAvailable: true,
+        repeatExecutionId: repeatId,
       );
+      final item = closedWorkout();
+      final repository = _FakeScheduleRepository(items: [item]);
       final cubit = _cubit(
-        _FakeScheduleRepository(items: [item]),
+        repository,
         _FakeWorkoutRepository(),
       );
       await cubit.load();
@@ -731,6 +736,11 @@ void main() {
             builder: (context, state) =>
                 Scaffold(body: Text('Resultado ${state.pathParameters['id']}')),
           ),
+          GoRoute(
+            path: '/plan/week/active/:id',
+            builder: (context, state) =>
+                Scaffold(body: Text('Ejecución ${state.pathParameters['id']}')),
+          ),
         ],
         initialLocation: '/plan/week',
       );
@@ -740,9 +750,30 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       expect(tester.getRect(find.text('DOM')).right, lessThan(360));
+      await tester.ensureVisible(find.text('Repetir entrenamiento'));
+      expect(tester.getTopLeft(find.text('Repetir entrenamiento')).dy,
+          greaterThan(tester.getTopLeft(find.text('Ver resultado')).dy));
+      expect(find.widgetWithText(FilledButton, 'Repetir entrenamiento'), findsOneWidget);
+      await tester.ensureVisible(find.text('Ver resultado'));
       await tester.tap(find.text('Ver resultado'));
       await tester.pumpAndSettle();
       expect(find.text('Resultado execution-1'), findsOneWidget);
+      router.pop();
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Repetir entrenamiento'));
+      await tester.tap(find.text('Repetir entrenamiento'));
+      await tester.pumpAndSettle();
+      expect(find.text('Ejecución execution-repeat'), findsOneWidget);
+      expect(repository.repeatedIds, [item.id]);
+      expect(repository.startedIds, isEmpty);
+      expect(cubit.state.selectedItems.single.executionId, 'execution-1');
+      repository.onRange = (_, _) async => [
+        closedWorkout(repeatId: 'execution-repeat'),
+      ];
+      router.pop();
+      await tester.pumpAndSettle();
+      expect(find.text('Continuar repetición'), findsOneWidget);
+      expect(find.text('Ver resultado'), findsOneWidget);
     },
   );
   test('carga la semana sin consultar catálogos y los carga al pedir la biblioteca', () async {
@@ -1117,6 +1148,7 @@ void main() {
       rescheduleWorkout: RescheduleWorkoutUseCase(_FakeScheduleRepository()),
       cancelWorkout: CancelScheduledWorkoutUseCase(_FakeScheduleRepository()),
       startWorkout: StartScheduledWorkoutUseCase(_FakeScheduleRepository()),
+      repeatWorkout: RepeatScheduledWorkoutUseCase(_FakeScheduleRepository()),
       getPublicWorkouts: GetPublicWorkoutsUseCase(_FakeWorkoutRepository()),
       getPersonalWorkouts: GetPersonalWorkoutsUseCase(_FakeWorkoutRepository()),
       initialDate: DateTime(2026, 10, 4),
@@ -1162,6 +1194,7 @@ WorkoutScheduleCubit _cubit(
   rescheduleWorkout: RescheduleWorkoutUseCase(scheduleRepository),
   cancelWorkout: CancelScheduledWorkoutUseCase(scheduleRepository),
   startWorkout: StartScheduledWorkoutUseCase(scheduleRepository),
+  repeatWorkout: RepeatScheduledWorkoutUseCase(scheduleRepository),
   getPublicWorkouts: GetPublicWorkoutsUseCase(workoutRepository),
   getPersonalWorkouts: GetPersonalWorkoutsUseCase(workoutRepository),
   now: () => DateTime(2026, 9, 23, 18),
@@ -1207,6 +1240,7 @@ class _FakeScheduleRepository implements WorkoutScheduleRepository {
 
   final List<ScheduledWorkout> items;
   final startedIds = <String>[];
+  final repeatedIds = <String>[];
   DateTime? lastStart;
   DateTime? lastEnd;
   String? scheduledTemplateId;
@@ -1247,6 +1281,12 @@ class _FakeScheduleRepository implements WorkoutScheduleRepository {
   Future<String> start(String scheduledId) async {
     startedIds.add(scheduledId);
     return 'execution-1';
+  }
+
+  @override
+  Future<String> repeat(String scheduledId) async {
+    repeatedIds.add(scheduledId);
+    return 'execution-repeat';
   }
 }
 

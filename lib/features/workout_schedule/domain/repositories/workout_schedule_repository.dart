@@ -10,4 +10,6 @@ abstract class WorkoutScheduleRepository {
   Future<void> cancel(String scheduledId);
 
   Future<String> start(String scheduledId);
+
+  Future<String> repeat(String scheduledId);
 }

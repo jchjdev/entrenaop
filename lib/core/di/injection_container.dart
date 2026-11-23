@@ -494,6 +494,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => RescheduleWorkoutUseCase(sl()));
   sl.registerLazySingleton(() => CancelScheduledWorkoutUseCase(sl()));
   sl.registerLazySingleton(() => StartScheduledWorkoutUseCase(sl()));
+  sl.registerLazySingleton(() => RepeatScheduledWorkoutUseCase(sl()));
   sl.registerFactoryParam<ScheduledWorkoutPreviewCubit, String, String>((
     scheduledId,
     ownerId,
@@ -524,6 +525,7 @@ Future<void> initDependencies() async {
       rescheduleWorkout: sl(),
       cancelWorkout: sl(),
       startWorkout: sl(),
+      repeatWorkout: sl(),
       getPublicWorkouts: sl(),
       getPersonalWorkouts: sl(),
       initialDate: initialDate,

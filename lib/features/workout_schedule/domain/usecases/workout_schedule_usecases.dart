@@ -38,3 +38,10 @@ class StartScheduledWorkoutUseCase {
 
   Future<String> call(String scheduledId) => _repository.start(scheduledId);
 }
+
+class RepeatScheduledWorkoutUseCase {
+  const RepeatScheduledWorkoutUseCase(this._repository);
+  final WorkoutScheduleRepository _repository;
+
+  Future<String> call(String scheduledId) => _repository.repeat(scheduledId);
+}
