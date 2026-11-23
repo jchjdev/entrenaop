@@ -1,13 +1,105 @@
 import 'dart:async';
 
-import 'package:entrenaop/features/workouts/domain/services/phone_running.dart';
+import 'package:entrena_ui/entrena_ui.dart';
+import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:entrenaop/features/workouts/domain/services/phone_run_plan.dart';
+import 'package:entrenaop/features/workouts/domain/services/phone_running.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_cue_service.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/phone_run_cubit.dart';
+import 'package:entrenaop/features/workouts/presentation/widgets/phone_run_panel.dart';
+import 'package:entrenaop/features/workouts/presentation/widgets/workout_execution_labels.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_core/running_step.dart';
 
+import '../../../helpers/performance_visual_review.dart';
+
 void main() {
+  setUpAll(loadReviewFont);
+
+  for (final (width, scale) in [(390.0, 1.0), (320.0, 1.8)]) {
+    testWidgets('el ritmo se distingue del tiempo con escala $scale', (
+      tester,
+    ) async {
+      tester.view.physicalSize = Size(width, 840);
+      tester.view.devicePixelRatio = 1;
+      tester.platformDispatcher.textScaleFactorTestValue = scale;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      final location = _Location();
+      addTearDown(location.events.close);
+      var now = DateTime.utc(2026, 11, 23);
+      final cubit = PhoneRunCubit(
+        executionId: 'series',
+        location: location,
+        checkpoints: _Checkpoints(),
+        now: () => now,
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: scale == 1 ? EntrenaTheme.dark : EntrenaTheme.light,
+          home: Scaffold(
+            appBar: AppBar(title: const Text('Registrar carrera')),
+            body: RepaintBoundary(
+              key: const ValueKey('review-boundary'),
+              child: PhoneRunPanel(
+                createRecorder: () => cubit,
+                set: const WorkoutExecutionSet(
+                  id: 'serie',
+                  blockOrder: 0,
+                  blockName: 'Series',
+                  itemOrder: 0,
+                  exerciseId: 'carrera',
+                  exerciseName: 'Carrera',
+                  setOrder: 0,
+                  restAfterSeconds: 0,
+                  status: WorkoutSetStatus.pending,
+                ),
+                steps: const [
+                  PhoneRunStep(
+                    setId: 'serie',
+                    kind: RunningStepKind.run,
+                    completion: RunningStepCompletion.distance,
+                    meters: 400,
+                  ),
+                ],
+                onSave: (_) async => true,
+                onManual: (_) async {},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Ritmo reciente'), findsOneWidget);
+      expect(find.bySemanticsLabel(RegExp('Ritmo pendiente')), findsWidgets);
+      await cubit.start();
+      await tester.pumpAndSettle();
+      for (var second = 0; second <= 24; second++) {
+        if (second > 0) now = now.add(const Duration(seconds: 1));
+        location.fix(now, second * 3.5 / 111195);
+      }
+      await tester.pumpAndSettle();
+      final pace = find.text(workoutClock(cubit.state.recentPace!));
+      final time = find.text('00:24');
+      expect(tester.getTopLeft(pace).dy, lessThan(tester.getTopLeft(time).dy));
+      expect(
+        tester.widget<Text>(pace).style!.fontSize!,
+        greaterThan(tester.widget<Text>(time).style!.fontSize!),
+      );
+      expect(find.text('min/km'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await capturePerformanceWidget(tester, 'phone-run-${width.toInt()}');
+
+      await cubit.review();
+      await tester.pumpAndSettle();
+      expect(find.text('Ritmo medio del tramo'), findsOneWidget);
+      expect(find.text('Ritmo reciente'), findsNothing);
+      await tester.pumpWidget(const SizedBox());
+    });
+  }
+
   test('encadena diez series por distancia y recuperaciones sin duplicar la vuelta', () async {
     final location = _Location();
     final checkpoints = _Checkpoints();

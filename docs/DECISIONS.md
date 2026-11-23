@@ -30,6 +30,8 @@ registro completamente manual disponible. Aprueba un solo guiado con avance
 automático o vuelta manual para pista. Autoriza la voz opcional por parciales
 y pide que el ritmo sea visible desde la pantalla bloqueada. Implementado en
 la versión 1.30.0, con aceptación física en ambos sistemas pendiente.
+Javier pide que el ritmo se lea de un vistazo. La versión 1.30.1 destaca el
+ritmo reciente dentro de la app y en la presentación nativa durante la carrera.
 [Diseño y verificación](SESSION_CONTROLS_2026_10_08.md#carrera-guiada-con-el-móvil).
 
 **Nombre editable de las preparaciones en ADMIN · 20/11/2026.** Javier pide

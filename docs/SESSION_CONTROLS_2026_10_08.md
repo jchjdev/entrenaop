@@ -109,14 +109,17 @@ parciales del guiado entran como borradores editables antes del cierre.
   **Cada kilómetro** anuncia el ritmo. Falta comprobar música y auriculares
   durante la prueba física.
 - **Ritmo de rodaje.** El panel muestra el ritmo medio tras medir al menos
-  50 m con distancia fiable. El panel destaca un ritmo
-  reciente suavizado, junto con el medio, el tiempo y la distancia. Los avisos
+  50 m con distancia fiable. Desde la versión 1.30.1, el ritmo reciente
+  suavizado es la cifra principal, con su unidad al lado. El ritmo medio,
+  el tiempo y la distancia ocupan un segundo nivel. Los avisos
   hablados usan un parcial medido; si la señal es débil se omite el ritmo y se
   conservan las alertas de cambio de fase que puedan determinarse.
 - **Pantalla bloqueada.** La compilación incluye una actividad en directo
   para iOS 16.2 o posterior y actualiza la notificación del servicio de carrera
   en Android. Ambas muestran tiempo, distancia y ritmo, y añaden el objetivo
-  restante en la pauta por fases. La visibilidad depende de los ajustes del
+  restante en la pauta por fases. El ritmo encabeza la notificación de Android
+  y es la cifra de mayor tamaño en la actividad en directo de iOS. La
+  visibilidad depende de los ajustes del
   dispositivo. La actualización y los avisos con el bloqueo activo todavía
   requieren una prueba física en ambos sistemas.
 

@@ -134,10 +134,14 @@ class PhoneRunPanelState extends State<PhoneRunPanel> {
       final step = state.step;
       final busy = state.busy || _saving;
       final theme = Theme.of(context);
-      final distance = NumberFormat.decimalPatternDigits(
-        locale: Localizations.localeOf(context).toString(),
-        decimalDigits: 2,
-      ).format(totals.distanceMeters / 1000);
+      final distance =
+          NumberFormat.decimalPatternDigits(
+            locale: Localizations.localeOf(context).toString(),
+            decimalDigits: 2,
+          ).format(
+            (guided ? state.sessionDistanceMeters : totals.distanceMeters) /
+                1000,
+          );
       final target = widget.set.targetDurationSeconds;
       final targetFast = widget.set.targetPaceMinSecondsPerKm;
       final targetSlow = widget.set.targetPaceMaxSecondsPerKm;
@@ -154,17 +158,24 @@ class PhoneRunPanelState extends State<PhoneRunPanel> {
       return ListView(
         padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
         children: [
-          Text(status, style: theme.textTheme.titleLarge),
+          Text(status, style: theme.textTheme.titleMedium),
           const SizedBox(height: 12),
-          Text(
-            workoutClock(totals.seconds),
-            style: theme.textTheme.displayMedium,
+          _RunMetrics(
+            pace: review ? pace : recent,
+            paceLabel: review
+                ? (guided ? 'Ritmo medio del tramo' : 'Ritmo medio')
+                : 'Ritmo reciente',
+            averagePace: review ? null : pace,
+            averageLabel: guided ? 'Media del tramo' : 'Media',
+            time: workoutClock(totals.seconds),
+            timeLabel: guided ? 'Tiempo del tramo' : 'Tiempo activo',
+            distance: guided || gotDistance ? '$distance km' : '—',
+            distanceLabel: guided ? 'Distancia total' : 'Distancia',
           ),
-          Text(
-            !guided && target != null
-                ? 'Tiempo activo · objetivo ${workoutClock(target)}'
-                : 'Tiempo del tramo',
-          ),
+          if (!guided && target != null) ...[
+            const SizedBox(height: 12),
+            Text('Objetivo de tiempo · ${workoutClock(target)}'),
+          ],
           if (guided && step != null) ...[
             const SizedBox(height: 12),
             Text(
@@ -185,21 +196,6 @@ class PhoneRunPanelState extends State<PhoneRunPanel> {
             Text(
               'Ritmo orientativo · ${workoutClock(targetFast)}–${workoutClock(targetSlow)} min/km',
             ),
-          const SizedBox(height: 16),
-          Text(
-            guided
-                ? '${NumberFormat.decimalPatternDigits(locale: Localizations.localeOf(context).toString(), decimalDigits: 2).format(state.sessionDistanceMeters / 1000)} km en la sesión'
-                : gotDistance
-                ? '$distance km${totals.distanceReliable ? '' : ' · lectura parcial'}'
-                : 'Distancia pendiente',
-          ),
-          Text(
-            recent == null
-                ? 'Ritmo reciente · —'
-                : '${workoutClock(recent)} min/km · ritmo reciente',
-            style: theme.textTheme.titleMedium,
-          ),
-          if (pace != null) Text('${workoutClock(pace)} min/km de media'),
           if (!totals.distanceReliable) ...[
             const SizedBox(height: 8),
             const Text(
@@ -341,4 +337,112 @@ class PhoneRunPanelState extends State<PhoneRunPanel> {
       );
     },
   );
+}
+
+class _RunMetrics extends StatelessWidget {
+  const _RunMetrics({
+    required this.pace,
+    required this.paceLabel,
+    required this.averagePace,
+    required this.averageLabel,
+    required this.time,
+    required this.timeLabel,
+    required this.distance,
+    required this.distanceLabel,
+  });
+
+  final int? pace;
+  final String paceLabel;
+  final int? averagePace;
+  final String averageLabel;
+  final String time;
+  final String timeLabel;
+  final String distance;
+  final String distanceLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    const digits = [FontFeature.tabularFigures()];
+    final caption = theme.textTheme.labelLarge?.copyWith(
+      color: colors.onSurfaceVariant,
+    );
+    final stat = theme.textTheme.titleLarge?.copyWith(fontFeatures: digits);
+    final currentPace = pace;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colors.surfaceContainer,
+        border: Border.all(color: colors.outlineVariant),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(paceLabel, style: caption),
+            const SizedBox(height: 4),
+            Wrap(
+              spacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    currentPace == null ? '—' : workoutClock(currentPace),
+                    semanticsLabel: currentPace == null
+                        ? 'Ritmo pendiente'
+                        : null,
+                    style: theme.textTheme.displayLarge?.copyWith(
+                      height: 1.08,
+                      fontSize: 60,
+                      fontWeight: FontWeight.w800,
+                      fontFeatures: digits,
+                      color: currentPace == null
+                          ? colors.onSurfaceVariant
+                          : colors.secondary,
+                    ),
+                  ),
+                ),
+                Text('min/km', style: caption),
+              ],
+            ),
+            if (averagePace case final average?)
+              Text(
+                '$averageLabel · ${workoutClock(average)} min/km',
+                style: caption,
+              ),
+            const SizedBox(height: 12),
+            const Divider(height: 1),
+            const SizedBox(height: 12),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(timeLabel, style: caption),
+                      Text(time, style: stat),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(distanceLabel, style: caption),
+                      Text(distance, style: stat),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

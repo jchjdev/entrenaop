@@ -92,12 +92,14 @@ class PhoneRunLocationService : Service(), LocationListener {
             .setOnlyAlertOnce(true)
         if (data != null) {
             val phase = data["phase"] as? String ?: "Carrera"
-            val pace = data["pace"] as? String ?: "— min/km"
+            val pace = data["pace"] as? String
             val distance = data["distance"] as? String ?: ""
             val progress = data["progress"] as? String ?: ""
             val elapsed = (data["seconds"] as? Number)?.toLong() ?: 0
-            builder.setContentTitle("$phase · $pace")
-                .setContentText(listOf(distance, progress).filter { it.isNotEmpty() }.joinToString(" · "))
+            val details = listOf(phase, distance, progress).filter { it.isNotEmpty() }
+            builder.setContentTitle(pace?.takeUnless { it.startsWith("—") } ?: "Ritmo pendiente")
+                .setContentText(details.joinToString(" · "))
+                .setStyle(Notification.BigTextStyle().bigText(details.joinToString("\n")))
                 .setWhen(System.currentTimeMillis() - elapsed * 1000)
                 .setUsesChronometer(elapsed > 0)
         }
