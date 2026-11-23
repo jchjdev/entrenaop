@@ -178,11 +178,14 @@ class PhoneRunPanelState extends State<PhoneRunPanel> {
               icon: const Icon(Icons.play_arrow_rounded),
               label: Text(totals.seconds > 0 ? 'Reanudar' : 'Iniciar GPS'),
             ),
-          if (!review && (state.tracking || totals.seconds > 0))
+          if (!review && (state.tracking || totals.seconds > 0)) ...[
+            const SizedBox(height: 8),
             OutlinedButton(
               onPressed: busy ? null : _recorder.review,
               child: const Text('Terminar grabación'),
             ),
+          ],
+          const SizedBox(height: 8),
           TextButton(
             onPressed: busy ? null : _manual,
             child: Text(
