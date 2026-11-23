@@ -54,8 +54,49 @@ Al reanudar se excluyen el tiempo y el desplazamiento de la pausa. Al terminar
 se compara la distancia con las vueltas medidas y se revisa el resultado en
 Mi semana. Para grabar simultáneamente, usar dos cuentas de Dev con pautas
 independientes y comprobar ambos guardados.
-La precisión y el consumo quedan pendientes de esa prueba. El guiado de
-series y los avisos por tramo se decidirán después del rodaje.
+La precisión y el consumo quedan pendientes de esa prueba.
+
+## Carrera guiada con el móvil
+
+Propuesta de diseño del 23/11/2026, pendiente de implementación. El deportista
+elige **Entrenar con el móvil** o **Registrar manualmente** en la misma pauta.
+El guiado recorre los pasos prescritos en orden, incluidas recuperaciones
+asociadas de pautas antiguas y fases editables de las nuevas. El título de la
+sesión no determina distancias, duraciones ni descansos.
+
+- **Tiempo.** El tramo avanza al llegar a la duración prescrita. Incluye el
+  descanso parado y las recuperaciones por tiempo; **Pausar** detiene el reloj
+  de sesión y el GPS.
+- **Distancia.** En **Automático**, avanza con distancia fiable y permite
+  marcar la vuelta antes. En **Pista**, marca el parcial al pulsar **Marcar
+  vuelta** en la línea; el resto de los tramos conserva su propia regla.
+- **Hasta pulsar.** Calentamientos, cambios libres y otros pasos abiertos
+  avanzan con **Marcar vuelta**. Si falta señal durante un tramo por
+  distancia, se conserva el tiempo y se puede marcar o continuar por la vía
+  manual. El objetivo de distancia no se guarda como medición automática.
+- **Avisos.** Indican el inicio, los cambios de fase y el final de la sesión.
+  Tonos diferenciados para fin de trabajo y fin de recuperación, con sonido
+  y vibración según los ajustes. La cuenta atrás corta ayuda en recuperaciones
+  por tiempo. Con un rango de ritmo, avisos opcionales ante una desviación
+  sostenida y señal fiable. La voz puede añadirse como alternativa si se
+  valida su convivencia con música.
+- **Resultado.** Cada parcial se vincula al tramo de la ejecución original.
+  Cambiar a registro manual conserva las mediciones disponibles como
+  borrador. Los datos ausentes quedan pendientes de revisión y los tramos
+  sin realizar no se marcan como completados. Al recuperar una interrupción,
+  se recuperan los parciales y el tramo abierto queda en pausa. Si coinciden
+  la vuelta y el final automático, solo se anota una transición.
+
+La lógica de avance consume los [pasos actuales](RUNNING_STEPS_V2.md) y
+recibe tiempo, posición y pulsaciones. El GPS, los avisos del sistema y la
+persistencia son adaptadores del móvil. La presentación muestra tramo,
+objetivo, avance y siguiente paso. El primer recorrido de validación cruza
+una pauta antigua y una V2 con trabajo de 400 m, recuperación temporizada y
+un paso abierto. Debe probar **Automático** y **Pista**, vuelta cerca del
+final automático, pausa, pérdida de señal, paso a manual y avisos con la
+pantalla bloqueada en iPhone y Android. Una prueba de dos repeticiones es
+suficiente para verificar las transiciones físicas; se comprueba además una
+pauta de diez repeticiones en pruebas automatizadas.
 
 ## Carga real opcional en fuerza
 

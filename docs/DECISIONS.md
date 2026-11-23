@@ -20,9 +20,15 @@ abre el resultado y desde ahí se puede repetir o continuar el intento.
 rodaje de Mi semana en Android e iOS con la pantalla bloqueada y detener el
 GPS al pausar o terminar. Confirma que la ficha debe ofrecer el registro
 manual existente junto a la grabación con el móvil. El 23/11 pide dar más
-visibilidad a la grabación dentro del rodaje. Las series y las señales de audio
-quedan para una decisión posterior.
+visibilidad a la grabación dentro del rodaje.
 [Contrato](SESSION_CONTROLS_2026_10_08.md#rodaje-pautado-con-el-móvil).
+
+**Carrera guiada con el móvil · 23/11/2026.** Javier pide ampliar el móvil a
+series, intervalos y todas las modalidades de carrera que admite la pauta.
+Confirma avisos al terminar cada trabajo y recuperación, vuelta manual y
+registro completamente manual disponible. Pide una propuesta de experiencia
+y diseño para el ejecutor.
+[Propuesta](SESSION_CONTROLS_2026_10_08.md#carrera-guiada-con-el-móvil).
 
 **Nombre editable de las preparaciones en ADMIN · 20/11/2026.** Javier pide
 editar el título de la preparación desde su ficha en ADMIN. Se guarda sobre la
