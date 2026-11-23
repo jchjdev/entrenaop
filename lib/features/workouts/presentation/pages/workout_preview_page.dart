@@ -167,6 +167,8 @@ class WorkoutPreviewContent extends StatelessWidget {
     this.errorMessage,
     this.leading,
     this.onExercisePressed,
+    this.showRecordingInstructions = true,
+    this.trailing,
     super.key,
   });
   final WorkoutTemplate workout;
@@ -174,10 +176,12 @@ class WorkoutPreviewContent extends StatelessWidget {
   final String? errorMessage;
   final Widget? leading;
   final ValueChanged<WorkoutItem>? onExercisePressed;
+  final bool showRecordingInstructions;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) => SafeArea(
-    bottom: false,
+    bottom: trailing != null,
     child: Center(
       child: ListView(
         key: const PageStorageKey('workout-preview-content'),
@@ -212,13 +216,15 @@ class WorkoutPreviewContent extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                   ],
-                  Text(
-                    _isRunning(workout)
-                        ? 'Registra después del entrenamiento el resultado real de cada tramo.'
-                        : 'Comprueba la sesión antes de empezar. Durante el entrenamiento podrás registrar el resultado real de cada serie.',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.white54),
-                  ),
+                  if (showRecordingInstructions)
+                    Text(
+                      _isRunning(workout)
+                          ? 'Registra después del entrenamiento el resultado real de cada tramo.'
+                          : 'Comprueba la sesión antes de empezar. Durante el entrenamiento podrás registrar el resultado real de cada serie.',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.white54),
+                    ),
+                  ?trailing,
                 ],
               ),
             ),

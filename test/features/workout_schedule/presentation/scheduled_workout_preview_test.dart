@@ -52,6 +52,80 @@ void main() {
     );
   }
 
+  for (final (size, textScale, fixedActions) in [
+    (const Size(390, 844), 1.0, true),
+    (const Size(320, 480), 2.0, false),
+  ]) {
+    testWidgets(
+      'el rodaje muestra la ayuda y separa ambas acciones: $size y texto $textScale',
+      (tester) async {
+        await tester.binding.setSurfaceSize(size);
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        final repository = _PreviewRepository()
+          ..preview = scheduledWorkoutPreviewFixture(blocks: [_continuousRun]);
+        final cubit = _cubit(repository);
+        final router = _router(cubit, direct: true);
+        addTearDown(cubit.close);
+        addTearDown(router.dispose);
+        await cubit.load();
+        await tester.pumpWidget(
+          MaterialApp.router(
+            theme: EntrenaTheme.dark,
+            routerConfig: router,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                textScaler: TextScaler.linear(textScale),
+                padding: const EdgeInsets.only(bottom: 34),
+                viewPadding: const EdgeInsets.only(bottom: 34),
+              ),
+              child: child!,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final body = find.byType(ListView);
+        final help = find.text(
+          'Si registras manualmente, anota el resultado al terminar.',
+        );
+        final manual = find.widgetWithText(
+          FilledButton,
+          'Registrar manualmente',
+        );
+        final phone = find.widgetWithText(
+          OutlinedButton,
+          'Empezar con el móvil',
+        );
+        final manualRect = tester.getRect(manual);
+        final phoneRect = tester.getRect(phone);
+        final helpRect = tester.getRect(help);
+
+        expect(helpRect.bottom, lessThan(manualRect.top));
+        expect(phoneRect.top - manualRect.bottom, greaterThanOrEqualTo(8));
+        if (fixedActions) {
+          expect(tester.getRect(body).bottom, lessThanOrEqualTo(helpRect.top));
+          await tester.drag(body, const Offset(0, -300));
+          await tester.pumpAndSettle();
+          expect(tester.getRect(help), helpRect);
+          expect(tester.getRect(manual), manualRect);
+          expect(tester.getRect(phone), phoneRect);
+        } else {
+          for (final control in [help, manual, phone]) {
+            await tester.ensureVisible(control);
+            await tester.pumpAndSettle();
+            expect(control.hitTestable(), findsOneWidget);
+          }
+        }
+        expect(
+          tester.getRect(phone).bottom,
+          lessThanOrEqualTo(size.height - 34),
+        );
+        expect(tester.takeException(), isNull);
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+    );
+  }
+
   testWidgets(
     'una pauta pendiente abre la ficha actual sin iniciar la sesión',
     (tester) async {

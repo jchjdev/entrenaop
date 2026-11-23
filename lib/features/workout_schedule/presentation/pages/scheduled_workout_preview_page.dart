@@ -83,22 +83,35 @@ class ScheduledWorkoutPreviewPage extends StatelessWidget {
   }
 
   @override
-  Widget build(
-    BuildContext context,
-  ) => BlocConsumer<ScheduledWorkoutPreviewCubit, ScheduledWorkoutPreviewState>(
-    listenWhen: (previous, current) =>
-        current.executionId != null &&
-        current.executionId != previous.executionId,
-    listener: (context, state) async {
-      await context.push(
-        '$routeBase/active/${state.executionId}',
-        extra: state.startWithPhone ? true : null,
+  Widget build(BuildContext context) =>
+      BlocConsumer<ScheduledWorkoutPreviewCubit, ScheduledWorkoutPreviewState>(
+        listenWhen: (previous, current) =>
+            current.executionId != null &&
+            current.executionId != previous.executionId,
+        listener: (context, state) async {
+          await context.push(
+            '$routeBase/active/${state.executionId}',
+            extra: state.startWithPhone ? true : null,
+          );
+          if (context.mounted) {
+            await context.read<ScheduledWorkoutPreviewCubit>().load();
+          }
+        },
+        builder: _buildPreview,
       );
-      if (context.mounted) {
-        await context.read<ScheduledWorkoutPreviewCubit>().load();
-      }
-    },
-    builder: (context, state) => WorkflowDraftGuard(
+
+  Widget _buildPreview(
+    BuildContext context,
+    ScheduledWorkoutPreviewState state,
+  ) {
+    final showsPhoneActions = _showsPhoneActions(state);
+    // En pantallas pequeñas o con letra grande, ambas acciones caben al
+    // desplazarse con la ficha, sin quitarle todo el alto a su contenido.
+    final inlineActions =
+        showsPhoneActions &&
+        (MediaQuery.sizeOf(context).height < 600 ||
+            MediaQuery.textScalerOf(context).scale(16) > 20);
+    return WorkflowDraftGuard(
       hasUnsavedChanges: () => false,
       isBusy: () =>
           context.read<ScheduledWorkoutPreviewCubit>().state.status ==
@@ -125,6 +138,10 @@ class ScheduledWorkoutPreviewPage extends StatelessWidget {
                   ? (item) => _showExercise(context, item)
                   : null,
               leading: _AssignmentSummary(preview: preview),
+              showRecordingInstructions: !showsPhoneActions,
+              trailing: inlineActions
+                  ? _PreviewAction(state: state, inline: true)
+                  : null,
             ),
             null => Center(
               child:
@@ -153,13 +170,23 @@ class ScheduledWorkoutPreviewPage extends StatelessWidget {
                     ),
             ),
           },
-          bottomNavigationBar: state.preview == null
+          bottomNavigationBar: state.preview == null || inlineActions
               ? null
               : _PreviewAction(state: state),
         ),
       ),
-    ),
-  );
+    );
+  }
+}
+
+bool _showsPhoneActions(ScheduledWorkoutPreviewState state) {
+  final preview = state.preview;
+  return preview != null &&
+      preview.canStart &&
+      !preview.proRequired &&
+      !state.refreshRequired &&
+      phoneRunSupported &&
+      isContinuousPhoneRun(preview.workout);
 }
 
 class _AssignmentSummary extends StatelessWidget {
@@ -218,8 +245,9 @@ class _AssignmentSummary extends StatelessWidget {
 }
 
 class _PreviewAction extends StatelessWidget {
-  const _PreviewAction({required this.state});
+  const _PreviewAction({required this.state, this.inline = false});
   final ScheduledWorkoutPreviewState state;
+  final bool inline;
 
   @override
   Widget build(BuildContext context) {
@@ -227,14 +255,18 @@ class _PreviewAction extends StatelessWidget {
     final cubit = context.read<ScheduledWorkoutPreviewCubit>();
     final resuming =
         preview.scheduled.status == ScheduledWorkoutStatus.inProgress;
-    final canRecordWithPhone =
-        phoneRunSupported && isContinuousPhoneRun(preview.workout);
+    final canRecordWithPhone = _showsPhoneActions(state);
     return Material(
-      color: Theme.of(context).colorScheme.surface,
-      elevation: 8,
+      color: inline
+          ? Colors.transparent
+          : Theme.of(context).colorScheme.surface,
+      elevation: inline ? 0 : 8,
       child: SafeArea(
         top: false,
-        minimum: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+        bottom: !inline,
+        minimum: inline
+            ? EdgeInsets.zero
+            : const EdgeInsets.fromLTRB(20, 12, 20, 12),
         child: Align(
           heightFactor: 1,
           child: ConstrainedBox(
@@ -278,6 +310,16 @@ class _PreviewAction extends StatelessWidget {
                     child: const Text('Actualizar acceso'),
                   ),
                 ] else if (preview.canStart) ...[
+                  if (canRecordWithPhone && state.message == null) ...[
+                    Text(
+                      'Si registras manualmente, anota el resultado al terminar.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
                   FilledButton.icon(
                     key: const ValueKey('scheduled-preview-start'),
                     onPressed: state.canStart
@@ -299,7 +341,8 @@ class _PreviewAction extends StatelessWidget {
                           : 'Comenzar entrenamiento',
                     ),
                   ),
-                  if (canRecordWithPhone)
+                  if (canRecordWithPhone) ...[
+                    const SizedBox(height: 8),
                     OutlinedButton.icon(
                       onPressed: state.canStart
                           ? () => startWithOpenWorkoutPrompt(
@@ -314,6 +357,7 @@ class _PreviewAction extends StatelessWidget {
                             : 'Empezar con el móvil',
                       ),
                     ),
+                  ],
                 ] else if (preview.hasResult)
                   FilledButton.icon(
                     onPressed: () => context.push(
