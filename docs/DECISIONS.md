@@ -6,6 +6,11 @@ guardada. La repetición abre otro intento y conserva el anterior en el
 historial. El resultado de la cita cambia cuando se completa el nuevo registro.
 [Contrato](SESSION_CONTROLS_2026_10_08.md#repetir-una-sesión-pautada).
 
+**Repetir desde el resultado · 23/11/2026.** Javier confirma el acceso al
+final del detalle del resultado vigente de una pauta. La tarjeta de Inicio
+abre el resultado y desde ahí se puede repetir o continuar el intento.
+[Contrato](SESSION_CONTROLS_2026_10_08.md#repetir-una-sesión-pautada).
+
 **Rodaje pautado con el móvil · 22/11/2026.** Javier pide grabar un
 rodaje de Mi semana en Android e iOS con la pantalla bloqueada y detener el
 GPS al pausar o terminar. Confirma que la ficha debe ofrecer el registro

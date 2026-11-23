@@ -10,6 +10,10 @@ reales vacíos. Si ya hay una repetición abierta, la tarjeta ofrece
 **Continuar repetición**. Otro entrenamiento en curso conserva la advertencia
 de sesión abierta habitual.
 
+El detalle del resultado ofrece la misma acción debajo de lo registrado,
+tanto si se llega desde **Inicio → Ver resultado** como desde **Mi semana**
+o el historial. Solo aparece en el resultado que sigue enlazado a la pauta.
+
 Mientras se repite, **Ver resultado** abre el resultado anterior. Al completar
 el registro, la misma cita apunta al nuevo resultado. Si la repetición se
 descarta, caduca, se abandona o termina sin completar el registro, la cita

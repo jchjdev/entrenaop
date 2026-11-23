@@ -1,9 +1,37 @@
 import 'package:entrenaop/features/workout_schedule/data/datasources/workout_schedule_remote_datasource.dart';
 import 'package:entrenaop/features/workout_schedule/data/repositories/workout_schedule_repository_impl.dart';
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
+import 'package:entrenaop/features/workout_schedule/domain/usecases/workout_schedule_usecases.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('un resultado identifica solo la pauta vigente con soporte de repetición', () async {
+    final row = <String, dynamic>{
+      'id': 'scheduled-1',
+      'template_id': 'template-1',
+      'template_name': 'Rodaje',
+      'template_version': 1,
+      'scheduled_date': '2026-11-21',
+      'source': 'user',
+      'status': 'abandoned',
+      'execution_id': 'result-1',
+      'repeat_execution_id': 'open-attempt',
+    };
+    final remote = _FakeRemoteDataSource(rows: [row]);
+    final lookup = GetRepeatableScheduledWorkoutUseCase(
+      WorkoutScheduleRepositoryImpl(remoteDataSource: remote),
+    );
+
+    final item = await lookup('result-1');
+    expect(remote.lastResultId, 'result-1');
+    expect(item?.id, 'scheduled-1');
+    expect(item?.repeatExecutionId, 'open-attempt');
+    expect(await lookup('older-attempt'), isNull);
+
+    row.remove('repeat_execution_id');
+    expect(await lookup('result-1'), isNull);
+  });
+
   test('una pauta pendiente conserva a la vez resultados Garmin y Apple sin completarse', () async {
     final remote = _FakeRemoteDataSource(
       rows: [
@@ -101,12 +129,19 @@ class _FakeRemoteDataSource implements WorkoutScheduleRemoteDataSource {
   String? lastEnd;
   String? scheduledDate;
   String? rescheduledDate;
+  String? lastResultId;
 
   @override
   Future<List<Map<String, dynamic>>> getRange(String start, String end) async {
     lastStart = start;
     lastEnd = end;
     return rows;
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getByResult(String executionId) async {
+    lastResultId = executionId;
+    return rows.singleOrNull;
   }
 
   @override

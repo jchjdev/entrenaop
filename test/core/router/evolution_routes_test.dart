@@ -19,6 +19,9 @@ import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_program.dart';
 import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_goal_repository.dart';
 import 'package:entrenaop/features/program_assessment/data/program_assessment_repository.dart';
+import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
+import 'package:entrenaop/features/workout_schedule/domain/repositories/workout_schedule_repository.dart';
+import 'package:entrenaop/features/workout_schedule/domain/usecases/workout_schedule_usecases.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_history_query.dart';
 import 'package:entrenaop/features/workouts/domain/repositories/workout_repository.dart';
@@ -35,6 +38,7 @@ void main() {
   late _Auth auth;
   late _Goals goals;
   late _Marks marks;
+  late _Schedules schedules;
   final cubits = <WorkoutHistoryCubit>[];
   final sources = <_Sessions>[];
   setUp(() {
@@ -43,8 +47,11 @@ void main() {
     auth = _Auth();
     goals = _Goals(auth);
     marks = _Marks(auth);
+    schedules = _Schedules(auth);
     sl.registerSingleton<PreparationGoalRepository>(goals);
     sl.registerSingleton<ProgramAssessmentRepository>(marks);
+    sl.registerSingleton(GetRepeatableScheduledWorkoutUseCase(schedules));
+    sl.registerSingleton(RepeatScheduledWorkoutUseCase(schedules));
     sl.registerFactoryParam<WorkoutHistoryDetailCubit, String, void>((id, _) {
       final repository = _Sessions(auth.userId);
       return WorkoutHistoryDetailCubit(
@@ -208,6 +215,7 @@ void main() {
           .executionId,
       'other',
     );
+    expect(schedules.lookups, ['A:A', 'B:A', 'B:other']);
     expect(t.takeException(), isNull);
   });
   testWidgets('el historial físico renueva su controlador al cambiar cuenta', (
@@ -253,6 +261,19 @@ void main() {
       expect(t.takeException(), isNull);
     },
   );
+}
+
+class _Schedules extends Fake implements WorkoutScheduleRepository {
+  _Schedules(this.auth);
+
+  final _Auth auth;
+  final lookups = <String>[];
+
+  @override
+  Future<ScheduledWorkout?> getByResult(String executionId) async {
+    lookups.add('${auth.userId}:$executionId');
+    return null;
+  }
 }
 
 class _Auth extends Cubit<AuthState> implements AuthCubit {

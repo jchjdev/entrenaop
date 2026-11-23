@@ -86,6 +86,24 @@ class WorkoutScheduleRemoteDataSourceImpl
   }
 
   @override
+  Future<Map<String, dynamic>?> getByResult(String executionId) async {
+    final owner = supabaseClient.auth.currentUser?.id;
+    if (owner == null) return null;
+    final row = await supabaseClient
+        .from('scheduled_workouts')
+        // En entornos anteriores, la lectura funciona aunque falte repeat_execution_id.
+        .select()
+        .eq('user_id', owner)
+        .eq('execution_id', executionId)
+        .inFilter('status', ['completed', 'abandoned'])
+        .maybeSingle();
+    if (supabaseClient.auth.currentUser?.id != owner) {
+      throw const AuthException('La cuenta ha cambiado.');
+    }
+    return row;
+  }
+
+  @override
   Future<String> schedule(
     String templateId,
     String date, {

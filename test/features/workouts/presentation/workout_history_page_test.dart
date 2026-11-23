@@ -1,3 +1,7 @@
+import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
+import 'package:entrenaop/features/workout_schedule/domain/repositories/workout_schedule_repository.dart';
+import 'package:entrenaop/features/workout_schedule/domain/usecases/workout_schedule_usecases.dart';
+import 'package:entrenaop/features/workout_schedule/presentation/widgets/scheduled_workout_result_repeat_action.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_history_query.dart';
 import 'package:entrenaop/features/workouts/domain/entities/pending_workout_mutation.dart';
@@ -10,9 +14,63 @@ import 'package:entrenaop/features/workouts/presentation/pages/workout_history_p
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:workout_editor_ui/running_pace_chart.dart';
 
 void main() {
+  testWidgets(
+    'el resultado vigente abre la repetición y se actualiza al volver',
+    (tester) async {
+      final schedule = _ResultSchedule();
+      await _pumpResultWithRepeat(tester, schedule);
+
+      final repeat = find.widgetWithText(FilledButton, 'Repetir entrenamiento');
+      expect(schedule.lookedUpResults, ['execution-1']);
+      expect(schedule.repeatedItems, isEmpty);
+      expect(
+        tester.getTopLeft(repeat).dy,
+        greaterThan(tester.getBottomLeft(find.text('Flexiones')).dy),
+      );
+      await tester.ensureVisible(repeat);
+      await tester.pumpAndSettle();
+      await tester.tap(repeat);
+      await tester.pumpAndSettle();
+
+      expect(schedule.repeatedItems, ['scheduled-1']);
+      expect(find.text('Ejecutor repeat-1'), findsOneWidget);
+      await tester.tap(find.text('Volver al resultado'));
+      await tester.pumpAndSettle();
+
+      final resume = find.widgetWithText(FilledButton, 'Continuar repetición');
+      expect(resume, findsOneWidget);
+      await tester.ensureVisible(resume);
+      await tester.pumpAndSettle();
+      await tester.tap(resume);
+      await tester.pumpAndSettle();
+      expect(schedule.repeatedItems, ['scheduled-1', 'scheduled-1']);
+      expect(find.text('Ejecutor repeat-1'), findsOneWidget);
+
+      schedule.currentResult = 'repeat-1';
+      await tester.tap(find.text('Volver al resultado'));
+      await tester.pumpAndSettle();
+      expect(find.text('Flexiones'), findsOneWidget);
+      expect(repeat, findsNothing);
+      expect(resume, findsNothing);
+    },
+  );
+
+  testWidgets('un resultado sin pauta vigente se sigue viendo sin repetir', (
+    tester,
+  ) async {
+    final schedule = _ResultSchedule()..currentResult = null;
+    await _pumpResultWithRepeat(tester, schedule);
+
+    expect(schedule.lookedUpResults, ['execution-1']);
+    expect(find.text('Flexiones'), findsOneWidget);
+    expect(find.text('Repetir entrenamiento'), findsNothing);
+    expect(find.text('Continuar repetición'), findsNothing);
+  });
+
   testWidgets('el cierre declarado distingue sin registrar de no realizada', (
     tester,
   ) async {
@@ -519,6 +577,85 @@ class _AmrapRepository extends _Repository {
   @override
   Future<WorkoutExecution?> getExecution(String executionId) async =>
       amrapExecution;
+}
+
+Future<void> _pumpResultWithRepeat(
+  WidgetTester tester,
+  _ResultSchedule schedule,
+) async {
+  final history = _Repository();
+  final cubit = WorkoutHistoryDetailCubit(
+    executionId: history.execution.id,
+    getExecution: GetWorkoutExecutionUseCase(history),
+    correctSet: CorrectWorkoutSetUseCase(history),
+  );
+  final router = GoRouter(
+    initialLocation: '/assessment/history/workouts/${history.execution.id}',
+    routes: [
+      GoRoute(
+        path: '/assessment/history/workouts/:id',
+        builder: (_, state) => BlocProvider.value(
+          value: cubit,
+          child: WorkoutHistoryDetailPage(
+            resultAction: ScheduledWorkoutResultRepeatAction(
+              executionId: state.pathParameters['id']!,
+              getScheduledWorkout: GetRepeatableScheduledWorkoutUseCase(schedule),
+              repeatWorkout: RepeatScheduledWorkoutUseCase(schedule),
+            ),
+          ),
+        ),
+      ),
+      GoRoute(
+        path: '/plan/week/active/:id',
+        builder: (context, state) => Scaffold(
+          body: TextButton(
+            onPressed: context.pop,
+            child: const Text('Volver al resultado'),
+          ),
+          appBar: AppBar(title: Text('Ejecutor ${state.pathParameters['id']}')),
+        ),
+      ),
+    ],
+  );
+  addTearDown(cubit.close);
+  addTearDown(router.dispose);
+  await cubit.load();
+  await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+  await tester.pumpAndSettle();
+}
+
+class _ResultSchedule implements WorkoutScheduleRepository {
+  String? currentResult = 'execution-1';
+  String? openRepeat;
+  final lookedUpResults = <String>[];
+  final repeatedItems = <String>[];
+
+  @override
+  Future<ScheduledWorkout?> getByResult(String executionId) async {
+    lookedUpResults.add(executionId);
+    if (executionId != currentResult) return null;
+    return ScheduledWorkout(
+      id: 'scheduled-1',
+      templateId: 'template-1',
+      templateName: 'Sesión inicial',
+      templateVersion: 1,
+      scheduledDate: DateTime(2026, 9, 20),
+      source: ScheduledWorkoutSource.user,
+      status: ScheduledWorkoutStatus.completed,
+      executionId: currentResult,
+      repeatExecutionId: openRepeat,
+      repeatAvailable: true,
+    );
+  }
+
+  @override
+  Future<String> repeat(String scheduledId) async {
+    repeatedItems.add(scheduledId);
+    return openRepeat ??= 'repeat-1';
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 class _Repository implements WorkoutRepository {

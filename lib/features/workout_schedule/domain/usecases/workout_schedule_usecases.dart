@@ -45,3 +45,15 @@ class RepeatScheduledWorkoutUseCase {
 
   Future<String> call(String scheduledId) => _repository.repeat(scheduledId);
 }
+
+class GetRepeatableScheduledWorkoutUseCase {
+  const GetRepeatableScheduledWorkoutUseCase(this._repository);
+  final WorkoutScheduleRepository _repository;
+
+  Future<ScheduledWorkout?> call(String executionId) async {
+    final item = await _repository.getByResult(executionId);
+    return item != null && item.executionId == executionId && item.canRepeat
+        ? item
+        : null;
+  }
+}

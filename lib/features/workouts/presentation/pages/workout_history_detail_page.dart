@@ -22,7 +22,9 @@ import 'package:intl/intl.dart';
 import 'package:workout_core/performance_time.dart';
 
 class WorkoutHistoryDetailPage extends StatelessWidget {
-  const WorkoutHistoryDetailPage({super.key});
+  const WorkoutHistoryDetailPage({this.resultAction, super.key});
+
+  final Widget? resultAction;
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +53,7 @@ class WorkoutHistoryDetailPage extends StatelessWidget {
           WorkoutHistoryDetailStatus.loaded => _DetailContent(
             execution: state.execution!,
             isCorrecting: state.isCorrecting,
+            resultAction: resultAction,
           ),
         },
       ),
@@ -59,10 +62,15 @@ class WorkoutHistoryDetailPage extends StatelessWidget {
 }
 
 class _DetailContent extends StatefulWidget {
-  const _DetailContent({required this.execution, required this.isCorrecting});
+  const _DetailContent({
+    required this.execution,
+    required this.isCorrecting,
+    this.resultAction,
+  });
 
   final WorkoutExecution execution;
   final bool isCorrecting;
+  final Widget? resultAction;
 
   @override
   State<_DetailContent> createState() => _DetailContentState();
@@ -302,6 +310,7 @@ class _DetailContentState extends State<_DetailContent> {
                     ),
                   ),
                 ],
+                ?widget.resultAction,
               ],
             ),
           ),

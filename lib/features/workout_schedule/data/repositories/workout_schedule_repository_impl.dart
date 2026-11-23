@@ -15,6 +15,12 @@ class WorkoutScheduleRepositoryImpl implements WorkoutScheduleRepository {
   }
 
   @override
+  Future<ScheduledWorkout?> getByResult(String executionId) async {
+    final row = await remoteDataSource.getByResult(executionId);
+    return row == null ? null : ScheduledWorkoutModel.fromJson(row);
+  }
+
+  @override
   Future<String> schedule(String templateId, DateTime date, {String? time}) =>
       remoteDataSource.schedule(templateId, _date(date), time: time);
 

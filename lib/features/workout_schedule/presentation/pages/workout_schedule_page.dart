@@ -19,6 +19,7 @@ import 'package:entrenaop/features/preparation_goal/domain/entities/adaptive_pro
 import '../widgets/week_swipe_region.dart';
 import '../widgets/coach_plan_coincidence_notice.dart';
 import '../widgets/empty_workout_day_card.dart';
+import '../widgets/scheduled_workout_repeat_button.dart';
 
 class WorkoutSchedulePage extends StatefulWidget {
   const WorkoutSchedulePage({
@@ -664,20 +665,11 @@ class _ScheduledWorkoutCard extends StatelessWidget {
                 ),
                 if (item.canRepeat) ...[
                   const SizedBox(height: 8),
-                  FilledButton.icon(
+                  ScheduledWorkoutRepeatButton(
+                    resuming: item.repeatExecutionId != null,
                     onPressed: busy
                         ? null
                         : () => _start(context, repeat: true),
-                    icon: Icon(
-                      item.repeatExecutionId == null
-                          ? Icons.replay_rounded
-                          : Icons.play_arrow_rounded,
-                    ),
-                    label: Text(
-                      item.repeatExecutionId == null
-                          ? 'Repetir entrenamiento'
-                          : 'Continuar repetición',
-                    ),
                   ),
                 ],
               ],

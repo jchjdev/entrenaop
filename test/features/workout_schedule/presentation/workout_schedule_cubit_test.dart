@@ -1256,6 +1256,9 @@ class _FakeScheduleRepository implements WorkoutScheduleRepository {
   }
 
   @override
+  Future<ScheduledWorkout?> getByResult(String executionId) async => null;
+
+  @override
   Future<String> schedule(
     String templateId,
     DateTime date, {

@@ -137,6 +137,7 @@ import 'package:entrenaop/features/workout_schedule/domain/repositories/workout_
 import 'package:entrenaop/features/workout_schedule/presentation/pages/workout_schedule_page.dart';
 import 'package:entrenaop/features/workout_schedule/presentation/bloc/scheduled_workout_preview_cubit.dart';
 import 'package:entrenaop/features/workout_schedule/presentation/pages/scheduled_workout_preview_page.dart';
+import 'package:entrenaop/features/workout_schedule/presentation/widgets/scheduled_workout_result_repeat_action.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_preview_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_history_cubit.dart';
@@ -1610,7 +1611,14 @@ class AppRouter {
                                           param1: state
                                               .pathParameters['executionId']!,
                                         ),
-                                    child: const WorkoutHistoryDetailPage(),
+                                    child: WorkoutHistoryDetailPage(
+                                      resultAction:
+                                          ScheduledWorkoutResultRepeatAction(
+                                            executionId: state.pathParameters['executionId']!,
+                                            getScheduledWorkout: sl(),
+                                            repeatWorkout: sl(),
+                                          ),
+                                    ),
                                   ),
                           ),
                     ),
