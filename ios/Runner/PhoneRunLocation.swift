@@ -1,4 +1,5 @@
 import CoreLocation
+import AVFAudio
 import Flutter
 import UIKit
 
@@ -7,9 +8,12 @@ final class PhoneRunLocation: NSObject, CLLocationManagerDelegate, FlutterStream
   private var token: String?
   private var pendingStart: FlutterResult?
   private var sink: FlutterEventSink?
+  private let speech = AVSpeechSynthesizer()
+  private var liveActivity: AnyObject?
 
   init(messenger: FlutterBinaryMessenger) {
     super.init()
+    if #available(iOS 16.2, *) { liveActivity = PhoneRunLiveActivity() }
     manager.delegate = self
     manager.activityType = .fitness
     manager.desiredAccuracy = kCLLocationAccuracyBest
@@ -22,14 +26,32 @@ final class PhoneRunLocation: NSObject, CLLocationManagerDelegate, FlutterStream
         result(FlutterError(code: "unavailable", message: nil, details: nil))
         return
       }
-      guard let requested = call.arguments as? String else {
-        result(FlutterError(code: "invalid_session", message: nil, details: nil))
-        return
-      }
       switch call.method {
-      case "start": self.start(requested, result)
+      case "start":
+        guard let requested = call.arguments as? String else {
+          result(FlutterError(code: "invalid_session", message: nil, details: nil))
+          return
+        }
+        self.start(requested, result)
       case "stop":
-        if self.token == requested { self.stop() }
+        if self.token == call.arguments as? String { self.stop() }
+        result(nil)
+      case "publishProgress":
+        if #available(iOS 16.2, *), let data = call.arguments as? [String: Any],
+          let token = self.token, data["token"] as? String == token {
+          (self.liveActivity as? PhoneRunLiveActivity)?.publish(data, token: token)
+        }
+        result(nil)
+      case "endProgress":
+        if #available(iOS 16.2, *), let token = call.arguments as? String {
+          (self.liveActivity as? PhoneRunLiveActivity)?.end(token)
+        }
+        result(nil)
+      case "speak":
+        if let text = call.arguments as? String { self.speak(text) }
+        result(nil)
+      case "silence":
+        self.speech.stopSpeaking(at: .immediate)
         result(nil)
       default: result(FlutterMethodNotImplemented)
       }
@@ -37,6 +59,14 @@ final class PhoneRunLocation: NSObject, CLLocationManagerDelegate, FlutterStream
     let events = FlutterEventChannel(
       name: "es.entrenaop/phone_run/locations", binaryMessenger: messenger)
     events.setStreamHandler(self)
+  }
+
+  private func speak(_ text: String) {
+    speech.stopSpeaking(at: .immediate)
+    try? AVAudioSession.sharedInstance().setCategory(.playback, options: [.mixWithOthers])
+    let utterance = AVSpeechUtterance(string: text)
+    utterance.voice = AVSpeechSynthesisVoice(language: "es-ES")
+    speech.speak(utterance)
   }
 
   private func start(_ requested: String, _ result: @escaping FlutterResult) {
@@ -111,6 +141,10 @@ final class PhoneRunLocation: NSObject, CLLocationManagerDelegate, FlutterStream
   }
 
   private func stop() {
+    if #available(iOS 16.2, *), let token {
+      (liveActivity as? PhoneRunLiveActivity)?.end(token)
+    }
+    speech.stopSpeaking(at: .immediate)
     token = nil
     manager.stopUpdatingLocation()
     manager.allowsBackgroundLocationUpdates = false

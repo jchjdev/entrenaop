@@ -29,11 +29,46 @@ abstract interface class PhoneRunCheckpoints {
   Future<void> clear(String executionId);
 }
 
+enum PhoneRunVoice { off, series, splits }
+
+class PhoneRunLap {
+  const PhoneRunLap(this.stepId, this.totals);
+
+  final String stepId;
+  final PhoneRunTotals totals;
+}
+
+abstract interface class PhoneRunFeedback {
+  Future<void> publish(
+    String token, {
+    required String phase,
+    required String progress,
+    required String pace,
+    required String distance,
+    required int seconds,
+  });
+  Future<void> end(String token);
+  Future<void> speak(String text);
+  Future<void> silence();
+}
+
 class PhoneRunCheckpoint {
-  const PhoneRunCheckpoint(this.totals, {required this.recording});
+  const PhoneRunCheckpoint(
+    this.totals, {
+    required this.recording,
+    this.stepId,
+    this.laps = const [],
+    this.trackMode = false,
+    this.voice = PhoneRunVoice.off,
+    this.paceAlerts = false,
+  });
 
   final PhoneRunTotals totals;
   final bool recording;
+  final String? stepId;
+  final List<PhoneRunLap> laps;
+  final bool trackMode, paceAlerts;
+  final PhoneRunVoice voice;
 }
 
 /// El rodaje fácil publicado es un único tramo de carrera por tiempo.
@@ -148,6 +183,7 @@ class PhoneRunTrack {
   DateTime? _legStartedAt;
   double _legMeters = 0;
   bool _missingDistance = false;
+  final _samples = <(DateTime, double)>[];
 
   bool get hasFix => _legStartedAt != null;
 
@@ -172,9 +208,14 @@ class PhoneRunTrack {
     if (latest != null && !fix.at.isAfter(latest.at)) return;
     // Un hueco de señal nunca se rellena con una recta entre sus extremos.
     if (latest == null || signalLostAt(fix.at)) {
-      _missingDistance |= latest != null;
+      _missingDistance |=
+          latest != null ||
+          (_legStartedAt != null &&
+              fix.at.difference(_legStartedAt!) > maxSignalGap);
       _legStartedAt ??= fix.at;
       _anchor = _latest = fix;
+      _samples.clear();
+      _addSample(fix.at);
       return;
     }
     final anchor = _anchor!;
@@ -190,9 +231,33 @@ class PhoneRunTrack {
       3,
       8,
     );
-    if (meters < noise) return;
-    _legMeters += meters;
-    _anchor = fix;
+    if (meters >= noise) {
+      _legMeters += meters;
+      _anchor = fix;
+    }
+    _addSample(fix.at);
+  }
+
+  void _addSample(DateTime at) {
+    _samples.removeWhere((sample) => at.difference(sample.$1).inSeconds > 20);
+    _samples.add((at, _legMeters));
+  }
+
+  int? recentPaceAt(DateTime now) {
+    if (_samples.length < 2 || signalLostAt(now)) return null;
+    final first = _samples.first, last = _samples.last;
+    final meters = last.$2 - first.$2;
+    final elapsed = last.$1.difference(first.$1);
+    if (meters < 12 || elapsed.inSeconds < 6) return null;
+    return (elapsed.inMilliseconds / meters).round();
+  }
+
+  PhoneRunTrack nextStep(DateTime now) {
+    final next = PhoneRunTrack().._legStartedAt = now;
+    if (!signalLostAt(now)) {
+      next._anchor = next._latest = _latest;
+    }
+    return next;
   }
 
   PhoneRunTotals totalsAt(DateTime now) {
@@ -215,6 +280,7 @@ class PhoneRunTrack {
     _anchor = _latest = null;
     _legMeters = 0;
     _missingDistance = false;
+    _samples.clear();
     return _previous;
   }
 }

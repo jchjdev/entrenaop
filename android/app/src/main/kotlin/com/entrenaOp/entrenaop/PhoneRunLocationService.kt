@@ -20,6 +20,15 @@ class PhoneRunLocationService : Service(), LocationListener {
     private val location by lazy { getSystemService(LocationManager::class.java) }
     private var request: Request? = null
 
+    override fun onCreate() {
+        super.onCreate()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            getSystemService(NotificationManager::class.java).createNotificationChannel(
+                NotificationChannel(CHANNEL_ID, "Carrera con el móvil", NotificationManager.IMPORTANCE_LOW),
+            )
+        }
+    }
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     @SuppressLint("MissingPermission")
@@ -63,32 +72,53 @@ class PhoneRunLocationService : Service(), LocationListener {
         return START_NOT_STICKY
     }
 
-    private fun promote() {
+    private fun notification(data: Map<*, *>? = null): Notification {
         val openApp = PendingIntent.getActivity(
             this, 0, Intent(this, MainActivity::class.java)
                 .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
         val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val notifications = getSystemService(NotificationManager::class.java)
-            notifications.createNotificationChannel(
-                NotificationChannel(CHANNEL_ID, "Carrera con el móvil", NotificationManager.IMPORTANCE_LOW),
-            )
             Notification.Builder(this, CHANNEL_ID)
         } else {
             @Suppress("DEPRECATION")
             Notification.Builder(this)
         }
-        val notification = builder.setSmallIcon(android.R.drawable.ic_menu_mylocation)
+        builder.setSmallIcon(android.R.drawable.ic_menu_mylocation)
             .setContentTitle("Grabando carrera")
             .setContentText("Toca para volver a EntrenaOP y pausar o terminar.")
             .setContentIntent(openApp)
             .setOngoing(true)
-            .build()
+            .setOnlyAlertOnce(true)
+        if (data != null) {
+            val phase = data["phase"] as? String ?: "Carrera"
+            val pace = data["pace"] as? String ?: "— min/km"
+            val distance = data["distance"] as? String ?: ""
+            val progress = data["progress"] as? String ?: ""
+            val elapsed = (data["seconds"] as? Number)?.toLong() ?: 0
+            builder.setContentTitle("$phase · $pace")
+                .setContentText(listOf(distance, progress).filter { it.isNotEmpty() }.joinToString(" · "))
+                .setWhen(System.currentTimeMillis() - elapsed * 1000)
+                .setUsesChronometer(elapsed > 0)
+        }
+        return builder.build()
+    }
+
+    private fun promote() {
+        val notification = notification()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION)
         } else {
             startForeground(NOTIFICATION_ID, notification)
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun updateProgress(data: Map<*, *>) {
+        try {
+            getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, notification(data))
+        } catch (_: SecurityException) {
+            // La captura puede continuar aunque no se concedan notificaciones.
         }
     }
 
@@ -152,6 +182,10 @@ class PhoneRunLocationService : Service(), LocationListener {
                 it.started(error)
             }
             running?.takeIf { it.request?.token == token }?.stopRecording()
+        }
+
+        internal fun progress(token: String, data: Map<*, *>) {
+            running?.takeIf { it.request?.token == token }?.updateProgress(data)
         }
     }
 }

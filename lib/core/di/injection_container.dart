@@ -12,6 +12,7 @@ import 'package:trainer_access/profile_photo/data.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_session_draft_store.dart';
 
 import '../../features/workouts/data/services/method_channel_phone_run_location.dart';
+import '../../features/workouts/data/services/method_channel_phone_run_feedback.dart';
 import '../../features/workouts/data/services/shared_preferences_phone_run_checkpoints.dart';
 import '../../features/workouts/domain/services/phone_running.dart';
 import '../../features/workouts/presentation/bloc/phone_run_cubit.dart';
@@ -199,6 +200,8 @@ Future<void> initDependencies() async {
       executionId: executionId,
       location: sl(),
       checkpoints: sl(),
+      cues: sl(),
+      feedback: const MethodChannelPhoneRunFeedback(),
     ),
   );
   sl.registerFactory<WorkoutAmrapDraftStore>(

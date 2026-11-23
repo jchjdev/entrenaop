@@ -26,12 +26,20 @@ class SharedPreferencesPhoneRunCheckpoints implements PhoneRunCheckpoints {
     if (encoded == null) return null;
     final data = jsonDecode(encoded) as Map<String, dynamic>;
     return PhoneRunCheckpoint(
-      PhoneRunTotals(
-        elapsedMilliseconds: data['elapsed'] as int,
-        distanceMeters: (data['distance'] as num).toDouble(),
-        distanceReliable: data['reliable'] == true,
-      ),
+      _readTotals(data),
       recording: data['recording'] == true,
+      stepId: data['step'] as String?,
+      laps: [
+        for (final lap in (data['laps'] as List? ?? const []))
+          PhoneRunLap(lap['step'] as String, _readTotals(lap as Map)),
+      ],
+      trackMode: data['trackMode'] == true,
+      paceAlerts: data['paceAlerts'] == true,
+      voice:
+          PhoneRunVoice.values
+              .where((mode) => mode.name == data['voice'])
+              .firstOrNull ??
+          PhoneRunVoice.off,
     );
   }
 
@@ -42,10 +50,16 @@ class SharedPreferencesPhoneRunCheckpoints implements PhoneRunCheckpoints {
         final saved = await preferences.setString(
           _key(executionId),
           jsonEncode({
-            'elapsed': value.totals.elapsedMilliseconds,
-            'distance': value.totals.distanceMeters,
-            'reliable': value.totals.distanceReliable,
+            ..._writeTotals(value.totals),
             'recording': value.recording,
+            'step': value.stepId,
+            'laps': [
+              for (final lap in value.laps)
+                {'step': lap.stepId, ..._writeTotals(lap.totals)},
+            ],
+            'trackMode': value.trackMode,
+            'paceAlerts': value.paceAlerts,
+            'voice': value.voice.name,
           }),
         );
         if (!saved) throw StateError('No se ha guardado el rodaje.');
@@ -62,3 +76,15 @@ class SharedPreferencesPhoneRunCheckpoints implements PhoneRunCheckpoints {
     return next;
   }
 }
+
+PhoneRunTotals _readTotals(Map data) => PhoneRunTotals(
+  elapsedMilliseconds: data['elapsed'] as int,
+  distanceMeters: (data['distance'] as num).toDouble(),
+  distanceReliable: data['reliable'] == true,
+);
+
+Map<String, Object> _writeTotals(PhoneRunTotals totals) => {
+  'elapsed': totals.elapsedMilliseconds,
+  'distance': totals.distanceMeters,
+  'reliable': totals.distanceReliable,
+};

@@ -34,6 +34,7 @@ class WorkoutSetEntry extends StatefulWidget {
     this.review = false,
     this.records,
     this.onStartPhoneRun,
+    this.guidedPhoneRun = false,
     this.scrollActionsWithContent = false,
     this.additionalActions,
   });
@@ -50,6 +51,7 @@ class WorkoutSetEntry extends StatefulWidget {
   final bool review;
   final Widget? records;
   final VoidCallback? onStartPhoneRun;
+  final bool guidedPhoneRun;
   final bool scrollActionsWithContent;
   final Widget? additionalActions;
 
@@ -536,14 +538,18 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
               FilledButton.icon(
                 onPressed: widget.saving ? null : startPhoneRun,
                 icon: const Icon(Icons.gps_fixed_rounded),
-                label: const Text(
-                  'Grabar con el móvil',
+                label: Text(
+                  widget.guidedPhoneRun
+                      ? 'Entrenar con el móvil'
+                      : 'Grabar con el móvil',
                   textAlign: TextAlign.center,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
-                'Mide tiempo y distancia con GPS.',
+                widget.guidedPhoneRun
+                    ? 'Te avisa al cambiar de tramo y registra los parciales.'
+                    : 'Mide tiempo y distancia con GPS.',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,

@@ -10,6 +10,8 @@ import '../widgets/workout_execution_labels.dart';
 import '../widgets/workout_exercise_technique.dart';
 import '../open_workout_prompt.dart';
 import '../../domain/services/phone_running.dart';
+import '../../domain/services/phone_run_plan.dart';
+import '../../domain/entities/workout_session_set_draft.dart';
 import '../bloc/phone_run_cubit.dart';
 
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_execution_layout.dart';
@@ -72,10 +74,10 @@ class _ActiveWorkoutPageState extends State<ActiveWorkoutPage> {
     super.dispose();
   }
 
-  WorkoutExecutionSet? _phoneSet(WorkoutExecution? execution) =>
+  List<PhoneRunStep> _phoneSteps(WorkoutExecution? execution) =>
       widget.createPhoneRun != null && phoneRunSupported && execution != null
-      ? continuousPhoneRunSet(execution)
-      : null;
+      ? phoneRunSteps(execution)
+      : const [];
 
   @override
   Widget build(BuildContext context) => WorkflowDraftGuard(
@@ -182,7 +184,7 @@ class _ActiveWorkoutPageState extends State<ActiveWorkoutPage> {
         _usingPhone &&
         context.select(
           (ActiveWorkoutCubit cubit) =>
-              _phoneSet(cubit.state.execution) != null,
+              _phoneSteps(cubit.state.execution).isNotEmpty,
         );
     return Scaffold(
       // AMRAP introduce datos en su propio panel, que gestiona el teclado.
@@ -309,14 +311,21 @@ class _ActiveWorkoutPageState extends State<ActiveWorkoutPage> {
               pendingSyncCount: state.pendingSyncCount,
             );
           }
-          final phoneSet = _phoneSet(execution);
-          if (_usingPhone && phoneSet != null) {
+          final phoneSteps = _phoneSteps(execution);
+          final phoneSet = execution.currentSet;
+          if (_usingPhone && phoneSteps.isNotEmpty && phoneSet != null) {
             final cubit = context.read<ActiveWorkoutCubit>();
+            final guided = continuousPhoneRunSet(execution) == null;
             return SafeArea(
               child: PhoneRunPanel(
                 key: _phonePanel,
                 createRecorder: () => widget.createPhoneRun!(execution.id),
                 set: phoneSet,
+                steps: guided ? phoneSteps : const [],
+                onGuidedResults: guided
+                    ? (laps, partial) =>
+                          _useGuidedResults(cubit, phoneSteps, laps, partial)
+                    : null,
                 onSave: (result) async {
                   await cubit.completeCurrentSet(result);
                   return cubit.state.execution?.sets.singleOrNull?.status ==
@@ -332,9 +341,12 @@ class _ActiveWorkoutPageState extends State<ActiveWorkoutPage> {
               state: state,
               timerStore: widget.timerStore,
               cueService: widget.cueService,
-              onStartPhoneRun: phoneSet == null
+              onStartPhoneRun: phoneSteps.isEmpty
                   ? null
                   : () => setState(() => _usingPhone = true),
+              guidedPhoneRun:
+                  phoneSteps.isNotEmpty &&
+                  continuousPhoneRunSet(execution) == null,
             ),
           );
         },
@@ -377,6 +389,46 @@ class _ActiveWorkoutPageState extends State<ActiveWorkoutPage> {
     }
     if (mounted) setState(() => _usingPhone = false);
   }
+
+  Future<bool> _useGuidedResults(
+    ActiveWorkoutCubit cubit,
+    List<PhoneRunStep> steps,
+    List<PhoneRunLap> laps,
+    PhoneRunLap? partial,
+  ) async {
+    final state = cubit.state;
+    final execution = state.execution;
+    if (execution == null) return false;
+    final results = phoneRunResults(
+      sets: execution.sets,
+      steps: steps,
+      laps: laps,
+      partial: partial,
+      previous: state.drafts.map((id, draft) => MapEntry(id, draft.result)),
+    );
+    final now = DateTime.now().toUtc();
+    final drafts = <String, WorkoutSessionSetDraft>{};
+    for (final (:result, :ended) in results) {
+      drafts[result.resultId] = WorkoutSessionSetDraft(
+        result: result,
+        endedAt: ended ? now : null,
+        fields: {
+          ...?state.drafts[result.resultId]?.fields,
+          if (result.actualDurationSeconds case final duration?)
+            'duration': workoutClock(duration),
+          if (result.actualDistanceMeters case final distance?)
+            'distance': workoutNumber(distance),
+          if (result.actualRecoveryDurationSeconds case final duration?)
+            'recoveryDuration': workoutClock(duration),
+          if (result.actualRecoveryDistanceMeters case final distance?)
+            'recoveryDistance': workoutNumber(distance),
+        },
+      );
+    }
+    final saved = await cubit.importPhoneRunDrafts(drafts);
+    if (saved && mounted) setState(() => _usingPhone = false);
+    return saved;
+  }
 }
 
 class _ActiveContent extends StatefulWidget {
@@ -385,12 +437,14 @@ class _ActiveContent extends StatefulWidget {
     required this.timerStore,
     required this.cueService,
     this.onStartPhoneRun,
+    this.guidedPhoneRun = false,
   });
 
   final ActiveWorkoutState state;
   final WorkoutTimerStore timerStore;
   final WorkoutCueService cueService;
   final VoidCallback? onStartPhoneRun;
+  final bool guidedPhoneRun;
 
   @override
   State<_ActiveContent> createState() => _ActiveContentState();
@@ -529,6 +583,7 @@ class _ActiveContentState extends State<_ActiveContent> {
         onSkipWarmUp: cubit.skipWarmUp,
         records: records,
         onStartPhoneRun: widget.onStartPhoneRun,
+        guidedPhoneRun: widget.guidedPhoneRun,
         scrollActionsWithContent: scrollPhoneRunActions,
         additionalActions: scrollPhoneRunActions
             ? finishWithoutRecording

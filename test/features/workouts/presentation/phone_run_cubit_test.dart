@@ -1,10 +1,155 @@
 import 'dart:async';
 
 import 'package:entrenaop/features/workouts/domain/services/phone_running.dart';
+import 'package:entrenaop/features/workouts/domain/services/phone_run_plan.dart';
+import 'package:entrenaop/features/workouts/domain/services/workout_cue_service.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/phone_run_cubit.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:workout_core/running_step.dart';
 
 void main() {
+  test('encadena diez series por distancia y recuperaciones sin duplicar la vuelta', () async {
+    final location = _Location();
+    final checkpoints = _Checkpoints();
+    final cues = _Cues();
+    var now = DateTime.utc(2026, 11, 23, 9);
+    var position = 0.0;
+    final steps = [
+      for (var i = 1; i <= 10; i++) ...[
+        PhoneRunStep(
+          setId: 'serie-$i',
+          kind: RunningStepKind.run,
+          completion: RunningStepCompletion.distance,
+          meters: 400,
+        ),
+        PhoneRunStep(
+          setId: 'serie-$i',
+          kind: RunningStepKind.rest,
+          completion: RunningStepCompletion.time,
+          seconds: 45,
+          associatedRecovery: true,
+        ),
+      ],
+    ];
+    final cubit = PhoneRunCubit(
+      executionId: 'series',
+      location: location,
+      checkpoints: checkpoints,
+      now: () => now,
+      cues: cues,
+    );
+    addTearDown(location.events.close);
+    addTearDown(cubit.close);
+    await cubit.open(steps: steps);
+    expect(cubit.state.phase, PhoneRunPhase.idle);
+    expect(location.starts, isEmpty);
+    await cubit.start();
+    location.fix(now, position);
+
+    for (var i = 1; i <= 10; i++) {
+      expect(cubit.state.step?.id, 'serie-$i');
+      for (
+        var sec = 0;
+        sec < 100 && cubit.state.step?.id == 'serie-$i';
+        sec++
+      ) {
+        now = now.add(const Duration(seconds: 1));
+        position += 4.1 / 111195;
+        location.fix(now, position);
+      }
+      expect(cubit.state.step?.id, 'serie-$i/recovery');
+      expect(cubit.laps.last.totals.distanceMeters, greaterThanOrEqualTo(400));
+      cubit.markLap('serie-$i');
+      expect(cubit.state.step?.id, 'serie-$i/recovery');
+      for (var sec = 0; sec < 45; sec++) {
+        now = now.add(const Duration(seconds: 1));
+        location.fix(now, position);
+      }
+    }
+    await cubit.stream.firstWhere(
+      (state) => state.phase == PhoneRunPhase.review,
+    );
+    expect(cubit.laps, hasLength(20));
+    expect(cubit.laps.last.totals.seconds, 45);
+    expect(
+      cues.events.where((cue) => cue == WorkoutCue.preparationTick),
+      hasLength(30),
+    );
+    expect(
+      cues.events.where((cue) => cue == WorkoutCue.workFinished),
+      hasLength(11),
+    );
+    expect(location.starts, hasLength(1));
+    expect(location.stops, location.starts);
+    expect(checkpoints.saved?.laps, hasLength(20));
+  });
+
+  test(
+    'en pista espera la vuelta y anuncia parciales medidos sin repetirlos',
+    () async {
+      final location = _Location();
+      final feedback = _Feedback();
+      final checkpoints = _Checkpoints();
+      var now = DateTime.utc(2026, 11, 23, 9);
+      final steps = [
+        const PhoneRunStep(
+          setId: 'serie',
+          kind: RunningStepKind.run,
+          completion: RunningStepCompletion.distance,
+          meters: 200,
+        ),
+        const PhoneRunStep(
+          setId: 'enfriamiento',
+          kind: RunningStepKind.cooldown,
+          completion: RunningStepCompletion.manual,
+        ),
+      ];
+      final cubit = PhoneRunCubit(
+        executionId: 'pista',
+        location: location,
+        checkpoints: checkpoints,
+        now: () => now,
+        feedback: feedback,
+      );
+      addTearDown(location.events.close);
+      addTearDown(cubit.close);
+      await cubit.open(steps: steps);
+      cubit.configure(trackMode: true, voice: PhoneRunVoice.splits);
+      await cubit.start();
+      for (var second = 0; second <= 52; second++) {
+        if (second != 0) now = now.add(const Duration(seconds: 1));
+        location.fix(now, second * 4 / 111195);
+      }
+      expect(feedback.spoken.map((text) => text.split(' ').first), [
+        '50',
+        '100',
+        '150',
+      ]);
+      expect(feedback.paces.last, isNot('— min/km'));
+      expect(cubit.state.step?.id, 'serie');
+      cubit.markLap('serie');
+      expect(cubit.state.step?.id, 'enfriamiento');
+      expect(cubit.laps.single.totals.distanceMeters, greaterThan(200));
+      await cubit.pause();
+      expect(location.stops, location.starts);
+
+      final restored = PhoneRunCubit(
+        executionId: 'pista',
+        location: location,
+        checkpoints: checkpoints,
+        now: () => now,
+        feedback: feedback,
+      );
+      addTearDown(restored.close);
+      await restored.open(steps: steps);
+      expect(restored.state.phase, PhoneRunPhase.paused);
+      expect(restored.state.step?.id, 'enfriamiento');
+      expect(restored.state.trackMode, isTrue);
+      expect(restored.state.voice, PhoneRunVoice.splits);
+      expect(restored.laps.single.stepId, 'serie');
+    },
+  );
+
   test(
     'pausar y terminar liberan la ubicación y conservan los datos',
     () async {
@@ -123,6 +268,43 @@ class _Location implements PhoneRunLocationSource {
       ),
     ),
   );
+}
+
+class _Cues extends Fake implements WorkoutCueService {
+  final events = <WorkoutCue>[];
+
+  @override
+  WorkoutCuePreferences get preferences => const WorkoutCuePreferences();
+
+  @override
+  Future<void> prepare() async {}
+
+  @override
+  Future<void> signal(WorkoutCue cue) async => events.add(cue);
+}
+
+class _Feedback implements PhoneRunFeedback {
+  final spoken = <String>[];
+  final paces = <String>[];
+
+  @override
+  Future<void> publish(
+    String token, {
+    required String phase,
+    required String progress,
+    required String pace,
+    required String distance,
+    required int seconds,
+  }) async => paces.add(pace);
+
+  @override
+  Future<void> speak(String text) async => spoken.add(text);
+
+  @override
+  Future<void> silence() async {}
+
+  @override
+  Future<void> end(String token) async {}
 }
 
 class _Checkpoints implements PhoneRunCheckpoints {

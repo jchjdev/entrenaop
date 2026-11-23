@@ -49,6 +49,78 @@ import 'package:go_router/go_router.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 
 void main() {
+  testWidgets(
+    'un parcial del guiado pasa al registro manual sin confirmar otras series',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final location = _RunLocation();
+      addTearDown(location.events.close);
+      final repository = _Repository()
+        ..execution = _execution(templateName: 'Series de prueba').copyWith(
+          sets: [
+            _phoneRunSet,
+            const WorkoutExecutionSet(
+              id: 'run-2',
+              blockOrder: 0,
+              blockName: 'Series',
+              blockFormat: WorkoutBlockFormat.running,
+              itemOrder: 0,
+              exerciseId: runningExerciseId,
+              exerciseName: 'Carrera',
+              setOrder: 1,
+              targetDistanceMeters: 400,
+              restAfterSeconds: 0,
+              status: WorkoutSetStatus.pending,
+            ),
+          ],
+        );
+      final (active, _) = await _mountSession(
+        tester,
+        repository,
+        createPhoneRun: (id) => PhoneRunCubit(
+          executionId: id,
+          location: location,
+          checkpoints: _MemoryRunCheckpoints(),
+          now: tester.binding.clock.now,
+        ),
+      );
+      await tester.tap(find.text('Entrenar con el móvil'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Empezar entrenamiento'));
+      await tester.pumpAndSettle();
+      location.fix(tester.binding.clock.now(), 0);
+      await tester.pump(const Duration(seconds: 8));
+      location.fix(tester.binding.clock.now(), 0.0003);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Marcar vuelta'));
+      await tester.pumpAndSettle();
+      expect(find.text('0 / 400 m'), findsOneWidget);
+      final manual = find.text('Volver al registro manual');
+      await tester.scrollUntilVisible(
+        manual,
+        100,
+        scrollable: find.descendant(
+          of: find.byType(PhoneRunPanel),
+          matching: find.byType(Scrollable),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(manual);
+      await tester.pumpAndSettle();
+
+      final draft = active.state.drafts[_phoneRunSet.id];
+      expect(draft?.endedAt, isNotNull);
+      expect(draft?.confirmed, isFalse);
+      expect(draft?.result.actualDistanceMeters, closeTo(33, 1));
+      expect(active.state.execution?.currentSet?.id, 'run-2');
+      expect(active.state.drafts['run-2'], isNull);
+      expect(location.stops, location.starts);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   for (final (size, textScale) in [
     (const Size(390, 844), 1.0),
     (const Size(320, 480), 2.0),
@@ -82,7 +154,10 @@ void main() {
           tester.getRect(record).top,
           greaterThan(tester.getRect(objective).bottom),
         );
-        expect(tester.getRect(record).bottom, lessThan(tester.getRect(timer).top));
+        expect(
+          tester.getRect(record).bottom,
+          lessThan(tester.getRect(timer).top),
+        );
         expect(
           find.widgetWithText(OutlinedButton, 'Terminar serie'),
           findsOneWidget,
@@ -2021,20 +2096,47 @@ const _phoneRunSet = WorkoutExecutionSet(
 class _RunLocation implements PhoneRunLocationSource {
   final starts = <String>[];
   final stops = <String>[];
+  final events = StreamController<PhoneRunLocationEvent>.broadcast(sync: true);
 
   @override
-  Stream<PhoneRunLocationEvent> get locations => const Stream.empty();
+  Stream<PhoneRunLocationEvent> get locations => events.stream;
 
   @override
   Future<void> start(String token) async => starts.add(token);
 
   @override
   Future<void> stop(String token) async => stops.add(token);
+
+  void fix(DateTime at, double longitude) => events.add(
+    PhoneRunLocationEvent(
+      starts.last,
+      fix: PhoneRunFix(
+        latitude: 0,
+        longitude: longitude,
+        accuracyMeters: 5,
+        at: at,
+      ),
+    ),
+  );
 }
 
 class _EmptyRunCheckpoints extends Fake implements PhoneRunCheckpoints {
   @override
   Future<PhoneRunCheckpoint?> read(String executionId) async => null;
+}
+
+class _MemoryRunCheckpoints implements PhoneRunCheckpoints {
+  PhoneRunCheckpoint? _checkpoint;
+
+  @override
+  Future<PhoneRunCheckpoint?> read(String executionId) async => _checkpoint;
+
+  @override
+  Future<void> write(String executionId, PhoneRunCheckpoint value) async =>
+      _checkpoint = value;
+
+  @override
+  Future<void> clear(String executionId) async => _checkpoint = null;
 }
 
 Future<void> _finishAndConfirmCurrent(WidgetTester tester) async {

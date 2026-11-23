@@ -2,6 +2,7 @@ import 'package:entrenaop/features/workouts/domain/services/workout_execution_re
 import 'package:entrenaop/features/workouts/domain/services/workout_session_draft_store.dart';
 
 import '../../domain/services/workout_amrap_draft_store.dart';
+import '../../domain/services/phone_run_plan.dart';
 import '../../domain/entities/workout_amrap_save_failure.dart';
 
 import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dart';
@@ -183,6 +184,51 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       _refresh(
         error: 'No se ha podido guardar el borrador en este dispositivo. Reintenta antes de salir.',
       );
+    }
+  }
+
+  /// Traslada las mediciones al registro editable de la ejecución actual.
+  Future<bool> importPhoneRunDrafts(
+    Map<String, WorkoutSessionSetDraft> drafts,
+  ) async {
+    final execution = state.execution;
+    if (isClosed ||
+        _draftBusy ||
+        state.status == ActiveWorkoutStatus.saving ||
+        execution == null ||
+        execution.status != WorkoutExecutionStatus.inProgress) {
+      return false;
+    }
+    final pending = execution.sets
+        .where(
+          (set) =>
+              set.status == WorkoutSetStatus.pending &&
+              supportsPhoneRunSet(set),
+        )
+        .map((set) => set.id)
+        .toSet();
+    if (drafts.entries.any(
+      (entry) =>
+          !pending.contains(entry.key) ||
+          entry.value.result.resultId != entry.key,
+    )) {
+      return false;
+    }
+    if (drafts.isEmpty) return true;
+    _draftBusy = true;
+    _refresh();
+    final merged = {..._drafts, ...drafts};
+    try {
+      await _draftStore.write(executionId, merged);
+      if (isClosed) return false;
+      _drafts.addAll(drafts);
+      _draftBusy = false;
+      _refresh();
+      return true;
+    } catch (_) {
+      _draftBusy = false;
+      _refresh(error: 'No se han podido conservar los parciales del móvil.');
+      return false;
     }
   }
 

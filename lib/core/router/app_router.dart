@@ -1061,6 +1061,8 @@ class AppRouter {
                                 child: ActiveWorkoutPage(
                                   timerStore: sl(),
                                   cueService: sl(),
+                                  createPhoneRun: (id) => sl(param1: id),
+                                  clearPhoneRun: (id) => sl<PhoneRunCheckpoints>().clear(id),
                                 ),
                               ),
                             ),
@@ -1203,6 +1205,8 @@ class AppRouter {
                             child: ActiveWorkoutPage(
                               timerStore: sl(),
                               cueService: sl(),
+                              createPhoneRun: (id) => sl(param1: id),
+                              clearPhoneRun: (id) => sl<PhoneRunCheckpoints>().clear(id),
                             ),
                           ),
                         ),

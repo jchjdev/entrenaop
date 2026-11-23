@@ -58,7 +58,7 @@ La precisión y el consumo quedan pendientes de esa prueba.
 
 ## Carrera guiada con el móvil
 
-Diseño aprobado el 23/11/2026, pendiente de implementación. El deportista
+Diseño aprobado el 23/11/2026 e implementado en la versión 1.30.0. El deportista
 elige **Entrenar con el móvil** o **Registrar manualmente** en la misma pauta.
 El guiado recorre los pasos prescritos en orden, incluidas recuperaciones
 asociadas de pautas antiguas y fases editables de las nuevas. El título de la
@@ -78,8 +78,7 @@ sesión no determina distancias, duraciones ni descansos.
   Tonos diferenciados para fin de trabajo y fin de recuperación, con sonido
   y vibración según los ajustes. La cuenta atrás corta ayuda en recuperaciones
   por tiempo. Con un rango de ritmo, avisos opcionales ante una desviación
-  sostenida y señal fiable. Los avisos hablados se detallan como propuesta
-  más abajo.
+  sostenida y señal fiable. Los ajustes de voz se detallan más abajo.
 - **Resultado.** Cada parcial se vincula al tramo de la ejecución original.
   Cambiar a registro manual conserva las mediciones disponibles como
   borrador. Los datos ausentes quedan pendientes de revisión y los tramos
@@ -96,27 +95,30 @@ un paso abierto. Debe probar **Automático** y **Pista**, vuelta cerca del
 final automático, pausa, pérdida de señal, paso a manual y avisos con la
 pantalla bloqueada en iPhone y Android. Una prueba de dos repeticiones es
 suficiente para verificar las transiciones físicas; se comprueba además una
-pauta de diez repeticiones en pruebas automatizadas.
+pauta de diez repeticiones en pruebas automatizadas. Se conservan la
+persistencia de resultados y las confirmaciones manuales existentes. Los
+parciales del guiado entran como borradores editables antes del cierre.
 
-### Propuesta de voz y ritmo visible
+### Voz y ritmo visible
 
-- **Voz opcional.** Al activarla, el ajuste inicial anuncia el final de cada
-  serie. En **Parciales** se pueden anunciar cuartos del tramo por distancia:
+- **Voz opcional.** El ajuste **Final de serie** anuncia su ritmo y
+  **Parciales y final de serie** añade los cuartos del tramo por distancia:
   cada 50 m en 200 m o 100 m en 400 m. El aviso final absorbe el último
   parcial. El cambio de fase tiene prioridad y se omiten mensajes que quedarían
-  demasiado juntos, sin reproducir avisos atrasados. En rodajes, ofrecer resumen
-  por kilómetro. Probar el volumen con música y auriculares.
-- **Ritmo de rodaje.** El panel actual muestra el ritmo medio tras medir al
-  menos 50 m con distancia fiable. La ampliación propone destacar un ritmo
+  demasiado juntos, sin reproducir avisos atrasados. En rodajes, el ajuste
+  **Cada kilómetro** anuncia el ritmo. Falta comprobar música y auriculares
+  durante la prueba física.
+- **Ritmo de rodaje.** El panel muestra el ritmo medio tras medir al menos
+  50 m con distancia fiable. El panel destaca un ritmo
   reciente suavizado, junto con el medio, el tiempo y la distancia. Los avisos
   hablados usan un parcial medido; si la señal es débil se omite el ritmo y se
   conservan las alertas de cambio de fase que puedan determinarse.
-- **Pantalla bloqueada.** Mostrar tiempo, distancia y ritmo en una actividad
-  en directo de iOS y en la notificación de carrera en Android. Si hay pauta
-  por fases, mostrar también el tramo actual y el tiempo o distancia restante.
-  Indicar ritmo no disponible o desactualizado cuando falte señal. Verificar en
-  ambos móviles que la información se actualiza con el bloqueo activo y que
-  la frecuencia de refresco es adecuada para una consulta de un vistazo.
+- **Pantalla bloqueada.** La compilación incluye una actividad en directo
+  para iOS 16.2 o posterior y actualiza la notificación del servicio de carrera
+  en Android. Ambas muestran tiempo, distancia y ritmo, y añaden el objetivo
+  restante en la pauta por fases. La visibilidad depende de los ajustes del
+  dispositivo. La actualización y los avisos con el bloqueo activo todavía
+  requieren una prueba física en ambos sistemas.
 
 ## Carga real opcional en fuerza
 

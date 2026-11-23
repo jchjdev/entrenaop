@@ -1,7 +1,71 @@
+import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
+import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
+import 'package:entrenaop/features/workouts/domain/services/phone_run_plan.dart';
 import 'package:entrenaop/features/workouts/domain/services/phone_running.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test(
+    'la pauta antigua y los tramos V2 conservan recuperación y avance manual',
+    () {
+      final execution = WorkoutExecution(
+        id: 'run',
+        templateId: 'plan',
+        templateName: 'Pauta',
+        templateVersion: 1,
+        status: WorkoutExecutionStatus.inProgress,
+        startedAt: DateTime.utc(2026),
+        sets: [
+          _step('warm', format: WorkoutBlockFormat.warmUp, seconds: 60),
+          _step('work', meters: 400, recoverySeconds: 45),
+          _step(
+            'cool',
+            metadata: const RunningStepMetadata(
+              kind: RunningStepKind.cooldown,
+              completion: RunningStepCompletion.manual,
+            ),
+          ),
+        ],
+      );
+      final steps = phoneRunSteps(execution);
+      expect(steps.map((s) => (s.id, s.kind, s.completion)), [
+        ('warm', RunningStepKind.warmup, RunningStepCompletion.time),
+        ('work', RunningStepKind.run, RunningStepCompletion.distance),
+        ('work/recovery', RunningStepKind.jogging, RunningStepCompletion.time),
+        ('cool', RunningStepKind.cooldown, RunningStepCompletion.manual),
+      ]);
+      final results = phoneRunResults(
+        sets: execution.sets,
+        steps: steps,
+        previous: const {},
+        laps: const [
+          PhoneRunLap(
+            'work',
+            PhoneRunTotals(
+              elapsedMilliseconds: 90000,
+              distanceMeters: 310,
+              distanceReliable: false,
+            ),
+          ),
+          PhoneRunLap(
+            'work/recovery',
+            PhoneRunTotals(elapsedMilliseconds: 45000, distanceMeters: 80),
+          ),
+        ],
+        partial: const PhoneRunLap(
+          'cool',
+          PhoneRunTotals(elapsedMilliseconds: 13000),
+        ),
+      );
+      expect(results, hasLength(2));
+      expect(results.first.ended, isTrue);
+      expect(results.first.result.actualDurationSeconds, 90);
+      expect(results.first.result.actualRecoveryDurationSeconds, 45);
+      expect(results.first.result.actualDistanceMeters, isNull);
+      expect(results.last.ended, isFalse);
+    },
+  );
+
   final start = DateTime.utc(2026, 11, 22, 9);
 
   PhoneRunFix fix(int seconds, double longitude, {double accuracy = 5}) =>
@@ -63,3 +127,28 @@ void main() {
     },
   );
 }
+
+WorkoutExecutionSet _step(
+  String id, {
+  WorkoutBlockFormat format = WorkoutBlockFormat.running,
+  int? seconds,
+  double? meters,
+  int? recoverySeconds,
+  RunningStepMetadata? metadata,
+}) => WorkoutExecutionSet(
+  id: id,
+  blockOrder: 0,
+  blockName: id,
+  blockFormat: format,
+  itemOrder: 0,
+  exerciseId: runningExerciseId,
+  exerciseName: 'Carrera',
+  setOrder: 0,
+  targetDurationSeconds: seconds,
+  targetDistanceMeters: meters,
+  runningStep: metadata,
+  recoveryDurationSeconds: recoverySeconds,
+  recoveryType: recoverySeconds == null ? null : RunningRecoveryType.jogging,
+  restAfterSeconds: 0,
+  status: WorkoutSetStatus.pending,
+);

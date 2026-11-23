@@ -9,6 +9,7 @@ import '../../../../core/presentation/app_dates.dart';
 import '../../../../core/presentation/widgets/entrena_card.dart';
 import '../../../exercises/domain/entities/exercise_entity.dart';
 import '../../../exercises/presentation/widgets/exercise_detail_sheet.dart';
+import '../../../workouts/domain/services/phone_run_plan.dart';
 import '../../../workouts/domain/services/phone_running.dart';
 import '../../../workouts/presentation/widgets/phone_run_panel.dart';
 import '../../../workouts/presentation/pages/workout_preview_page.dart';
@@ -186,7 +187,7 @@ bool _showsPhoneActions(ScheduledWorkoutPreviewState state) {
       !preview.proRequired &&
       !state.refreshRequired &&
       phoneRunSupported &&
-      isContinuousPhoneRun(preview.workout);
+      supportsPhoneRun(preview.workout);
 }
 
 class _AssignmentSummary extends StatelessWidget {
@@ -354,7 +355,9 @@ class _PreviewAction extends StatelessWidget {
                       label: Text(
                         resuming
                             ? 'Continuar con el móvil'
-                            : 'Empezar con el móvil',
+                            : isContinuousPhoneRun(preview.workout)
+                            ? 'Empezar con el móvil'
+                            : 'Entrenar con el móvil',
                       ),
                     ),
                   ],

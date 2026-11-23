@@ -27,9 +27,10 @@ visibilidad a la grabación dentro del rodaje.
 series, intervalos y todas las modalidades de carrera que admite la pauta.
 Confirma avisos al terminar cada trabajo y recuperación, vuelta manual y
 registro completamente manual disponible. Aprueba un solo guiado con avance
-automático o vuelta manual para pista. Plantea además hablar el ritmo en
-parciales y consultarlo desde la pantalla bloqueada.
-[Diseño y ampliaciones propuestas](SESSION_CONTROLS_2026_10_08.md#carrera-guiada-con-el-móvil).
+automático o vuelta manual para pista. Autoriza la voz opcional por parciales
+y pide que el ritmo sea visible desde la pantalla bloqueada. Implementado en
+la versión 1.30.0, con aceptación física en ambos sistemas pendiente.
+[Diseño y verificación](SESSION_CONTROLS_2026_10_08.md#carrera-guiada-con-el-móvil).
 
 **Nombre editable de las preparaciones en ADMIN · 20/11/2026.** Javier pide
 editar el título de la preparación desde su ficha en ADMIN. Se guarda sobre la
