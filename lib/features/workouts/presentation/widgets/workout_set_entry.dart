@@ -33,6 +33,9 @@ class WorkoutSetEntry extends StatefulWidget {
     required this.onSkipWarmUp,
     this.review = false,
     this.records,
+    this.onStartPhoneRun,
+    this.scrollActionsWithContent = false,
+    this.additionalActions,
   });
 
   final WorkoutExecutionSet set;
@@ -46,6 +49,9 @@ class WorkoutSetEntry extends StatefulWidget {
   final VoidCallback onSkipWarmUp;
   final bool review;
   final Widget? records;
+  final VoidCallback? onStartPhoneRun;
+  final bool scrollActionsWithContent;
+  final Widget? additionalActions;
 
   @override
   State<WorkoutSetEntry> createState() => _WorkoutSetEntryState();
@@ -364,7 +370,11 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
           .exercises[set.exerciseId]
           ?.thumbnailUrl,
     );
-    final expandImage = !widget.review && imageUrl?.trim().isNotEmpty == true;
+    final startPhoneRun = widget.onStartPhoneRun;
+    final expandImage =
+        !widget.scrollActionsWithContent &&
+        !widget.review &&
+        imageUrl?.trim().isNotEmpty == true;
     final header = WorkoutExerciseHeader(
       name: set.exerciseName,
       position:
@@ -373,26 +383,36 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
       imageUrl: imageUrl,
       onTechnique: () => showWorkoutTechnique(context, set),
     );
+    final finishSeries = widget.saving
+        ? null
+        : widget.review
+        ? _save
+        : _end;
+    final finishLabel = Text(
+      widget.saving
+          ? 'Guardando…'
+          : widget.review
+          ? 'Confirmar datos'
+          : 'Terminar serie',
+    );
     return WorkoutExecutionFrame(
       fillViewport: expandImage,
+      scrollActionsWithContent: widget.scrollActionsWithContent,
       actions: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          FilledButton.icon(
-            onPressed: widget.saving
-                ? null
-                : widget.review
-                ? _save
-                : _end,
-            icon: const Icon(Icons.check_rounded),
-            label: Text(
-              widget.saving
-                  ? 'Guardando…'
-                  : widget.review
-                  ? 'Confirmar datos'
-                  : 'Terminar serie',
+          if (startPhoneRun == null)
+            FilledButton.icon(
+              onPressed: finishSeries,
+              icon: const Icon(Icons.check_rounded),
+              label: finishLabel,
+            )
+          else
+            OutlinedButton.icon(
+              onPressed: finishSeries,
+              icon: const Icon(Icons.check_rounded),
+              label: finishLabel,
             ),
-          ),
           if (!widget.review) ...[
             Row(
               children: [
@@ -404,6 +424,7 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
                   ),
               ],
             ),
+            ?widget.additionalActions,
           ],
         ],
       ),
@@ -508,6 +529,25 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
                 targetTime,
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.white60),
+              ),
+            ],
+            if (startPhoneRun != null) ...[
+              const SizedBox(height: 12),
+              FilledButton.icon(
+                onPressed: widget.saving ? null : startPhoneRun,
+                icon: const Icon(Icons.gps_fixed_rounded),
+                label: const Text(
+                  'Grabar con el móvil',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Mide tiempo y distancia con GPS.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
             if (set.recoveryType case final recovery?) ...[

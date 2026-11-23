@@ -31,6 +31,10 @@ solicita al elegir el móvil. Android usa un servicio de ubicación con
 notificación e iOS usa Core Location con autorización de uso e indicador
 del sistema durante la sesión activa.
 
+Dentro del rodaje, **Grabar con el móvil** es la acción principal junto al
+objetivo y abre la grabación GPS. El temporizador y **Terminar serie** permiten
+llevar la sesión manualmente.
+
 El cronómetro empieza al obtener la primera posición válida y vuelve a
 esperar señal tras una pausa. **Pausar**, **Terminar grabación** y salir del
 ejecutor cancelan las actualizaciones de ubicación. Los cambios de señal

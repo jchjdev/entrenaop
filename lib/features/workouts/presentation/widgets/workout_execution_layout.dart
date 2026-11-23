@@ -7,10 +7,12 @@ class WorkoutExecutionFrame extends StatelessWidget {
     required this.child,
     required this.actions,
     this.fillViewport = false,
+    this.scrollActionsWithContent = false,
     this.header,
   });
   final Widget child, actions;
   final bool fillViewport;
+  final bool scrollActionsWithContent;
   final Widget? header;
   @override
   Widget build(BuildContext context) => LayoutBuilder(
@@ -22,7 +24,12 @@ class WorkoutExecutionFrame extends StatelessWidget {
             builder: (context, viewport) => SingleChildScrollView(
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-              child: fillViewport
+              child: scrollActionsWithContent
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [child, const SizedBox(height: 12), actions],
+                    )
+                  : fillViewport
                   ? ConstrainedBox(
                       constraints: BoxConstraints(
                         minHeight: (viewport.maxHeight - 20).clamp(
@@ -39,23 +46,24 @@ class WorkoutExecutionFrame extends StatelessWidget {
             ),
           ),
         ),
-        ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: constraints.maxHeight * .45),
-          child: SingleChildScrollView(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: Theme.of(context).scaffoldBackgroundColor,
-                border: Border(
-                  top: BorderSide(color: Theme.of(context).dividerColor),
+        if (!scrollActionsWithContent)
+          ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: constraints.maxHeight * .45),
+            child: SingleChildScrollView(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).scaffoldBackgroundColor,
+                  border: Border(
+                    top: BorderSide(color: Theme.of(context).dividerColor),
+                  ),
                 ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 8),
-                child: actions,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 8),
+                  child: actions,
+                ),
               ),
             ),
           ),
-        ),
       ],
     ),
   );

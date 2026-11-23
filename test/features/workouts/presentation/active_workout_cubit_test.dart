@@ -31,12 +31,15 @@ import 'package:entrenaop/features/workouts/domain/entities/pending_workout_muta
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:entrenaop/features/workouts/domain/repositories/workout_repository.dart';
+import 'package:entrenaop/features/workouts/domain/services/phone_running.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_cue_service.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_timer_store.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/workout_execution_usecases.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_state.dart';
+import 'package:entrenaop/features/workouts/presentation/bloc/phone_run_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/pages/active_workout_page.dart';
+import 'package:entrenaop/features/workouts/presentation/widgets/phone_run_panel.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_set_countdown.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_tabata_entry.dart';
 import 'package:flutter/material.dart';
@@ -46,6 +49,81 @@ import 'package:go_router/go_router.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 
 void main() {
+  for (final (size, textScale) in [
+    (const Size(390, 844), 1.0),
+    (const Size(320, 480), 2.0),
+  ]) {
+    testWidgets(
+      'grabar un rodaje es la acción principal junto al objetivo: $size, texto $textScale',
+      (tester) async {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        final location = _RunLocation();
+        final repository = _Repository()
+          ..execution = _execution(
+            allowUnrecorded: true,
+            templateName: 'Rodaje de prueba GPS · 400 m',
+          ).copyWith(sets: [_phoneRunSet]);
+        await _mountSession(
+          tester,
+          repository,
+          textScaler: TextScaler.linear(textScale),
+          createPhoneRun: (id) => PhoneRunCubit(
+            executionId: id,
+            location: location,
+            checkpoints: _EmptyRunCheckpoints(),
+          ),
+        );
+        final record = find.widgetWithText(FilledButton, 'Grabar con el móvil');
+        final objective = find.textContaining('Objetivo ·');
+        final timer = find.text('Iniciar temporizador');
+        expect(
+          tester.getRect(record).top,
+          greaterThan(tester.getRect(objective).bottom),
+        );
+        expect(tester.getRect(record).bottom, lessThan(tester.getRect(timer).top));
+        expect(
+          find.widgetWithText(OutlinedButton, 'Terminar serie'),
+          findsOneWidget,
+        );
+        expect(find.text('Empezar con el móvil'), findsNothing);
+        expect(location.starts, isEmpty);
+        if (textScale == 1) {
+          expect(record.hitTestable(), findsOneWidget);
+          await capturePerformanceWidget(tester, 'rodaje-accion-gps');
+        }
+        await Scrollable.ensureVisible(tester.element(record), alignment: .5);
+        await tester.pumpAndSettle();
+        expect(record.hitTestable(), findsOneWidget);
+        await tester.tap(record);
+        await tester.pumpAndSettle();
+        expect(location.starts, hasLength(1));
+        expect(find.text('Buscando señal GPS…'), findsOneWidget);
+
+        final manual = find.text('Volver al registro manual');
+        await tester.scrollUntilVisible(
+          manual,
+          120,
+          scrollable: find.descendant(
+            of: find.byType(PhoneRunPanel),
+            matching: find.byType(Scrollable),
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(manual);
+        await tester.pumpAndSettle();
+        expect(location.stops, location.starts);
+        expect(timer, findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+      variant: TargetPlatformVariant({
+        TargetPlatform.iOS,
+        TargetPlatform.android,
+      }),
+    );
+  }
+
   for (final partial in [false, true]) {
     testWidgets(
       'terminar sin registrar todo conserva datos y permite volver: parcial=$partial',
@@ -1878,6 +1956,7 @@ Future<(ActiveWorkoutCubit, GoRouter)> _mountSession(
   _Repository repository, {
   TextScaler textScaler = TextScaler.noScaling,
   GetExerciseByIdUseCase? getExercise,
+  PhoneRunCubit Function(String)? createPhoneRun,
 }) async {
   final cubit = _cubit(repository, getExercise: getExercise);
   addTearDown(cubit.close);
@@ -1899,6 +1978,7 @@ Future<(ActiveWorkoutCubit, GoRouter)> _mountSession(
             child: ActiveWorkoutPage(
               timerStore: _TimerStore(),
               cueService: _CueService(),
+              createPhoneRun: createPhoneRun,
             ),
           ),
         ),
@@ -1922,6 +2002,39 @@ Future<(ActiveWorkoutCubit, GoRouter)> _mountSession(
   router.push('/session');
   await tester.pumpAndSettle();
   return (cubit, router);
+}
+
+const _phoneRunSet = WorkoutExecutionSet(
+  id: 'run',
+  blockOrder: 0,
+  blockName: 'Rodaje continuo',
+  blockFormat: WorkoutBlockFormat.running,
+  itemOrder: 0,
+  exerciseId: runningExerciseId,
+  exerciseName: 'Carrera',
+  setOrder: 0,
+  targetDurationSeconds: 180,
+  restAfterSeconds: 0,
+  status: WorkoutSetStatus.pending,
+);
+
+class _RunLocation implements PhoneRunLocationSource {
+  final starts = <String>[];
+  final stops = <String>[];
+
+  @override
+  Stream<PhoneRunLocationEvent> get locations => const Stream.empty();
+
+  @override
+  Future<void> start(String token) async => starts.add(token);
+
+  @override
+  Future<void> stop(String token) async => stops.add(token);
+}
+
+class _EmptyRunCheckpoints extends Fake implements PhoneRunCheckpoints {
+  @override
+  Future<PhoneRunCheckpoint?> read(String executionId) async => null;
 }
 
 Future<void> _finishAndConfirmCurrent(WidgetTester tester) async {
@@ -2245,11 +2358,14 @@ WorkoutExecution _tabataExecution() => _execution().copyWith(
   ),
 );
 
-WorkoutExecution _execution({bool allowUnrecorded = false}) => WorkoutExecution(
+WorkoutExecution _execution({
+  bool allowUnrecorded = false,
+  String templateName = 'EMOM de fuerza',
+}) => WorkoutExecution(
   canFinishWithoutFullRecording: allowUnrecorded,
   id: 'execution-1',
   templateId: 'template-1',
-  templateName: 'EMOM de fuerza',
+  templateName: templateName,
   templateVersion: 1,
   status: WorkoutExecutionStatus.inProgress,
   startedAt: DateTime.utc(2026, 9, 21, 20),

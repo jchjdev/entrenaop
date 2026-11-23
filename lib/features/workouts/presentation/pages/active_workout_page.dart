@@ -420,6 +420,21 @@ class _ActiveContentState extends State<_ActiveContent> {
     final saving =
         state.status == ActiveWorkoutStatus.saving || state.draftBusy;
     final cubit = context.read<ActiveWorkoutCubit>();
+    // En poco espacio, el pie manual se desplaza con la ficha del rodaje.
+    final scrollPhoneRunActions =
+        widget.onStartPhoneRun != null &&
+        (MediaQuery.sizeOf(context).height < 600 ||
+            MediaQuery.textScalerOf(context).scale(16) > 20);
+    final finishWithoutRecording =
+        execution.canFinishWithoutFullRecording && current != null
+        ? TextButton.icon(
+            onPressed: saving
+                ? null
+                : () => _requestFinishWithoutFullRecording(context),
+            icon: const Icon(Icons.task_alt_rounded),
+            label: const Text('Terminar sin registrar todo'),
+          )
+        : null;
     final records = TextButton.icon(
       onPressed: saving ? null : () => _openRecords(context),
       icon: const Icon(Icons.format_list_numbered_rounded),
@@ -513,6 +528,11 @@ class _ActiveContentState extends State<_ActiveContent> {
         onSkip: cubit.skipCurrentSet,
         onSkipWarmUp: cubit.skipWarmUp,
         records: records,
+        onStartPhoneRun: widget.onStartPhoneRun,
+        scrollActionsWithContent: scrollPhoneRunActions,
+        additionalActions: scrollPhoneRunActions
+            ? finishWithoutRecording
+            : null,
       );
       body = current.performancePrescription != null
           ? WorkoutExecutionFrame(actions: records, child: card)
@@ -624,23 +644,8 @@ class _ActiveContentState extends State<_ActiveContent> {
                 ),
               ),
               Expanded(child: body),
-              if (widget.onStartPhoneRun case final start?)
-                TextButton.icon(
-                  onPressed: saving ? null : start,
-                  icon: const Icon(Icons.gps_fixed_rounded),
-                  label: const Text('Empezar con el móvil'),
-                ),
-              if (execution.canFinishWithoutFullRecording && current != null)
-                SafeArea(
-                  top: false,
-                  child: TextButton.icon(
-                    onPressed: saving
-                        ? null
-                        : () => _requestFinishWithoutFullRecording(context),
-                    icon: const Icon(Icons.task_alt_rounded),
-                    label: const Text('Terminar sin registrar todo'),
-                  ),
-                ),
+              if (!scrollPhoneRunActions && finishWithoutRecording != null)
+                SafeArea(top: false, child: finishWithoutRecording),
             ],
           ),
         ),
