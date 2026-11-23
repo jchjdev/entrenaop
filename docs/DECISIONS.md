@@ -26,9 +26,10 @@ visibilidad a la grabación dentro del rodaje.
 **Carrera guiada con el móvil · 23/11/2026.** Javier pide ampliar el móvil a
 series, intervalos y todas las modalidades de carrera que admite la pauta.
 Confirma avisos al terminar cada trabajo y recuperación, vuelta manual y
-registro completamente manual disponible. Pide una propuesta de experiencia
-y diseño para el ejecutor.
-[Propuesta](SESSION_CONTROLS_2026_10_08.md#carrera-guiada-con-el-móvil).
+registro completamente manual disponible. Aprueba un solo guiado con avance
+automático o vuelta manual para pista. Plantea además hablar el ritmo en
+parciales y consultarlo desde la pantalla bloqueada.
+[Diseño y ampliaciones propuestas](SESSION_CONTROLS_2026_10_08.md#carrera-guiada-con-el-móvil).
 
 **Nombre editable de las preparaciones en ADMIN · 20/11/2026.** Javier pide
 editar el título de la preparación desde su ficha en ADMIN. Se guarda sobre la
