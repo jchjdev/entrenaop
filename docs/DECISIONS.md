@@ -1,5 +1,11 @@
 # Registro de decisiones vigentes
 
+**Duplicados de ejercicios en Trainer · 24/11/2026.** Javier confirma reutilizar
+la ficha oficial cuando el movimiento es equivalente y retirar la copia privada
+a la papelera. Una misma sesión privada puede combinar las dos bibliotecas. Al
+sustituir una ficha se conserva la prescripción de la serie y sus indicaciones.
+[Criterio](TRAINER_PRIVATE_EXERCISES.md#reutilizar-ejercicios-del-catálogo-oficial).
+
 **Medición habitual por metros en ejercicios · 24/11/2026.** La ficha de un
 ejercicio permite seleccionar metros en ADMIN, Trainer y la app. La medida
 se propone al añadir el ejercicio a una posición nueva de una sesión.

@@ -59,6 +59,20 @@ separado los metros realizados y la carga (opcional). «Series y registros» y
 el detalle del historial muestran la pauta y el resultado. La corrección del
 historial usa los mismos campos numéricos que el registro.
 
+## Reutilizar ejercicios del catálogo oficial
+
+Una sesión privada puede combinar ejercicios propios de Trainer y fichas
+publicadas del catálogo EntrenaOP. Si dos fichas describen el mismo movimiento,
+se puede usar la oficial en una nueva versión de la sesión y mover la copia
+privada a la papelera. Las variantes con técnica o material distintos conservan
+su ficha propia.
+
+La medición habitual de la ficha se propone al insertar un ejercicio nuevo.
+Al sustituirlo en una receta existente se mantienen la medida y los valores de
+cada serie. Las indicaciones particulares de un programa quedan en sus sesiones.
+Para las citas ya pautadas se usa la revisión de sesiones pendientes. Los
+borradores de una pauta se conservan y se pueden revisar por separado.
+
 ## Ejercicios oficiales y filtros compartidos
 
 Las ejecuciones con ejercicios oficiales fijan los mismos campos que las de
