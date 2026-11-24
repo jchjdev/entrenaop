@@ -44,6 +44,15 @@ obtener la imagen histórica por ese vínculo. El control de referencias de
 medios protege los archivos que usa el historial. La app del deportista
 1.23.0 incorpora la consulta de la ficha pendiente y la foto congelada.
 
+## Medición habitual por metros
+
+Los formularios de ejercicios de ADMIN, Trainer y la app permiten elegir
+repeticiones, tiempo o metros. Al colocar el ejercicio en una posición nueva
+sin objetivo escrito, el editor propone esa medida. La distancia y la carga
+se escriben en cada sesión. Tabata y AMRAP aplican la medida de su formato.
+Sustituir un ejercicio en una posición ya definida conserva sus series y
+objetivos. Los entrenamientos existentes conservan los valores que se pautaron.
+
 ## Ejercicios oficiales y filtros compartidos
 
 Las ejecuciones con ejercicios oficiales fijan los mismos campos que las de

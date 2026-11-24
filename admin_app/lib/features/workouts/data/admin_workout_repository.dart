@@ -20,6 +20,7 @@ class AdminExercise {
     this.muscleGroups = const [],
     this.equipment = const [],
     this.thumbnailUrl,
+    this.exerciseType,
   });
 
   final String id;
@@ -27,6 +28,7 @@ class AdminExercise {
   final List<String> muscleGroups;
   final List<String> equipment;
   final String? thumbnailUrl;
+  final String? exerciseType;
 }
 
 abstract class AdminWorkoutRepository implements ProgramSessionCatalog {
@@ -165,7 +167,9 @@ class SupabaseAdminWorkoutRepository
   Future<List<AdminExercise>> listPublicExercises() async {
     final rows = await _client
         .from('exercises')
-        .select('id,name,muscle_groups,equipment,thumbnail_url,image_path')
+        .select(
+          'id,name,muscle_groups,equipment,thumbnail_url,image_path,exercise_type',
+        )
         .eq('is_public', true)
         .isFilter('trashed_at', null)
         .order('name');
@@ -179,7 +183,9 @@ class SupabaseAdminWorkoutRepository
     for (var offset = 0; offset < requested.length; offset += 100) {
       final rows = await _client
           .from('exercises')
-          .select('id,name,muscle_groups,equipment,thumbnail_url,image_path')
+          .select(
+            'id,name,muscle_groups,equipment,thumbnail_url,image_path,exercise_type',
+          )
           .eq('origin', 'system')
           .inFilter('id', requested.skip(offset).take(100).toList());
       result.addAll(_exercises(rows));
@@ -193,6 +199,7 @@ class SupabaseAdminWorkoutRepository
         (row) => AdminExercise(
           id: row['id'] as String,
           name: row['name'] as String,
+          exerciseType: row['exercise_type'] as String?,
           muscleGroups: (row['muscle_groups'] as List? ?? const [])
               .cast<String>(),
           equipment: (row['equipment'] as List? ?? const []).cast<String>(),

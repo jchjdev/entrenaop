@@ -1358,7 +1358,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                   if (selected != null &&
                       mounted &&
                       block.exercises.contains(item)) {
-                    setState(() => item.exerciseId = selected.id);
+                    setState(() => item.selectExercise(selected, block.format));
                     _exercisePreferences?.recordSelection(selected.id);
                   }
                 }
@@ -1489,10 +1489,10 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
           .firstOrNull;
       if (slot != null) {
         // Completar un hueco conserva las series, cargas y variantes ya escritas.
-        slot.exerciseId = exercise.id;
+        slot.selectExercise(exercise, block.format);
         _selectedStrengthExercise = slot;
       } else {
-        final next = _Exercise()..exerciseId = exercise.id;
+        final next = _Exercise()..selectExercise(exercise, block.format);
         block.exercises.add(next);
         _selectedStrengthExercise = next;
       }
@@ -2691,8 +2691,12 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                 ? null
                 : () async {
                     final selected = await _chooseExercise();
-                    if (selected != null && mounted) {
-                      setState(() => item.exerciseId = selected.id);
+                    if (selected != null &&
+                        mounted &&
+                        block.exercises.contains(item)) {
+                      setState(
+                        () => item.selectExercise(selected, block.format),
+                      );
                       _exercisePreferences?.recordSelection(selected.id);
                     }
                   },
@@ -3485,6 +3489,25 @@ class _Exercise {
   WorkoutTargetType type = WorkoutTargetType.repetitions;
   bool customSets = false;
   final variations = <int, _SetVariation>{};
+
+  void selectExercise(
+    WorkoutEditorExercise exercise,
+    WorkoutBlockFormat format,
+  ) {
+    // La biblioteca solo propone la medida para un hueco sin objetivo escrito.
+    if (exerciseId == null &&
+        format != WorkoutBlockFormat.tabata &&
+        format != WorkoutBlockFormat.amrap &&
+        type == WorkoutTargetType.repetitions &&
+        target.text.isEmpty &&
+        rir.text.isEmpty &&
+        variations.values.every(
+          (set) => set.target.text.isEmpty && set.rir.text.isEmpty,
+        )) {
+      type = exercise.defaultTargetType;
+    }
+    exerciseId = exercise.id;
+  }
 
   void dispose() {
     count.dispose();

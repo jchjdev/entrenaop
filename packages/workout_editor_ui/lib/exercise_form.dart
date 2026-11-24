@@ -237,10 +237,12 @@ class _ExerciseFormState extends State<ExerciseForm> {
         items: const [
           DropdownMenuItem(value: 'repeticiones', child: Text('Repeticiones')),
           DropdownMenuItem(value: 'duración', child: Text('Tiempo')),
+          DropdownMenuItem(value: 'distancia', child: Text('Metros')),
         ],
         selectedItemBuilder: (_) => const [
           Align(alignment: Alignment.centerLeft, child: Text('Repeticiones')),
           Align(alignment: Alignment.centerLeft, child: Text('Tiempo')),
+          Align(alignment: Alignment.centerLeft, child: Text('Metros')),
         ],
         onChanged: (value) {
           if (value != null) _exerciseType = value;

@@ -115,6 +115,7 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
   }) => WorkoutEditorExercise(
     id: exercise.id,
     name: exercise.name,
+    exerciseType: exercise.exerciseType,
     muscleGroups: exercise.muscleGroups,
     equipment: exercise.equipment,
     thumbnailUrl: exercise.thumbnailUrl,
@@ -156,6 +157,7 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
                   : WorkoutEditorExercise(
                       id: created.id,
                       name: created.name,
+                      exerciseType: created.exerciseType,
                       muscleGroups: created.muscleGroups,
                       equipment: created.equipment,
                       thumbnailUrl: created.imageUrl,

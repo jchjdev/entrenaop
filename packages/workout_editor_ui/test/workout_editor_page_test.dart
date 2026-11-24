@@ -206,10 +206,25 @@ void main() {
     (t) async {
       await t.binding.setSurfaceSize(const Size(1600, 1100));
       addTearDown(() => t.binding.setSurfaceSize(null));
+      CreatePersonalWorkoutInput? submitted;
       await t.pumpWidget(
         ProfessionalWorkspaceScope(
           desktop: true,
-          child: _app(save: (_) async => 's', saved: (_) {}),
+          child: _app(
+            save: (input) async {
+              submitted = input;
+              return 's';
+            },
+            saved: (_) {},
+            load: () async => const [
+              ..._catalog,
+              WorkoutEditorExercise(
+                id: 'carry',
+                name: 'Farmer carry',
+                exerciseType: 'distancia',
+              ),
+            ],
+          ),
         ),
       );
       await t.pumpAndSettle();
@@ -221,14 +236,38 @@ void main() {
       await t.tap(row);
       await t.pumpAndSettle();
       expect(find.text('Buscar ejercicio'), findsOneWidget);
-      await t.tap(find.text('Ejercicio privado de Alba').last);
+      await t.tap(find.text('Farmer carry').last);
       await t.pumpAndSettle();
       expect(find.text('Buscar ejercicio'), findsNothing);
       final tile = t.widget<ExpansionTile>(
         find.widgetWithText(ExpansionTile, 'Configuración del bloque'),
       );
       expect(tile.initiallyExpanded, isTrue);
-      expect(find.textContaining('Ejercicio privado de Alba'), findsWidgets);
+      expect(find.textContaining('Farmer carry'), findsWidgets);
+      final fields = find.byType(StrengthSetFields).last;
+      expect(
+        t.widget<StrengthSetFields>(fields).targetType,
+        WorkoutTargetType.distance,
+      );
+      await _setField(
+        t,
+        find.descendant(
+          of: fields,
+          matching: find.widgetWithText(TextFormField, 'Cantidad'),
+        ),
+        '32.5',
+      );
+      await _save(t);
+      final exercises = submitted!.blocks.single.exercises;
+      expect(
+        exercises.first.sets.map((s) => s.targetType),
+        everyElement(WorkoutTargetType.repetitions),
+      );
+      expect(
+        exercises.last.sets.map((s) => s.targetType),
+        everyElement(WorkoutTargetType.distance),
+      );
+      expect(exercises.last.sets.map((s) => s.targetValue), everyElement(32.5));
       expect(t.takeException(), isNull);
     },
   );

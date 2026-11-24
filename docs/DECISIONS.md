@@ -1,5 +1,10 @@
 # Registro de decisiones vigentes
 
+**Medición habitual por metros en ejercicios · 24/11/2026.** La ficha de un
+ejercicio permite seleccionar metros en ADMIN, Trainer y la app. La medida
+se propone al añadir el ejercicio a una posición nueva de una sesión.
+[Contrato](TRAINER_PRIVATE_EXERCISES.md#medición-habitual-por-metros).
+
 **Especialidades del directorio · 23/11/2026.** Javier aprueba un catálogo
 común con selección múltiple en Trainer y filtro en la app del deportista.
 Los entrenadores pueden sugerir nuevas especialidades y ADMIN resuelve las

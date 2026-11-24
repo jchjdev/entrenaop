@@ -38,7 +38,7 @@ begin
     array[' Espalda ', 'espalda'],
     array[' Barra '],
     'intermedio',
-    'repeticiones'
+    'distancia'
   );
 
   if not exists (
@@ -47,6 +47,7 @@ begin
       and name = 'Ejercicio oficial temporal'
       and muscle_groups = array['espalda']
       and equipment = array['barra']
+      and exercise_type = 'distancia'
       and origin = 'system'
       and created_by is null
       and is_public is true
@@ -62,13 +63,14 @@ begin
     array['espalda'],
     array[]::text[],
     'avanzado',
-    'duración'
+    'distancia'
   );
 
   if not exists (
     select 1 from public.exercises
     where id = v_official_id
       and name = 'Ejercicio oficial revisado'
+      and exercise_type = 'distancia'
       and origin = 'system'
       and created_by is null
       and is_public is true
@@ -91,18 +93,28 @@ begin
 
   v_personal_id := public.create_personal_exercise(
     'Ejercicio privado temporal', null, null, array['piernas'],
-    array[]::text[], 'inicial', 'repeticiones'
+    array[]::text[], 'inicial', 'distancia'
   );
 
   if not exists (
     select 1 from public.exercises
     where id = v_personal_id
       and origin = 'user'
+      and exercise_type = 'distancia'
       and created_by = v_user_id
       and is_public is false
   ) then
     raise exception 'El ejercicio personal no quedó privado y ligado a su autor.';
   end if;
+
+  begin
+    perform public.update_personal_exercise(
+      v_personal_id, 'Medición inválida', null, null, array['piernas'],
+      array[]::text[], 'inicial', 'pasadas'
+    );
+    raise exception 'Se aceptó una unidad fuera del catálogo.';
+  exception when invalid_parameter_value then null;
+  end;
 
   begin
     perform public.update_admin_exercise(

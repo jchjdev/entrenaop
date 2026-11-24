@@ -53,6 +53,7 @@ Future<WorkoutEditorExercise?> showTrainerExerciseEditor(
           saved = WorkoutEditorExercise(
             id: id,
             name: draft.name,
+            exerciseType: draft.exerciseType,
             muscleGroups: exerciseMuscleLabels(draft.muscleGroups),
             equipment: draft.equipment,
             catalogScope: 'Míos',

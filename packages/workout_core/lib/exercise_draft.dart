@@ -37,7 +37,7 @@ class ExerciseDraft extends Equatable {
 
 abstract final class ExerciseDraftValidator {
   static const difficulties = {'inicial', 'intermedio', 'avanzado'};
-  static const exerciseTypes = {'repeticiones', 'duración'};
+  static const exerciseTypes = {'repeticiones', 'duración', 'distancia'};
 
   static String? nameError(String? value) {
     final length = value?.trim().length ?? 0;

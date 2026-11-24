@@ -100,6 +100,7 @@ class _PersonalWorkoutEditorState extends State<PersonalWorkoutEditor> {
       WorkoutEditorExercise(
         id: value.id,
         name: value.name,
+        exerciseType: value.exerciseType,
         muscleGroups: value.muscleGroups,
         equipment: value.equipment,
         thumbnailUrl: value.thumbnailUrl,

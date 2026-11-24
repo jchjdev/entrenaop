@@ -94,7 +94,10 @@ begin
  if revised = exercise then raise exception 'El cambio estructural no crea versión'; end if;
  begin perform public.save_trainer_exercise(gen_random_uuid(),draft||jsonb_build_object('extra',repeat('x',10000)));
   raise exception 'Conserva payload sin límite'; exception when check_violation then null; end;
- hidden:=public.save_trainer_exercise(gen_random_uuid(),jsonb_set(draft,'{name}','"Nunca pautado"'));
+ hidden:=public.save_trainer_exercise(gen_random_uuid(),draft||jsonb_build_object('name','Nunca pautado','exercise_type','distancia'));
+ if not exists(select 1 from public.exercises where id=hidden and exercise_type='distancia') then
+  raise exception 'Trainer no conserva la medición por metros';
+ end if;
  if jsonb_array_length(public.list_trainer_exercises())<>3 then raise exception 'No conserva versiones'; end if;
  -- La misma cuenta conserva las ocho plazas personales aunque sea preparador.
  for i in 1..8 loop perform public.create_personal_exercise('Personal '||i,null,null,array['espalda'],'{}','inicial','repeticiones'); end loop;

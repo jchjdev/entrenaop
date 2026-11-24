@@ -123,6 +123,7 @@ void main() {
   for (final (difficulty, type) in [
     ('intermedio', 'duración'),
     ('avanzado', 'repeticiones'),
+    ('intermedio', 'distancia'),
   ]) {
     testWidgets(
       'edita $difficulty/$type sin recortar los selectores a texto 2×',
@@ -190,10 +191,11 @@ void main() {
           'Dificultad',
           difficulty == 'intermedio' ? 'Intermedio' : 'Avanzado',
         );
-        await select(
-          'Medición habitual',
-          type == 'duración' ? 'Tiempo' : 'Repeticiones',
-        );
+        await select('Medición habitual', switch (type) {
+          'duración' => 'Tiempo',
+          'distancia' => 'Metros',
+          _ => 'Repeticiones',
+        });
         final save = find.text('Guardar');
         await tester.ensureVisible(save);
         await tester.pumpAndSettle();

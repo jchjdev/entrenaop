@@ -267,6 +267,7 @@ class SupabaseTrainerWorkoutRepository implements TrainerWorkoutRepository {
             (e) => WorkoutEditorExercise(
               id: e.id,
               name: e.draft.name,
+              exerciseType: e.draft.exerciseType,
               muscleGroups: exerciseMuscleLabels(e.draft.muscleGroups),
               equipment: e.draft.equipment,
               thumbnailUrl: e.imageUrl,
@@ -284,6 +285,7 @@ class SupabaseTrainerWorkoutRepository implements TrainerWorkoutRepository {
               name: e.current
                   ? e.draft.name
                   : '${e.draft.name} (versión ${e.version})',
+              exerciseType: e.draft.exerciseType,
               muscleGroups: exerciseMuscleLabels(e.draft.muscleGroups),
               equipment: e.draft.equipment,
               thumbnailUrl: e.imageUrl,
