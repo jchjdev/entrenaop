@@ -3112,3 +3112,10 @@ la portada y el reproductor respeta la del clip, incluido el catálogo
 horizontal. La preferencia no es una restricción de subida. El contraste con
 el MP4 definitivo de zancadas queda pendiente.
 [Comportamiento del reproductor](VIDEOS.md#formato-vertical-para-nuevas-demostraciones--07112026).
+
+## Nombres visibles de los saltos · 24/11/2026
+
+Javier aprueba nombres en español para CMJ, squat jump, drop jump y pogo jumps
+en la biblioteca de Dev. Las últimas tres fichas incluyen el nombre inglés al
+final de la descripción. En la primera, la sigla CMJ acompaña al nombre español.
+[Nombres de las fichas](CATALOGO_FUERZA_RENDIMIENTO_V1.md#nombres-visibles-de-los-saltos--24112026).

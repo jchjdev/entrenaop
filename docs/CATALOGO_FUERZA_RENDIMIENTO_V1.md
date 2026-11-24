@@ -24,6 +24,9 @@ y ejercicio público en desarrollo; no se equipara esta tarea al shuttle 5–10�
 
 ## Inventario
 
+La tabla recoge los nombres de las variantes en el catálogo técnico v1. Los
+nombres que aparecen en la biblioteca de Dev pueden tener ajustes editoriales.
+
 | Código | Variante | Familia | Medición compatible |
 | --- | --- | --- | --- |
 | `push_up_incline` | Flexión inclinada | `push_up` | `REPS` |
@@ -89,6 +92,19 @@ y ejercicio público en desarrollo; no se equipara esta tarea al shuttle 5–10�
 | `reactive_direction_drill` | Cambio de dirección ante señal | `reactive_course` | `TIME_FOR_COURSE`, `PASS_FAIL` |
 | `medicine_ball_chest_throw` | Lanzamiento frontal de balón medicinal | `medicine_ball_throw` | `DISTANCE`, `REPS` |
 | `kettlebell_swing` | Kettlebell swing bilateral | `ballistic_hinge` | `LOAD_REPS` |
+
+## Nombres visibles de los saltos · 24/11/2026
+
+| Código | Nombre en la biblioteca de Dev | Nombre inglés al final de la descripción |
+| --- | --- | --- |
+| `countermovement_jump` | Salto vertical con bajada rápida (CMJ) | — |
+| `squat_jump` | Salto desde media sentadilla (SJ) | Squat jump |
+| `drop_jump` | Caída desde cajón con rebote | Drop jump |
+| `pogo_jumps` | Rebotes cortos de tobillo | Pogo jumps |
+
+El cambio editorial se aplica a las cuatro fichas oficiales de Dev con sus
+identificadores existentes. Los códigos del catálogo técnico siguen siendo la
+referencia para los perfiles deportivos y sus mediciones.
 
 ## Decisiones de representación
 
