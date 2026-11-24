@@ -1,5 +1,11 @@
 # Registro de decisiones vigentes
 
+**RH4.1 compacta en Trainer · 24/11/2026.** Javier pide reunir la rutina en
+un programa que pueda pautarse desde «Para mí» y retirar los anexos sueltos.
+Se conserva un ciclo A/B de seis días por semana, con variantes de lunes y
+viernes. Las alternativas y los extras se explican como indicaciones.
+[Aplicación](TRAINER_PRIVATE_PROGRAMS.md#organización-de-rh41-en-trainer).
+
 **Duplicados de ejercicios en Trainer · 24/11/2026.** Javier confirma reutilizar
 la ficha oficial cuando el movimiento es equivalente y retirar la copia privada
 a la papelera. Una misma sesión privada puede combinar las dos bibliotecas. Al

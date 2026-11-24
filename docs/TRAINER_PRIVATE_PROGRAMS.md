@@ -35,6 +35,20 @@ aunque se haya movido o adaptado después. Si dos fases antiguas no se pueden
 distinguir, la sesión se presenta en «Sesiones del programa». Los envíos
 nuevos guardan directamente el índice de fase.
 
+## Organización de RH4.1 en Trainer
+
+La biblioteca de sesiones de RH4.1 muestra seis días base. Su programa
+privado reúne las semanas A y B, con una sesión de lunes a sábado. El programa
+conserva las variantes B de lunes y viernes sin mostrarlas como sesiones
+sueltas. La movilidad, los anexos técnicos y el micro de torso quedan en las
+indicaciones. La receta del sábado guía una carrera Z2 y explica la pateada
+como alternativa libre. El domingo es descanso.
+
+Javier puede pautar el programa desde «Para mí». Al revisar las fechas,
+coloca seis días consecutivos y deja el domingo libre. La propuesta genérica
+de fechas de Trainer sigue separando dos días por sesión. Se comprobó la
+autopauta de los doce días en una transacción revertida en Dev.
+
 ## Recorrido y reutilización
 
 El preparador crea rutinas o programas por fases con nombre, objetivo,
