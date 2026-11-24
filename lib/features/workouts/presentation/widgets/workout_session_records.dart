@@ -129,6 +129,10 @@ class _WorkoutSessionRecordsState extends State<WorkoutSessionRecords> {
     final pending = draft?.endedAt != null && !draft!.confirmed;
     final completed = set.status == WorkoutSetStatus.completed;
     final editable = completed;
+    final target = [
+      workoutTargetLabel(set),
+      if (set.targetLoadKg case final load?) '${workoutNumber(load)} kg',
+    ].join(' · ');
     final status = pending
         ? 'Datos por confirmar'
         : completed
@@ -155,7 +159,7 @@ class _WorkoutSessionRecordsState extends State<WorkoutSessionRecords> {
       ),
       title: Text(workoutPositionLabel(set)),
       subtitle: Text(
-        'Objetivo · ${workoutTargetLabel(set)}\n$status${completed && !pending ? '\n${workoutResultLabel(set)}' : ''}',
+        'Objetivo · $target\n$status${completed && !pending ? '\n${workoutResultLabel(set)}' : ''}',
       ),
       trailing: editable ? const Icon(Icons.edit_outlined) : null,
       onTap: widget.enabled && editable ? () => widget.onEdit(set) : null,

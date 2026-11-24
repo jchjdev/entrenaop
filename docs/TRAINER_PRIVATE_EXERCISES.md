@@ -53,6 +53,12 @@ se escriben en cada sesión. Tabata y AMRAP aplican la medida de su formato.
 Sustituir un ejercicio en una posición ya definida conserva sus series y
 objetivos. Los entrenamientos existentes conservan los valores que se pautaron.
 
+En la app del deportista, la vista previa muestra la distancia y la carga de
+cada serie. Durante el entrenamiento se pueden registrar y confirmar por
+separado los metros realizados y la carga (opcional). «Series y registros» y
+el detalle del historial muestran la pauta y el resultado. La corrección del
+historial usa los mismos campos numéricos que el registro.
+
 ## Ejercicios oficiales y filtros compartidos
 
 Las ejecuciones con ejercicios oficiales fijan los mismos campos que las de

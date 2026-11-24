@@ -8,6 +8,7 @@ import 'package:entrenaop/features/workouts/domain/entities/workout_execution.da
 
 import '../widgets/workout_execution_labels.dart';
 import '../widgets/workout_effort_field.dart';
+import '../widgets/workout_result_fields.dart';
 import '../widgets/workout_technique_section.dart';
 
 import 'package:entrenaop/features/workouts/domain/services/running_execution_assessment.dart';
@@ -890,21 +891,21 @@ class _CorrectionDialogState extends State<_CorrectionDialog> {
         reason: _reason.text.trim(),
         actualReps: set.targetReps == null
             ? null
-            : _parseDecimal(_reps.text)!.toInt(),
+            : parseWorkoutDecimal(_reps.text)!.toInt(),
         actualDurationSeconds:
             set.targetDurationSeconds == null &&
                 set.blockFormat != WorkoutBlockFormat.running
             ? null
             : set.blockFormat == WorkoutBlockFormat.running
             ? parseDurationInput(_duration.text)
-            : _parseDecimal(_duration.text)!.toInt(),
+            : parseWorkoutDecimal(_duration.text)!.toInt(),
         actualDistanceMeters:
             set.targetDistanceMeters == null &&
                 set.blockFormat != WorkoutBlockFormat.running
             ? null
-            : _parseDecimal(_distance.text),
+            : parseWorkoutDecimal(_distance.text),
         actualLoadKg: set.supportsLoadRecording
-            ? _parseDecimal(_load.text)
+            ? parseWorkoutDecimal(_load.text)
             : null,
         actualRpe: set.targetRpe == null && set.actualRpe == null ? null : _rpe,
         // Corregir otro dato no elimina ni redondea un esfuerzo antiguo.
@@ -914,7 +915,7 @@ class _CorrectionDialogState extends State<_CorrectionDialog> {
             : parseDurationInput(_recoveryDuration.text),
         actualRecoveryDistanceMeters: set.recoveryDistanceMeters == null
             ? null
-            : _parseDecimal(_recoveryDistance.text),
+            : parseWorkoutDecimal(_recoveryDistance.text),
       ),
     );
   }
@@ -922,97 +923,95 @@ class _CorrectionDialogState extends State<_CorrectionDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      scrollable: true,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       title: Text('Corregir · ${set.exerciseName}'),
       content: SizedBox(
         width: 440,
         child: Form(
           key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text(
-                  'Disponible durante 24 horas y con un máximo de tres cambios por serie.',
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'Disponible durante 24 horas y con un máximo de tres cambios por serie.',
+              ),
+              const SizedBox(height: 16),
+              if (set.targetReps != null)
+                WorkoutNumberResultField(
+                  controller: _reps,
+                  label: 'Repeticiones realizadas',
+                  decimal: false,
                 ),
-                const SizedBox(height: 16),
-                if (set.targetReps != null)
-                  _CorrectionField(
-                    controller: _reps,
-                    label: 'Repeticiones realizadas',
-                    decimal: false,
-                  ),
-                if (set.targetDurationSeconds != null ||
-                    set.blockFormat == WorkoutBlockFormat.running)
-                  set.blockFormat == WorkoutBlockFormat.running
-                      ? _DurationCorrectionField(
-                          controller: _duration,
-                          label: 'Tiempo real',
-                        )
-                      : _CorrectionField(
-                          controller: _duration,
-                          label: 'Segundos realizados',
-                          decimal: false,
-                        ),
-                if (set.targetDistanceMeters != null ||
-                    set.blockFormat == WorkoutBlockFormat.running)
-                  _CorrectionField(
-                    controller: _distance,
-                    label: set.manualDistanceOptional
-                        ? 'Metros realizados (opcional)'
-                        : 'Metros realizados',
-                    optional: set.manualDistanceOptional,
-                  ),
-                if (set.supportsLoadRecording)
-                  _CorrectionField(
-                    controller: _load,
-                    label: 'Carga utilizada (kg, opcional)',
-                    optional: true,
-                  ),
-                if (set.recoveryDurationSeconds != null)
-                  _DurationCorrectionField(
-                    controller: _recoveryDuration,
-                    label: 'Recuperación real',
-                  ),
-                if (set.recoveryDistanceMeters != null)
-                  _CorrectionField(
-                    controller: _recoveryDistance,
-                    label: 'Metros reales de recuperación',
-                  ),
-                if (set.targetRpe != null || set.actualRpe != null) ...[
-                  WorkoutEffortField(
-                    label: 'RPE real',
-                    minimum: 1,
-                    wholeNumbersOnly: true,
-                    value: _rpe,
-                    enabled: true,
-                    onChanged: (value) => setState(() => _rpe = value),
-                  ),
-                ],
-                if (set.usesRir &&
-                    (set.targetRir != null || set.actualRir != null))
-                  WorkoutEffortField(
-                    label: 'RIR real',
-                    minimum: 0,
-                    value: _rir,
-                    enabled: true,
-                    onChanged: (value) => setState(() => _rir = value),
-                  ),
-                TextFormField(
-                  controller: _reason,
-                  maxLength: 300,
-                  maxLines: 2,
-                  decoration: const InputDecoration(
-                    labelText: 'Motivo',
-                    hintText: 'Por ejemplo: anoté 8, pero fueron 10.',
-                  ),
-                  validator: (value) {
-                    final length = value?.trim().length ?? 0;
-                    return length < 3 ? 'Explica brevemente el cambio' : null;
-                  },
+              if (set.targetDurationSeconds != null ||
+                  set.blockFormat == WorkoutBlockFormat.running)
+                set.blockFormat == WorkoutBlockFormat.running
+                    ? _DurationCorrectionField(
+                        controller: _duration,
+                        label: 'Tiempo real',
+                      )
+                    : WorkoutNumberResultField(
+                        controller: _duration,
+                        label: 'Segundos realizados',
+                        decimal: false,
+                      ),
+              if (set.targetDistanceMeters != null ||
+                  set.blockFormat == WorkoutBlockFormat.running)
+                WorkoutNumberResultField(
+                  controller: _distance,
+                  label: 'Metros realizados',
+                  optional: set.manualDistanceOptional,
+                ),
+              if (set.supportsLoadRecording)
+                WorkoutNumberResultField(
+                  controller: _load,
+                  label: 'Carga (kg)',
+                  optional: true,
+                ),
+              if (set.recoveryDurationSeconds != null)
+                _DurationCorrectionField(
+                  controller: _recoveryDuration,
+                  label: 'Recuperación real',
+                ),
+              if (set.recoveryDistanceMeters != null)
+                WorkoutNumberResultField(
+                  controller: _recoveryDistance,
+                  label: 'Metros reales de recuperación',
+                ),
+              if (set.targetRpe != null || set.actualRpe != null) ...[
+                WorkoutEffortField(
+                  label: 'RPE real',
+                  minimum: 1,
+                  wholeNumbersOnly: true,
+                  value: _rpe,
+                  enabled: true,
+                  onChanged: (value) => setState(() => _rpe = value),
                 ),
               ],
-            ),
+              if (set.usesRir &&
+                  (set.targetRir != null || set.actualRir != null))
+                WorkoutEffortField(
+                  label: 'RIR real',
+                  minimum: 0,
+                  value: _rir,
+                  enabled: true,
+                  onChanged: (value) => setState(() => _rir = value),
+                ),
+              TextFormField(
+                controller: _reason,
+                maxLength: 300,
+                maxLines: 2,
+                decoration: const InputDecoration(
+                  labelText: 'Motivo',
+                  hintText: 'Por ejemplo: anoté 8, pero fueron 10.',
+                ),
+                validator: (value) {
+                  final length = value?.trim().length ?? 0;
+                  return length < 3 ? 'Explica brevemente el cambio' : null;
+                },
+              ),
+            ],
           ),
         ),
       ),
@@ -1021,46 +1020,11 @@ class _CorrectionDialogState extends State<_CorrectionDialog> {
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancelar'),
         ),
-        FilledButton(onPressed: _save, child: const Text('Guardar corrección')),
+        FilledButton(
+          onPressed: _save,
+          child: const Text('Guardar corrección', textAlign: TextAlign.center),
+        ),
       ],
-    );
-  }
-}
-
-class _CorrectionField extends StatelessWidget {
-  const _CorrectionField({
-    required this.controller,
-    required this.label,
-    this.decimal = true,
-    this.optional = false,
-  });
-
-  final TextEditingController controller;
-  final String label;
-  final bool decimal;
-  final bool optional;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: TextFormField(
-        controller: controller,
-        keyboardType: TextInputType.numberWithOptions(decimal: decimal),
-        decoration: InputDecoration(labelText: label),
-        validator: (value) {
-          if (optional && (value ?? '').trim().isEmpty) return null;
-          final parsed = _parseDecimal(value ?? '');
-          if (parsed == null || !parsed.isFinite) {
-            return 'Introduce un número válido';
-          }
-          if (parsed < 0) return 'El valor no puede ser negativo';
-          if (!decimal && parsed != parsed.roundToDouble()) {
-            return 'Introduce un número entero';
-          }
-          return null;
-        },
-      ),
     );
   }
 }
@@ -1352,8 +1316,5 @@ String _number(double value) =>
 String _integer(int? value) => value?.toString() ?? '';
 
 String _nullableNumber(double? value) => value == null ? '' : _number(value);
-
-double? _parseDecimal(String value) =>
-    double.tryParse(value.trim().replaceAll(',', '.'));
 
 final _dateFormat = DateFormat('dd-MM-yyyy · HH:mm');

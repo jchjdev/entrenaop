@@ -279,6 +279,70 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('la vista previa muestra metros y carga de Farmer carry a 320 px', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    const workout = WorkoutTemplate(
+      id: 'carry-session',
+      name: 'Fuerza',
+      description: null,
+      estimatedDurationMinutes: 5,
+      version: 1,
+      blocks: [
+        WorkoutBlock(
+          id: 'carry-block',
+          name: 'Principal',
+          format: WorkoutBlockFormat.straightSets,
+          rounds: 1,
+          restAfterSeconds: 0,
+          items: [
+            WorkoutItem(
+              id: 'carry-item',
+              exerciseId: 'farmer-carry',
+              exerciseName: 'Farmer carry',
+              sets: [
+                WorkoutSet(id: 'carry-set', order: 0, targetDistanceMeters: 30,
+                  targetLoadKg: 24, restAfterSeconds: 0),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+    final repository = _WorkoutRepository(workout: workout);
+    final cubit = WorkoutPreviewCubit(
+      templateId: workout.id,
+      getWorkoutTemplate: GetWorkoutTemplateUseCase(repository),
+      startExecution: StartWorkoutExecutionUseCase(repository),
+    );
+    addTearDown(cubit.close);
+    await cubit.load();
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: EntrenaTheme.dark,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(2)),
+          child: RepaintBoundary(key: const ValueKey('review-boundary'), child: child!),
+        ),
+        home: BlocProvider.value(
+          value: cubit,
+          child: const WorkoutPreviewPage(routeBase: '/preview'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final dose = find.textContaining('30 m · 24 kg');
+    await tester.ensureVisible(dose);
+    await tester.pumpAndSettle();
+    expect(dose.hitTestable(), findsOneWidget);
+    expect(find.byKey(const ValueKey('workout-preview-start')).hitTestable(), findsOneWidget);
+    await capturePerformanceWidget(tester, 'farmer-carry-previa-320');
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('la vista previa explica ritmo y recuperación de carrera', (
     tester,
   ) async {

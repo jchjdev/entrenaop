@@ -29,7 +29,10 @@ class WorkoutNumberResultField extends StatelessWidget {
         enabled: enabled,
         controller: controller,
         keyboardType: TextInputType.numberWithOptions(decimal: decimal),
-        decoration: InputDecoration(labelText: label),
+        decoration: InputDecoration(
+          labelText: label,
+          helperText: optional ? 'Opcional' : null,
+        ),
         onChanged: onChanged,
         validator: (value) {
           if (optional && (value ?? '').trim().isEmpty) return null;

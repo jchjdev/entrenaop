@@ -602,7 +602,8 @@ class _PrescriptionDetails extends StatelessWidget {
       final prefix = switch (block.format) {
         WorkoutBlockFormat.amrap => 'En cada vuelta',
         WorkoutBlockFormat.tabata => 'Trabajo',
-        WorkoutBlockFormat.straightSets => '${sets.length} series',
+        WorkoutBlockFormat.straightSets =>
+          '${sets.length} ${sets.length == 1 ? 'serie' : 'series'}',
         WorkoutBlockFormat.intervals => '${sets.length} intervalos',
         WorkoutBlockFormat.running =>
           '${sets.length} ${sets.length == 1 ? 'tramo' : 'tramos'}',

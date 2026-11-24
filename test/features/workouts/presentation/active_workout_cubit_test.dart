@@ -49,6 +49,102 @@ import 'package:go_router/go_router.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 
 void main() {
+  for (final (width, scale) in [(390.0, 1.0), (320.0, 2.0)]) {
+    testWidgets(
+      'Farmer carry registra metros y carga a $width px, texto ×$scale',
+      (tester) async {
+        tester.view.physicalSize = Size(width, width == 320 ? 568 : 844);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        const carry = WorkoutExecutionSet(
+          id: 'carry',
+          blockOrder: 0,
+          blockName: 'Trabajo principal',
+          itemOrder: 0,
+          exerciseId: 'farmer-carry',
+          exerciseName: 'Farmer carry',
+          setOrder: 0,
+          targetDistanceMeters: 30,
+          targetLoadKg: 24,
+          restAfterSeconds: 0,
+          status: WorkoutSetStatus.pending,
+        );
+        final repository = _Repository()
+          ..execution = _execution(templateName: 'Fuerza')
+              .copyWith(sets: [carry]);
+        await _mountSession(
+          tester,
+          repository,
+          textScaler: TextScaler.linear(scale),
+        );
+
+        final metres = find.widgetWithText(TextFormField, 'Metros realizados');
+        final load = find.widgetWithText(TextFormField, 'Carga (kg)');
+        expect(find.text('Objetivo · 30 metros'), findsOneWidget);
+        expect(find.text('24 kg'), findsOneWidget);
+        expect(find.text('Repeticiones realizadas'), findsNothing);
+        expect(find.text('Tiempo realizado'), findsNothing);
+        if (width == 320) {
+          await Scrollable.ensureVisible(
+            tester.element(metres),
+            alignment: .03,
+          );
+        }
+        await tester.pumpAndSettle();
+        expect(metres.hitTestable(), findsOneWidget);
+        expect(load.hitTestable(), findsOneWidget);
+        await capturePerformanceWidget(
+          tester,
+          'farmer-carry-registro-${width.toInt()}',
+        );
+        await tester.ensureVisible(metres);
+        await tester.enterText(metres, '27');
+        tester.view.viewInsets = FakeViewPadding(
+          bottom: width == 320 ? 220 : 300,
+        );
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(load);
+        await tester.pumpAndSettle();
+        expect(load.hitTestable(), findsOneWidget);
+        await tester.enterText(load, '22,5');
+        expect(tester.takeException(), isNull);
+        tester.view.resetViewInsets();
+        await tester.pumpAndSettle();
+
+        expect(find.text('Terminar serie').hitTestable(), findsOneWidget);
+        await tester.tap(find.text('Terminar serie'));
+        await tester.pumpAndSettle();
+        final review = find.text('Revisar series');
+        await tester.ensureVisible(review);
+        await tester.tap(review);
+        await tester.pumpAndSettle();
+        final record = find.textContaining('Datos por confirmar');
+        await tester.ensureVisible(record);
+        await tester.tap(record);
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(metres);
+        expect(tester.widget<TextFormField>(metres).controller!.text, '27');
+        await capturePerformanceWidget(
+          tester,
+          'farmer-carry-confirmacion-${width.toInt()}',
+        );
+        expect(find.text('Confirmar datos').hitTestable(), findsOneWidget);
+        await tester.tap(find.text('Confirmar datos'));
+        await tester.pumpAndSettle();
+        expect(repository.lastSetResult?.actualDistanceMeters, 27);
+        expect(repository.lastSetResult?.actualLoadKg, 22.5);
+        expect(repository.lastSetResult?.actualReps, isNull);
+        expect(repository.lastSetResult?.actualDurationSeconds, isNull);
+        expect(
+          find.textContaining('Objetivo · 30 metros · 24 kg'),
+          findsOneWidget,
+        );
+        expect(find.textContaining('27 m · 22.5 kg'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   testWidgets(
     'un parcial del guiado pasa al registro manual sin confirmar otras series',
     (tester) async {
@@ -816,10 +912,7 @@ void main() {
         );
       await _mountSession(tester, repository);
       await _openCurrentResult(tester);
-      final field = find.widgetWithText(
-        TextFormField,
-        'Carga utilizada (kg, opcional)',
-      );
+      final field = find.widgetWithText(TextFormField, 'Carga (kg)');
       expect(tester.widget<TextFormField>(field).controller!.text, isEmpty);
       if (prescribedLoad == null) await tester.enterText(field, '47,5');
       await _confirmOpenResult(tester);
@@ -2293,7 +2386,11 @@ class _Repository implements WorkoutRepository {
       sets: execution.sets
           .map(
             (set) => set.id == result.resultId
-                ? set.copyWith(status: WorkoutSetStatus.completed)
+                ? set.copyWith(
+                    status: WorkoutSetStatus.completed,
+                    actualDistanceMeters: result.actualDistanceMeters,
+                    actualLoadKg: result.actualLoadKg,
+                  )
                 : set,
           )
           .toList(),

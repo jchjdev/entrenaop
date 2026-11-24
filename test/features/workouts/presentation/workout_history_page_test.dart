@@ -1,3 +1,4 @@
+import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
 import 'package:entrenaop/features/workout_schedule/domain/repositories/workout_schedule_repository.dart';
 import 'package:entrenaop/features/workout_schedule/domain/usecases/workout_schedule_usecases.dart';
@@ -17,7 +18,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:workout_editor_ui/running_pace_chart.dart';
 
+import '../../../helpers/performance_visual_review.dart';
+
 void main() {
+  setUpAll(loadReviewFont);
   testWidgets(
     'el resultado vigente abre la repetición y se actualiza al volver',
     (tester) async {
@@ -348,6 +352,69 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets(
+    'el historial de Farmer carry muestra y corrige metros a 320 px',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 568);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final repository = _CorrectionRepository(false, distance: true);
+      final cubit = WorkoutHistoryDetailCubit(
+        executionId: 'execution-1',
+        getExecution: GetWorkoutExecutionUseCase(repository),
+        correctSet: CorrectWorkoutSetUseCase(repository),
+      );
+      addTearDown(cubit.close);
+      await cubit.load();
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: EntrenaTheme.dark,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: const TextScaler.linear(2)),
+            child: RepaintBoundary(
+              key: const ValueKey('review-boundary'),
+              child: child!,
+            ),
+          ),
+          home: BlocProvider.value(
+            value: cubit,
+            child: const WorkoutHistoryDetailPage(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await _toggleAll(tester, 'Desplegar todo');
+      expect(find.text('Objetivo · 30 m · 24 kg'), findsOneWidget);
+      expect(find.text('Realizado · 27 m · 22.5 kg'), findsNWidgets(2));
+      final edit = find.byTooltip('Corregir resultado');
+      await tester.ensureVisible(edit);
+      await tester.pumpAndSettle();
+      await capturePerformanceWidget(tester, 'farmer-carry-historial-320');
+      await tester.tap(edit);
+      await tester.pumpAndSettle();
+      final metres = find.widgetWithText(TextFormField, 'Metros realizados');
+      final load = find.widgetWithText(TextFormField, 'Carga (kg)');
+      expect(tester.widget<TextFormField>(metres).controller!.text, '27');
+      expect(tester.widget<TextFormField>(load).controller!.text, '22.5');
+      await tester.ensureVisible(metres);
+      await tester.enterText(metres, '28,5');
+      await tester.ensureVisible(load);
+      await tester.pumpAndSettle();
+      await capturePerformanceWidget(tester, 'farmer-carry-correccion-320');
+      final reason = find.widgetWithText(TextFormField, 'Motivo');
+      await tester.ensureVisible(reason);
+      await tester.enterText(reason, 'Corregir distancia');
+      final save = find.text('Guardar corrección');
+      expect(save.hitTestable(), findsOneWidget);
+      await tester.tap(save);
+      await tester.pumpAndSettle();
+      expect(repository.lastCorrection?.actualDistanceMeters, 28.5);
+      expect(repository.lastCorrection?.actualLoadKg, 22.5);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   for (final duration in [false, true]) {
     testWidgets(
       'corregir otro dato conserva RIR 2.5 antiguo: duración=$duration',
@@ -375,10 +442,7 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text('RIR real'), duration ? findsNothing : findsOneWidget);
         if (!duration) {
-          final load = find.widgetWithText(
-            TextFormField,
-            'Carga utilizada (kg, opcional)',
-          );
+          final load = find.widgetWithText(TextFormField, 'Carga (kg)');
           await tester.ensureVisible(load);
           await tester.enterText(load, '42,5');
         }
@@ -599,7 +663,9 @@ Future<void> _pumpResultWithRepeat(
           child: WorkoutHistoryDetailPage(
             resultAction: ScheduledWorkoutResultRepeatAction(
               executionId: state.pathParameters['id']!,
-              getScheduledWorkout: GetRepeatableScheduledWorkoutUseCase(schedule),
+              getScheduledWorkout: GetRepeatableScheduledWorkoutUseCase(
+                schedule,
+              ),
               repeatWorkout: RepeatScheduledWorkoutUseCase(schedule),
             ),
           ),
@@ -803,8 +869,9 @@ class _ClockRepository extends _Repository {
 }
 
 class _CorrectionRepository extends _Repository {
-  _CorrectionRepository(this.duration);
+  _CorrectionRepository(this.duration, {this.distance = false});
   final bool duration;
+  final bool distance;
   WorkoutSetCorrectionInput? lastCorrection;
   @override
   Future<WorkoutExecution?> getExecution(String executionId) async =>
@@ -816,14 +883,18 @@ class _CorrectionRepository extends _Repository {
             blockName: 'Principal',
             itemOrder: 0,
             exerciseId: 'exercise-1',
-            exerciseName: 'Ejercicio',
+            exerciseName: distance ? 'Farmer carry' : 'Ejercicio',
             setOrder: 0,
-            targetReps: duration ? null : 10,
+            targetReps: duration || distance ? null : 10,
             targetDurationSeconds: duration ? 30 : null,
-            targetRir: 3,
-            actualReps: duration ? null : 8,
+            targetDistanceMeters: distance ? 30 : null,
+            targetLoadKg: distance ? 24 : null,
+            targetRir: distance ? null : 3,
+            actualReps: duration || distance ? null : 8,
             actualDurationSeconds: duration ? 30 : null,
-            actualRir: 2.5,
+            actualDistanceMeters: distance ? 27 : null,
+            actualLoadKg: distance ? 22.5 : null,
+            actualRir: distance ? null : 2.5,
             restAfterSeconds: 0,
             status: WorkoutSetStatus.completed,
             completedAt: DateTime.now(),
