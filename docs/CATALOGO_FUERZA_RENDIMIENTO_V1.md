@@ -106,6 +106,26 @@ El cambio editorial se aplica a las cuatro fichas oficiales de Dev con sus
 identificadores existentes. Los códigos del catálogo técnico siguen siendo la
 referencia para los perfiles deportivos y sus mediciones.
 
+## Ejercicios para la progresión de dominadas · 24/11/2026
+
+La biblioteca oficial de Dev incluye estas fichas para programar sesiones:
+
+| Ejercicio | Medición habitual |
+| --- | --- |
+| Dominada australiana (remo invertido) | Repeticiones |
+| Dominada australiana supina | Repeticiones |
+| Dominada supina con banda | Repeticiones |
+| Dominada con pies apoyados | Repeticiones |
+| Dominada escapular | Repeticiones |
+| Dominada negativa prona | Repeticiones |
+| Aguante arriba en dominada prona | Duración |
+| Dominada prona con pausa a mitad | Repeticiones |
+
+Las fichas sirven para autoría manual. La incorporación al catálogo técnico
+versionado y a las reglas adaptativas queda para un bloque de perfiles deportivos.
+El agarre de la ficha genérica de asistencia con banda está pendiente de cotejo
+con el material de Javier.
+
 ## Decisiones de representación
 
 - Flexiones estándar y lastradas son variantes de familia, no cargas mecánicas

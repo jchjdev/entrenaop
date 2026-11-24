@@ -3119,3 +3119,10 @@ Javier aprueba nombres en español para CMJ, squat jump, drop jump y pogo jumps
 en la biblioteca de Dev. Las últimas tres fichas incluyen el nombre inglés al
 final de la descripción. En la primera, la sigla CMJ acompaña al nombre español.
 [Nombres de las fichas](CATALOGO_FUERZA_RENDIMIENTO_V1.md#nombres-visibles-de-los-saltos--24112026).
+
+## Primera tanda de ejercicios para mejorar dominadas · 24/11/2026
+
+Javier aprueba las ocho fichas iniciales para preparar programas guiados. El
+aguante prono se pauta por duración y las otras siete por repeticiones. Las
+fichas están en Dev para la autoría manual de sesiones.
+[Ejercicios y medición](CATALOGO_FUERZA_RENDIMIENTO_V1.md#ejercicios-para-la-progresión-de-dominadas--24112026).
