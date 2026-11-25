@@ -20,12 +20,18 @@ tocan. Al perder el foco vuelven a mostrar el dato escrito. El cambio se
 limita al panel de series y aborda los recuadros grises observados al
 desplazarse y plegar ejercicios.
 
-Escribir guarda un borrador en el dispositivo. El ✓ de la fila confirma sus
-datos. En la actual inicia el descanso que corresponda a la pauta. Confirmar
+Desde `1.34.3+78`, en series simples, el resultado válido que se escribe o
+mide con el cronómetro queda registrado localmente al terminar la serie.
+Escribir o corregir un resultado válido en una serie ya terminada lo guarda
+en su fila. Los resultados guardados así se sincronizan al cerrar el entreno
+por el mismo recorrido que los registros manuales. Se mantiene el ✓ en la
+serie actual para terminarla e iniciar el descanso que corresponda. Editar
 otra fila durante el descanso conserva el reloj. Una serie con el cronómetro
-activo se termina desde el ejecutor y sus datos se pueden revisar en la fila.
-Carrera, formatos guiados y protocolos con controles propios conservan sus
-editores. El panel usa el mismo guardado y la misma cola de sincronización.
+activo se termina desde el ejecutor.
+
+Los objetivos rellenados por la app, los datos inválidos y los borradores
+antiguos de procedencia desconocida requieren revisión. Carrera, formatos
+guiados y protocolos con controles propios conservan sus editores.
 
 ## Cierre con registros pendientes
 

@@ -927,7 +927,7 @@ class _ActiveContentState extends State<_ActiveContent> {
                         const Padding(
                           padding: EdgeInsets.fromLTRB(20, 0, 20, 10),
                           child: Text(
-                            'Los datos pendientes y los retoques se conservan en este dispositivo hasta confirmarlos.',
+                            'Los resultados válidos se guardan en el dispositivo. Se sincronizan al cerrar el entreno.',
                             style: TextStyle(fontSize: 12),
                           ),
                         ),
@@ -945,13 +945,21 @@ class _ActiveContentState extends State<_ActiveContent> {
                           drafts: state.drafts,
                           initialSetId:
                               state.latestUnconfirmedSet?.id ??
-                              execution.currentSet?.id,
+                              execution.currentSet?.id ??
+                              execution.sets
+                                  .where(
+                                    (set) =>
+                                        set.status ==
+                                        WorkoutSetStatus.completed,
+                                  )
+                                  .lastOrNull
+                                  ?.id,
                           enabled:
                               !state.draftBusy &&
                               state.status != ActiveWorkoutStatus.saving,
                           resting: state.status == ActiveWorkoutStatus.resting,
                           clockSetId: clockSetId,
-                          onUpdate: (result, fields) {
+                          onUpdate: (result, fields, hasMeasuredResult) {
                             if (result.resultId ==
                                 cubit.state.execution?.currentSet?.id) {
                               editedCurrentId = result.resultId;
@@ -959,6 +967,7 @@ class _ActiveContentState extends State<_ActiveContent> {
                             return pendingEdit = cubit.updateDraft(
                               result,
                               fields,
+                              hasMeasuredResult: hasMeasuredResult,
                             );
                           },
                           onConfirm: (result, fields) async {

@@ -2,8 +2,10 @@
 
 **Registro rápido en la serie · 25/11/2026.** Javier aprueba mostrar todas
 las series juntas al desplegar el ejercicio. La actual se destaca, los datos
-se editan en su fila y las futuras quedan como «Por realizar». Escribir
-conserva un borrador y el ✓ de la fila lo confirma. Una sujeción por tiempo
+se editan en su fila y las futuras quedan como «Por realizar». Javier
+confirma que, en series simples terminadas, un resultado válido escrito o
+medido se guarde sin otro toque. Los objetivos sugeridos quedan pendientes
+hasta que se revisen expresamente. Una sujeción por tiempo
 puede registrar carga y el RPE previsto por su pauta.
 Javier pide casillas más estrechas y resultados alineados en todas las filas.
 [Recorrido](SESSION_CONTROLS_2026_10_08.md#registro-en-la-fila-de-la-serie).

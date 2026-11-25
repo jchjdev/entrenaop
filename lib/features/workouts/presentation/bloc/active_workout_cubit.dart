@@ -161,8 +161,9 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
 
   Future<void> updateDraft(
     WorkoutSetResultInput result,
-    Map<String, String> fields,
-  ) async {
+    Map<String, String> fields, {
+    bool hasMeasuredResult = false,
+  }) async {
     if (_draftBusy || state.status == ActiveWorkoutStatus.saving) return;
     final execution = state.execution;
     if (execution == null ||
@@ -175,7 +176,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     }
     final set = matches.first;
     final old = _drafts[result.resultId];
-    _drafts[result.resultId] = WorkoutSessionSetDraft(
+    final draft = WorkoutSessionSetDraft(
       result: result,
       fields: Map.unmodifiable(fields),
       endedAt:
@@ -185,6 +186,10 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
               : null),
       saved: old?.saved ?? _savedSetIds.contains(set.id),
       needsCorrection: (old?.saved ?? _savedSetIds.contains(set.id)),
+      hasMeasuredResult: hasMeasuredResult,
+    );
+    _drafts[result.resultId] = draft.copyWith(
+      confirmed: draft.endedAt != null && draft.canRecordAutomatically(set),
     );
     try {
       await _draftStore.write(executionId, Map.of(_drafts));
@@ -281,12 +286,13 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     _draftBusy = true;
     _refresh();
     final old = _drafts[set.id];
-    _drafts[set.id] =
-        (old ??
-                WorkoutSessionSetDraft(
-                  result: WorkoutSetResultInput(resultId: set.id),
-                ))
-            .copyWith(endedAt: DateTime.now().toUtc());
+    final draft =
+        old ??
+        WorkoutSessionSetDraft(result: WorkoutSetResultInput(resultId: set.id));
+    _drafts[set.id] = draft.copyWith(
+      endedAt: DateTime.now().toUtc(),
+      confirmed: draft.canRecordAutomatically(set),
+    );
     try {
       await _draftStore.write(executionId, Map.of(_drafts));
       await _timerStore.clear(_timerId(set.id));

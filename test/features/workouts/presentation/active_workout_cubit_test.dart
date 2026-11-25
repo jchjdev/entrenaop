@@ -180,7 +180,7 @@ void main() {
         final repository = _Repository()
           ..execution = _execution(templateName: 'Fuerza')
               .copyWith(sets: [carry]);
-        await _mountSession(
+        final (cubit, _) = await _mountSession(
           tester,
           repository,
           textScaler: TextScaler.linear(scale),
@@ -222,9 +222,10 @@ void main() {
         expect(find.text('Terminar serie').hitTestable(), findsOneWidget);
         await tester.tap(find.text('Terminar serie'));
         await tester.pumpAndSettle();
-        final review = find.text('Revisar series');
-        await tester.ensureVisible(review);
-        await tester.tap(review);
+        expect(find.text('Revisar series'), findsNothing);
+        final records = find.text('Series y registros');
+        await tester.ensureVisible(records);
+        await tester.tap(records);
         await tester.pumpAndSettle();
         final inlineMetres = _inlineField('carry', 'distance');
         await tester.ensureVisible(inlineMetres);
@@ -233,15 +234,7 @@ void main() {
           tester,
           'farmer-carry-confirmacion-${width.toInt()}',
         );
-        final confirm = find.byTooltip('Confirmar Serie 1');
-        await tester.ensureVisible(confirm);
-        await tester.tap(confirm);
-        await tester.pumpAndSettle();
-        expect(repository.lastSetResult?.actualDistanceMeters, 27);
-        expect(repository.lastSetResult?.actualLoadKg, 22.5);
-        expect(repository.lastSetResult?.actualReps, isNull);
-        expect(repository.lastSetResult?.actualDurationSeconds, isNull);
-        expect(tester.widget<TextField>(inlineMetres).controller!.text, '27');
+        expect(find.byTooltip('Confirmar Serie 1'), findsNothing);
         expect(
           tester
               .widget<TextField>(_inlineField('carry', 'load'))
@@ -251,6 +244,14 @@ void main() {
         );
         await tester.ensureVisible(find.text('Registrada'));
         expect(find.text('Registrada').hitTestable(), findsOneWidget);
+        await tester.tap(find.byTooltip('Cerrar registros'));
+        await tester.pumpAndSettle();
+        expect(find.text('Finalizar sesión'), findsOneWidget);
+        await cubit.finish(finalRpe: 6);
+        expect(repository.lastSetResult?.actualDistanceMeters, 27);
+        expect(repository.lastSetResult?.actualLoadKg, 22.5);
+        expect(repository.lastSetResult?.actualReps, isNull);
+        expect(repository.lastSetResult?.actualDurationSeconds, isNull);
         expect(tester.takeException(), isNull);
       },
     );
@@ -720,11 +721,10 @@ void main() {
       expect(find.byTooltip('Cerrar resultado'), findsNothing);
       await capturePerformanceWidget(tester, 'serie-completar-directo-390');
       await tester.enterText(_inlineField('long-14', 'reps'), '9');
-      await tester.tap(find.byTooltip('Confirmar Serie 1'));
       await tester.pumpAndSettle();
       expect(cubit.state.unconfirmedDraftCount, 0);
-      expect(repository.lastSetResult?.resultId, 'long-14');
-      expect(repository.lastSetResult?.actualReps, 9);
+      expect(cubit.state.drafts['long-14']?.result.actualReps, 9);
+      expect(repository.lastSetResult, isNull);
       expect(cubit.state.status, ActiveWorkoutStatus.resting);
       expect(cubit.state.restSecondsRemaining, lessThanOrEqualTo(rest));
       expect(find.byTooltip('Confirmar Serie 1'), findsNothing);
@@ -1427,16 +1427,22 @@ void main() {
     'el tiempo escrito por el reloj conserva segundos y formato válido',
     (tester) async {
       final repository = _Repository()..execution = _timedExecution(90);
-      await _mountSession(tester, repository);
+      final (cubit, _) = await _mountSession(tester, repository);
       final timer = tester.widget<WorkoutSetCountdown>(
         find.byType(WorkoutSetCountdown),
       );
       timer.onElapsedChanged(20);
       await tester.pump();
-      await _openCurrentResult(tester);
+      await tester.tap(find.text('Terminar serie'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Series y registros'));
+      await tester.pumpAndSettle();
       final field = _inlineField('set-1', 'duration');
       expect(tester.widget<TextField>(field).controller!.text, '00:20');
-      await _confirmOpenResult(tester);
+      expect(find.byTooltip('Confirmar Serie 1'), findsNothing);
+      await tester.tap(find.byTooltip('Cerrar registros'));
+      await tester.pumpAndSettle();
+      await cubit.finish(finalRpe: 6);
       expect(repository.lastSetResult?.actualDurationSeconds, 20);
       expect(find.text('Introduce un tiempo válido'), findsNothing);
       expect(tester.takeException(), isNull);
@@ -1556,8 +1562,6 @@ void main() {
       final restEndsAt = cubit.state.restEndsAt;
       await tester.enterText(_inlineField('plank-0', 'load'), '4');
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Confirmar Serie 1'));
-      await tester.pumpAndSettle();
       expect(cubit.state.drafts['plank-0']?.confirmed, isTrue);
       expect(cubit.state.drafts['plank-0']?.result.actualLoadKg, 4);
       expect(repository.lastSetResult?.resultId, 'plank-1');
@@ -1645,15 +1649,109 @@ void main() {
         find.descendant(of: loadCell, matching: find.text('2,5')),
         findsOneWidget,
       );
-      expect(cubit.state.drafts['set-1']?.confirmed, isFalse);
-      await tester.tap(find.byTooltip('Confirmar Serie 1'));
+      expect(cubit.state.drafts['set-1']?.confirmed, isTrue);
+      expect(find.byTooltip('Confirmar Serie 1'), findsNothing);
+      expect(find.text('Registrada'), findsOneWidget);
+      await tester.tap(find.byTooltip('Cerrar registros'));
+      await tester.pumpAndSettle();
+      await cubit.finish(finalRpe: 6);
       await tester.pumpAndSettle();
       expect(repository.lastSetResult?.actualDurationSeconds, 34);
       expect(repository.lastSetResult?.actualLoadKg, 2.5);
-      expect(find.text('Registrada'), findsOneWidget);
+      expect(repository.execution.status, WorkoutExecutionStatus.completed);
       expect(tester.takeException(), isNull);
     },
     variant: const TargetPlatformVariant({TargetPlatform.iOS}),
+  );
+
+  testWidgets('las repeticiones escritas cuentan al terminar la serie', (
+    tester,
+  ) async {
+    final repository = _Repository()
+      ..execution = _execution(format: WorkoutBlockFormat.straightSets);
+    final (cubit, _) = await _mountSession(tester, repository);
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Repeticiones realizadas'),
+      '6',
+    );
+    await tester.tap(find.text('Terminar serie'));
+    await tester.pumpAndSettle();
+    expect(cubit.state.unconfirmedDraftCount, 0);
+    cubit.skipRest();
+    await cubit.skipCurrentSet();
+    await cubit.finish(finalRpe: 6);
+    expect(repository.lastSetResult?.actualReps, 6);
+    expect(repository.execution.status, WorkoutExecutionStatus.completed);
+  });
+
+  testWidgets('el tiempo medido cuenta aunque coincida con el objetivo', (
+    tester,
+  ) async {
+    final repository = _Repository()..execution = _timedExecution(30);
+    final (cubit, _) = await _mountSession(tester, repository);
+    final clock = tester.widget<WorkoutSetCountdown>(
+      find.byType(WorkoutSetCountdown),
+    );
+    clock.onElapsedChanged(30);
+    await tester.tap(find.text('Terminar serie'));
+    await tester.pumpAndSettle();
+    expect(cubit.state.unconfirmedDraftCount, 0);
+    await cubit.finish(finalRpe: 6);
+    expect(repository.lastSetResult?.actualDurationSeconds, 30);
+    expect(repository.execution.status, WorkoutExecutionStatus.completed);
+  });
+
+  test(
+    'un cierre parcial conserva los metros medidos y la otra serie pendiente',
+    () async {
+      final repository = _Repository()
+        ..execution = _execution(allowUnrecorded: true).copyWith(
+          sets: [
+            const WorkoutExecutionSet(
+              id: 'carry',
+              blockOrder: 0,
+              blockName: 'Fuerza',
+              itemOrder: 0,
+              exerciseId: 'carry',
+              exerciseName: 'Paseo del granjero',
+              setOrder: 0,
+              targetDistanceMeters: 100,
+              restAfterSeconds: 0,
+              status: WorkoutSetStatus.pending,
+            ),
+            _execution().sets.last,
+          ],
+        );
+      final store = MemoryWorkoutSessionDraftStore();
+      final cubit = _cubit(repository, sessionDraftStore: store);
+      addTearDown(cubit.close);
+      await cubit.load();
+      await cubit.updateDraft(
+        const WorkoutSetResultInput(
+          resultId: 'carry',
+          actualDistanceMeters: 95,
+        ),
+        {'distance': '95', 'load': 'kg'},
+        hasMeasuredResult: true,
+      );
+      await cubit.endCurrentSet();
+      expect(cubit.state.unconfirmedDraftCount, 1);
+      await cubit.updateDraft(
+        const WorkoutSetResultInput(
+          resultId: 'carry',
+          actualDistanceMeters: 95,
+          actualLoadKg: 14,
+        ),
+        {'distance': '95', 'load': '14'},
+        hasMeasuredResult: true,
+      );
+      expect(cubit.state.unconfirmedDraftCount, 0);
+      await cubit.finishWithoutFullRecording();
+      expect(repository.lastSetResult?.actualDistanceMeters, 95);
+      expect(repository.lastSetResult?.actualLoadKg, 14);
+      expect(repository.execution.sets.last.status, WorkoutSetStatus.pending);
+      expect(repository.execution.status, WorkoutExecutionStatus.completed);
+    },
   );
 
   for (final scenario in <String, List<WorkoutSetStatus>>{

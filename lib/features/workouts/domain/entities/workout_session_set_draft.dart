@@ -13,6 +13,7 @@ class WorkoutSessionSetDraft extends Equatable {
     this.confirmed = false,
     this.saved = false,
     this.needsCorrection = false,
+    this.hasMeasuredResult = false,
   });
   final WorkoutSetResultInput result;
   final Map<String, String> fields;
@@ -20,6 +21,7 @@ class WorkoutSessionSetDraft extends Equatable {
   final bool confirmed;
   final bool saved;
   final bool needsCorrection;
+  final bool hasMeasuredResult;
 
   bool get hasUnconfirmedData =>
       !confirmed &&
@@ -42,7 +44,23 @@ class WorkoutSessionSetDraft extends Equatable {
     confirmed: confirmed ?? this.confirmed,
     saved: saved ?? this.saved,
     needsCorrection: needsCorrection ?? this.needsCorrection,
+    hasMeasuredResult: hasMeasuredResult,
   );
+
+  bool canRecordAutomatically(WorkoutExecutionSet set) {
+    if (!hasMeasuredResult || !canConfirm(set)) return false;
+    final optionalResults = {
+      'load': result.actualLoadKg,
+      if (set.targetRpe != null) 'rpe': result.actualRpe,
+      if (set.usesRir && set.targetRir != null) 'rir': result.actualRir,
+    };
+    // Un dato opcional vacío es válido. Uno escrito pero ilegible se conserva
+    // para revisión, sin convertirlo silenciosamente en ausencia de dato.
+    return optionalResults.entries.every(
+      (entry) =>
+          fields[entry.key]?.trim().isNotEmpty != true || entry.value != null,
+    );
+  }
 
   bool canConfirm(WorkoutExecutionSet set) {
     if (set.id != result.resultId) return false;
@@ -100,5 +118,6 @@ class WorkoutSessionSetDraft extends Equatable {
     confirmed,
     saved,
     needsCorrection,
+    hasMeasuredResult,
   ];
 }

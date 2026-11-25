@@ -12,6 +12,7 @@ import 'workout_execution_labels.dart';
 typedef InlineRecordUpdate = Future<void> Function(
   WorkoutSetResultInput result,
   Map<String, String> fields,
+  bool hasMeasuredResult,
 );
 typedef InlineRecordConfirm = Future<bool> Function(
   WorkoutSetResultInput result,
@@ -168,7 +169,7 @@ class _WorkoutInlineRecordRowState extends State<WorkoutInlineRecordRow> {
       entry.key: TextEditingController(text: entry.value),
   };
   bool _saving = false;
-  bool _edited = false;
+  bool _measureEdited = false;
 
   @override
   void dispose() {
@@ -186,6 +187,7 @@ class _WorkoutInlineRecordRowState extends State<WorkoutInlineRecordRow> {
   WorkoutSetResultInput _result({bool forDraft = false}) {
     num? value(WorkoutInlineField field) =>
         field.parse(_controllers[field]?.text ?? '');
+    final rpe = value(WorkoutInlineField.rpe);
     return WorkoutSetResultInput(
       resultId: widget.set.id,
       actualReps: value(WorkoutInlineField.reps)?.toInt(),
@@ -197,28 +199,45 @@ class _WorkoutInlineRecordRowState extends State<WorkoutInlineRecordRow> {
           : forDraft
           ? widget.draft?.result.actualRir ?? widget.set.actualRir
           : null,
-      actualRpe: value(WorkoutInlineField.rpe)?.toDouble(),
+      actualRpe: _hasInvalidRpe ? null : rpe?.toDouble(),
     );
   }
 
+  bool get _hasInvalidRpe {
+    final text = _controllers[WorkoutInlineField.rpe]?.text.trim() ?? '';
+    if (text.isEmpty || parseWorkoutReps(text) != null) return false;
+    final draft = widget.draft;
+    final previousRpe = draft == null
+        ? widget.set.actualRpe
+        : draft.result.actualRpe;
+    return text != _initialText[WorkoutInlineField.rpe] || previousRpe == null;
+  }
+
   bool get _canConfirm {
-    if (!widget.enabled || _saving) return false;
+    if (!widget.enabled || _saving || _hasInvalidRpe) return false;
     for (final entry in _controllers.entries) {
       final text = entry.value.text.trim();
       if (text.isEmpty) continue;
       if (entry.key.parse(text) == null) return false;
-      if (entry.key == WorkoutInlineField.rpe &&
-          text != _initialText[entry.key] &&
-          parseWorkoutReps(text) == null) {
-        return false;
-      }
     }
     return WorkoutSessionSetDraft(result: _result()).canConfirm(widget.set);
   }
 
-  void _changed(String _) {
-    setState(() => _edited = true);
-    unawaited(widget.onUpdate(_result(forDraft: true), _fields));
+  void _changed(WorkoutInlineField field) {
+    setState(() {
+      if (field == widget.fields.first) _measureEdited = true;
+    });
+    final draft = widget.draft;
+    unawaited(
+      widget.onUpdate(
+        _result(forDraft: true),
+        _fields,
+        _measureEdited ||
+            draft?.hasMeasuredResult == true ||
+            draft?.saved == true ||
+            (draft == null && widget.set.status == WorkoutSetStatus.completed),
+      ),
+    );
   }
 
   Future<void> _confirm() async {
@@ -227,12 +246,9 @@ class _WorkoutInlineRecordRowState extends State<WorkoutInlineRecordRow> {
     final fields = _fields;
     setState(() => _saving = true);
     FocusScope.of(context).unfocus();
-    final saved = await widget.onConfirm(result, fields);
+    await widget.onConfirm(result, fields);
     if (!mounted) return;
-    setState(() {
-      _saving = false;
-      if (saved) _edited = false;
-    });
+    setState(() => _saving = false);
   }
 
   @override
@@ -258,7 +274,7 @@ class _WorkoutInlineRecordRowState extends State<WorkoutInlineRecordRow> {
             : skipped
             ? 'Omitida'
             : 'Por realizar');
-    final showCheck = widget.editable && (widget.current || pending || _edited);
+    final showCheck = widget.editable && (widget.current || pending);
     final title = Text(
       widget.compact ? (set.setOrder + 1).toString() : position,
       semanticsLabel: widget.compact ? position : null,
@@ -342,7 +358,7 @@ class _WorkoutInlineRecordRowState extends State<WorkoutInlineRecordRow> {
               ? const [DurationInputFormatter()]
               : null,
           decoration: decoration,
-          onChanged: _changed,
+          onChanged: (_) => _changed(field),
         ),
       );
       return tapToEdit

@@ -20,6 +20,7 @@ import 'workout_effort_field.dart';
 import 'performance_result_form.dart';
 import 'performance_stopwatch.dart';
 import 'duration_input_formatter.dart';
+import 'workout_inline_records.dart';
 
 typedef WorkoutSetDraftEditor = ({
   WorkoutSessionSetDraft? initial,
@@ -78,6 +79,8 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
   double? _actualRpe;
   double? _actualRir;
   int _emomElapsedSeconds = 0;
+  late final _measure = WorkoutInlineField.forSet(set)?.first;
+  bool _measureEntered = false;
 
   WorkoutExecutionSet get set => widget.set;
 
@@ -152,8 +155,16 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
       _actualRir = result?.actualRir ?? set.actualRir;
       _actualRpe = result?.actualRpe ?? set.actualRpe;
     }
-    for (final controller in controllers.values) {
-      controller.addListener(_persistDraft);
+    _measureEntered = draft?.hasMeasuredResult == true;
+    for (final entry in controllers.entries) {
+      var lastText = entry.value.text;
+      entry.value.addListener(() {
+        final text = entry.value.text;
+        if (text == lastText) return;
+        lastText = text;
+        if (entry.key == _measure?.name) _measureEntered = true;
+        _persistDraft();
+      });
     }
     // El esfuerzo prescrito no acredita una percepción realmente declarada.
     // Si el usuario no lo conoce, guardamos ausencia de dato, nunca el objetivo.
@@ -221,10 +232,18 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
 
   void _persistDraft() {
     if (set.performancePrescription != null) return;
-    final update =
-        widget.reviewEditor?.update ??
-        context.read<ActiveWorkoutCubit>().updateDraft;
-    unawaited(update(_resultInput(forDraft: true), _fields));
+    unawaited(_updateDraft());
+  }
+
+  Future<void> _updateDraft() {
+    final result = _resultInput(forDraft: true);
+    final reviewEditor = widget.reviewEditor;
+    if (reviewEditor != null) return reviewEditor.update(result, _fields);
+    return context.read<ActiveWorkoutCubit>().updateDraft(
+      result,
+      _fields,
+      hasMeasuredResult: _measure != null && _measureEntered,
+    );
   }
 
   Future<bool> _confirm(
@@ -249,7 +268,7 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
 
   Future<void> _end() async {
     final cubit = context.read<ActiveWorkoutCubit>();
-    await cubit.updateDraft(_resultInput(forDraft: true), _fields);
+    await _updateDraft();
     await cubit.endCurrentSet(elapsedSeconds: _emomElapsedSeconds);
   }
 
@@ -626,7 +645,16 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
                 timerStore: widget.timerStore,
                 enabled: !widget.saving,
                 onElapsedChanged: (elapsed) {
-                  _durationController.text = workoutClock(elapsed);
+                  final text = workoutClock(elapsed);
+                  if (_measure == WorkoutInlineField.duration &&
+                      elapsed > 0 &&
+                      !_measureEntered &&
+                      _durationController.text == text) {
+                    // El cronómetro puede medir justo el tiempo sugerido.
+                    _measureEntered = true;
+                    _persistDraft();
+                  }
+                  _durationController.text = text;
                 },
                 onPreparationTick: () => unawaited(
                   widget.cueService.signal(WorkoutCue.preparationTick),

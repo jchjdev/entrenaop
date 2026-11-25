@@ -14,6 +14,7 @@ class WorkoutSessionSetDraftModel {
     'confirmed': draft.confirmed,
     'saved': draft.saved,
     'correction': draft.needsCorrection,
+    if (draft.hasMeasuredResult) 'measured': true,
     'reps': draft.result.actualReps,
     'duration': draft.result.actualDurationSeconds,
     'distance': draft.result.actualDistanceMeters,
@@ -50,5 +51,6 @@ class WorkoutSessionSetDraftModel {
         confirmed: json['confirmed'] as bool,
         saved: json['saved'] as bool,
         needsCorrection: json['correction'] as bool,
+        hasMeasuredResult: json['measured'] == true,
       );
 }
