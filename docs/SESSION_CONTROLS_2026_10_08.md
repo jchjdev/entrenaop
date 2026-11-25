@@ -147,6 +147,12 @@ conservan su vista y sus avisos actuales; la vista nativa consulta la serie
 y el descanso gestionado por el ejecutor, sin GPS ni servicio persistente.
 Los avisos sonoros durante el bloqueo no forman parte de esta vista.
 
+En la 1.32.0 se observó en iPhone que la tarjeta podía mostrar `0:30` fijo
+mientras el descanso seguía avanzando. Desde 1.32.1 el texto de WidgetKit
+recibe un intervalo de cuenta atrás sin una pausa programada. La prueba
+física compara el valor a varios segundos de distancia con la tarjeta
+visible en el bloqueo o al abrir el centro de notificaciones.
+
 ## Carga real opcional en fuerza
 
 Desde el 12/11/2026 el registro de una serie de fuerza permite indicar los

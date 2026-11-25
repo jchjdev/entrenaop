@@ -87,7 +87,8 @@ struct StrengthWorkoutWidget: Widget {
   private func countdown(
     _ context: ActivityViewContext<StrengthWorkoutActivityAttributes>, until end: Date
   ) -> some View {
-    Text(timerInterval: context.state.publishedAt...end, pauseTime: end, showsHours: false)
+    // WidgetKit cuenta de forma autónoma hasta el extremo del intervalo.
+    Text(timerInterval: context.state.publishedAt...end, countsDown: true, showsHours: false)
       .monospacedDigit()
       .lineLimit(1)
       .minimumScaleFactor(0.65)
