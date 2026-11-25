@@ -12,8 +12,13 @@ a las tareas con repeticiones que lo admiten.
 
 Las columnas de la vista compacta alinean el número, el dato y el ✓ a la
 misma altura. Las casillas tienen ancho acotado y las rayas de las series
-pendientes conservan el centro de su columna. Con texto ampliado se muestran
-etiquetas junto a los campos.
+pendientes conservan el centro de su columna. Se centran solo las columnas
+visibles, con el mismo espacio para el número y el ✓ en los extremos. Con
+texto ampliado se muestran etiquetas junto a los campos.
+En iOS, desde `1.34.2+77`, las casillas se muestran como texto hasta que se
+tocan. Al perder el foco vuelven a mostrar el dato escrito. El cambio se
+limita al panel de series y aborda los recuadros grises observados al
+desplazarse y plegar ejercicios.
 
 Escribir guarda un borrador en el dispositivo. El ✓ de la fila confirma sus
 datos. En la actual inicia el descanso que corresponda a la pauta. Confirmar

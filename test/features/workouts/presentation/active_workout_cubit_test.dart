@@ -1597,6 +1597,65 @@ void main() {
     expect(repository.lastSetResult, isNull);
   });
 
+  testWidgets(
+    'iOS muestra los datos sin editores abiertos y conserva el borrador al plegar',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final repository = _Repository()..execution = _timedExecution(30);
+      final (cubit, _) = await _mountSession(tester, repository);
+      await tester.tap(find.text('Terminar serie'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Revisar series'));
+      await tester.pumpAndSettle();
+
+      final time = _inlineField('set-1', 'duration');
+      final load = _inlineField('set-1', 'load');
+      final timeCell = find.byKey(const ValueKey('inline-cell-set-1-duration'));
+      final loadCell = find.byKey(const ValueKey('inline-cell-set-1-load'));
+      final midpoint =
+          (tester.getCenter(timeCell).dx + tester.getCenter(loadCell).dx) / 2;
+      expect(midpoint, closeTo(195, .1));
+      expect(
+        find.descendant(of: timeCell, matching: find.text('00:30')),
+        findsOneWidget,
+      );
+      expect(time, findsNothing);
+      expect(load, findsNothing);
+      await tester.tap(timeCell);
+      await tester.pumpAndSettle();
+      expect(tester.testTextInput.isVisible, isTrue);
+      await tester.enterText(time, '34');
+      await tester.tap(loadCell);
+      await tester.pumpAndSettle();
+      expect(time, findsNothing);
+      expect(
+        find.descendant(of: timeCell, matching: find.text('00:34')),
+        findsOneWidget,
+      );
+      await tester.enterText(load, '2,5');
+      final exercise = find.text('Plancha').hitTestable().last;
+      await tester.tap(exercise);
+      await tester.pumpAndSettle();
+      expect(load, findsNothing);
+      await tester.tap(exercise);
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(of: loadCell, matching: find.text('2,5')),
+        findsOneWidget,
+      );
+      expect(cubit.state.drafts['set-1']?.confirmed, isFalse);
+      await tester.tap(find.byTooltip('Confirmar Serie 1'));
+      await tester.pumpAndSettle();
+      expect(repository.lastSetResult?.actualDurationSeconds, 34);
+      expect(repository.lastSetResult?.actualLoadKg, 2.5);
+      expect(find.text('Registrada'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+    variant: const TargetPlatformVariant({TargetPlatform.iOS}),
+  );
+
   for (final scenario in <String, List<WorkoutSetStatus>>{
     'antes de confirmar ninguna serie': [
       WorkoutSetStatus.pending,

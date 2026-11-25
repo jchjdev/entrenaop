@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
 import '../../domain/entities/workout_execution.dart';
@@ -93,12 +94,11 @@ class WorkoutInlineRecordColumns extends StatelessWidget {
 
   static const double inset = 8;
   static const double cellHeight = kMinInteractiveDimension;
-  static const double _seriesWidth = 44;
-  static const double _actionWidth = 48;
+  static const double _edgeWidth = kMinInteractiveDimension;
   static const double _maxCellWidth = 92;
 
   static double minimumWidth(int count) =>
-      2 * inset + _seriesWidth + _actionWidth + 58 * count;
+      2 * (inset + _edgeWidth) + 58 * count;
 
   final Widget leading;
   final List<Widget> cells;
@@ -106,15 +106,15 @@ class WorkoutInlineRecordColumns extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Align(
-    alignment: AlignmentDirectional.centerStart,
+    alignment: Alignment.center,
     child: ConstrainedBox(
       constraints: BoxConstraints(
-        maxWidth: _seriesWidth + _maxCellWidth * cells.length + _actionWidth,
+        maxWidth: 2 * _edgeWidth + _maxCellWidth * cells.length,
       ),
       child: Row(
         children: [
           SizedBox(
-            width: _seriesWidth,
+            width: _edgeWidth,
             child: Center(child: leading),
           ),
           for (final cell in cells)
@@ -124,7 +124,7 @@ class WorkoutInlineRecordColumns extends StatelessWidget {
                 child: cell,
               ),
             ),
-          SizedBox(width: _actionWidth, child: action),
+          SizedBox(width: _edgeWidth, child: action),
         ],
       ),
     ),
@@ -238,6 +238,7 @@ class _WorkoutInlineRecordRowState extends State<WorkoutInlineRecordRow> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final tapToEdit = !kIsWeb && theme.platform == TargetPlatform.iOS;
     final draft = widget.draft;
     final set = widget.set;
     final position = workoutPositionLabel(set);
@@ -286,24 +287,51 @@ class _WorkoutInlineRecordRowState extends State<WorkoutInlineRecordRow> {
               key: ValueKey('inline-${set.id}-${field.name}-value'),
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
-                fontFeatures: const [FontFeature.tabularFigures()],
+                fontFeatures: tapToEdit
+                    ? null
+                    : const [FontFeature.tabularFigures()],
               ),
             ),
           ),
         );
       }
-      return Semantics(
-        label: '${field.accessibleLabel}, $position',
+      final label = '${field.accessibleLabel}, $position';
+      final controller = _controllers[field]!;
+      final enabled = widget.enabled && !_saving;
+      final alignment = widget.compact ? TextAlign.center : TextAlign.start;
+      final style = theme.textTheme.bodyLarge?.copyWith(
+        fontWeight: FontWeight.w600,
+        fontFeatures: tapToEdit ? null : const [FontFeature.tabularFigures()],
+      );
+      final decoration = InputDecoration(
+        labelText: widget.compact ? null : field.label,
+        hintText: field == WorkoutInlineField.duration ? '0:00' : '—',
+        isDense: widget.compact ? false : null,
+        enabledBorder: widget.compact
+            ? OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: theme.colorScheme.outlineVariant),
+              )
+            : null,
+        constraints: widget.compact
+            ? const BoxConstraints.tightFor(
+                height: WorkoutInlineRecordColumns.cellHeight,
+              )
+            : null,
+        contentPadding: widget.compact
+            ? const EdgeInsets.symmetric(horizontal: 6)
+            : null,
+      );
+      Widget editor(FocusNode? focusNode) => Semantics(
+        label: label,
         child: TextField(
           key: ValueKey('inline-${set.id}-${field.name}'),
-          controller: _controllers[field],
-          enabled: widget.enabled && !_saving,
-          textAlign: widget.compact ? TextAlign.center : TextAlign.start,
+          controller: controller,
+          focusNode: focusNode,
+          enabled: enabled,
+          textAlign: alignment,
           textAlignVertical: TextAlignVertical.center,
-          style: theme.textTheme.bodyLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-            fontFeatures: const [FontFeature.tabularFigures()],
-          ),
+          style: style,
           keyboardType: TextInputType.numberWithOptions(
             decimal:
                 field != WorkoutInlineField.reps &&
@@ -313,30 +341,22 @@ class _WorkoutInlineRecordRowState extends State<WorkoutInlineRecordRow> {
           inputFormatters: field == WorkoutInlineField.duration
               ? const [DurationInputFormatter()]
               : null,
-          decoration: InputDecoration(
-            labelText: widget.compact ? null : field.label,
-            hintText: field == WorkoutInlineField.duration ? '0:00' : '—',
-            isDense: widget.compact ? false : null,
-            enabledBorder: widget.compact
-                ? OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(
-                      color: theme.colorScheme.outlineVariant,
-                    ),
-                  )
-                : null,
-            constraints: widget.compact
-                ? const BoxConstraints.tightFor(
-                    height: WorkoutInlineRecordColumns.cellHeight,
-                  )
-                : null,
-            contentPadding: widget.compact
-                ? const EdgeInsets.symmetric(horizontal: 6)
-                : null,
-          ),
+          decoration: decoration,
           onChanged: _changed,
         ),
       );
+      return tapToEdit
+          ? _InlineRecordTapToEdit(
+              key: ValueKey('inline-cell-${set.id}-${field.name}'),
+              controller: controller,
+              enabled: enabled,
+              label: label,
+              alignment: alignment,
+              style: style,
+              decoration: decoration,
+              buildEditor: editor,
+            )
+          : editor(null);
     }).toList();
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
@@ -414,6 +434,94 @@ class _WorkoutInlineRecordRowState extends State<WorkoutInlineRecordRow> {
                 ],
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// En iOS las casillas en reposo se dibujan como texto para que el valor
+/// siga visible al desplazar o plegar las filas. Se monta el editor al tocar.
+class _InlineRecordTapToEdit extends StatefulWidget {
+  const _InlineRecordTapToEdit({
+    super.key,
+    required this.controller,
+    required this.enabled,
+    required this.label,
+    required this.alignment,
+    required this.style,
+    required this.decoration,
+    required this.buildEditor,
+  });
+
+  final TextEditingController controller;
+  final bool enabled;
+  final String label;
+  final TextAlign alignment;
+  final TextStyle? style;
+  final InputDecoration decoration;
+  final Widget Function(FocusNode) buildEditor;
+
+  @override
+  State<_InlineRecordTapToEdit> createState() => _InlineRecordTapToEditState();
+}
+
+class _InlineRecordTapToEditState extends State<_InlineRecordTapToEdit> {
+  final _focus = FocusNode();
+  bool _editing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _focus.addListener(_onFocus);
+  }
+
+  void _onFocus() {
+    if (_editing && !_focus.hasFocus) setState(() => _editing = false);
+  }
+
+  void _startEditing() {
+    if (!widget.enabled || _editing) return;
+    setState(() => _editing = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _editing && widget.enabled) _focus.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _focus.removeListener(_onFocus);
+    _focus.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_editing) return widget.buildEditor(_focus);
+    final value = widget.controller.text;
+    return Semantics(
+      label: widget.label,
+      value: value.isEmpty ? 'Sin registrar' : value,
+      button: true,
+      enabled: widget.enabled,
+      onTap: widget.enabled ? _startEditing : null,
+      excludeSemantics: true,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: widget.enabled ? _startEditing : null,
+        child: InputDecorator(
+          decoration: widget.decoration.copyWith(enabled: widget.enabled),
+          baseStyle: widget.style,
+          textAlign: widget.alignment,
+          textAlignVertical: TextAlignVertical.center,
+          isEmpty: value.isEmpty,
+          child: Text(
+            value,
+            style: widget.style,
+            textAlign: widget.alignment,
+            maxLines: 1,
+            overflow: TextOverflow.clip,
           ),
         ),
       ),
