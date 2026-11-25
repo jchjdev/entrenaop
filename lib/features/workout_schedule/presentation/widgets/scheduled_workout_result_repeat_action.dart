@@ -73,13 +73,28 @@ class _ScheduledWorkoutResultRepeatActionState
     builder: (context, snapshot) {
       final item = snapshot.data;
       if (item == null) return const SizedBox.shrink();
-      return Padding(
-        padding: const EdgeInsets.only(top: 16),
-        child: ScheduledWorkoutRepeatButton(
-          resuming: item.repeatExecutionId != null,
-          onPressed: _busy || snapshot.connectionState != ConnectionState.done
-              ? null
-              : () => _repeat(item),
+      return Material(
+        elevation: 8,
+        color: Theme.of(context).colorScheme.surface,
+        child: SafeArea(
+          top: false,
+          minimum: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+          child: Align(
+            heightFactor: 1,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 760),
+              child: SizedBox(
+                width: double.infinity,
+                child: ScheduledWorkoutRepeatButton(
+                  resuming: item.repeatExecutionId != null,
+                  onPressed:
+                      _busy || snapshot.connectionState != ConnectionState.done
+                      ? null
+                      : () => _repeat(item),
+                ),
+              ),
+            ),
+          ),
         ),
       );
     },

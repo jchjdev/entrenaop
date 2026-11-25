@@ -1,5 +1,11 @@
 # Registro de decisiones vigentes
 
+**Repetir visible desde el resultado · 25/11/2026.** Javier pide que
+«Repetir entrenamiento» quede fijo abajo en la pantalla del resultado, como
+«Empezar sesión» en la vista previa. La acción permanece visible durante la
+consulta y ofrece continuar cuando ya hay una repetición abierta.
+[Contrato](SESSION_CONTROLS_2026_10_08.md#repetir-una-sesión-pautada).
+
 **Cerrar el entreno con registros pendientes · 25/11/2026.** Javier confirma
 que las sesiones normales, incluidas las de programas por fases, se pueden
 finalizar con un registro parcial. Los borradores se conservan en el dispositivo

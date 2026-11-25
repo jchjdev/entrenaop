@@ -31,12 +31,7 @@ void main() {
       final repeat = find.widgetWithText(FilledButton, 'Repetir entrenamiento');
       expect(schedule.lookedUpResults, ['execution-1']);
       expect(schedule.repeatedItems, isEmpty);
-      expect(
-        tester.getTopLeft(repeat).dy,
-        greaterThan(tester.getBottomLeft(find.text('Flexiones')).dy),
-      );
-      await tester.ensureVisible(repeat);
-      await tester.pumpAndSettle();
+      expect(repeat.hitTestable(), findsOneWidget);
       await tester.tap(repeat);
       await tester.pumpAndSettle();
 
@@ -46,9 +41,7 @@ void main() {
       await tester.pumpAndSettle();
 
       final resume = find.widgetWithText(FilledButton, 'Continuar repetición');
-      expect(resume, findsOneWidget);
-      await tester.ensureVisible(resume);
-      await tester.pumpAndSettle();
+      expect(resume.hitTestable(), findsOneWidget);
       await tester.tap(resume);
       await tester.pumpAndSettle();
       expect(schedule.repeatedItems, ['scheduled-1', 'scheduled-1']);
@@ -62,6 +55,53 @@ void main() {
       expect(resume, findsNothing);
     },
   );
+
+  for (final (width, height, scale) in [
+    (390.0, 640.0, 1.0),
+    (320.0, 700.0, 2.0),
+    (1200.0, 600.0, 1.0),
+  ]) {
+    testWidgets(
+      'repetir queda visible sin tapar el resultado a $width/$scale',
+      (tester) async {
+        tester.view.physicalSize = Size(width, height);
+        tester.view.devicePixelRatio = 1;
+        tester.view.padding = const FakeViewPadding(bottom: 34);
+        addTearDown(tester.view.reset);
+        final schedule = _ResultSchedule();
+        await _pumpResultWithRepeat(tester, schedule, textScale: scale);
+        final repeat = find.widgetWithText(
+          FilledButton,
+          'Repetir entrenamiento',
+        );
+        final before = tester.getRect(repeat);
+        expect(repeat.hitTestable(), findsOneWidget);
+        expect(before.bottom, lessThanOrEqualTo(height - 34));
+        final content = find.byType(ListView).first;
+        expect(tester.getRect(content).bottom, lessThan(before.top));
+        await capturePerformanceWidget(
+          tester,
+          'resultado-repetir-${width.toInt()}-$scale',
+        );
+        await tester.drag(content, const Offset(0, -600));
+        await tester.pumpAndSettle();
+        expect(tester.getRect(repeat), before);
+        expect(repeat.hitTestable(), findsOneWidget);
+        await tester.ensureVisible(find.text('Flexiones'));
+        await tester.pumpAndSettle();
+        expect(find.text('Flexiones').hitTestable(), findsOneWidget);
+        expect(
+          tester.getRect(find.text('Flexiones')).bottom,
+          lessThanOrEqualTo(tester.getRect(content).bottom),
+        );
+        await tester.tap(repeat);
+        await tester.pumpAndSettle();
+        expect(schedule.repeatedItems, ['scheduled-1']);
+        expect(find.text('Ejecutor repeat-1'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
 
   testWidgets('un resultado sin pauta vigente se sigue viendo sin repetir', (
     tester,
@@ -645,8 +685,9 @@ class _AmrapRepository extends _Repository {
 
 Future<void> _pumpResultWithRepeat(
   WidgetTester tester,
-  _ResultSchedule schedule,
-) async {
+  _ResultSchedule schedule, {
+  double textScale = 1,
+}) async {
   final history = _Repository();
   final cubit = WorkoutHistoryDetailCubit(
     executionId: history.execution.id,
@@ -686,7 +727,21 @@ Future<void> _pumpResultWithRepeat(
   addTearDown(cubit.close);
   addTearDown(router.dispose);
   await cubit.load();
-  await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+  await tester.pumpWidget(
+    RepaintBoundary(
+      key: const ValueKey('review-boundary'),
+      child: MaterialApp.router(
+        debugShowCheckedModeBanner: false,
+        theme: EntrenaTheme.dark,
+        routerConfig: router,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: TextScaler.linear(textScale)),
+          child: child!,
+        ),
+      ),
+    ),
+  );
   await tester.pumpAndSettle();
 }
 

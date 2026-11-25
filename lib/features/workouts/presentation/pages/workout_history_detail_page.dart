@@ -40,20 +40,23 @@ class WorkoutHistoryDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: const Text('Entrenamiento'),
-      ),
-      body: BlocConsumer<WorkoutHistoryDetailCubit, WorkoutHistoryDetailState>(
-        listener: (context, state) {
-          final message = state.correctionMessage;
-          if (message != null) {
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text(message)));
-          }
-        },
-        builder: (context, state) => switch (state.status) {
+    return BlocConsumer<WorkoutHistoryDetailCubit, WorkoutHistoryDetailState>(
+      listener: (context, state) {
+        final message = state.correctionMessage;
+        if (message != null) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(message)));
+        }
+      },
+      builder: (context, state) => Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          title: const Text('Entrenamiento'),
+        ),
+        bottomNavigationBar: state.status == WorkoutHistoryDetailStatus.loaded
+            ? resultAction
+            : null,
+        body: switch (state.status) {
           WorkoutHistoryDetailStatus.initial ||
           WorkoutHistoryDetailStatus.loading => const Center(
             child: CircularProgressIndicator(),
@@ -65,7 +68,6 @@ class WorkoutHistoryDetailPage extends StatelessWidget {
           WorkoutHistoryDetailStatus.loaded => _DetailContent(
             execution: state.execution!,
             isCorrecting: state.isCorrecting,
-            resultAction: resultAction,
             timerStore: timerStore,
             cueService: cueService,
           ),
@@ -79,14 +81,12 @@ class _DetailContent extends StatefulWidget {
   const _DetailContent({
     required this.execution,
     required this.isCorrecting,
-    this.resultAction,
     this.timerStore,
     this.cueService,
   });
 
   final WorkoutExecution execution;
   final bool isCorrecting;
-  final Widget? resultAction;
   final WorkoutTimerStore? timerStore;
   final WorkoutCueService? cueService;
 
@@ -448,7 +448,6 @@ class _DetailContentState extends State<_DetailContent> {
                     ),
                   ),
                 ],
-                ?widget.resultAction,
               ],
             ),
           ),

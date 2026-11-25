@@ -41,7 +41,10 @@ reales vacíos. Si ya hay una repetición abierta, la tarjeta ofrece
 **Continuar repetición**. Otro entrenamiento en curso conserva la advertencia
 de sesión abierta habitual.
 
-El detalle del resultado ofrece la misma acción debajo de lo registrado,
+Desde `1.33.2+74`, el detalle del resultado ofrece la misma acción fija en la
+parte inferior, con el acabado de «Empezar sesión» en la vista previa. Permanece
+visible al desplazarse y reserva espacio para consultar el final del resultado,
+respetando el área del gesto del sistema y el texto ampliado. Está disponible
 tanto si se llega desde **Inicio → Ver resultado** como desde **Mi semana**
 o el historial. Solo aparece en el resultado que sigue enlazado a la pauta.
 
