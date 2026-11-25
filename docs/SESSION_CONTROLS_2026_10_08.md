@@ -1,5 +1,22 @@
 # Sesión, tiempo y ancho de Mi semana · UI-019/020 · 08/10/2026
 
+## Registro en la fila de la serie
+
+En **Series y registros**, los ejercicios de series simples muestran todas
+sus filas juntas, con la actual destacada y las siguientes como **Por
+realizar**. El bloque de cada ejercicio se puede plegar. El panel abre en la
+última serie pendiente de confirmar o en la actual. Los campos se adaptan a
+la pauta: repeticiones, tiempo o metros, con carga y esfuerzo cuando procedan.
+En una sujeción se puede registrar lastre y el RPE pautado. El RIR corresponde
+a las tareas con repeticiones que lo admiten.
+
+Escribir guarda un borrador en el dispositivo. El ✓ de la fila confirma sus
+datos. En la actual inicia el descanso que corresponda a la pauta. Confirmar
+otra fila durante el descanso conserva el reloj. Una serie con el cronómetro
+activo se termina desde el ejecutor y sus datos se pueden revisar en la fila.
+Carrera, formatos guiados y protocolos con controles propios conservan sus
+editores. El panel usa el mismo guardado y la misma cola de sincronización.
+
 ## Cierre con registros pendientes
 
 Al acabar con datos pendientes, **Finalizar con registro parcial** aparece

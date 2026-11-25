@@ -5,6 +5,7 @@ import '../widgets/phone_run_panel.dart';
 import '../widgets/workout_tabata_entry.dart';
 import '../../domain/entities/workout_amrap_draft.dart';
 import '../widgets/workout_session_records.dart';
+import '../widgets/workout_inline_records.dart';
 import '../widgets/workout_set_entry.dart';
 import '../widgets/workout_execution_labels.dart';
 import '../widgets/workout_exercise_technique.dart';
@@ -594,6 +595,8 @@ class _ActiveContent extends StatefulWidget {
 class _ActiveContentState extends State<_ActiveContent> {
   int? _finalRpe;
   int? _tabataBlockOrder;
+  int _entryDraftRevision = 0;
+  bool _recordsOpen = false;
   final _notesController = TextEditingController();
   final _averageHeartRateController = TextEditingController();
   final _maxHeartRateController = TextEditingController();
@@ -640,7 +643,13 @@ class _ActiveContentState extends State<_ActiveContent> {
               FilledButton.icon(
                 onPressed: saving
                     ? null
-                    : () => _openResultEditor(context, pendingRecord),
+                    : () {
+                        if (WorkoutInlineField.forSet(pendingRecord) != null) {
+                          _openRecords(context);
+                        } else {
+                          _openResultEditor(context, pendingRecord);
+                        }
+                      },
                 icon: const Icon(Icons.edit_note_rounded),
                 label: const Text('Completar datos de la serie'),
               ),
@@ -704,7 +713,7 @@ class _ActiveContentState extends State<_ActiveContent> {
       );
     } else if (current != null) {
       final card = WorkoutSetEntry(
-        key: ValueKey(current.id),
+        key: ValueKey((current.id, _entryDraftRevision)),
         set: current,
         executionId: execution.id,
         timerStore: widget.timerStore,
@@ -844,7 +853,31 @@ class _ActiveContentState extends State<_ActiveContent> {
   }
 
   Future<void> _openRecords(BuildContext context) async {
+    if (_recordsOpen) return;
+    _recordsOpen = true;
     final cubit = context.read<ActiveWorkoutCubit>();
+    final execution = cubit.state.execution;
+    final initialCurrent = execution?.currentSet;
+    String? clockSetId;
+    if (initialCurrent != null &&
+        initialCurrent.targetDurationSeconds != null &&
+        WorkoutInlineField.forSet(initialCurrent) != null) {
+      try {
+        final clock = await widget.timerStore.read(
+          '${execution!.id}:${initialCurrent.id}',
+        );
+        if (clock != null) clockSetId = initialCurrent.id;
+      } catch (_) {
+        clockSetId = initialCurrent.id;
+      }
+    }
+    if (!context.mounted) {
+      _recordsOpen = false;
+      return;
+    }
+    String? editedCurrentId;
+    Future<void>? pendingEdit;
+    var confirming = false;
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
@@ -855,67 +888,116 @@ class _ActiveContentState extends State<_ActiveContent> {
           builder: (context, state) {
             final execution = state.execution;
             if (execution == null) return const SizedBox.shrink();
-            return SafeArea(
-              child: SizedBox(
-                height: MediaQuery.sizeOf(context).height * .78,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'Series y registros',
-                              style: Theme.of(context).textTheme.titleLarge,
-                            ),
-                          ),
-                          IconButton(
-                            tooltip: 'Cerrar registros',
-                            onPressed: () => Navigator.pop(context),
-                            icon: const Icon(Icons.close_rounded),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (state.status == ActiveWorkoutStatus.resting)
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
-                        child: Text(
-                          'Descanso · ${workoutClock(state.restSecondsRemaining)}',
-                          style: const TextStyle(color: Color(0xFFFFA06F)),
-                        ),
-                      ),
-                    const Padding(
-                      padding: EdgeInsets.fromLTRB(20, 0, 20, 10),
-                      child: Text(
-                        'Los datos pendientes y los retoques se conservan en este dispositivo hasta confirmarlos.',
-                        style: TextStyle(fontSize: 12),
-                      ),
-                    ),
-                    if (state.errorMessage != null)
+            final keyboard = MediaQuery.viewInsetsOf(context).bottom;
+            return Padding(
+              padding: EdgeInsets.only(bottom: keyboard),
+              child: SafeArea(
+                child: SizedBox(
+                  height: (MediaQuery.sizeOf(context).height - keyboard) * .78,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Text(
-                          state.errorMessage!,
-                          style: const TextStyle(color: Colors.redAccent),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Series y registros',
+                                style: Theme.of(context).textTheme.titleLarge,
+                              ),
+                            ),
+                            IconButton(
+                              tooltip: 'Cerrar registros',
+                              onPressed: () => Navigator.pop(context),
+                              icon: const Icon(Icons.close_rounded),
+                            ),
+                          ],
                         ),
                       ),
-                    Expanded(
-                      child: WorkoutSessionRecords(
-                        execution: execution,
-                        drafts: state.drafts,
-                        initialSetId:
-                            state.latestUnconfirmedSet?.id ??
-                            execution.currentSet?.id,
-                        enabled: !state.draftBusy,
-                        onEdit: (set) => _openResultEditor(context, set),
-                        onTechnique: (set) =>
-                            showWorkoutTechnique(context, set),
+                      if (state.status == ActiveWorkoutStatus.resting)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                          child: Text(
+                            'Descanso · ${workoutClock(state.restSecondsRemaining)}',
+                            style: const TextStyle(color: Color(0xFFFFA06F)),
+                          ),
+                        ),
+                      if (keyboard == 0)
+                        const Padding(
+                          padding: EdgeInsets.fromLTRB(20, 0, 20, 10),
+                          child: Text(
+                            'Los datos pendientes y los retoques se conservan en este dispositivo hasta confirmarlos.',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      if (state.errorMessage != null)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Text(
+                            state.errorMessage!,
+                            style: const TextStyle(color: Colors.redAccent),
+                          ),
+                        ),
+                      Expanded(
+                        child: WorkoutSessionRecords(
+                          execution: execution,
+                          drafts: state.drafts,
+                          initialSetId:
+                              state.latestUnconfirmedSet?.id ??
+                              execution.currentSet?.id,
+                          enabled:
+                              !state.draftBusy &&
+                              state.status != ActiveWorkoutStatus.saving,
+                          resting: state.status == ActiveWorkoutStatus.resting,
+                          clockSetId: clockSetId,
+                          onUpdate: (result, fields) {
+                            if (result.resultId ==
+                                cubit.state.execution?.currentSet?.id) {
+                              editedCurrentId = result.resultId;
+                            }
+                            return pendingEdit = cubit.updateDraft(
+                              result,
+                              fields,
+                            );
+                          },
+                          onConfirm: (result, fields) async {
+                            if (confirming) return false;
+                            confirming = true;
+                            try {
+                              final id = result.resultId;
+                              if (id == cubit.state.execution?.currentSet?.id) {
+                                if (cubit.state.status ==
+                                        ActiveWorkoutStatus.resting ||
+                                    id == clockSetId) {
+                                  return false;
+                                }
+                                editedCurrentId = id;
+                                await cubit.updateDraft(result, fields);
+                                if (cubit.state.errorMessage != null ||
+                                    cubit.state.execution?.currentSet?.id !=
+                                        id) {
+                                  return false;
+                                }
+                                // Terminar y confirmar usan el mismo descanso y el
+                                // mismo guardado diferido que el ejecutor.
+                                await cubit.endCurrentSet();
+                                if (cubit.state.drafts[id]?.endedAt == null) {
+                                  return false;
+                                }
+                              }
+                              return await cubit.confirmDraft(result, fields);
+                            } finally {
+                              confirming = false;
+                            }
+                          },
+                          onEdit: (set) => _openResultEditor(context, set),
+                          onTechnique: (set) =>
+                              showWorkoutTechnique(context, set),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             );
@@ -923,6 +1005,14 @@ class _ActiveContentState extends State<_ActiveContent> {
         ),
       ),
     );
+    await pendingEdit;
+    _recordsOpen = false;
+    if (mounted &&
+        editedCurrentId != null &&
+        editedCurrentId == cubit.state.execution?.currentSet?.id) {
+      // Al volver al ejecutor se reabre la serie con su borrador más reciente.
+      setState(() => _entryDraftRevision++);
+    }
   }
 
   Future<void> _openResultEditor(

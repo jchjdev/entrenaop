@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show listEquals;
 
 import '../../domain/entities/workout_execution.dart';
 import '../../domain/entities/workout_template.dart';
 import '../../domain/entities/workout_session_set_draft.dart';
 import 'workout_execution_labels.dart';
+import 'workout_inline_records.dart';
 
 /// Presentación agrupada de registros. No guarda datos ni decide transiciones.
 class WorkoutSessionRecords extends StatefulWidget {
@@ -15,6 +17,10 @@ class WorkoutSessionRecords extends StatefulWidget {
     this.enabled = true,
     this.onTechnique,
     this.initialSetId,
+    this.onUpdate,
+    this.onConfirm,
+    this.resting = false,
+    this.clockSetId,
   });
   final WorkoutExecution execution;
   final Map<String, WorkoutSessionSetDraft> drafts;
@@ -22,6 +28,10 @@ class WorkoutSessionRecords extends StatefulWidget {
   final bool enabled;
   final ValueChanged<WorkoutExecutionSet>? onTechnique;
   final String? initialSetId;
+  final InlineRecordUpdate? onUpdate;
+  final InlineRecordConfirm? onConfirm;
+  final bool resting;
+  final String? clockSetId;
 
   @override
   State<WorkoutSessionRecords> createState() => _WorkoutSessionRecordsState();
@@ -57,7 +67,7 @@ class _WorkoutSessionRecordsState extends State<WorkoutSessionRecords> {
           .putIfAbsent(
             set.blockFormat == WorkoutBlockFormat.amrap
                 ? 'amrap:${set.blockOrder}'
-                : '${set.blockOrder}:${set.exerciseId}',
+                : '${set.blockOrder}:${set.itemOrder}:${set.exerciseId}',
             () => [],
           )
           .add(set);
@@ -87,9 +97,93 @@ class _WorkoutSessionRecordsState extends State<WorkoutSessionRecords> {
                 subtitle: Text(
                   '${entry.value.first.blockName} · ${entry.value.length} ${entry.value.length == 1 ? 'serie' : 'series'}',
                 ),
-                children: [for (final set in entry.value) _row(set)],
+                children: [_groupRows(entry.value)],
               ),
         ],
+      ),
+    );
+  }
+
+  Widget _groupRows(List<WorkoutExecutionSet> sets) {
+    final update = widget.onUpdate;
+    final confirm = widget.onConfirm;
+    final fields = WorkoutInlineField.forSet(sets.first);
+    if (update == null ||
+        confirm == null ||
+        fields == null ||
+        sets.any(
+          (set) => !listEquals(fields, WorkoutInlineField.forSet(set)),
+        )) {
+      return Column(children: [for (final set in sets) _row(set)]);
+    }
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact =
+              constraints.maxWidth >= 54 + 62 * fields.length &&
+              MediaQuery.textScalerOf(context).scale(14) <= 18;
+          return Column(
+            children: [
+              if (compact)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(6, 0, 6, 8),
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 48, child: Text('Serie')),
+                      for (final field in fields)
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 6),
+                            child: Text(
+                              field.label,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              for (final set in sets)
+                _inlineRow(set, fields, compact, update, confirm),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _inlineRow(
+    WorkoutExecutionSet set,
+    List<WorkoutInlineField> fields,
+    bool compact,
+    InlineRecordUpdate update,
+    InlineRecordConfirm confirm,
+  ) {
+    final current = set.id == execution.currentSet?.id;
+    final waitingStatus = !current
+        ? null
+        : widget.resting
+        ? 'Después del descanso'
+        : set.id == widget.clockSetId
+        ? 'Cronómetro en el entreno'
+        : null;
+    return KeyedSubtree(
+      key: set.id == _initialSetId ? _initialRecordKey : ValueKey(set.id),
+      child: WorkoutInlineRecordRow(
+        key: ValueKey((set.id, waitingStatus)),
+        set: set,
+        fields: fields,
+        draft: drafts[set.id],
+        current: current,
+        editable:
+            set.status == WorkoutSetStatus.completed ||
+            (current && waitingStatus == null),
+        enabled: widget.enabled,
+        compact: compact,
+        waitingStatus: waitingStatus,
+        onUpdate: update,
+        onConfirm: confirm,
       ),
     );
   }

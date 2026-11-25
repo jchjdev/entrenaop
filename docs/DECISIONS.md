@@ -1,5 +1,12 @@
 # Registro de decisiones vigentes
 
+**Registro rápido en la serie · 25/11/2026.** Javier aprueba mostrar todas
+las series juntas al desplegar el ejercicio. La actual se destaca, los datos
+se editan en su fila y las futuras quedan como «Por realizar». Escribir
+conserva un borrador y el ✓ de la fila lo confirma. Una sujeción por tiempo
+puede registrar carga y el RPE previsto por su pauta.
+[Recorrido](SESSION_CONTROLS_2026_10_08.md#registro-en-la-fila-de-la-serie).
+
 **Repetir visible desde el resultado · 25/11/2026.** Javier pide que
 «Repetir entrenamiento» quede fijo abajo en la pantalla del resultado, como
 «Empezar sesión» en la vista previa. La acción permanece visible durante la

@@ -180,7 +180,9 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       fields: Map.unmodifiable(fields),
       endedAt:
           old?.endedAt ??
-          (set.status == WorkoutSetStatus.completed ? set.completedAt : null),
+          (set.status == WorkoutSetStatus.completed
+              ? set.completedAt ?? DateTime.now().toUtc()
+              : null),
       saved: old?.saved ?? _savedSetIds.contains(set.id),
       needsCorrection: (old?.saved ?? _savedSetIds.contains(set.id)),
     );

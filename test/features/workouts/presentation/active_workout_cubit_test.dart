@@ -226,28 +226,31 @@ void main() {
         await tester.ensureVisible(review);
         await tester.tap(review);
         await tester.pumpAndSettle();
-        final record = find.textContaining('Datos por confirmar');
-        await tester.ensureVisible(record);
-        await tester.tap(record);
-        await tester.pumpAndSettle();
-        await tester.ensureVisible(metres);
-        expect(tester.widget<TextFormField>(metres).controller!.text, '27');
+        final inlineMetres = _inlineField('carry', 'distance');
+        await tester.ensureVisible(inlineMetres);
+        expect(tester.widget<TextField>(inlineMetres).controller!.text, '27');
         await capturePerformanceWidget(
           tester,
           'farmer-carry-confirmacion-${width.toInt()}',
         );
-        expect(find.text('Confirmar datos').hitTestable(), findsOneWidget);
-        await tester.tap(find.text('Confirmar datos'));
+        final confirm = find.byTooltip('Confirmar Serie 1');
+        await tester.ensureVisible(confirm);
+        await tester.tap(confirm);
         await tester.pumpAndSettle();
         expect(repository.lastSetResult?.actualDistanceMeters, 27);
         expect(repository.lastSetResult?.actualLoadKg, 22.5);
         expect(repository.lastSetResult?.actualReps, isNull);
         expect(repository.lastSetResult?.actualDurationSeconds, isNull);
+        expect(tester.widget<TextField>(inlineMetres).controller!.text, '27');
         expect(
-          find.textContaining('Objetivo · 30 metros · 24 kg'),
-          findsOneWidget,
+          tester
+              .widget<TextField>(_inlineField('carry', 'load'))
+              .controller!
+              .text,
+          '22,5',
         );
-        expect(find.textContaining('27 m · 22.5 kg'), findsOneWidget);
+        await tester.ensureVisible(find.text('Registrada'));
+        expect(find.text('Registrada').hitTestable(), findsOneWidget);
         expect(tester.takeException(), isNull);
       },
     );
@@ -712,21 +715,21 @@ void main() {
       await tester.tap(find.text('Completar datos de la serie'));
       await tester.pumpAndSettle();
       expect(find.text('Ejercicio 14'), findsOneWidget);
-      expect(find.text('Confirmar datos').hitTestable(), findsOneWidget);
-      expect(find.byTooltip('Cerrar registros'), findsNothing);
+      expect(find.byTooltip('Confirmar Serie 1').hitTestable(), findsOneWidget);
+      expect(find.byTooltip('Cerrar registros'), findsOneWidget);
+      expect(find.byTooltip('Cerrar resultado'), findsNothing);
       await capturePerformanceWidget(tester, 'serie-completar-directo-390');
-      await tester.enterText(
-        find.widgetWithText(TextFormField, 'Repeticiones realizadas'),
-        '9',
-      );
-      await tester.tap(find.text('Confirmar datos'));
+      await tester.enterText(_inlineField('long-14', 'reps'), '9');
+      await tester.tap(find.byTooltip('Confirmar Serie 1'));
       await tester.pumpAndSettle();
       expect(cubit.state.unconfirmedDraftCount, 0);
       expect(repository.lastSetResult?.resultId, 'long-14');
       expect(repository.lastSetResult?.actualReps, 9);
       expect(cubit.state.status, ActiveWorkoutStatus.resting);
       expect(cubit.state.restSecondsRemaining, lessThanOrEqualTo(rest));
-      expect(find.text('Confirmar datos'), findsNothing);
+      expect(find.byTooltip('Confirmar Serie 1'), findsNothing);
+      await tester.tap(find.byTooltip('Cerrar registros'));
+      await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       cubit.skipRest();
       await tester.pumpWidget(const SizedBox());
@@ -1086,8 +1089,8 @@ void main() {
         );
       await _mountSession(tester, repository);
       await _openCurrentResult(tester);
-      final field = find.widgetWithText(TextFormField, 'Carga (kg)');
-      expect(tester.widget<TextFormField>(field).controller!.text, isEmpty);
+      final field = _inlineField('set-1', 'load');
+      expect(tester.widget<TextField>(field).controller!.text, isEmpty);
       if (prescribedLoad == null) await tester.enterText(field, '47,5');
       await _confirmOpenResult(tester);
       expect(repository.lastSetResult, isNotNull);
@@ -1410,11 +1413,8 @@ void main() {
         final repository = _Repository()..execution = _timedExecution(seconds);
         await _mountSession(tester, repository);
         await _openCurrentResult(tester);
-        final field = find.widgetWithText(TextFormField, 'Tiempo realizado');
-        expect(
-          tester.widget<TextFormField>(field).controller!.text,
-          expectedText,
-        );
+        final field = _inlineField('set-1', 'duration');
+        expect(tester.widget<TextField>(field).controller!.text, expectedText);
         await _confirmOpenResult(tester);
         expect(repository.lastSetResult?.actualDurationSeconds, seconds);
         expect(find.text('Introduce un tiempo válido'), findsNothing);
@@ -1434,8 +1434,8 @@ void main() {
       timer.onElapsedChanged(20);
       await tester.pump();
       await _openCurrentResult(tester);
-      final field = find.widgetWithText(TextFormField, 'Tiempo realizado');
-      expect(tester.widget<TextFormField>(field).controller!.text, '00:20');
+      final field = _inlineField('set-1', 'duration');
+      expect(tester.widget<TextField>(field).controller!.text, '00:20');
       await _confirmOpenResult(tester);
       expect(repository.lastSetResult?.actualDurationSeconds, 20);
       expect(find.text('Introduce un tiempo válido'), findsNothing);
@@ -1447,13 +1447,133 @@ void main() {
     final repository = _Repository()..execution = _timedExecution(90);
     await _mountSession(tester, repository);
     await _openCurrentResult(tester);
-    final field = find.widgetWithText(TextFormField, 'Tiempo realizado');
+    final field = _inlineField('set-1', 'duration');
     await tester.ensureVisible(field);
     await tester.enterText(field, '20');
-    expect(tester.widget<TextFormField>(field).controller!.text, '00:20');
+    expect(tester.widget<TextField>(field).controller!.text, '00:20');
     await _confirmOpenResult(tester);
     expect(repository.lastSetResult?.actualDurationSeconds, 20);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'plancha en tres filas guarda el borrador y confirma con un solo toque',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final repository = _Repository()
+        ..execution = _execution(templateName: 'Fuerza').copyWith(
+          sets: [
+            for (var i = 0; i < 3; i++)
+              WorkoutExecutionSet(
+                id: 'plank-$i',
+                blockOrder: 0,
+                blockName: 'Core',
+                itemOrder: 0,
+                exerciseId: 'plank',
+                exerciseName: 'Plancha con lastre',
+                setOrder: i,
+                targetDurationSeconds: 30,
+                targetLoadKg: 5,
+                targetRpe: 7,
+                restAfterSeconds: 60,
+                status: i == 0
+                    ? WorkoutSetStatus.completed
+                    : WorkoutSetStatus.pending,
+                actualDurationSeconds: i == 0 ? 32 : null,
+                actualLoadKg: i == 0 ? 5 : null,
+                actualRpe: i == 0 ? 7 : null,
+              ),
+          ],
+        );
+      final (cubit, _) = await _mountSession(tester, repository);
+      Future<void> openRecords() async {
+        await tester.tap(find.text('Series y registros'));
+        await tester.pumpAndSettle();
+      }
+
+      await openRecords();
+      expect(_inlineField('plank-0', 'duration').hitTestable(), findsOneWidget);
+      expect(_inlineField('plank-1', 'duration').hitTestable(), findsOneWidget);
+      expect(find.text('Por realizar').hitTestable(), findsOneWidget);
+      expect(_inlineField('plank-2', 'duration'), findsNothing);
+      expect(_inlineField('plank-1', 'rir'), findsNothing);
+      expect(
+        tester
+            .widget<TextField>(_inlineField('plank-1', 'duration'))
+            .controller!
+            .text,
+        isEmpty,
+      );
+      await capturePerformanceWidget(tester, 'series-en-filas-plancha');
+      await tester.enterText(_inlineField('plank-1', 'duration'), '34');
+      await tester.enterText(_inlineField('plank-1', 'load'), '6,5');
+      await tester.enterText(_inlineField('plank-1', 'rpe'), '8');
+      await tester.pumpAndSettle();
+      expect(repository.lastSetResult, isNull);
+      expect(cubit.state.execution!.currentSet!.id, 'plank-1');
+      await tester.tap(find.byTooltip('Cerrar registros'));
+      await tester.pumpAndSettle();
+      await openRecords();
+      expect(
+        tester
+            .widget<TextField>(_inlineField('plank-1', 'duration'))
+            .controller!
+            .text,
+        '00:34',
+      );
+      await tester.tap(find.byTooltip('Terminar Serie 2'));
+      await tester.pumpAndSettle();
+      expect(repository.lastSetResult?.actualDurationSeconds, 34);
+      expect(repository.lastSetResult?.actualLoadKg, 6.5);
+      expect(repository.lastSetResult?.actualRpe, 8);
+      expect(cubit.state.status, ActiveWorkoutStatus.resting);
+      expect(cubit.state.execution!.currentSet!.id, 'plank-2');
+      expect(find.text('Después del descanso'), findsOneWidget);
+      expect(find.byTooltip('Cerrar registros'), findsOneWidget);
+      final restEndsAt = cubit.state.restEndsAt;
+      await tester.enterText(_inlineField('plank-0', 'load'), '4');
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Confirmar Serie 1'));
+      await tester.pumpAndSettle();
+      expect(cubit.state.drafts['plank-0']?.confirmed, isTrue);
+      expect(cubit.state.drafts['plank-0']?.result.actualLoadKg, 4);
+      expect(repository.lastSetResult?.resultId, 'plank-1');
+      expect(cubit.state.restEndsAt, restEndsAt);
+      await tester.tap(find.text('Plancha con lastre').hitTestable().last);
+      await tester.pumpAndSettle();
+      expect(_inlineField('plank-0', 'load').hitTestable(), findsNothing);
+      expect(tester.takeException(), isNull);
+      cubit.skipRest();
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets('un reloj de serie en marcha mantiene el control del tiempo', (
+    tester,
+  ) async {
+    final repository = _Repository()..execution = _timedExecution(90);
+    final clock = _TimerStore();
+    final (cubit, _) = await _mountSession(
+      tester,
+      repository,
+      timerStore: clock,
+    );
+    clock.snapshot = WorkoutTimerSnapshot(
+      phase: WorkoutTimerPhase.running,
+      targetSeconds: 90,
+      preparationSeconds: 3,
+      phaseStartedAt: DateTime.now().toUtc(),
+      elapsedBeforeRun: Duration.zero,
+    );
+    await tester.tap(find.text('Series y registros'));
+    await tester.pumpAndSettle();
+    expect(find.text('Cronómetro en el entreno'), findsOneWidget);
+    expect(_inlineField('set-1', 'duration'), findsNothing);
+    expect(find.byTooltip('Terminar Serie 1'), findsNothing);
+    expect(cubit.state.execution!.currentSet!.id, 'set-1');
+    expect(repository.lastSetResult, isNull);
   });
 
   for (final scenario in <String, List<WorkoutSetStatus>>{
@@ -1920,7 +2040,7 @@ void main() {
     expect(find.text('RIR 3'), findsNothing);
     await _openCurrentResult(tester);
     expect(find.widgetWithText(WorkoutEffortField, 'RIR real'), findsNothing);
-    await tester.enterText(find.byType(TextFormField).first, '0035');
+    await tester.enterText(_inlineField('effort-set', 'duration'), '0035');
     await tester.pumpAndSettle();
     expect(cubit.state.drafts['effort-set']?.result.actualRir, 2.5);
     await _confirmOpenResult(tester);
@@ -2302,12 +2422,14 @@ Future<(ActiveWorkoutCubit, GoRouter)> _mountSession(
   WorkoutLockScreen? lockScreen,
   DateTime Function()? now,
   WorkoutSessionDraftStore? sessionDraftStore,
+  _TimerStore? timerStore,
 }) async {
   final cubit = _cubit(
     repository,
     getExercise: getExercise,
     now: now,
     sessionDraftStore: sessionDraftStore,
+    timerStore: timerStore,
   );
   addTearDown(cubit.close);
   await cubit.load();
@@ -2326,7 +2448,7 @@ Future<(ActiveWorkoutCubit, GoRouter)> _mountSession(
           child: BlocProvider.value(
             value: cubit,
             child: ActiveWorkoutPage(
-              timerStore: _TimerStore(),
+              timerStore: timerStore ?? _TimerStore(),
               cueService: _CueService(),
               lockScreen: lockScreen,
               createPhoneRun: createPhoneRun,
@@ -2425,16 +2547,26 @@ Future<void> _openCurrentResult(WidgetTester tester) async {
   await tester.pumpAndSettle();
   await tester.tap(find.textContaining('Series y registros').last);
   await tester.pumpAndSettle();
-  await tester.tap(find.textContaining('Datos por confirmar').first);
-  await tester.pumpAndSettle();
+  if (find.byTooltip('Confirmar Serie 1').evaluate().isEmpty) {
+    await tester.tap(find.textContaining('Datos por confirmar').first);
+    await tester.pumpAndSettle();
+  }
 }
 
 Future<void> _confirmOpenResult(WidgetTester tester) async {
-  await tester.tap(find.text('Confirmar datos'));
+  final inline = find.byTooltip('Confirmar Serie 1');
+  final confirm = inline.evaluate().isNotEmpty
+      ? inline
+      : find.text('Confirmar datos');
+  await tester.ensureVisible(confirm);
+  await tester.tap(confirm);
   await tester.pumpAndSettle();
   await tester.tap(find.byTooltip('Cerrar registros'));
   await tester.pumpAndSettle();
 }
+
+Finder _inlineField(String id, String field) =>
+    find.byKey(ValueKey('inline-$id-$field'));
 
 Future<void> _chooseExitAbandonment(WidgetTester tester) async {
   await tester.tap(find.byTooltip('Salir de la sesión'));
