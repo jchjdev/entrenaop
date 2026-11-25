@@ -254,7 +254,10 @@ class _WorkoutInlineRecordRowState extends State<WorkoutInlineRecordRow> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final tapToEdit = !kIsWeb && theme.platform == TargetPlatform.iOS;
+    final tapToEdit =
+        !kIsWeb &&
+        (theme.platform == TargetPlatform.iOS ||
+            theme.platform == TargetPlatform.android);
     final draft = widget.draft;
     final set = widget.set;
     final position = workoutPositionLabel(set);
@@ -457,7 +460,7 @@ class _WorkoutInlineRecordRowState extends State<WorkoutInlineRecordRow> {
   }
 }
 
-/// En iOS las casillas en reposo se dibujan como texto para que el valor
+/// En móvil las casillas en reposo se dibujan como texto para que el valor
 /// siga visible al desplazar o plegar las filas. Se monta el editor al tocar.
 class _InlineRecordTapToEdit extends StatefulWidget {
   const _InlineRecordTapToEdit({

@@ -15,6 +15,8 @@ medido se guarde sin otro toque. Los objetivos sugeridos quedan pendientes
 hasta que se revisen expresamente. Una sujeción por tiempo
 puede registrar carga y el RPE previsto por su pauta.
 Javier pide casillas más estrechas y resultados alineados en todas las filas.
+Los recuadros grises aparecen también en el Samsung con la beta de Play.
+Android usa desde `1.34.4+79` las mismas casillas de edición al tocar que iOS.
 [Recorrido](SESSION_CONTROLS_2026_10_08.md#registro-en-la-fila-de-la-serie).
 
 **Repetir visible desde el resultado · 25/11/2026.** Javier pide que

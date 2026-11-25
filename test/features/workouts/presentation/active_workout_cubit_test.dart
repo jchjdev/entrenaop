@@ -227,21 +227,15 @@ void main() {
         await tester.ensureVisible(records);
         await tester.tap(records);
         await tester.pumpAndSettle();
-        final inlineMetres = _inlineField('carry', 'distance');
+        final inlineMetres = _inlineCell('carry', 'distance');
         await tester.ensureVisible(inlineMetres);
-        expect(tester.widget<TextField>(inlineMetres).controller!.text, '27');
+        expect(_inlineValue('carry', 'distance', '27'), findsOneWidget);
         await capturePerformanceWidget(
           tester,
           'farmer-carry-confirmacion-${width.toInt()}',
         );
         expect(find.byTooltip('Confirmar Serie 1'), findsNothing);
-        expect(
-          tester
-              .widget<TextField>(_inlineField('carry', 'load'))
-              .controller!
-              .text,
-          '22,5',
-        );
+        expect(_inlineValue('carry', 'load', '22,5'), findsOneWidget);
         await tester.ensureVisible(find.text('Registrada'));
         expect(find.text('Registrada').hitTestable(), findsOneWidget);
         await tester.tap(find.byTooltip('Cerrar registros'));
@@ -720,7 +714,7 @@ void main() {
       expect(find.byTooltip('Cerrar registros'), findsOneWidget);
       expect(find.byTooltip('Cerrar resultado'), findsNothing);
       await capturePerformanceWidget(tester, 'serie-completar-directo-390');
-      await tester.enterText(_inlineField('long-14', 'reps'), '9');
+      await _enterInlineText(tester, 'long-14', 'reps', '9');
       await tester.pumpAndSettle();
       expect(cubit.state.unconfirmedDraftCount, 0);
       expect(cubit.state.drafts['long-14']?.result.actualReps, 9);
@@ -1089,7 +1083,7 @@ void main() {
         );
       await _mountSession(tester, repository);
       await _openCurrentResult(tester);
-      final field = _inlineField('set-1', 'load');
+      final field = await _focusInlineField(tester, 'set-1', 'load');
       expect(tester.widget<TextField>(field).controller!.text, isEmpty);
       if (prescribedLoad == null) await tester.enterText(field, '47,5');
       await _confirmOpenResult(tester);
@@ -1413,8 +1407,7 @@ void main() {
         final repository = _Repository()..execution = _timedExecution(seconds);
         await _mountSession(tester, repository);
         await _openCurrentResult(tester);
-        final field = _inlineField('set-1', 'duration');
-        expect(tester.widget<TextField>(field).controller!.text, expectedText);
+        expect(_inlineValue('set-1', 'duration', expectedText), findsOneWidget);
         await _confirmOpenResult(tester);
         expect(repository.lastSetResult?.actualDurationSeconds, seconds);
         expect(find.text('Introduce un tiempo válido'), findsNothing);
@@ -1437,8 +1430,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Series y registros'));
       await tester.pumpAndSettle();
-      final field = _inlineField('set-1', 'duration');
-      expect(tester.widget<TextField>(field).controller!.text, '00:20');
+      expect(_inlineValue('set-1', 'duration', '00:20'), findsOneWidget);
       expect(find.byTooltip('Confirmar Serie 1'), findsNothing);
       await tester.tap(find.byTooltip('Cerrar registros'));
       await tester.pumpAndSettle();
@@ -1453,8 +1445,7 @@ void main() {
     final repository = _Repository()..execution = _timedExecution(90);
     await _mountSession(tester, repository);
     await _openCurrentResult(tester);
-    final field = _inlineField('set-1', 'duration');
-    await tester.ensureVisible(field);
+    final field = await _focusInlineField(tester, 'set-1', 'duration');
     await tester.enterText(field, '20');
     expect(tester.widget<TextField>(field).controller!.text, '00:20');
     await _confirmOpenResult(tester);
@@ -1500,12 +1491,12 @@ void main() {
       }
 
       await openRecords();
-      expect(_inlineField('plank-0', 'duration').hitTestable(), findsOneWidget);
-      expect(_inlineField('plank-1', 'duration').hitTestable(), findsOneWidget);
+      expect(_inlineCell('plank-0', 'duration').hitTestable(), findsOneWidget);
+      expect(_inlineCell('plank-1', 'duration').hitTestable(), findsOneWidget);
       expect(find.text('Por realizar').hitTestable(), findsOneWidget);
-      expect(_inlineField('plank-2', 'duration'), findsNothing);
-      expect(_inlineField('plank-1', 'rir'), findsNothing);
-      final time = _inlineField('plank-1', 'duration');
+      expect(_inlineCell('plank-2', 'duration'), findsNothing);
+      expect(_inlineCell('plank-1', 'rir'), findsNothing);
+      final time = _inlineCell('plank-1', 'duration');
       final emptyTime = find.byKey(
         const ValueKey('inline-plank-2-duration-value'),
       );
@@ -1519,37 +1510,22 @@ void main() {
         closeTo(tester.getCenter(find.text('Tiempo')).dx, .1),
       );
       expect(
-        tester
-            .getCenter(
-              find.descendant(of: time, matching: find.byType(EditableText)),
-            )
-            .dy,
+        tester.getCenter(time).dy,
         closeTo(tester.getCenter(find.byTooltip('Terminar Serie 2')).dy, .1),
       );
-      expect(
-        tester
-            .widget<TextField>(_inlineField('plank-1', 'duration'))
-            .controller!
-            .text,
-        isEmpty,
-      );
       await capturePerformanceWidget(tester, 'series-en-filas-plancha');
-      await tester.enterText(_inlineField('plank-1', 'duration'), '34');
-      await tester.enterText(_inlineField('plank-1', 'load'), '6,5');
-      await tester.enterText(_inlineField('plank-1', 'rpe'), '8');
+      final timeField = await _focusInlineField(tester, 'plank-1', 'duration');
+      expect(tester.widget<TextField>(timeField).controller!.text, isEmpty);
+      await tester.enterText(timeField, '34');
+      await _enterInlineText(tester, 'plank-1', 'load', '6,5');
+      await _enterInlineText(tester, 'plank-1', 'rpe', '8');
       await tester.pumpAndSettle();
       expect(repository.lastSetResult, isNull);
       expect(cubit.state.execution!.currentSet!.id, 'plank-1');
       await tester.tap(find.byTooltip('Cerrar registros'));
       await tester.pumpAndSettle();
       await openRecords();
-      expect(
-        tester
-            .widget<TextField>(_inlineField('plank-1', 'duration'))
-            .controller!
-            .text,
-        '00:34',
-      );
+      expect(_inlineValue('plank-1', 'duration', '00:34'), findsOneWidget);
       await tester.tap(find.byTooltip('Terminar Serie 2'));
       await tester.pumpAndSettle();
       expect(repository.lastSetResult?.actualDurationSeconds, 34);
@@ -1560,7 +1536,7 @@ void main() {
       expect(find.text('Después del descanso'), findsOneWidget);
       expect(find.byTooltip('Cerrar registros'), findsOneWidget);
       final restEndsAt = cubit.state.restEndsAt;
-      await tester.enterText(_inlineField('plank-0', 'load'), '4');
+      await _enterInlineText(tester, 'plank-0', 'load', '4');
       await tester.pumpAndSettle();
       expect(cubit.state.drafts['plank-0']?.confirmed, isTrue);
       expect(cubit.state.drafts['plank-0']?.result.actualLoadKg, 4);
@@ -1568,7 +1544,7 @@ void main() {
       expect(cubit.state.restEndsAt, restEndsAt);
       await tester.tap(find.text('Plancha con lastre').hitTestable().last);
       await tester.pumpAndSettle();
-      expect(_inlineField('plank-0', 'load').hitTestable(), findsNothing);
+      expect(_inlineCell('plank-0', 'load').hitTestable(), findsNothing);
       expect(tester.takeException(), isNull);
       cubit.skipRest();
       await tester.pumpWidget(const SizedBox());
@@ -1595,14 +1571,14 @@ void main() {
     await tester.tap(find.text('Series y registros'));
     await tester.pumpAndSettle();
     expect(find.text('Cronómetro en el entreno'), findsOneWidget);
-    expect(_inlineField('set-1', 'duration'), findsNothing);
+    expect(_inlineCell('set-1', 'duration'), findsNothing);
     expect(find.byTooltip('Terminar Serie 1'), findsNothing);
     expect(cubit.state.execution!.currentSet!.id, 'set-1');
     expect(repository.lastSetResult, isNull);
   });
 
   testWidgets(
-    'iOS muestra los datos sin editores abiertos y conserva el borrador al plegar',
+    'móvil muestra los datos sin editores abiertos y conserva el borrador al plegar',
     (tester) async {
       tester.view.physicalSize = const Size(390, 844);
       tester.view.devicePixelRatio = 1;
@@ -1616,8 +1592,8 @@ void main() {
 
       final time = _inlineField('set-1', 'duration');
       final load = _inlineField('set-1', 'load');
-      final timeCell = find.byKey(const ValueKey('inline-cell-set-1-duration'));
-      final loadCell = find.byKey(const ValueKey('inline-cell-set-1-load'));
+      final timeCell = _inlineCell('set-1', 'duration');
+      final loadCell = _inlineCell('set-1', 'load');
       final midpoint =
           (tester.getCenter(timeCell).dx + tester.getCenter(loadCell).dx) / 2;
       expect(midpoint, closeTo(195, .1));
@@ -1661,7 +1637,10 @@ void main() {
       expect(repository.execution.status, WorkoutExecutionStatus.completed);
       expect(tester.takeException(), isNull);
     },
-    variant: const TargetPlatformVariant({TargetPlatform.iOS}),
+    variant: const TargetPlatformVariant({
+      TargetPlatform.android,
+      TargetPlatform.iOS,
+    }),
   );
 
   testWidgets('las repeticiones escritas cuentan al terminar la serie', (
@@ -2218,7 +2197,7 @@ void main() {
     expect(find.text('RIR 3'), findsNothing);
     await _openCurrentResult(tester);
     expect(find.widgetWithText(WorkoutEffortField, 'RIR real'), findsNothing);
-    await tester.enterText(_inlineField('effort-set', 'duration'), '0035');
+    await _enterInlineText(tester, 'effort-set', 'duration', '0035');
     await tester.pumpAndSettle();
     expect(cubit.state.drafts['effort-set']?.result.actualRir, 2.5);
     await _confirmOpenResult(tester);
@@ -2745,6 +2724,34 @@ Future<void> _confirmOpenResult(WidgetTester tester) async {
 
 Finder _inlineField(String id, String field) =>
     find.byKey(ValueKey('inline-$id-$field'));
+
+Finder _inlineCell(String id, String field) =>
+    find.byKey(ValueKey('inline-cell-$id-$field'));
+
+Finder _inlineValue(String id, String field, String value) =>
+    find.descendant(of: _inlineCell(id, field), matching: find.text(value));
+
+Future<Finder> _focusInlineField(
+  WidgetTester tester,
+  String id,
+  String field,
+) async {
+  final cell = _inlineCell(id, field);
+  await tester.ensureVisible(cell);
+  await tester.tap(cell);
+  await tester.pumpAndSettle();
+  return _inlineField(id, field);
+}
+
+Future<void> _enterInlineText(
+  WidgetTester tester,
+  String id,
+  String field,
+  String text,
+) async {
+  final editor = await _focusInlineField(tester, id, field);
+  await tester.enterText(editor, text);
+}
 
 Future<void> _chooseExitAbandonment(WidgetTester tester) async {
   await tester.tap(find.byTooltip('Salir de la sesión'));

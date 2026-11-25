@@ -15,10 +15,13 @@ misma altura. Las casillas tienen ancho acotado y las rayas de las series
 pendientes conservan el centro de su columna. Se centran solo las columnas
 visibles, con el mismo espacio para el número y el ✓ en los extremos. Con
 texto ampliado se muestran etiquetas junto a los campos.
-En iOS, desde `1.34.2+77`, las casillas se muestran como texto hasta que se
-tocan. Al perder el foco vuelven a mostrar el dato escrito. El cambio se
-limita al panel de series y aborda los recuadros grises observados al
-desplazarse y plegar ejercicios.
+En iOS, desde `1.34.2+77`, y en Android, desde `1.34.4+79`, las casillas
+se muestran como texto hasta que se tocan. Al perder el foco vuelven a
+mostrar el dato escrito. El cambio se limita al panel de series y aborda
+los recuadros grises observados al abrir el panel y al plegar ejercicios.
+En el Samsung A32 se reprodujo el fallo con la beta de Google Play. Una
+instalación de prueba separada verificó las casillas, el teclado numérico,
+los valores después de plegar el ejercicio y el inicio del descanso.
 
 Desde `1.34.3+78`, en series simples, el resultado válido que se escribe o
 mide con el cronómetro queda registrado localmente al terminar la serie.
