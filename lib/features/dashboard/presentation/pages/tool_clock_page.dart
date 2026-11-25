@@ -1,8 +1,8 @@
 import 'dart:async';
 
+import 'package:entrenaop/core/platform/screen_awake.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_cue_service.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_cue_settings_button.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -30,7 +30,6 @@ class ToolClockPage extends StatefulWidget {
 
 class _ToolClockPageState extends State<ToolClockPage>
     with SingleTickerProviderStateMixin {
-  static const _screenChannel = MethodChannel('es.entrenaop/clock_screen');
   static const _presets = {30: '30 s', 60: '1 min', 120: '2 min'};
   static const _preparationDuration = 3;
 
@@ -115,28 +114,13 @@ class _ToolClockPageState extends State<ToolClockPage>
     super.dispose();
   }
 
-  Future<void> _keepScreenOn(bool enabled) async {
-    if (kIsWeb ||
-        (defaultTargetPlatform != TargetPlatform.android &&
-            defaultTargetPlatform != TargetPlatform.iOS)) {
-      return;
-    }
-    try {
-      await _screenChannel.invokeMethod<void>('setEnabled', enabled);
-    } on MissingPluginException {
-      debugPrint('El control de pantalla del reloj no está disponible.');
-    } on PlatformException catch (error) {
-      debugPrint('No se ha podido ajustar la pantalla del reloj: $error');
-    }
-  }
-
   void _stop() {
     if (!_running) return;
     _sampleAt = null;
     _stopwatchTicker?.stop();
     _ticker?.cancel();
     _ticker = null;
-    unawaited(_keepScreenOn(false));
+    unawaited(ScreenAwake.setEnabled(this, false));
   }
 
   void _advance() {
@@ -209,7 +193,7 @@ class _ToolClockPageState extends State<ToolClockPage>
           (_) => _tick(),
         );
       }
-      unawaited(_keepScreenOn(true));
+      unawaited(ScreenAwake.setEnabled(this, true));
     });
   }
 

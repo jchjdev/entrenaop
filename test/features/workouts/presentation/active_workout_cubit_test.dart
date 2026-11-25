@@ -33,6 +33,7 @@ import 'package:entrenaop/features/workouts/domain/entities/workout_template.dar
 import 'package:entrenaop/features/workouts/domain/repositories/workout_repository.dart';
 import 'package:entrenaop/features/workouts/domain/services/phone_running.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_cue_service.dart';
+import 'package:entrenaop/features/workouts/domain/services/workout_lock_screen.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_timer_store.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/workout_execution_usecases.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cubit.dart';
@@ -43,12 +44,75 @@ import 'package:entrenaop/features/workouts/presentation/widgets/phone_run_panel
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_set_countdown.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_tabata_entry.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 
 void main() {
+  testWidgets(
+    'fuerza comparte el fin del descanso y recupera la siguiente serie al desbloquear',
+    (tester) async {
+      const screen = MethodChannel('es.entrenaop/clock_screen');
+      final messenger = tester.binding.defaultBinaryMessenger;
+      final wakeChanges = <bool>[];
+      messenger.setMockMethodCallHandler(screen, (call) async {
+        wakeChanges.add(call.arguments as bool);
+        return null;
+      });
+      addTearDown(() => messenger.setMockMethodCallHandler(screen, null));
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      final lockScreen = _LockScreen();
+      var now = DateTime.now().toUtc();
+      final (cubit, _) = await _mountSession(
+        tester,
+        _Repository(),
+        lockScreen: lockScreen,
+        now: () => now,
+      );
+      await tester.tap(find.byTooltip('Opciones de sesión'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Mantener pantalla encendida'));
+      await tester.pumpAndSettle();
+      expect(wakeChanges.last, isTrue);
+      await cubit.completeCurrentSet(
+        const WorkoutSetResultInput(resultId: 'set-1', actualReps: 8),
+        restSecondsOverride: 30,
+      );
+      await tester.pump();
+      final deadline = now.add(const Duration(seconds: 30));
+      expect(lockScreen.visible?.restEndsAt, deadline);
+      expect(
+        lockScreen.visible?.exercise,
+        cubit.state.execution!.currentSet!.exerciseName,
+      );
+      final shown = lockScreen.shown;
+      now = now.add(const Duration(seconds: 5));
+      await tester.pump(const Duration(seconds: 1));
+      expect(cubit.state.restSecondsRemaining, 25);
+      expect(lockScreen.shown, shown);
+
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      expect(wakeChanges.last, isFalse);
+      expect(lockScreen.visible?.restEndsAt, deadline);
+      now = now.add(const Duration(seconds: 40));
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(wakeChanges.last, isTrue);
+      expect(cubit.state.status, ActiveWorkoutStatus.ready);
+      expect(cubit.state.execution!.currentSet!.id, 'set-2');
+      expect(lockScreen.visible?.restEndsAt, isNull);
+      await tester.pumpWidget(const SizedBox());
+      expect(wakeChanges.last, isFalse);
+      expect(lockScreen.visible, isNull);
+    },
+  );
+
   for (final (width, scale) in [(390.0, 1.0), (320.0, 2.0)]) {
     testWidgets(
       'Farmer carry registra metros y carga a $width px, texto ×$scale',
@@ -2125,8 +2189,10 @@ Future<(ActiveWorkoutCubit, GoRouter)> _mountSession(
   TextScaler textScaler = TextScaler.noScaling,
   GetExerciseByIdUseCase? getExercise,
   PhoneRunCubit Function(String)? createPhoneRun,
+  WorkoutLockScreen? lockScreen,
+  DateTime Function()? now,
 }) async {
-  final cubit = _cubit(repository, getExercise: getExercise);
+  final cubit = _cubit(repository, getExercise: getExercise, now: now);
   addTearDown(cubit.close);
   await cubit.load();
   final registry = WorkflowExitRegistry();
@@ -2146,6 +2212,7 @@ Future<(ActiveWorkoutCubit, GoRouter)> _mountSession(
             child: ActiveWorkoutPage(
               timerStore: _TimerStore(),
               cueService: _CueService(),
+              lockScreen: lockScreen,
               createPhoneRun: createPhoneRun,
             ),
           ),
@@ -2288,6 +2355,7 @@ ActiveWorkoutCubit _cubit(
   WorkoutSessionDraftStore? sessionDraftStore,
   WorkoutAmrapDraftStore? amrapDraftStore,
   GetExerciseByIdUseCase? getExercise,
+  DateTime Function()? now,
 }) => ActiveWorkoutCubit(
   sessionDraftStore: sessionDraftStore ?? MemoryWorkoutSessionDraftStore(),
   amrapDraftStore: amrapDraftStore ?? MemoryWorkoutAmrapDraftStore(),
@@ -2307,7 +2375,34 @@ ActiveWorkoutCubit _cubit(
   getPendingMutationCount: GetPendingWorkoutMutationCountUseCase(repository),
   timerStore: timerStore ?? _TimerStore(),
   cueService: cueService ?? _CueService(),
+  now: now ?? _restTestClock(),
 );
+
+DateTime Function() _restTestClock() {
+  final binding = TestWidgetsFlutterBinding.ensureInitialized();
+  if (!binding.inTest) return DateTime.now;
+  final wallOrigin = DateTime.now();
+  final clock = binding.clock;
+  final origin = clock.now();
+  return () => wallOrigin.add(clock.now().difference(origin));
+}
+
+class _LockScreen implements WorkoutLockScreen {
+  WorkoutLockScreenSnapshot? visible;
+  int shown = 0;
+
+  @override
+  Future<bool> show(WorkoutLockScreenSnapshot snapshot) async {
+    visible = snapshot;
+    shown++;
+    return true;
+  }
+
+  @override
+  Future<void> clear(String executionId) async {
+    if (visible?.executionId == executionId) visible = null;
+  }
+}
 
 class _Repository implements WorkoutRepository {
   int unrecordedFinishAttempts = 0;

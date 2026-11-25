@@ -102,6 +102,8 @@ import 'package:entrenaop/features/workouts/data/services/shared_preferences_wor
 import 'package:entrenaop/features/workouts/data/services/shared_preferences_workout_editor_draft_store.dart';
 import 'package:entrenaop/features/workouts/data/services/workout_legacy_mutation_owner.dart';
 import 'package:entrenaop/features/workouts/domain/repositories/workout_repository.dart';
+import 'package:entrenaop/features/workouts/data/services/method_channel_workout_lock_screen.dart';
+import 'package:entrenaop/features/workouts/domain/services/workout_lock_screen.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_timer_store.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_cue_service.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_mutation_queue.dart';
@@ -172,6 +174,9 @@ Future<void> initDependencies() async {
     () => SharedPreferencesWorkoutCueService(sharedPreferences),
     dispose: (service) =>
         (service as SharedPreferencesWorkoutCueService).dispose(),
+  );
+  sl.registerLazySingleton<WorkoutLockScreen>(
+    MethodChannelWorkoutLockScreen.new,
   );
   sl.registerLazySingleton<WorkoutMutationQueue>(
     () => SharedPreferencesWorkoutMutationQueue(

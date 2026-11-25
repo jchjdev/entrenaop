@@ -2,6 +2,7 @@ import 'package:app_links/app_links.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'features/trainers/presentation/trainer_invitation_entry.dart';
+import 'features/workouts/presentation/workout_session_entry.dart';
 
 import 'dart:async';
 
@@ -42,14 +43,19 @@ Future<void> main() async {
 
   // Supabase se suscribe primero: su retorno de Auth no se consume aquí.
   final invitationEntry = TrainerInvitationEntry();
+  final workoutSessionEntry = WorkoutSessionEntry();
   if (!kIsWeb) {
     final links = AppLinks();
     invitationEntry.attach(links.uriLinkStream);
+    workoutSessionEntry.attach(links.uriLinkStream);
     try {
       final initial = await links.getInitialLink().timeout(
         const Duration(seconds: 3),
       );
-      if (initial != null) invitationEntry.receive(initial);
+      if (initial != null) {
+        invitationEntry.receive(initial);
+        workoutSessionEntry.receive(initial);
+      }
     } catch (_) {
       /* La escucha sigue disponible; no bloquea el acceso normal. */
     }
@@ -64,6 +70,7 @@ Future<void> main() async {
     EntrenaOpApp(
       authCubit: authCubit,
       invitations: invitationEntry,
+      workoutSessions: workoutSessionEntry,
       appleTraining: AppleTrainingCoordinator(
         (owner) => AppleTrainingService(
           SupabaseAppleTrainingRepository(Supabase.instance.client, owner),
@@ -92,6 +99,7 @@ class EntrenaOpApp extends StatefulWidget {
   final AuthCubit authCubit;
   final PushNotificationCoordinator? push;
   final TrainerInvitationEntry? invitations;
+  final WorkoutSessionEntry? workoutSessions;
   final AppleResultsCoordinator? appleResults;
   final AppleTrainingCoordinator? appleTraining;
 
@@ -100,6 +108,7 @@ class EntrenaOpApp extends StatefulWidget {
     required this.authCubit,
     this.push,
     this.invitations,
+    this.workoutSessions,
     this.appleResults,
     this.appleTraining,
   });
@@ -124,6 +133,7 @@ class _EntrenaOpAppState extends State<EntrenaOpApp>
       appleTraining: widget.appleTraining,
     );
     widget.invitations?.addListener(_openInvitation);
+    widget.workoutSessions?.addListener(_openWorkoutSession);
     WidgetsBinding.instance.addObserver(this);
     _pushOpens = widget.push?.opens.listen((_) => unawaited(_openPush()));
     _pushAuth = widget.authCubit.stream.listen(_syncPush);
@@ -140,6 +150,20 @@ class _EntrenaOpAppState extends State<EntrenaOpApp>
       return;
     }
     _appRouter.config.go('/trainer-invitation');
+  }
+
+  void _openWorkoutSession() {
+    if (!mounted || widget.authCubit.state is! AuthAuthenticated) return;
+    final executionId = widget.workoutSessions?.take();
+    if (executionId == null) return;
+    final segments =
+        _appRouter.config.routeInformationProvider.value.uri.pathSegments;
+    if (segments.length >= 2 &&
+        segments[segments.length - 2] == 'active' &&
+        segments.last == executionId) {
+      return;
+    }
+    _appRouter.config.go('/plan/week/active/$executionId');
   }
 
   int _pushOpenRequest = 0;
@@ -165,7 +189,10 @@ class _EntrenaOpAppState extends State<EntrenaOpApp>
       widget.appleTraining?.setAccount(null);
     }
     if (state is AuthAuthenticated) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _openInvitation());
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _openInvitation();
+        _openWorkoutSession();
+      });
     }
     final push = widget.push;
     if (push == null) return;
@@ -194,6 +221,8 @@ class _EntrenaOpAppState extends State<EntrenaOpApp>
   void dispose() {
     widget.invitations?.removeListener(_openInvitation);
     widget.invitations?.dispose();
+    widget.workoutSessions?.removeListener(_openWorkoutSession);
+    widget.workoutSessions?.dispose();
     _appRouter.dispose();
     WidgetsBinding.instance.removeObserver(this);
     unawaited(_pushAuth?.cancel());

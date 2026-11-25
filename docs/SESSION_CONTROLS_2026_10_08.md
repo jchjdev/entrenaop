@@ -123,6 +123,30 @@ parciales del guiado entran como borradores editables antes del cierre.
   dispositivo. La actualización y los avisos con el bloqueo activo todavía
   requieren una prueba física en ambos sistemas.
 
+## Fuerza en la pantalla bloqueada
+
+Desde 1.32.0, **Opciones de sesión → Mantener pantalla encendida** evita el
+bloqueo automático mientras el entreno de fuerza está visible. Se activa
+manualmente durante esa visita y libera la pantalla al ocultar la app, salir
+o resolver la última serie. Herramientas comparte el control de pantalla.
+
+Al ejecutar fuerza, la actividad en directo de iOS 16.2 o posterior y la
+notificación nativa de Android muestran el ejercicio, la serie y el objetivo
+prescrito. Durante el descanso añaden la cuenta atrás y muestran la siguiente
+serie. Tocar la vista abre la ejecución autenticada. Su aparición y el nivel
+de detalle dependen de los ajustes de pantalla bloqueada y notificaciones.
+Android puede pedir permiso desde **Opciones de sesión**; el sistema retira
+la cuenta atrás vencida si la app está suspendida. iOS conserva la siguiente
+serie visible. El registro de resultados se hace desde el ejecutor.
+
+La fecha límite se obtiene de la instantánea de descanso local y el Cubit
+recalcula los segundos restantes al volver a primer plano. iOS y Android
+pintan el reloj a partir de esa misma fecha. Se mantiene la condición de
+descanso no saltable de EMOM. Los temporizadores internos de Tabata y AMRAP
+conservan su vista y sus avisos actuales; la vista nativa consulta la serie
+y el descanso gestionado por el ejecutor, sin GPS ni servicio persistente.
+Los avisos sonoros durante el bloqueo no forman parte de esta vista.
+
 ## Carga real opcional en fuerza
 
 Desde el 12/11/2026 el registro de una serie de fuerza permite indicar los

@@ -14,6 +14,8 @@ class MainActivity : FlutterActivity() {
     private val workoutVibration by lazy { WorkoutVibration(this) }
     private var vibrationChannel: MethodChannel? = null
     private var screenChannel: MethodChannel? = null
+    private var lockScreenChannel: MethodChannel? = null
+    private var workoutLockScreen: WorkoutLockScreen? = null
     private var phoneRunLocation: PhoneRunLocationChannel? = null
     private var notificationPermissionResult: MethodChannel.Result? = null
     private var isForeground = false
@@ -24,6 +26,22 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         phoneRunLocation = PhoneRunLocationChannel(this, flutterEngine.dartExecutor.binaryMessenger)
+        val lockScreen = WorkoutLockScreen(this)
+        workoutLockScreen = lockScreen
+        lockScreenChannel = MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger, "es.entrenaop/workout_lock_screen",
+        ).also { channel ->
+            channel.setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "show" -> result.success((call.arguments as? Map<*, *>)?.let(lockScreen::show))
+                    "clear" -> {
+                        (call.arguments as? String)?.let(lockScreen::clear)
+                        result.success(null)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+        }
         screenChannel = MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             "es.entrenaop/clock_screen",
@@ -147,6 +165,10 @@ class MainActivity : FlutterActivity() {
         phoneRunLocation = null
         screenChannel?.setMethodCallHandler(null)
         screenChannel = null
+        lockScreenChannel?.setMethodCallHandler(null)
+        lockScreenChannel = null
+        workoutLockScreen?.close()
+        workoutLockScreen = null
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         notificationPermissionResult?.error("permission_request_cancelled", "Prueba interrumpida", null)
         notificationPermissionResult = null

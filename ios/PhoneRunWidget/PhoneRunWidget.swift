@@ -3,6 +3,13 @@ import SwiftUI
 import WidgetKit
 
 @main
+struct TrainingWidgetBundle: WidgetBundle {
+  var body: some Widget {
+    PhoneRunWidget()
+    StrengthWorkoutWidget()
+  }
+}
+
 struct PhoneRunWidget: Widget {
   private let orange = Color(red: 1, green: 0.54, blue: 0.31)
 

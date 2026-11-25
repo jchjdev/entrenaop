@@ -414,7 +414,11 @@ class AppRouter {
                 create: (_) => sl<ActiveWorkoutCubit>(
                   param1: state.pathParameters['executionId']!,
                 ),
-                child: ActiveWorkoutPage(timerStore: sl(), cueService: sl()),
+                child: ActiveWorkoutPage(
+                  timerStore: sl(),
+                  cueService: sl(),
+                  lockScreen: sl(),
+                ),
               ),
             ),
           ],
@@ -603,6 +607,7 @@ class AppRouter {
                                 child: ActiveWorkoutPage(
                                   timerStore: sl(),
                                   cueService: sl(),
+                                  lockScreen: sl(),
                                   createPhoneRun: (id) => sl(param1: id),
                                   clearPhoneRun: (id) =>
                                       sl<PhoneRunCheckpoints>().clear(id),
@@ -621,6 +626,7 @@ class AppRouter {
                             child: ActiveWorkoutPage(
                               timerStore: sl(),
                               cueService: sl(),
+                              lockScreen: sl(),
                               createPhoneRun: (id) => sl(param1: id),
                               clearPhoneRun: (id) =>
                                   sl<PhoneRunCheckpoints>().clear(id),
@@ -1061,8 +1067,10 @@ class AppRouter {
                                 child: ActiveWorkoutPage(
                                   timerStore: sl(),
                                   cueService: sl(),
+                                  lockScreen: sl(),
                                   createPhoneRun: (id) => sl(param1: id),
-                                  clearPhoneRun: (id) => sl<PhoneRunCheckpoints>().clear(id),
+                                  clearPhoneRun: (id) =>
+                                      sl<PhoneRunCheckpoints>().clear(id),
                                 ),
                               ),
                             ),
@@ -1205,8 +1213,10 @@ class AppRouter {
                             child: ActiveWorkoutPage(
                               timerStore: sl(),
                               cueService: sl(),
+                              lockScreen: sl(),
                               createPhoneRun: (id) => sl(param1: id),
-                              clearPhoneRun: (id) => sl<PhoneRunCheckpoints>().clear(id),
+                              clearPhoneRun: (id) =>
+                                  sl<PhoneRunCheckpoints>().clear(id),
                             ),
                           ),
                         ),

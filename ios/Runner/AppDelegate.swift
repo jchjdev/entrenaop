@@ -22,6 +22,24 @@ import device_health
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "PhoneRunLocation") {
       phoneRunLocation = PhoneRunLocation(messenger: registrar.messenger())
     }
+    if #available(iOS 16.2, *),
+      let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "WorkoutLockScreen") {
+      let activity = StrengthWorkoutLiveActivity()
+      let channel = FlutterMethodChannel(
+        name: "es.entrenaop/workout_lock_screen", binaryMessenger: registrar.messenger())
+      channel.setMethodCallHandler { call, result in
+        switch call.method {
+        case "show":
+          if let data = call.arguments as? [String: Any] { activity.show(data) }
+          result(true)
+        case "clear":
+          if let executionId = call.arguments as? String { activity.clear(executionId) }
+          result(nil)
+        default:
+          result(FlutterMethodNotImplemented)
+        }
+      }
+    }
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "WorkoutVibration") {
       workoutVibration = WorkoutVibration(messenger: registrar.messenger())
     }

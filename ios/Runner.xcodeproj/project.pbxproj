@@ -13,6 +13,10 @@
 		A10C20261123000100000002 /* PhoneRunLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10C20261123000100000006; };
 		A10C20261123000100000003 /* PhoneRunActivityAttributes.swift in Widget Sources */ = {isa = PBXBuildFile; fileRef = A10C20261123000100000005; };
 		A10C20261123000100000004 /* PhoneRunWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10C20261123000100000007; };
+		A10C20261125000100000001 /* StrengthWorkoutActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10C20261125000100000005; };
+		A10C20261125000100000002 /* StrengthWorkoutLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10C20261125000100000006; };
+		A10C20261125000100000003 /* StrengthWorkoutActivityAttributes.swift in Widget Sources */ = {isa = PBXBuildFile; fileRef = A10C20261125000100000005; };
+		A10C20261125000100000004 /* StrengthWorkoutWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10C20261125000100000007; };
 		A10C2026112300010000000A /* PhoneRunWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A10C20261123000100000009; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
 		331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C807B294A618700263BE5 /* RunnerTests.swift */; };
@@ -67,6 +71,9 @@
 		A10C20261123000100000005 /* PhoneRunActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneRunActivityAttributes.swift; sourceTree = "<group>"; };
 		A10C20261123000100000006 /* PhoneRunLiveActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneRunLiveActivity.swift; sourceTree = "<group>"; };
 		A10C20261123000100000007 /* PhoneRunWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneRunWidget.swift; sourceTree = "<group>"; };
+		A10C20261125000100000005 /* StrengthWorkoutActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrengthWorkoutActivityAttributes.swift; sourceTree = "<group>"; };
+		A10C20261125000100000006 /* StrengthWorkoutLiveActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrengthWorkoutLiveActivity.swift; sourceTree = "<group>"; };
+		A10C20261125000100000007 /* StrengthWorkoutWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrengthWorkoutWidget.swift; sourceTree = "<group>"; };
 		A10C20261123000100000008 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A10C20261123000100000009 /* PhoneRunWidget.appex */ = {isa = PBXFileReference; explicitFileType = wrapper.app-extension; includeInIndex = 0; path = PhoneRunWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		A10C20261123000100000016 /* PhoneRunWidget.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = PhoneRunWidget.xcconfig; sourceTree = "<group>"; };
@@ -104,7 +111,7 @@
 /* Begin PBXGroup section */
 		A10C2026112300010000000D /* PhoneRunWidget */ = {
 			isa = PBXGroup;
-			children = (A10C20261123000100000007, A10C20261123000100000008, A10C20261123000100000016, );
+			children = (A10C20261123000100000007, A10C20261125000100000007, A10C20261123000100000008, A10C20261123000100000016, );
 			path = PhoneRunWidget;
 			sourceTree = "<group>";
 		};
@@ -163,6 +170,8 @@
 				A10C20261122000100000002 /* PhoneRunLocation.swift */,
 				A10C20261123000100000005 /* PhoneRunActivityAttributes.swift */,
 				A10C20261123000100000006 /* PhoneRunLiveActivity.swift */,
+				A10C20261125000100000005 /* StrengthWorkoutActivityAttributes.swift */,
+				A10C20261125000100000006 /* StrengthWorkoutLiveActivity.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 			);
 			path = Runner;
@@ -329,7 +338,7 @@
 		A10C2026112300010000000E /* PhoneRunWidget Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
-			files = (A10C20261123000100000003, A10C20261123000100000004, );
+			files = (A10C20261123000100000003, A10C20261123000100000004, A10C20261125000100000003, A10C20261125000100000004, );
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		331C807D294A63A400263BE5 /* Sources */ = {
@@ -349,6 +358,8 @@
 				A10C20261122000100000001 /* PhoneRunLocation.swift in Sources */,
 				A10C20261123000100000001 /* PhoneRunActivityAttributes.swift in Sources */,
 				A10C20261123000100000002 /* PhoneRunLiveActivity.swift in Sources */,
+				A10C20261125000100000001 /* StrengthWorkoutActivityAttributes.swift in Sources */,
+				A10C20261125000100000002 /* StrengthWorkoutLiveActivity.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

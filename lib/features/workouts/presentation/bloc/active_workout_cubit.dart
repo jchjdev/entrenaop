@@ -38,6 +38,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     required GetPendingWorkoutMutationCountUseCase getPendingMutationCount,
     required WorkoutTimerStore timerStore,
     required WorkoutCueService cueService,
+    DateTime Function()? now,
   }) : _amrapDraftStore = amrapDraftStore,
        _draftStore = sessionDraftStore,
        _correctSet = correctSet,
@@ -53,6 +54,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
        _getPendingMutationCount = getPendingMutationCount,
        _timerStore = timerStore,
        _cueService = cueService,
+       _now = now ?? DateTime.now,
        super(const ActiveWorkoutState());
 
   final String executionId;
@@ -67,7 +69,9 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   final GetPendingWorkoutMutationCountUseCase _getPendingMutationCount;
   final WorkoutTimerStore _timerStore;
   final WorkoutCueService _cueService;
+  final DateTime Function() _now;
   Timer? _restTimer;
+  DateTime? _restEndsAt;
   final WorkoutSessionDraftStore _draftStore;
   final WorkoutAmrapDraftStore _amrapDraftStore;
   final _amrapDrafts = <int, WorkoutAmrapDraft>{};
@@ -110,6 +114,9 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         status: next.status,
         execution: execution,
         restSecondsRemaining: next.restSecondsRemaining,
+        restEndsAt: next.status == ActiveWorkoutStatus.resting
+            ? _restEndsAt
+            : null,
         restCanBeSkipped: next.restCanBeSkipped,
         pendingSyncCount: next.pendingSyncCount,
         errorMessage: next.errorMessage,
@@ -500,13 +507,11 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       if (activeExecution.status == WorkoutExecutionStatus.inProgress &&
           activeExecution.currentSet != null &&
           restSnapshot?.phase == WorkoutTimerPhase.running) {
-        final elapsedSinceWrite = DateTime.now().toUtc().difference(
-          restSnapshot!.phaseStartedAt,
-        );
-        final elapsed =
-            restSnapshot.elapsedBeforeRun +
-            (elapsedSinceWrite.isNegative ? Duration.zero : elapsedSinceWrite);
-        final remaining = restSnapshot.targetSeconds - elapsed.inSeconds;
+        final endsAt = restSnapshot!.phaseStartedAt
+            .add(Duration(seconds: restSnapshot.targetSeconds))
+            .subtract(restSnapshot.elapsedBeforeRun);
+        final remaining = _secondsUntil(endsAt)
+            .clamp(0, restSnapshot.targetSeconds);
         if (remaining > 0) {
           _startRest(
             activeExecution,
@@ -514,6 +519,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
             pendingSyncCount,
             canBeSkipped: restSnapshot.restCanBeSkipped,
             totalSeconds: restSnapshot.targetSeconds,
+            endsAt: endsAt,
           );
           return;
         }
@@ -774,10 +780,13 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     int pendingSyncCount, {
     bool canBeSkipped = true,
     int? totalSeconds,
+    DateTime? endsAt,
   }) {
     final total = totalSeconds ?? seconds;
     _restTotalSeconds = total;
     _restTimer?.cancel();
+    final deadline = endsAt ?? _now().toUtc().add(Duration(seconds: seconds));
+    _restEndsAt = deadline;
     unawaited(
       _timerStore.write(
         _restTimerId,
@@ -785,7 +794,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
           phase: WorkoutTimerPhase.running,
           targetSeconds: total,
           preparationSeconds: 0,
-          phaseStartedAt: DateTime.now().toUtc(),
+          phaseStartedAt: deadline.subtract(Duration(seconds: seconds)),
           elapsedBeforeRun: Duration(seconds: total - seconds),
           restCanBeSkipped: canBeSkipped,
         ),
@@ -800,36 +809,48 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         pendingSyncCount: pendingSyncCount,
       ),
     );
-    _restTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      final remaining = state.restSecondsRemaining - 1;
-      if (remaining <= 0) {
-        timer.cancel();
-        unawaited(_timerStore.clear(_restTimerId));
-        unawaited(_cueService.signal(WorkoutCue.restFinished));
-        _publish(
-          ActiveWorkoutState(
-            status: ActiveWorkoutStatus.ready,
-            execution: state.execution,
-            pendingSyncCount: state.pendingSyncCount,
-          ),
-        );
-      } else {
-        if (total > 10 && remaining == 10) {
-          unawaited(_cueService.signal(WorkoutCue.tenSecondsRemaining));
-        } else if (total >= 20 && remaining == total ~/ 2) {
-          unawaited(_cueService.signal(WorkoutCue.halfway));
-        }
-        _publish(
-          ActiveWorkoutState(
-            status: ActiveWorkoutStatus.resting,
-            execution: state.execution,
-            restSecondsRemaining: remaining,
-            restCanBeSkipped: state.restCanBeSkipped,
-            pendingSyncCount: state.pendingSyncCount,
-          ),
-        );
+    _restTimer = Timer.periodic(
+      const Duration(seconds: 1),
+      (_) => _updateRest(),
+    );
+  }
+
+  int _secondsUntil(DateTime deadline) =>
+      (deadline.difference(_now()).inMicroseconds /
+              Duration.microsecondsPerSecond)
+          .ceil();
+
+  void refreshRestOnResume() => _updateRest(playCue: false);
+
+  void _updateRest({bool playCue = true}) {
+    final deadline = state.restEndsAt;
+    if (state.status != ActiveWorkoutStatus.resting || deadline == null) return;
+    // El pulso solo refresca la interfaz. La fecha límite también sirve al
+    // sistema cuando suspende Dart y para retomar el descanso en otro montaje.
+    final remaining = _secondsUntil(deadline)
+        .clamp(0, state.restSecondsRemaining);
+    if (remaining == state.restSecondsRemaining) return;
+    if (remaining == 0) {
+      _endRest(playCue: playCue && state.restSecondsRemaining == 1);
+      return;
+    }
+    if (playCue && state.restSecondsRemaining - remaining == 1) {
+      if (_restTotalSeconds > 10 && remaining == 10) {
+        unawaited(_cueService.signal(WorkoutCue.tenSecondsRemaining));
+      } else if (_restTotalSeconds >= 20 &&
+          remaining == _restTotalSeconds ~/ 2) {
+        unawaited(_cueService.signal(WorkoutCue.halfway));
       }
-    });
+    }
+    _publish(
+      ActiveWorkoutState(
+        status: ActiveWorkoutStatus.resting,
+        execution: state.execution,
+        restSecondsRemaining: remaining,
+        restCanBeSkipped: state.restCanBeSkipped,
+        pendingSyncCount: state.pendingSyncCount,
+      ),
+    );
   }
 
   void skipRest() {
@@ -837,8 +858,14 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         !state.restCanBeSkipped) {
       return;
     }
+    _endRest();
+  }
+
+  void _endRest({bool playCue = false}) {
     _restTimer?.cancel();
+    _restEndsAt = null;
     unawaited(_timerStore.clear(_restTimerId));
+    if (playCue) unawaited(_cueService.signal(WorkoutCue.restFinished));
     _publish(
       ActiveWorkoutState(
         status: ActiveWorkoutStatus.ready,
@@ -1098,7 +1125,6 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       return false;
     }
     _restTimer?.cancel();
-    final elapsed = Stopwatch()..start();
     _publish(
       ActiveWorkoutState(
         status: ActiveWorkoutStatus.saving,
@@ -1110,8 +1136,10 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       await _discardExecution(executionId);
     } catch (_) {
       if (isClosed) return false;
-      final remaining =
-          previous.restSecondsRemaining - elapsed.elapsed.inSeconds;
+      final deadline = previous.restEndsAt;
+      final remaining = deadline == null
+          ? 0
+          : _secondsUntil(deadline).clamp(0, previous.restSecondsRemaining);
       final resumeRest =
           previous.status == ActiveWorkoutStatus.resting && remaining > 0;
       if (resumeRest) {
@@ -1121,6 +1149,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
           previous.pendingSyncCount,
           canBeSkipped: previous.restCanBeSkipped,
           totalSeconds: _restTotalSeconds,
+          endsAt: deadline,
         );
       }
       _publish(

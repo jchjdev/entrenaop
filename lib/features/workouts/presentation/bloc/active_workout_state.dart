@@ -22,6 +22,7 @@ class ActiveWorkoutState extends Equatable {
     this.status = ActiveWorkoutStatus.initial,
     this.execution,
     this.restSecondsRemaining = 0,
+    this.restEndsAt,
     this.restCanBeSkipped = true,
     this.pendingSyncCount = 0,
     this.errorMessage,
@@ -34,6 +35,7 @@ class ActiveWorkoutState extends Equatable {
   final ActiveWorkoutStatus status;
   final WorkoutExecution? execution;
   final int restSecondsRemaining;
+  final DateTime? restEndsAt;
   final bool restCanBeSkipped;
   final int pendingSyncCount;
   final String? errorMessage;
@@ -68,6 +70,7 @@ class ActiveWorkoutState extends Equatable {
     status,
     execution,
     restSecondsRemaining,
+    restEndsAt,
     restCanBeSkipped,
     pendingSyncCount,
     errorMessage,

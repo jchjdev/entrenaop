@@ -16,6 +16,7 @@ import '../bloc/phone_run_cubit.dart';
 
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_execution_layout.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
+import 'package:entrenaop/core/platform/screen_awake.dart';
 import 'package:entrena_ui/entrena_ui.dart'
     show EntrenaDialog, EntrenaDialogActions, EntrenaButtonStyles;
 
@@ -24,6 +25,7 @@ import 'dart:async';
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_cue_service.dart';
+import 'package:entrenaop/features/workouts/domain/services/workout_lock_screen.dart';
 import 'package:entrenaop/features/workouts/domain/services/running_execution_assessment.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_timer_store.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cubit.dart';
@@ -31,6 +33,8 @@ import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_sta
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_cue_settings_button.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_cue_permission_prompt.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_closure.dart';
@@ -39,6 +43,7 @@ class ActiveWorkoutPage extends StatefulWidget {
   const ActiveWorkoutPage({
     required this.timerStore,
     required this.cueService,
+    this.lockScreen,
     this.createPhoneRun,
     this.clearPhoneRun,
     this.startWithPhone = false,
@@ -47,6 +52,7 @@ class ActiveWorkoutPage extends StatefulWidget {
 
   final WorkoutTimerStore timerStore;
   final WorkoutCueService cueService;
+  final WorkoutLockScreen? lockScreen;
   final PhoneRunCubit Function(String executionId)? createPhoneRun;
   final Future<void> Function(String executionId)? clearPhoneRun;
   final bool startWithPhone;
@@ -59,19 +65,117 @@ class _ActiveWorkoutPageState extends State<ActiveWorkoutPage> {
   final _phonePanel = GlobalKey<PhoneRunPanelState>();
   late bool _usingPhone = widget.startWithPhone;
   late final AppLifecycleListener _lifecycle;
+  late final ActiveWorkoutCubit _cubit;
+  late final StreamSubscription<ActiveWorkoutState> _workoutStates;
+  WorkoutLockScreenSnapshot? _visibleWorkout;
+  bool _keepScreenAwake = false;
+  bool _notificationBlocked = false;
+  bool _isCurrent = true;
 
   @override
   void initState() {
     super.initState();
+    _cubit = context.read<ActiveWorkoutCubit>();
     _lifecycle = AppLifecycleListener(
-      onResume: context.read<ActiveWorkoutCubit>().checkDiscardOnResume,
+      onStateChange: (_) => _syncScreenAwake(),
+      onResume: () {
+        _cubit.refreshRestOnResume();
+        _syncLockScreen(_cubit.state, refresh: true);
+        unawaited(_cubit.checkDiscardOnResume());
+      },
     );
+    _workoutStates = _cubit.stream.listen((state) {
+      _syncScreenAwake();
+      _syncLockScreen(state);
+    });
+    _syncLockScreen(_cubit.state);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _isCurrent = ModalRoute.isCurrentOf(context) ?? true;
+    _syncScreenAwake();
   }
 
   @override
   void dispose() {
     _lifecycle.dispose();
+    unawaited(_workoutStates.cancel());
+    unawaited(ScreenAwake.setEnabled(this, false));
+    if (_visibleWorkout case final workout?) {
+      unawaited(widget.lockScreen?.clear(workout.executionId));
+    }
     super.dispose();
+  }
+
+  WorkoutExecutionSet? _strengthSet(ActiveWorkoutState state) {
+    final execution = state.execution;
+    final set = execution?.currentSet;
+    return execution?.status == WorkoutExecutionStatus.inProgress &&
+            execution?.sessionType != WorkoutSessionType.running &&
+            set?.blockFormat != WorkoutBlockFormat.running &&
+            state.status != ActiveWorkoutStatus.discarded
+        ? set
+        : null;
+  }
+
+  void _syncScreenAwake() => unawaited(
+    ScreenAwake.setEnabled(
+      this,
+      _keepScreenAwake &&
+          _isCurrent &&
+          WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed &&
+          _strengthSet(_cubit.state) != null,
+    ),
+  );
+
+  void _syncLockScreen(ActiveWorkoutState state, {bool refresh = false}) {
+    final adapter = widget.lockScreen;
+    if (adapter == null || !ScreenAwake.supported) return;
+    final set = _strengthSet(state);
+    final previous = _visibleWorkout;
+    if (set == null) {
+      _visibleWorkout = null;
+      if (previous != null) unawaited(adapter.clear(previous.executionId));
+      return;
+    }
+    final execution = state.execution!;
+    final total = execution.sets
+        .where(
+          (other) =>
+              other.blockOrder == set.blockOrder &&
+              other.itemOrder == set.itemOrder,
+        )
+        .length;
+    final snapshot = WorkoutLockScreenSnapshot(
+      executionId: execution.id,
+      exercise: set.exerciseName,
+      prescription: [
+        if (set.blockFormat == WorkoutBlockFormat.straightSets &&
+            set.setOrder < total)
+          'Serie ${set.setOrder + 1} de $total'
+        else
+          workoutPositionLabel(set),
+        if (set.targetReps != null ||
+            set.targetDurationSeconds != null ||
+            set.targetDistanceMeters != null)
+          workoutTargetLabel(set),
+        if (set.targetLoadKg case final load?) '${workoutNumber(load)} kg',
+      ].join(' · '),
+      restEndsAt: state.restEndsAt,
+    );
+    if (!refresh && snapshot == previous) return;
+    _visibleWorkout = snapshot;
+    unawaited(
+      adapter.show(snapshot).then((shown) {
+        if (mounted &&
+            _visibleWorkout == snapshot &&
+            _notificationBlocked == shown) {
+          setState(() => _notificationBlocked = !shown);
+        }
+      }),
+    );
   }
 
   List<PhoneRunStep> _phoneSteps(WorkoutExecution? execution) =>
@@ -180,6 +284,11 @@ class _ActiveWorkoutPageState extends State<ActiveWorkoutPage> {
   }
 
   Widget _buildContent(BuildContext context) {
+    final strengthControls =
+        ScreenAwake.supported &&
+        context.select(
+          (ActiveWorkoutCubit cubit) => _strengthSet(cubit.state) != null,
+        );
     final phoneMode =
         _usingPhone &&
         context.select(
@@ -228,6 +337,26 @@ class _ActiveWorkoutPageState extends State<ActiveWorkoutPage> {
             PopupMenuButton<String>(
               tooltip: 'Opciones de sesión',
               onSelected: (action) async {
+                if (action == 'screen') {
+                  setState(() => _keepScreenAwake = !_keepScreenAwake);
+                  _syncScreenAwake();
+                }
+                if (action == 'lock-permission') {
+                  final allowed = await widget.cueService
+                      .requestHapticsPermission();
+                  if (!context.mounted) return;
+                  if (allowed) {
+                    _syncLockScreen(_cubit.state, refresh: true);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Permite las notificaciones de EntrenaOP en los ajustes del móvil.',
+                        ),
+                      ),
+                    );
+                  }
+                }
                 if (action == 'abandon') {
                   await _requestWorkoutAbandonment(context);
                 }
@@ -238,12 +367,25 @@ class _ActiveWorkoutPageState extends State<ActiveWorkoutPage> {
                   }
                 }
               },
-              itemBuilder: (_) => const [
-                PopupMenuItem(
+              itemBuilder: (_) => [
+                if (strengthControls)
+                  CheckedPopupMenuItem(
+                    value: 'screen',
+                    checked: _keepScreenAwake,
+                    child: const Text('Mantener pantalla encendida'),
+                  ),
+                if (strengthControls &&
+                    _notificationBlocked &&
+                    defaultTargetPlatform == TargetPlatform.android)
+                  const PopupMenuItem(
+                    value: 'lock-permission',
+                    child: Text('Permitir vista en pantalla bloqueada'),
+                  ),
+                const PopupMenuItem(
                   value: 'abandon',
                   child: Text('Finalizar y conservar lo realizado'),
                 ),
-                PopupMenuItem(
+                const PopupMenuItem(
                   value: 'discard',
                   child: Text('Descartar sesión'),
                 ),

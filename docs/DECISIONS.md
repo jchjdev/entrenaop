@@ -1,5 +1,11 @@
 # Registro de decisiones vigentes
 
+**Entreno de fuerza visible en el móvil · 25/11/2026.** Javier aprueba el
+control para mantener la pantalla encendida durante la sesión y la vista de
+la serie y el descanso en el bloqueo de iOS y Android. El ejecutor conserva
+una sola fecha de fin de descanso para la app y la vista nativa.
+[Contrato](SESSION_CONTROLS_2026_10_08.md#fuerza-en-la-pantalla-bloqueada).
+
 **RH4.1 compacta en Trainer · 24/11/2026.** Javier pide reunir la rutina en
 un programa que pueda pautarse desde «Para mí» y retirar los anexos sueltos.
 Se conserva un ciclo A/B de seis días por semana, con variantes de lunes y
