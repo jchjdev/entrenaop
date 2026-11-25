@@ -1,5 +1,17 @@
 # Preparación del lanzamiento en tiendas
 
+## Corrección de Series y registros en la prueba interna · 25/11/2026
+
+Play Console muestra `1.34.4` (compilación 79), revisión `e2e26b9e`, como
+disponible para testers internos. Corrige los recuadros grises que ocultaban
+los valores en Series y registros en Android. El paquete mantiene el entorno
+Dev y la firma de subida de la beta.
+
+El análisis de Flutter terminó sin incidencias y pasaron las 84 pruebas de
+sesiones. El Samsung de desarrollo tenía instalada la compilación 78 desde
+Google Play. Queda pendiente comprobar en ese móvil la actualización a la 79
+y el panel de series con el paquete distribuido por la tienda.
+
 ## Actualización de la prueba interna de Google Play · 25/11/2026
 
 Play Console muestra `1.34.3` (compilación 78), revisión `59e7ffef`, como
