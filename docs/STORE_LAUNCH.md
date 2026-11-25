@@ -1,5 +1,21 @@
 # Preparación del lanzamiento en tiendas
 
+## Actualización de la prueba interna de Google Play · 25/11/2026
+
+Play Console muestra `1.34.3` (compilación 78), revisión `59e7ffef`, como
+disponible para testers internos. La beta usa Supabase y Firebase de Dev y
+conserva el enlace de adhesión existente.
+
+La actualización permite guardar los resultados de las series directamente en
+su fila, cerrar un entrenamiento con registros pendientes, repetir sesiones
+pautadas, grabar rodajes con GPS y recibir avisos de ritmo durante la carrera.
+
+Se confirmaron la firma de subida, los números del paquete, las migraciones de
+Dev, el análisis limpio y 1.945 pruebas de Flutter correctas con una omitida.
+El Galaxy Dev conectado ya mostraba esa versión y compilación en su instalación
+local. Queda pendiente verificar la actualización de esta compilación desde
+Play Store en un móvil inscrito.
+
 ## Primera prueba interna de Google Play · 20/11/2026
 
 Javier decide comenzar por una beta privada mediante enlace. EntrenaOP ya está
