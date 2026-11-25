@@ -2,9 +2,10 @@
 
 ## Cierre con registros pendientes
 
-Desde 1.33.0, al acabar con datos pendientes, **Finalizar con registro parcial**
-aparece debajo de **Revisar series**. También está disponible al salir de una
-sesión elegible en curso. Abarca las sesiones de biblioteca, personales, las
+Al acabar con datos pendientes, **Finalizar con registro parcial** aparece
+debajo de **Revisar series**. Durante una sesión elegible en curso, desde 1.33.1
+**Terminar sin registrar todo** se ofrece en el diálogo **¿Salir de la sesión?**.
+El cierre abarca las sesiones de biblioteca, personales, las
 pautas normales del entrenador y las sesiones de programas por fases. El cierre
 registra el final del entrenamiento y conserva las marcas de tiempo y resultados
 confirmados. Las series sin confirmar permanecen pendientes y las omitidas
@@ -27,7 +28,8 @@ Los descansos que se pueden saltar muestran **− 10 s** y **+ 10 s** junto al
 reloj. Cada toque ajusta la fecha de fin de ese descanso, que comparte la app con
 la pantalla bloqueada. **Saltar descanso** está disponible durante toda la
 cuenta atrás. Restar hasta cero termina el descanso. Los tiempos programados de
-los descansos futuros y los temporizadores de trabajo siguen la prescripción,+incluidas las series isométricas y la espera hasta el siguiente minuto de EMOM.
+los descansos futuros y los temporizadores de trabajo siguen la prescripción,
+incluidas las series isométricas y la espera hasta el siguiente minuto de EMOM.
 
 ## Repetir una sesión pautada
 

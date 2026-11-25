@@ -44,7 +44,6 @@ class WorkoutSetEntry extends StatefulWidget {
     this.onStartPhoneRun,
     this.guidedPhoneRun = false,
     this.scrollActionsWithContent = false,
-    this.additionalActions,
   });
 
   final WorkoutExecutionSet set;
@@ -62,7 +61,6 @@ class WorkoutSetEntry extends StatefulWidget {
   final VoidCallback? onStartPhoneRun;
   final bool guidedPhoneRun;
   final bool scrollActionsWithContent;
-  final Widget? additionalActions;
 
   @override
   State<WorkoutSetEntry> createState() => _WorkoutSetEntryState();
@@ -448,7 +446,6 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
                   ),
               ],
             ),
-            ?widget.additionalActions,
           ],
         ],
       ),

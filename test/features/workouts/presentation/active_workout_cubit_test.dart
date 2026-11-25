@@ -367,6 +367,7 @@ void main() {
           findsOneWidget,
         );
         expect(find.text('Empezar con el móvil'), findsNothing);
+        expect(find.text('Terminar sin registrar todo'), findsNothing);
         expect(location.starts, isEmpty);
         if (textScale == 1) {
           expect(record.hitTestable(), findsOneWidget);
@@ -405,7 +406,7 @@ void main() {
 
   for (final partial in [false, true]) {
     testWidgets(
-      'terminar sin registrar todo conserva datos y permite volver: parcial=$partial',
+      'cerrar desde la salida conserva datos y permite volver: parcial=$partial',
       (tester) async {
         tester.view.physicalSize = const Size(390, 844);
         tester.view.devicePixelRatio = 1;
@@ -417,12 +418,8 @@ void main() {
           ], allowUnrecorded: true);
         final before = repository.execution.sets;
         final (cubit, router) = await _mountSession(tester, repository);
-        await capturePerformanceWidget(
-          tester,
-          'sesion-cierre-opcional-$partial-390',
-        );
-        await tester.tap(find.text('Terminar sin registrar todo'));
-        await tester.pumpAndSettle();
+        expect(find.text('Terminar sin registrar todo'), findsNothing);
+        await _chooseExitPartialCompletion(tester);
         await capturePerformanceWidget(
           tester,
           'confirmar-cierre-opcional-$partial-390',
@@ -430,8 +427,9 @@ void main() {
         await tester.tap(find.text('Seguir entrenando'));
         await tester.pumpAndSettle();
         expect(repository.unrecordedFinishAttempts, 0);
-        await tester.tap(find.text('Terminar sin registrar todo'));
-        await tester.pumpAndSettle();
+        expect(router.state.matchedLocation, '/session');
+        expect(find.text('Terminar sin registrar todo'), findsNothing);
+        await _chooseExitPartialCompletion(tester);
         await tester.tap(find.text('Terminar sesión'));
         await tester.pumpAndSettle();
         expect(repository.unrecordedFinishAttempts, 1);
@@ -441,13 +439,6 @@ void main() {
         expect(cubit.state.execution!.completedWithoutFullRecording, isTrue);
         expect(cubit.state.execution!.sets, before);
         expect(cubit.state.execution!.finalRpe, isNull);
-        expect(find.text('Entrenamiento terminado'), findsOneWidget);
-        await capturePerformanceWidget(
-          tester,
-          'cierre-sin-registro-$partial-390',
-        );
-        await tester.tap(find.text('Volver'));
-        await tester.pumpAndSettle();
         expect(router.state.matchedLocation, '/');
         expect(tester.takeException(), isNull);
       },
@@ -462,14 +453,18 @@ void main() {
     addTearDown(tester.view.reset);
     final repository = _Repository()
       ..execution = _execution(allowUnrecorded: true);
-    await _mountSession(tester, repository, textScaler: TextScaler.linear(2));
-    await tester.tap(find.text('Terminar sin registrar todo'));
-    await tester.pumpAndSettle();
+    final (_, router) = await _mountSession(
+      tester,
+      repository,
+      textScaler: TextScaler.linear(2),
+    );
+    await _chooseExitPartialCompletion(tester);
     await tester.ensureVisible(find.text('Terminar sesión'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Terminar sesión'));
     await tester.pumpAndSettle();
-    expect(find.text('Entrenamiento terminado'), findsOneWidget);
+    expect(repository.unrecordedFinishAttempts, 1);
+    expect(router.state.matchedLocation, '/');
     expect(tester.takeException(), isNull);
   });
 
@@ -478,7 +473,12 @@ void main() {
   ) async {
     final repository = _Repository();
     final (cubit, _) = await _mountSession(tester, repository);
+    await tester.tap(find.byTooltip('Salir de la sesión'));
+    await tester.pumpAndSettle();
+    expect(find.text('¿Salir de la sesión?'), findsOneWidget);
     expect(find.text('Terminar sin registrar todo'), findsNothing);
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
     await cubit.finishWithoutFullRecording();
     await cubit.finish(finalRpe: 5);
     expect(repository.unrecordedFinishAttempts, 0);
@@ -595,12 +595,12 @@ void main() {
   );
 
   testWidgets(
-    'el cierre sin registrar todo también funciona al salir con atrás',
+    'el cierre sin registrar todo funciona con el botón Atrás del sistema',
     (tester) async {
       final repository = _Repository()
         ..execution = _execution(allowUnrecorded: true);
       final (_, router) = await _mountSession(tester, repository);
-      await tester.tap(find.byTooltip('Salir de la sesión'));
+      await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       await tester.tap(
         find.widgetWithText(OutlinedButton, 'Terminar sin registrar todo'),
@@ -2442,6 +2442,18 @@ Future<void> _chooseExitAbandonment(WidgetTester tester) async {
   await tester.tap(
     find.widgetWithText(OutlinedButton, 'Finalizar y conservar lo realizado'),
   );
+  await tester.pumpAndSettle();
+}
+
+Future<void> _chooseExitPartialCompletion(WidgetTester tester) async {
+  await tester.tap(find.byTooltip('Salir de la sesión'));
+  await tester.pumpAndSettle();
+  final finish = find.widgetWithText(
+    OutlinedButton,
+    'Terminar sin registrar todo',
+  );
+  await tester.ensureVisible(finish);
+  await tester.tap(finish);
   await tester.pumpAndSettle();
 }
 

@@ -5,6 +5,7 @@ que las sesiones normales, incluidas las de programas por fases, se pueden
 finalizar con un registro parcial. Los borradores se conservan en el dispositivo
 y se pueden completar desde el historial. Las sesiones de preparación conservan
 los datos requeridos por el algoritmo y las fases se avanzan manualmente.
+Durante el entrenamiento, el cierre parcial se ofrece en el diálogo de salida.
 [Contrato](SESSION_CONTROLS_2026_10_08.md#cierre-con-registros-pendientes).
 
 **Ajustar el descanso en curso · 25/11/2026.** Los descansos que se pueden

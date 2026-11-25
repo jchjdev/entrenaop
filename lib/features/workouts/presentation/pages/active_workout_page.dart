@@ -620,19 +620,6 @@ class _ActiveContentState extends State<_ActiveContent> {
         widget.onStartPhoneRun != null &&
         (MediaQuery.sizeOf(context).height < 600 ||
             MediaQuery.textScalerOf(context).scale(16) > 20);
-    final finishWithoutRecording = state.canFinishWithPartialRecords
-        ? TextButton.icon(
-            onPressed: saving
-                ? null
-                : () => _requestFinishWithoutFullRecording(context),
-            icon: const Icon(Icons.task_alt_rounded),
-            label: Text(
-              current == null
-                  ? 'Finalizar con registro parcial'
-                  : 'Terminar sin registrar todo',
-            ),
-          )
-        : null;
     final records = TextButton.icon(
       onPressed: saving ? null : () => _openRecords(context),
       icon: const Icon(Icons.format_list_numbered_rounded),
@@ -730,9 +717,6 @@ class _ActiveContentState extends State<_ActiveContent> {
         onStartPhoneRun: widget.onStartPhoneRun,
         guidedPhoneRun: widget.guidedPhoneRun,
         scrollActionsWithContent: scrollPhoneRunActions,
-        additionalActions: scrollPhoneRunActions
-            ? finishWithoutRecording
-            : null,
       );
       body = current.performancePrescription != null
           ? WorkoutExecutionFrame(actions: records, child: card)
@@ -766,7 +750,14 @@ class _ActiveContentState extends State<_ActiveContent> {
                       onPressed: () => _openRecords(context),
                       child: const Text('Revisar series'),
                     ),
-                    ?finishWithoutRecording,
+                    if (state.canFinishWithPartialRecords)
+                      TextButton.icon(
+                        onPressed: saving
+                            ? null
+                            : () => _requestFinishWithoutFullRecording(context),
+                        icon: const Icon(Icons.task_alt_rounded),
+                        label: const Text('Finalizar con registro parcial'),
+                      ),
                   ],
                 ),
               )
@@ -845,10 +836,6 @@ class _ActiveContentState extends State<_ActiveContent> {
                 ),
               ),
               Expanded(child: body),
-              if (!scrollPhoneRunActions &&
-                  finishWithoutRecording != null &&
-                  (current != null || state.unconfirmedDraftCount == 0))
-                SafeArea(top: false, child: finishWithoutRecording),
             ],
           ),
         ),
