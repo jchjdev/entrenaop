@@ -1499,6 +1499,27 @@ void main() {
       expect(find.text('Por realizar').hitTestable(), findsOneWidget);
       expect(_inlineField('plank-2', 'duration'), findsNothing);
       expect(_inlineField('plank-1', 'rir'), findsNothing);
+      final time = _inlineField('plank-1', 'duration');
+      final emptyTime = find.byKey(
+        const ValueKey('inline-plank-2-duration-value'),
+      );
+      expect(tester.getSize(time).width, lessThanOrEqualTo(84));
+      expect(
+        tester.getCenter(time).dx,
+        closeTo(tester.getCenter(emptyTime).dx, .1),
+      );
+      expect(
+        tester.getCenter(time).dx,
+        closeTo(tester.getCenter(find.text('Tiempo')).dx, .1),
+      );
+      expect(
+        tester
+            .getCenter(
+              find.descendant(of: time, matching: find.byType(EditableText)),
+            )
+            .dy,
+        closeTo(tester.getCenter(find.byTooltip('Terminar Serie 2')).dy, .1),
+      );
       expect(
         tester
             .widget<TextField>(_inlineField('plank-1', 'duration'))

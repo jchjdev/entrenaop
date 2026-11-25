@@ -82,6 +82,55 @@ enum WorkoutInlineField {
   }
 }
 
+/// Encabezado y filas comparten las mismas columnas, incluso sin datos o ✓.
+class WorkoutInlineRecordColumns extends StatelessWidget {
+  const WorkoutInlineRecordColumns({
+    super.key,
+    required this.leading,
+    required this.cells,
+    this.action,
+  });
+
+  static const double inset = 8;
+  static const double cellHeight = kMinInteractiveDimension;
+  static const double _seriesWidth = 44;
+  static const double _actionWidth = 48;
+  static const double _maxCellWidth = 92;
+
+  static double minimumWidth(int count) =>
+      2 * inset + _seriesWidth + _actionWidth + 58 * count;
+
+  final Widget leading;
+  final List<Widget> cells;
+  final Widget? action;
+
+  @override
+  Widget build(BuildContext context) => Align(
+    alignment: AlignmentDirectional.centerStart,
+    child: ConstrainedBox(
+      constraints: BoxConstraints(
+        maxWidth: _seriesWidth + _maxCellWidth * cells.length + _actionWidth,
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: _seriesWidth,
+            child: Center(child: leading),
+          ),
+          for (final cell in cells)
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: cell,
+              ),
+            ),
+          SizedBox(width: _actionWidth, child: action),
+        ],
+      ),
+    ),
+  );
+}
+
 class WorkoutInlineRecordRow extends StatefulWidget {
   const WorkoutInlineRecordRow({
     super.key,
@@ -212,7 +261,8 @@ class _WorkoutInlineRecordRowState extends State<WorkoutInlineRecordRow> {
     final title = Text(
       widget.compact ? (set.setOrder + 1).toString() : position,
       semanticsLabel: widget.compact ? position : null,
-      style: theme.textTheme.labelMedium?.copyWith(
+      style: theme.textTheme.titleSmall?.copyWith(
+        fontWeight: FontWeight.w700,
         color: widget.current ? theme.colorScheme.primary : null,
       ),
     );
@@ -222,13 +272,25 @@ class _WorkoutInlineRecordRowState extends State<WorkoutInlineRecordRow> {
                 ? 'Terminar $position'
                 : 'Confirmar $position',
             onPressed: _canConfirm ? _confirm : null,
-            icon: const Icon(Icons.check_rounded),
+            icon: const Icon(Icons.check_rounded, size: 22),
           )
         : null;
     final cells = widget.fields.map((field) {
       if (!widget.editable) {
         final value = skipped ? '' : field.resultText(set, draft);
-        return Text(value.isEmpty ? '—' : value, textAlign: TextAlign.center);
+        return SizedBox(
+          height: WorkoutInlineRecordColumns.cellHeight,
+          child: Center(
+            child: Text(
+              value.isEmpty ? '—' : value,
+              key: ValueKey('inline-${set.id}-${field.name}-value'),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+          ),
+        );
       }
       return Semantics(
         label: '${field.accessibleLabel}, $position',
@@ -237,6 +299,11 @@ class _WorkoutInlineRecordRowState extends State<WorkoutInlineRecordRow> {
           controller: _controllers[field],
           enabled: widget.enabled && !_saving,
           textAlign: widget.compact ? TextAlign.center : TextAlign.start,
+          textAlignVertical: TextAlignVertical.center,
+          style: theme.textTheme.bodyLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
           keyboardType: TextInputType.numberWithOptions(
             decimal:
                 field != WorkoutInlineField.reps &&
@@ -249,74 +316,106 @@ class _WorkoutInlineRecordRowState extends State<WorkoutInlineRecordRow> {
           decoration: InputDecoration(
             labelText: widget.compact ? null : field.label,
             hintText: field == WorkoutInlineField.duration ? '0:00' : '—',
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 4,
-              vertical: 10,
-            ),
+            isDense: widget.compact ? false : null,
+            enabledBorder: widget.compact
+                ? OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(
+                      color: theme.colorScheme.outlineVariant,
+                    ),
+                  )
+                : null,
+            constraints: widget.compact
+                ? const BoxConstraints.tightFor(
+                    height: WorkoutInlineRecordColumns.cellHeight,
+                  )
+                : null,
+            contentPadding: widget.compact
+                ? const EdgeInsets.symmetric(horizontal: 6)
+                : null,
           ),
           onChanged: _changed,
         ),
       );
     }).toList();
-    return Container(
-      margin: const EdgeInsets.only(bottom: 6),
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: widget.current
-            ? theme.colorScheme.primary.withValues(alpha: .08)
-            : null,
-        border: widget.current
-            ? Border.all(color: theme.colorScheme.primary)
-            : null,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (widget.compact)
-            Row(
-              children: [
-                SizedBox(
-                  width: 48,
-                  child: check == null
-                      ? title
-                      : Column(children: [title, check]),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: widget.current
+              ? theme.colorScheme.primary.withValues(alpha: .08)
+              : null,
+          border: widget.current
+              ? Border.all(color: theme.colorScheme.primary)
+              : null,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: WorkoutInlineRecordColumns.inset,
+            vertical: 4,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (widget.compact)
+                WorkoutInlineRecordColumns(
+                  leading: title,
+                  cells: cells,
+                  action:
+                      check ??
+                      (completed
+                          ? Icon(
+                              Icons.check_rounded,
+                              size: 18,
+                              color: theme.colorScheme.onSurfaceVariant,
+                            )
+                          : null),
+                )
+              else ...[
+                Row(
+                  children: [
+                    Expanded(child: title),
+                    ?check,
+                  ],
                 ),
-                for (final cell in cells)
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 6),
+                if (widget.editable)
+                  for (final cell in cells)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
                       child: cell,
                     ),
+              ],
+              Wrap(
+                spacing: 8,
+                runSpacing: 2,
+                children: [
+                  Text(
+                    status,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: widget.current || pending
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.onSurfaceVariant,
+                    ),
                   ),
-              ],
-            )
-          else ...[
-            Row(
-              children: [
-                Expanded(child: title),
-                ?check,
-              ],
-            ),
-            if (widget.editable)
-              for (final cell in cells)
-                Padding(padding: const EdgeInsets.only(top: 8), child: cell),
-          ],
-          Text(status, style: theme.textTheme.bodySmall),
-          if (widget.current)
-            Text(
-              [
-                'Objetivo · ${workoutTargetLabel(set)}',
-                if (set.targetLoadKg case final load?)
-                  '${workoutNumber(load)} kg',
-                if (set.usesRir && set.targetRir != null)
-                  'RIR ${workoutNumber(set.targetRir!)}',
-                if (set.targetRpe case final effort?)
-                  'RPE ${workoutNumber(effort)}',
-              ].join(' · '),
-              style: theme.textTheme.bodySmall,
-            ),
-        ],
+                  if (widget.current)
+                    Text(
+                      [
+                        'Objetivo · ${workoutTargetLabel(set)}',
+                        if (set.targetLoadKg case final load?)
+                          '${workoutNumber(load)} kg',
+                        if (set.usesRir && set.targetRir != null)
+                          'RIR ${workoutNumber(set.targetRir!)}',
+                        if (set.targetRpe case final effort?)
+                          'RPE ${workoutNumber(effort)}',
+                      ].join(' · '),
+                      style: theme.textTheme.bodySmall,
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

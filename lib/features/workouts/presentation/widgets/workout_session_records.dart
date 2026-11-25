@@ -121,25 +121,32 @@ class _WorkoutSessionRecordsState extends State<WorkoutSessionRecords> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final compact =
-              constraints.maxWidth >= 54 + 62 * fields.length &&
+              constraints.maxWidth >=
+                  WorkoutInlineRecordColumns.minimumWidth(fields.length) &&
               MediaQuery.textScalerOf(context).scale(14) <= 18;
+          final theme = Theme.of(context);
+          final heading = theme.textTheme.labelMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w700,
+          );
           return Column(
             children: [
               if (compact)
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(6, 0, 6, 8),
-                  child: Row(
-                    children: [
-                      const SizedBox(width: 48, child: Text('Serie')),
+                  padding: const EdgeInsets.fromLTRB(
+                    WorkoutInlineRecordColumns.inset,
+                    0,
+                    WorkoutInlineRecordColumns.inset,
+                    8,
+                  ),
+                  child: WorkoutInlineRecordColumns(
+                    leading: Text('Serie', style: heading),
+                    cells: [
                       for (final field in fields)
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 6),
-                            child: Text(
-                              field.label,
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
+                        Text(
+                          field.label,
+                          textAlign: TextAlign.center,
+                          style: heading,
                         ),
                     ],
                   ),

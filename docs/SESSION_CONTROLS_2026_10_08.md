@@ -10,6 +10,11 @@ la pauta: repeticiones, tiempo o metros, con carga y esfuerzo cuando procedan.
 En una sujeción se puede registrar lastre y el RPE pautado. El RIR corresponde
 a las tareas con repeticiones que lo admiten.
 
+Las columnas de la vista compacta alinean el número, el dato y el ✓ a la
+misma altura. Las casillas tienen ancho acotado y las rayas de las series
+pendientes conservan el centro de su columna. Con texto ampliado se muestran
+etiquetas junto a los campos.
+
 Escribir guarda un borrador en el dispositivo. El ✓ de la fila confirma sus
 datos. En la actual inicia el descanso que corresponda a la pauta. Confirmar
 otra fila durante el descanso conserva el reloj. Una serie con el cronómetro

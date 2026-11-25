@@ -5,6 +5,7 @@ las series juntas al desplegar el ejercicio. La actual se destaca, los datos
 se editan en su fila y las futuras quedan como «Por realizar». Escribir
 conserva un borrador y el ✓ de la fila lo confirma. Una sujeción por tiempo
 puede registrar carga y el RPE previsto por su pauta.
+Javier pide casillas más estrechas y resultados alineados en todas las filas.
 [Recorrido](SESSION_CONTROLS_2026_10_08.md#registro-en-la-fila-de-la-serie).
 
 **Repetir visible desde el resultado · 25/11/2026.** Javier pide que
