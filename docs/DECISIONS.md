@@ -1,5 +1,12 @@
 # Registro de decisiones vigentes
 
+**Verificar la versión móvil por plataforma · 25/11/2026.** Javier pide que
+la regla de versionado se aplique en todos los chats. El cambio funcional
+incluye el incremento de versión y compilación en `pubspec.yaml`. Si la entrega
+incluye instalación, se contrasta el paquete del dispositivo en Android y en
+iOS por separado y se informa de cualquier instalación pendiente.
+[Procedimiento](APP_BUILD_IDENTITY.md#verificar-una-actualización-en-el-móvil).
+
 **Registro rápido en la serie · 25/11/2026.** Javier aprueba mostrar todas
 las series juntas al desplegar el ejercicio. La actual se destaca, los datos
 se editan en su fila y las futuras quedan como «Por realizar». Javier

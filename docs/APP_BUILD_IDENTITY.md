@@ -8,7 +8,7 @@ Publicar Trainer o ADMIN no actualiza la app instalada en el teléfono.
 
 ## Qué se muestra
 
-Perfil → Versión de la app, encima de Cerrar sesión: versión y número reales del
+Perfil → Ajustes → Versión de la app, encima de Cerrar sesión: versión y número reales del
 paquete, entorno y revisión corta. Al abrir: revisión completa, modo, fecha UTC de
 preparación y si había cambios locales. Copiar datos de versión copia únicamente
 esa información técnica, sin usuario, correo, tokens, configuración o métricas.
@@ -25,6 +25,22 @@ Si falla el plugin se muestra versión no disponible. Sin metadatos de fuente se
 muestra revisión/fecha sin identificar. Nunca se deduce «última versión» de un
 contador o SHA, ni se anuncia una actualización sin catálogo de distribución.
 Este tramo no incorpora un servicio remoto de actualizaciones.
+
+## Verificar una actualización en el móvil
+
+1. Comparar la línea `version:` de `pubspec.yaml` con la de partida. Un cambio
+   funcional lleva un incremento menor o de parche según su alcance y un
+   número de compilación superior. El código y ambos números se guardan juntos.
+2. Compilar la revisión acordada para cada plataforma. En Android, comprobar el
+   paquete, el código y el nombre de versión con `aapt dump badging`. En iOS,
+   comprobar `CFBundleShortVersionString` y `CFBundleVersion` de
+   `Runner.app/Info.plist` en el Mac. Para las pruebas internas, confirmar
+   también el entorno Dev.
+3. Actualizar por reemplazo para conservar la sesión y los borradores. Leer la
+   versión y la compilación instaladas en cada móvil con ADB, Xcode o
+   **Perfil → Ajustes → Versión de la app**. Informar por separado del estado de
+   Android e iOS e identificar la revisión de origen. Publicar el commit deja
+   el código disponible para compilar en el otro equipo.
 
 ## Compilar o instalar con identidad
 

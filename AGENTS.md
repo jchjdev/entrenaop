@@ -27,7 +27,14 @@ histórica.
   compilación en `pubspec.yaml` dentro del mismo bloque. Usar un incremento menor
   para funcionalidades y uno de parche para correcciones; los commits de
   documentación, pruebas o infraestructura sin cambios en la app no requieren
-  otra versión. No confundir el número de compilación con la versión visible.
+  otra versión. Antes de guardar, comparar ambos números con los de partida.
+- Al entregar una actualización para probar en el móvil, comprobar por separado
+  Android e iOS. Compilar la revisión acordada con la versión y compilación de
+  `pubspec.yaml`, verificar ambos números en el artefacto e instalar por
+  reemplazo en los dispositivos Dev acordados que estén accesibles. Confirmar
+  después los números del paquete instalado en cada dispositivo. Si falta algún
+  paso, indicar qué versión está disponible y qué queda pendiente por plataforma.
+  [Procedimiento de verificación](docs/APP_BUILD_IDENTITY.md#verificar-una-actualización-en-el-móvil).
 - Añadir comentarios en castellano cuando aclaren reglas de negocio,
   conversiones, seguridad o decisiones no evidentes. Evitar comentarios que
   solo repitan literalmente lo que ya expresa el código.
