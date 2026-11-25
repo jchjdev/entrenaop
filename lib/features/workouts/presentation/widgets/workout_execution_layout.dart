@@ -158,6 +158,7 @@ class WorkoutRestPanel extends StatelessWidget {
     required this.seconds,
     required this.canSkip,
     required this.onSkip,
+    required this.onAdjust,
     required this.nextName,
     required this.nextTarget,
     this.nextImageUrl,
@@ -166,6 +167,7 @@ class WorkoutRestPanel extends StatelessWidget {
   final int seconds;
   final bool canSkip;
   final VoidCallback onSkip, onNextTechnique;
+  final ValueChanged<Duration> onAdjust;
   final String nextName, nextTarget;
   final String? nextImageUrl;
   @override
@@ -178,10 +180,37 @@ class WorkoutRestPanel extends StatelessWidget {
         textAlign: TextAlign.center,
         style: Theme.of(context).textTheme.titleMedium,
       ),
-      Text(
-        '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}',
-        textAlign: TextAlign.center,
-        style: const TextStyle(fontSize: 64, fontWeight: FontWeight.w800),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (canSkip)
+            IconButton.outlined(
+              tooltip: 'Quitar 10 segundos',
+              onPressed: () => onAdjust(const Duration(seconds: -10)),
+              icon: const Icon(Icons.remove_rounded),
+            ),
+          Flexible(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}',
+                  style: const TextStyle(
+                    fontSize: 64,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          if (canSkip)
+            IconButton.outlined(
+              tooltip: 'Añadir 10 segundos',
+              onPressed: () => onAdjust(const Duration(seconds: 10)),
+              icon: const Icon(Icons.add_rounded),
+            ),
+        ],
       ),
       if (canSkip)
         TextButton(onPressed: onSkip, child: const Text('Saltar descanso')),

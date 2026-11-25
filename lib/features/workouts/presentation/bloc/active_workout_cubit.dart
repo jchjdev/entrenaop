@@ -399,10 +399,11 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     }
   }
 
-  Future<void> _flushSessionEdits() async {
+  Future<void> _flushSessionEdits({bool keepUnconfirmed = false}) async {
     for (final draft in _drafts.values.toList()) {
       if (draft.endedAt == null) continue;
       if (!draft.confirmed) {
+        if (keepUnconfirmed) continue;
         throw StateError('Hay series con datos pendientes de confirmar.');
       }
       if (!draft.saved) {
@@ -498,9 +499,11 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         }
       } else {
         _drafts.clear();
-        await _draftStore.clear(executionId).catchError((Object _) {});
         _amrapDrafts.clear();
-        await _amrapDraftStore.clear(executionId).catchError((Object _) {});
+        if (!execution.completedWithoutFullRecording) {
+          await _draftStore.clear(executionId).catchError((Object _) {});
+          await _amrapDraftStore.clear(executionId).catchError((Object _) {});
+        }
       }
       final activeExecution = execution!;
       final restSnapshot = await _timerStore.read(_restTimerId);
@@ -861,6 +864,35 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     _endRest();
   }
 
+  void adjustRest(Duration adjustment) {
+    final rest = state;
+    final endsAt = rest.restEndsAt;
+    final execution = rest.execution;
+    if (rest.status != ActiveWorkoutStatus.resting ||
+        !rest.restCanBeSkipped ||
+        endsAt == null ||
+        execution == null) {
+      return;
+    }
+    if (_secondsUntil(endsAt) <= 0) {
+      _endRest();
+      return;
+    }
+    final adjustedEnd = endsAt.add(adjustment);
+    final remaining = _secondsUntil(adjustedEnd);
+    if (remaining <= 0) {
+      _endRest(playCue: true);
+      return;
+    }
+    _startRest(
+      execution,
+      remaining,
+      rest.pendingSyncCount,
+      totalSeconds: _restTotalSeconds + adjustment.inSeconds,
+      endsAt: adjustedEnd,
+    );
+  }
+
   void _endRest({bool playCue = false}) {
     _restTimer?.cancel();
     _restEndsAt = null;
@@ -902,28 +934,10 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     if (execution == null ||
         execution.status != WorkoutExecutionStatus.inProgress ||
         (!withoutFullRecording && execution.currentSet != null) ||
-        (withoutFullRecording &&
-            (!execution.canFinishWithoutFullRecording ||
-                execution.currentSet == null))) {
+        (withoutFullRecording && !state.canFinishWithPartialRecords)) {
       return;
     }
-    if (withoutFullRecording &&
-        _amrapDrafts.values.any(
-          (draft) => draft.rounds != '0' || draft.hasPartial,
-        )) {
-      _refresh(
-        error: 'Confirma el resultado AMRAP antes de terminar. Tus datos se conservan.',
-      );
-      return;
-    }
-    if (state.unconfirmedDraftCount > 0 ||
-        (withoutFullRecording &&
-            _drafts.values.any(
-              (draft) =>
-                  !draft.confirmed &&
-                  (draft.endedAt != null ||
-                      draft.fields.values.any((v) => v.trim().isNotEmpty)),
-            ))) {
+    if (!withoutFullRecording && state.unconfirmedDraftCount > 0) {
       _refresh(
         error: 'Revisa las series con datos pendientes antes de finalizar.',
       );
@@ -941,7 +955,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     );
     var disposition = WorkoutMutationDisposition.synced;
     try {
-      await _flushSessionEdits();
+      await _flushSessionEdits(keepUnconfirmed: withoutFullRecording);
       disposition = withoutFullRecording
           ? await _finishWithoutFullRecording(executionId)
           : await _finishExecution(
@@ -973,6 +987,17 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       maxHeartRateBpm: maxHeartRateBpm,
       resultSource: WorkoutResultSource.manual,
       completedWithoutFullRecording: withoutFullRecording,
+      sets: withoutFullRecording
+          ? execution.sets.map((set) {
+              final draft = _drafts[set.id];
+              return draft?.hasUnconfirmedData == true && !draft!.saved
+                  ? set.copyWith(
+                      status: WorkoutSetStatus.pending,
+                      replaceResult: true,
+                    )
+                  : set;
+            }).toList()
+          : null,
     );
     _drafts.clear();
     _amrapDrafts.clear();
@@ -986,8 +1011,10 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
           await _timerStore.clear('$executionId:tabata:${current.blockOrder}');
         }
       }
-      await _draftStore.clear(executionId);
-      await _amrapDraftStore.clear(executionId);
+      if (!withoutFullRecording) {
+        await _draftStore.clear(executionId);
+        await _amrapDraftStore.clear(executionId);
+      }
     } catch (_) {
       warning = 'Sesión finalizada. No se ha podido limpiar el borrador local.';
     }

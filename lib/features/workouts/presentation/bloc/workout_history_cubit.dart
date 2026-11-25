@@ -1,4 +1,7 @@
 import '../../domain/usecases/record_workout_effort.dart';
+import '../../domain/services/workout_session_draft_store.dart';
+import '../../domain/services/workout_amrap_draft_store.dart';
+import '../../domain/entities/pending_workout_mutation.dart';
 
 import 'package:workout_core/workout_result_review.dart';
 
@@ -139,10 +142,18 @@ class WorkoutHistoryDetailCubit extends Cubit<WorkoutHistoryDetailState> {
     required CorrectWorkoutSetUseCase correctSet,
     GetWorkoutComparisonPage? getComparison,
     RecordWorkoutEffort? recordEffort,
+    WorkoutSessionDraftStore? draftStore,
+    WorkoutAmrapDraftStore? amrapDraftStore,
+    CompleteWorkoutSetUseCase? completeSet,
+    CompleteAmrapBlockUseCase? completeAmrap,
   }) : _recordEffort = recordEffort,
        _getComparison = getComparison,
        _getExecution = getExecution,
        _correctSet = correctSet,
+       _completeSet = completeSet,
+       _completeAmrap = completeAmrap,
+       _draftStore = draftStore,
+       _amrapDraftStore = amrapDraftStore,
        super(const WorkoutHistoryDetailState());
 
   final RecordWorkoutEffort? _recordEffort;
@@ -154,7 +165,10 @@ class WorkoutHistoryDetailCubit extends Cubit<WorkoutHistoryDetailState> {
 
   Future<void> recordEffort(int rpe) async {
     final execution = state.execution;
-    if (!canRecordEffort || execution == null || state.isCorrecting || isClosed) {
+    if (!canRecordEffort ||
+        execution == null ||
+        state.isCorrecting ||
+        isClosed) {
       return;
     }
     emit(
@@ -199,6 +213,191 @@ class WorkoutHistoryDetailCubit extends Cubit<WorkoutHistoryDetailState> {
   final String executionId;
   final GetWorkoutExecutionUseCase _getExecution;
   final CorrectWorkoutSetUseCase _correctSet;
+  final CompleteWorkoutSetUseCase? _completeSet;
+  final CompleteAmrapBlockUseCase? _completeAmrap;
+  final WorkoutSessionDraftStore? _draftStore;
+  final WorkoutAmrapDraftStore? _amrapDraftStore;
+  Map<String, WorkoutSessionSetDraft> _drafts = {};
+  Map<int, WorkoutAmrapDraft> _amrapDrafts = {};
+  final _submitted = <String>{};
+  final _submittedAmrap = <int>{};
+
+  WorkoutSessionSetDraft? pendingDraft(String id) => _drafts[id];
+  WorkoutAmrapDraft? pendingAmrapDraft(int order) => _amrapDrafts[order];
+
+  bool canCompletePendingSet(WorkoutExecutionSet set) =>
+      _completeSet != null &&
+      !_submitted.contains(set.id) &&
+      state.execution?.completedWithoutFullRecording == true &&
+      (set.status == WorkoutSetStatus.pending &&
+              _drafts[set.id]?.confirmed != true ||
+          _drafts[set.id]?.hasUnconfirmedData == true &&
+              set.canBeCorrectedAt(DateTime.now()));
+
+  bool canCompletePendingAmrap(int order) =>
+      _completeAmrap != null &&
+      !_submittedAmrap.contains(order) &&
+      state.execution?.completedWithoutFullRecording == true &&
+      state.execution?.amrapResultFor(order) == null &&
+      (state.execution?.sets.any(
+            (set) =>
+                set.blockOrder == order &&
+                set.status == WorkoutSetStatus.pending,
+          ) ??
+          false);
+
+  Future<void> updatePendingDraft(
+    WorkoutSetResultInput result,
+    Map<String, String> fields,
+  ) async {
+    if (isClosed || state.isCorrecting) return;
+    final draft =
+        _drafts[result.resultId] ?? WorkoutSessionSetDraft(result: result);
+    _drafts[result.resultId] = draft.copyWith(
+      result: result,
+      fields: Map.of(fields),
+    );
+    try {
+      await _draftStore?.write(executionId, Map.of(_drafts));
+    } catch (_) {
+      _partialState(
+        message: 'No se pudo guardar el borrador en este dispositivo.',
+      );
+    }
+  }
+
+  Future<void> updatePendingAmrapDraft(
+    int order,
+    WorkoutAmrapDraft draft,
+  ) async {
+    if (isClosed || state.isCorrecting) return;
+    _amrapDrafts[order] = draft;
+    try {
+      await _amrapDraftStore?.write(executionId, Map.of(_amrapDrafts));
+    } catch (_) {
+      _partialState(
+        message: 'No se pudo guardar el borrador en este dispositivo.',
+      );
+    }
+  }
+
+  Future<bool> savePendingSet(
+    WorkoutSetResultInput result,
+    Map<String, String> fields,
+  ) async {
+    final set = state.execution?.sets
+        .where((item) => item.id == result.resultId)
+        .firstOrNull;
+    if (isClosed ||
+        state.isCorrecting ||
+        set == null ||
+        !canCompletePendingSet(set)) {
+      return false;
+    }
+    if (!WorkoutSessionSetDraft(result: result).canConfirm(set)) {
+      _partialState(
+        message: 'Revisa los datos necesarios para confirmar la serie.',
+      );
+      return false;
+    }
+    return _savePartial(() async {
+      var saved = WorkoutMutationDisposition.synced;
+      if (set.status == WorkoutSetStatus.completed) {
+        await _correctSet(
+          WorkoutSetCorrectionInput(
+            resultId: result.resultId,
+            reason: 'Completar datos pendientes del entrenamiento',
+            actualReps: result.actualReps,
+            actualDurationSeconds: result.actualDurationSeconds,
+            actualDistanceMeters: result.actualDistanceMeters,
+            actualLoadKg: result.actualLoadKg,
+            actualRpe: result.actualRpe,
+            actualRir: result.actualRir,
+            actualRecoveryDurationSeconds: result.actualRecoveryDurationSeconds,
+            actualRecoveryDistanceMeters: result.actualRecoveryDistanceMeters,
+            performanceResult: result.performanceResult,
+          ),
+        );
+      } else {
+        saved = await _completeSet!(result);
+      }
+      _submitted.add(set.id);
+      if (saved == WorkoutMutationDisposition.queued) {
+        _drafts[set.id] = WorkoutSessionSetDraft(
+          result: result,
+          fields: Map.of(fields),
+          confirmed: true,
+          saved: true,
+        );
+      } else {
+        _drafts.remove(set.id);
+      }
+      await _draftStore
+          ?.write(executionId, Map.of(_drafts))
+          .catchError((Object _) {});
+      return saved;
+    });
+  }
+
+  Future<bool> savePendingAmrap(WorkoutAmrapResultInput result) async {
+    if (isClosed ||
+        state.isCorrecting ||
+        result.executionId != executionId ||
+        !canCompletePendingAmrap(result.blockOrder)) {
+      return false;
+    }
+    return _savePartial(() async {
+      final saved = await _completeAmrap!(result);
+      _submittedAmrap.add(result.blockOrder);
+      if (saved == WorkoutMutationDisposition.synced) {
+        _amrapDrafts.remove(result.blockOrder);
+        await _amrapDraftStore
+            ?.write(executionId, Map.of(_amrapDrafts))
+            .catchError((Object _) {});
+      }
+      return saved;
+    });
+  }
+
+  Future<bool> _savePartial(
+    Future<WorkoutMutationDisposition> Function() operation,
+  ) async {
+    _partialState(saving: true);
+    try {
+      final result = await operation();
+      final updated = await _getExecution(executionId)
+          .catchError((Object _) => null);
+      _partialState(
+        execution: updated,
+        message: result == WorkoutMutationDisposition.queued
+            ? 'Resultado pendiente de sincronizar.'
+            : 'Resultado guardado.',
+      );
+      return true;
+    } catch (_) {
+      _partialState(
+        message: 'No se pudo guardar el resultado. Puedes reintentar.',
+      );
+      return false;
+    }
+  }
+
+  void _partialState({
+    WorkoutExecution? execution,
+    bool saving = false,
+    String? message,
+  }) {
+    if (isClosed) return;
+    emit(
+      WorkoutHistoryDetailState(
+        status: WorkoutHistoryDetailStatus.loaded,
+        execution: execution ?? state.execution,
+        isCorrecting: saving,
+        correctionMessage: message,
+      ),
+    );
+  }
+
   int _detailLoadVersion = 0;
 
   Future<void> load() async {
@@ -221,6 +420,19 @@ class WorkoutHistoryDetailCubit extends Cubit<WorkoutHistoryDetailState> {
           ),
         );
         return;
+      }
+      if (execution.completedWithoutFullRecording) {
+        _drafts =
+            await _draftStore
+                ?.read(executionId)
+                .catchError((Object _) => <String, WorkoutSessionSetDraft>{}) ??
+            {};
+        _amrapDrafts =
+            await _amrapDraftStore
+                ?.read(executionId)
+                .catchError((Object _) => <int, WorkoutAmrapDraft>{}) ??
+            {};
+        if (isClosed || version != _detailLoadVersion) return;
       }
       emit(
         WorkoutHistoryDetailState(

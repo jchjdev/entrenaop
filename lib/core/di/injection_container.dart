@@ -479,6 +479,10 @@ Future<void> initDependencies() async {
       executionId: executionId,
       getExecution: sl(),
       correctSet: sl(),
+      draftStore: sl(),
+      amrapDraftStore: sl(),
+      completeSet: sl(),
+      completeAmrap: sl(),
       getComparison: GetWorkoutComparisonPage(sl()),
       recordEffort: RecordWorkoutEffort(
         SupabaseWorkoutEffortRepository(

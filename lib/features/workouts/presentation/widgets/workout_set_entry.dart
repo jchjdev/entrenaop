@@ -9,6 +9,7 @@ import '../../domain/entities/workout_execution.dart';
 import '../../domain/entities/workout_template.dart';
 import '../../domain/services/workout_timer_store.dart';
 import '../../domain/services/workout_cue_service.dart';
+import '../../domain/services/workout_session_draft_store.dart';
 import '../bloc/active_workout_cubit.dart';
 import 'workout_execution_labels.dart';
 import 'workout_execution_layout.dart';
@@ -20,6 +21,12 @@ import 'performance_result_form.dart';
 import 'performance_stopwatch.dart';
 import 'duration_input_formatter.dart';
 
+typedef WorkoutSetDraftEditor = ({
+  WorkoutSessionSetDraft? initial,
+  Future<void> Function(WorkoutSetResultInput, Map<String, String>) update,
+  Future<bool> Function(WorkoutSetResultInput, Map<String, String>) confirm,
+});
+
 class WorkoutSetEntry extends StatefulWidget {
   const WorkoutSetEntry({
     super.key,
@@ -28,10 +35,11 @@ class WorkoutSetEntry extends StatefulWidget {
     required this.timerStore,
     required this.cueService,
     required this.saving,
-    required this.onComplete,
-    required this.onSkip,
-    required this.onSkipWarmUp,
+    this.onComplete,
+    this.onSkip,
+    this.onSkipWarmUp,
     this.review = false,
+    this.reviewEditor,
     this.records,
     this.onStartPhoneRun,
     this.guidedPhoneRun = false,
@@ -44,11 +52,12 @@ class WorkoutSetEntry extends StatefulWidget {
   final WorkoutTimerStore timerStore;
   final WorkoutCueService cueService;
   final bool saving;
-  final void Function(WorkoutSetResultInput result, {int? restSecondsOverride})
+  final void Function(WorkoutSetResultInput result, {int? restSecondsOverride})?
   onComplete;
-  final void Function({int? restSecondsOverride}) onSkip;
-  final VoidCallback onSkipWarmUp;
+  final void Function({int? restSecondsOverride})? onSkip;
+  final VoidCallback? onSkipWarmUp;
   final bool review;
+  final WorkoutSetDraftEditor? reviewEditor;
   final Widget? records;
   final VoidCallback? onStartPhoneRun;
   final bool guidedPhoneRun;
@@ -107,33 +116,43 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
     );
     // La carga prescrita orienta la serie. Solo se registra la carga declarada.
     _loadController = TextEditingController();
-    final draft = context.read<ActiveWorkoutCubit>().state.drafts[set.id];
+    final draft = widget.reviewEditor != null
+        ? widget.reviewEditor!.initial
+        : context.read<ActiveWorkoutCubit>().state.drafts[set.id];
     final source = draft?.fields;
     final controllers = _controllers;
-    if (source != null) {
+    if (source != null && (source.isNotEmpty || widget.reviewEditor == null)) {
       for (final entry in controllers.entries) {
         entry.value.text = source[entry.key] ?? '';
       }
       _actualRir = draft!.result.actualRir;
       _actualRpe = draft.result.actualRpe;
     } else if (widget.review) {
-      _repsController.text = workoutInteger(set.actualReps);
-      _durationController.text = set.actualDurationSeconds == null
-          ? ''
-          : workoutClock(set.actualDurationSeconds!);
+      final result = draft?.result;
+      final duration =
+          result?.actualDurationSeconds ?? set.actualDurationSeconds;
+      _repsController.text = workoutInteger(
+        result?.actualReps ?? set.actualReps,
+      );
+      _durationController.text = duration == null ? '' : workoutClock(duration);
       _distanceController.text = workoutNullableNumber(
-        set.actualDistanceMeters,
+        result?.actualDistanceMeters ?? set.actualDistanceMeters,
       );
-      _loadController.text = workoutNullableNumber(set.actualLoadKg);
-      _recoveryDurationController.text =
-          set.actualRecoveryDurationSeconds == null
+      _loadController.text = workoutNullableNumber(
+        result?.actualLoadKg ?? set.actualLoadKg,
+      );
+      final recoveryDuration =
+          result?.actualRecoveryDurationSeconds ??
+          set.actualRecoveryDurationSeconds;
+      _recoveryDurationController.text = recoveryDuration == null
           ? ''
-          : workoutClock(set.actualRecoveryDurationSeconds!);
+          : workoutClock(recoveryDuration);
       _recoveryDistanceController.text = workoutNullableNumber(
-        set.actualRecoveryDistanceMeters,
+        result?.actualRecoveryDistanceMeters ??
+            set.actualRecoveryDistanceMeters,
       );
-      _actualRir = set.actualRir;
-      _actualRpe = set.actualRpe;
+      _actualRir = result?.actualRir ?? set.actualRir;
+      _actualRpe = result?.actualRpe ?? set.actualRpe;
     }
     for (final controller in controllers.values) {
       controller.addListener(_persistDraft);
@@ -204,24 +223,26 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
 
   void _persistDraft() {
     if (set.performancePrescription != null) return;
-    unawaited(
-      context.read<ActiveWorkoutCubit>().updateDraft(
-        _resultInput(forDraft: true),
-        _fields,
-      ),
-    );
+    final update =
+        widget.reviewEditor?.update ??
+        context.read<ActiveWorkoutCubit>().updateDraft;
+    unawaited(update(_resultInput(forDraft: true), _fields));
   }
+
+  Future<bool> _confirm(
+    WorkoutSetResultInput input,
+    Map<String, String> fields,
+  ) =>
+      (widget.reviewEditor?.confirm ??
+      context.read<ActiveWorkoutCubit>().confirmDraft)(input, fields);
 
   Future<void> _save() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     if (widget.review) {
-      final success = await context.read<ActiveWorkoutCubit>().confirmDraft(
-        _input,
-        _fields,
-      );
+      final success = await _confirm(_input, _fields);
       if (success && mounted) Navigator.pop(context);
     } else {
-      widget.onComplete(_input, restSecondsOverride: _restOverride);
+      widget.onComplete?.call(_input, restSecondsOverride: _restOverride);
     }
   }
 
@@ -255,7 +276,7 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
       ),
     );
     if (confirmed == true && mounted) {
-      widget.onSkip(
+      widget.onSkip?.call(
         restSecondsOverride: workoutRestAfterSkipping(
           set,
           elapsedSeconds: _emomElapsedSeconds,
@@ -346,19 +367,18 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
                       performanceResult: result,
                     );
                     if (widget.review) {
-                      final success = await context
-                          .read<ActiveWorkoutCubit>()
-                          .confirmDraft(input, const {});
+                      final success = await _confirm(input, const {});
                       if (success && context.mounted) Navigator.pop(context);
                     } else {
-                      widget.onComplete(input);
+                      widget.onComplete?.call(input);
                     }
                   },
                 ),
-                TextButton(
-                  onPressed: widget.saving ? null : _confirmSkip,
-                  child: const Text('Omitir esta serie'),
-                ),
+                if (widget.reviewEditor == null)
+                  TextButton(
+                    onPressed: widget.saving ? null : _confirmSkip,
+                    child: const Text('Omitir esta serie'),
+                  ),
               ],
             ),
           ),
@@ -366,11 +386,13 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
       );
     }
     final imageUrl = set.imageForExecution(
-      context
-          .read<ActiveWorkoutCubit>()
-          .state
-          .exercises[set.exerciseId]
-          ?.thumbnailUrl,
+      widget.reviewEditor == null
+          ? context
+                .read<ActiveWorkoutCubit>()
+                .state
+                .exercises[set.exerciseId]
+                ?.thumbnailUrl
+          : null,
     );
     final startPhoneRun = widget.onStartPhoneRun;
     final expandImage =

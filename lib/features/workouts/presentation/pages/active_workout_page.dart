@@ -207,7 +207,7 @@ class _ActiveWorkoutPageState extends State<ActiveWorkoutPage> {
   );
 
   Future<bool> _confirmExit(BuildContext context) async {
-    final execution = context.read<ActiveWorkoutCubit>().state.execution;
+    final session = context.read<ActiveWorkoutCubit>().state;
     final action = await showDialog<_SessionExitAction>(
       context: context,
       builder: (dialogContext) => EntrenaDialog(
@@ -226,8 +226,7 @@ class _ActiveWorkoutPageState extends State<ActiveWorkoutPage> {
               primaryLabel: 'Continuar',
               onPrimary: () => Navigator.pop(dialogContext),
               secondary: [
-                if (execution?.canFinishWithoutFullRecording == true &&
-                    execution?.currentSet != null)
+                if (session.canFinishWithPartialRecords)
                   OutlinedButton(
                     onPressed: () => Navigator.pop(
                       dialogContext,
@@ -621,14 +620,17 @@ class _ActiveContentState extends State<_ActiveContent> {
         widget.onStartPhoneRun != null &&
         (MediaQuery.sizeOf(context).height < 600 ||
             MediaQuery.textScalerOf(context).scale(16) > 20);
-    final finishWithoutRecording =
-        execution.canFinishWithoutFullRecording && current != null
+    final finishWithoutRecording = state.canFinishWithPartialRecords
         ? TextButton.icon(
             onPressed: saving
                 ? null
                 : () => _requestFinishWithoutFullRecording(context),
             icon: const Icon(Icons.task_alt_rounded),
-            label: const Text('Terminar sin registrar todo'),
+            label: Text(
+              current == null
+                  ? 'Finalizar con registro parcial'
+                  : 'Terminar sin registrar todo',
+            ),
           )
         : null;
     final records = TextButton.icon(
@@ -662,6 +664,7 @@ class _ActiveContentState extends State<_ActiveContent> {
           seconds: state.restSecondsRemaining,
           canSkip: state.restCanBeSkipped,
           onSkip: cubit.skipRest,
+          onAdjust: cubit.adjustRest,
           nextName: current.exerciseName,
           nextTarget:
               '${workoutPositionLabel(current)} · ${workoutTargetLabel(current)}${!current.usesRir || current.targetRir == null ? '' : ' · RIR ${workoutNumber(current.targetRir!)}'}',
@@ -763,6 +766,7 @@ class _ActiveContentState extends State<_ActiveContent> {
                       onPressed: () => _openRecords(context),
                       child: const Text('Revisar series'),
                     ),
+                    ?finishWithoutRecording,
                   ],
                 ),
               )
@@ -841,7 +845,9 @@ class _ActiveContentState extends State<_ActiveContent> {
                 ),
               ),
               Expanded(child: body),
-              if (!scrollPhoneRunActions && finishWithoutRecording != null)
+              if (!scrollPhoneRunActions &&
+                  finishWithoutRecording != null &&
+                  (current != null || state.unconfirmedDraftCount == 0))
                 SafeArea(top: false, child: finishWithoutRecording),
             ],
           ),
@@ -1060,8 +1066,9 @@ Future<bool> _requestFinishWithoutFullRecording(BuildContext context) async {
     builder: (dialogContext) => EntrenaDialog(
       title: const Text('¿Has terminado de entrenar?'),
       content: const Text(
-        'Guardaremos tu sesión como terminada y conservaremos lo que hayas registrado. '
-        'Las series restantes quedarán sin datos.',
+        'Guardaremos tu sesión como terminada. Puedes completar los datos '
+        'pendientes desde el historial. Los borradores escritos se conservan '
+        'en este dispositivo.',
       ),
       actions: [
         EntrenaDialogActions(

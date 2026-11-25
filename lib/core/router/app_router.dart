@@ -1626,9 +1626,12 @@ class AppRouter {
                                               .pathParameters['executionId']!,
                                         ),
                                     child: WorkoutHistoryDetailPage(
+                                      timerStore: sl(),
+                                      cueService: sl(),
                                       resultAction:
                                           ScheduledWorkoutResultRepeatAction(
-                                            executionId: state.pathParameters['executionId']!,
+                                            executionId: state
+                                                .pathParameters['executionId']!,
                                             getScheduledWorkout: sl(),
                                             repeatWorkout: sl(),
                                           ),

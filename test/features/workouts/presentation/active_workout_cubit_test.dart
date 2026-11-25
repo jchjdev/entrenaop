@@ -39,7 +39,9 @@ import 'package:entrenaop/features/workouts/domain/usecases/workout_execution_us
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_state.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/phone_run_cubit.dart';
+import 'package:entrenaop/features/workouts/presentation/bloc/workout_history_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/pages/active_workout_page.dart';
+import 'package:entrenaop/features/workouts/presentation/pages/workout_history_detail_page.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/phone_run_panel.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_set_countdown.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_tabata_entry.dart';
@@ -67,7 +69,8 @@ void main() {
       var now = DateTime.now().toUtc();
       final (cubit, _) = await _mountSession(
         tester,
-        _Repository(),
+        _Repository()
+          ..execution = _execution(format: WorkoutBlockFormat.straightSets),
         lockScreen: lockScreen,
         now: () => now,
       );
@@ -94,6 +97,24 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
       expect(cubit.state.restSecondsRemaining, 25);
       expect(lockScreen.shown, shown);
+      await tester.tap(find.byTooltip('Añadir 10 segundos'));
+      await tester.pump();
+      expect(cubit.state.restSecondsRemaining, 35);
+      expect(
+        lockScreen.visible?.restEndsAt,
+        deadline.add(const Duration(seconds: 10)),
+      );
+      expect(
+        tester
+            .widget<TextButton>(
+              find.widgetWithText(TextButton, 'Saltar descanso'),
+            )
+            .onPressed,
+        isNotNull,
+      );
+      await tester.tap(find.byTooltip('Quitar 10 segundos'));
+      await tester.pump();
+      expect(cubit.state.restSecondsRemaining, 25);
 
       void enterBackground() {
         tester.binding.handleAppLifecycleStateChanged(
@@ -489,22 +510,87 @@ void main() {
     },
   );
 
-  test(
-    'no pierde borradores al intentar terminar sin registrar todo',
-    () async {
+  testWidgets(
+    'termina aunque solo queden borradores y permite confirmar desde historial',
+    (tester) async {
       final repository = _Repository()
-        ..execution = _execution(allowUnrecorded: true);
-      final cubit = _cubit(repository);
-      addTearDown(cubit.close);
-      await cubit.load();
+        ..execution = _execution(
+          allowUnrecorded: true,
+          format: WorkoutBlockFormat.straightSets,
+        );
+      final drafts = MemoryWorkoutSessionDraftStore();
+      final (cubit, _) = await _mountSession(
+        tester,
+        repository,
+        sessionDraftStore: drafts,
+      );
       await cubit.updateDraft(
         const WorkoutSetResultInput(resultId: 'set-1', actualReps: 6),
         {'reps': '6'},
       );
-      await cubit.finishWithoutFullRecording();
-      expect(repository.unrecordedFinishAttempts, 0);
-      expect(cubit.state.drafts['set-1']!.result.actualReps, 6);
-      expect(cubit.state.errorMessage, contains('pendientes'));
+      await cubit.endCurrentSet(startRest: false);
+      await cubit.endCurrentSet(startRest: false);
+      expect(cubit.state.execution!.currentSet, isNull);
+      await tester.pumpAndSettle();
+      expect(find.text('Revisar series'), findsOneWidget);
+      await tester.ensureVisible(find.text('Finalizar con registro parcial'));
+      await tester.tap(find.text('Finalizar con registro parcial'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Terminar sesión'));
+      await tester.pumpAndSettle();
+      expect(repository.unrecordedFinishAttempts, 1);
+      expect(cubit.state.status, ActiveWorkoutStatus.completed);
+      expect(
+        cubit.state.execution!.sets.first.status,
+        WorkoutSetStatus.pending,
+      );
+      expect(
+        (await drafts.read(cubit.executionId))['set-1']!.result.actualReps,
+        6,
+      );
+      final history = WorkoutHistoryDetailCubit(
+        executionId: cubit.executionId,
+        getExecution: GetWorkoutExecutionUseCase(repository),
+        correctSet: CorrectWorkoutSetUseCase(repository),
+        completeSet: CompleteWorkoutSetUseCase(repository),
+        draftStore: drafts,
+      );
+      addTearDown(history.close);
+      await history.load();
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: EntrenaTheme.dark,
+          home: BlocProvider.value(
+            value: history,
+            child: WorkoutHistoryDetailPage(
+              timerStore: _TimerStore(),
+              cueService: _CueService(),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Completar registros pendientes'));
+      await tester.pumpAndSettle();
+      final pending = find.textContaining(
+        'Serie 1 · Realizada · datos por confirmar',
+      );
+      await tester.ensureVisible(pending);
+      await tester.tap(pending);
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(TextFormField, '6'), findsOneWidget);
+      await tester.ensureVisible(find.text('Confirmar datos'));
+      await tester.tap(find.text('Confirmar datos'));
+      await tester.pumpAndSettle();
+      expect(history.state.execution!.sets.first.actualReps, 6);
+      expect(
+        (await drafts.read(cubit.executionId)).containsKey('set-1'),
+        isFalse,
+      );
+      expect(
+        (await drafts.read(cubit.executionId)).containsKey('set-2'),
+        isTrue,
+      );
     },
   );
 
@@ -531,14 +617,15 @@ void main() {
   test('conserva el borrador AMRAP antes del cierre sin registro', () async {
     final repository = _Repository()
       ..execution = _amrapExecution(allowUnrecorded: true);
-    final cubit = _cubit(repository);
+    final drafts = MemoryWorkoutAmrapDraftStore();
+    final cubit = _cubit(repository, amrapDraftStore: drafts);
     addTearDown(cubit.close);
     await cubit.load();
     await cubit.changeAmrapRounds(0, 1);
     await cubit.finishWithoutFullRecording();
-    expect(repository.unrecordedFinishAttempts, 0);
-    expect(cubit.state.amrapDrafts[0]!.rounds, '1');
-    expect(cubit.state.errorMessage, contains('AMRAP'));
+    expect(repository.unrecordedFinishAttempts, 1);
+    expect(cubit.state.status, ActiveWorkoutStatus.completed);
+    expect((await drafts.read(cubit.executionId))[0]!.rounds, '1');
   });
 
   test('un fallo de cierre conserva la sesión y permite reintentar', () async {
@@ -2214,8 +2301,14 @@ Future<(ActiveWorkoutCubit, GoRouter)> _mountSession(
   PhoneRunCubit Function(String)? createPhoneRun,
   WorkoutLockScreen? lockScreen,
   DateTime Function()? now,
+  WorkoutSessionDraftStore? sessionDraftStore,
 }) async {
-  final cubit = _cubit(repository, getExercise: getExercise, now: now);
+  final cubit = _cubit(
+    repository,
+    getExercise: getExercise,
+    now: now,
+    sessionDraftStore: sessionDraftStore,
+  );
   addTearDown(cubit.close);
   await cubit.load();
   final registry = WorkflowExitRegistry();
@@ -2506,6 +2599,7 @@ class _Repository implements WorkoutRepository {
             (set) => set.id == result.resultId
                 ? set.copyWith(
                     status: WorkoutSetStatus.completed,
+                    actualReps: result.actualReps,
                     actualDistanceMeters: result.actualDistanceMeters,
                     actualLoadKg: result.actualLoadKg,
                   )
@@ -2678,6 +2772,7 @@ WorkoutExecution _tabataExecution() => _execution().copyWith(
 WorkoutExecution _execution({
   bool allowUnrecorded = false,
   String templateName = 'EMOM de fuerza',
+  WorkoutBlockFormat format = WorkoutBlockFormat.emom,
 }) => WorkoutExecution(
   canFinishWithoutFullRecording: allowUnrecorded,
   id: 'execution-1',
@@ -2686,12 +2781,12 @@ WorkoutExecution _execution({
   templateVersion: 1,
   status: WorkoutExecutionStatus.inProgress,
   startedAt: DateTime.utc(2026, 9, 21, 20),
-  sets: const [
+  sets: [
     WorkoutExecutionSet(
       id: 'set-1',
       blockOrder: 0,
       blockName: 'EMOM',
-      blockFormat: WorkoutBlockFormat.emom,
+      blockFormat: format,
       itemOrder: 0,
       exerciseId: 'exercise-1',
       exerciseName: 'Dominadas',
@@ -2704,7 +2799,7 @@ WorkoutExecution _execution({
       id: 'set-2',
       blockOrder: 0,
       blockName: 'EMOM',
-      blockFormat: WorkoutBlockFormat.emom,
+      blockFormat: format,
       itemOrder: 0,
       exerciseId: 'exercise-1',
       exerciseName: 'Dominadas',

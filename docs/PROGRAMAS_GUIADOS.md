@@ -2,6 +2,11 @@
 
 ## Terminar sin registrar todo · PRG-010 · 03/11/2026
 
+La ampliación del 25/11/2026 también permite el cierre de sesiones por fases
+y completar los borradores desde el historial. El avance de fase sigue siendo
+manual. Consulta el [contrato vigente](SESSION_CONTROLS_2026_10_08.md#cierre-con-registros-pendientes).
+El texto de este apartado describe la entrega inicial de PRG-010.
+
 Javier confirma el cierre de una sesión aunque el deportista no quiera introducir
 resultados de todas las series. Una rutina repetible (`mode=guide`) ofrece
 **Terminar sin registrar todo** durante la ejecución y al salir. La confirmación

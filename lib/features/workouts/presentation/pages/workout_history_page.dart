@@ -410,7 +410,10 @@ class _WorkoutHistoryCard extends StatelessWidget {
                 children: [
                   _Metric(
                     icon: Icons.check_circle_outline_rounded,
-                    text: execution.completedWithoutFullRecording
+                    text:
+                        execution.completedWithoutFullRecording &&
+                            (execution.currentSet != null ||
+                                execution.completedSetCount == 0)
                         ? execution.completedSetCount == 0
                               ? 'Sin registros'
                               : 'Registro parcial'

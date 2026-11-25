@@ -21,6 +21,13 @@ class WorkoutSessionSetDraft extends Equatable {
   final bool saved;
   final bool needsCorrection;
 
+  bool get hasUnconfirmedData =>
+      !confirmed &&
+      (endedAt != null ||
+          fields.values.any((text) => text.trim().isNotEmpty) ||
+          result.actualRpe != null ||
+          result.actualRir != null);
+
   WorkoutSessionSetDraft copyWith({
     WorkoutSetResultInput? result,
     Map<String, String>? fields,
@@ -68,10 +75,10 @@ class WorkoutSessionSetDraft extends Equatable {
     if (set.blockFormat == WorkoutBlockFormat.running &&
         (result.actualDurationSeconds == null ||
             result.actualDurationSeconds! <= 0 ||
-            result.actualDistanceMeters == null ||
-            (result.actualDistanceMeters! < 0 ||
-                (result.actualDistanceMeters == 0 &&
-                    set.runningStep?.kind != RunningStepKind.rest)))) {
+            (result.actualDistanceMeters == null &&
+                !set.manualDistanceOptional) ||
+            (result.actualDistanceMeters == 0 &&
+                set.runningStep?.kind != RunningStepKind.rest))) {
       return false;
     }
     if (result.actualRecoveryDurationSeconds != null &&

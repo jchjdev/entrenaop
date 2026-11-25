@@ -75,6 +75,21 @@ begin
   if not exists(select 1 from public.workout_executions e where e.id=execution and completed_at=closed_at and performed_at=closed_clock) then
     raise exception 'Un segundo toque refecha el historial.';
   end if;
+  select id into result_id from public.workout_execution_sets
+    where execution_id=execution and status='pending' limit 1;
+  perform set_config('request.jwt.claim.sub',outsider::text,true);
+  begin
+    perform public.complete_workout_set(result_id,p_actual_reps=>9);
+    raise exception 'Permitió registrar una serie ajena.';
+  exception when sqlstate 'P0001' then
+    if sqlerrm <> 'Pending workout set not found' then raise; end if;
+  end;
+  perform set_config('request.jwt.claim.sub',owner_id::text,true);
+  perform public.complete_workout_set_idempotent(gen_random_uuid(),result_id,p_actual_reps=>9);
+  if not exists(select 1 from public.workout_execution_sets where id=result_id and status='completed' and actual_reps=9)
+    or not exists(select 1 from public.workout_executions where id=execution and completed_at=closed_at and performed_at=closed_clock) then
+    raise exception 'El registro desde historial reabre o cambia la fecha del entreno.';
+  end if;
   begin
     update public.workout_executions set completed_without_full_recording=false where id=execution;
     raise exception 'El cliente puede alterar el modo de cierre directamente.';
@@ -111,16 +126,18 @@ begin
   personal := public.create_personal_workout_template(payload);
   execution := public.start_workout_execution(personal);
   if not public.can_finish_workout_without_full_recording(execution) then raise exception 'No permite la sesión personal.'; end if;
+  for result_id in select id from public.workout_execution_sets where execution_id=execution order by set_order loop
+    perform public.skip_workout_set(result_id);
+  end loop;
   perform public.finish_workout_without_full_recording_idempotent(gen_random_uuid(),execution,now(),60);
 
   perform public.follow_guided_program(phased);
   phased_execution := public.start_guided_program_session(phased,0,0,gen_random_uuid());
-  if public.can_finish_workout_without_full_recording(phased_execution) then raise exception 'Permite cerrar sin registros un programa por fases.'; end if;
-  begin
-    perform public.finish_workout_without_full_recording_idempotent(gen_random_uuid(),phased_execution,now(),60);
-    raise exception 'El servidor admitió el programa por fases.';
-  exception when insufficient_privilege then null; end;
-  perform public.abandon_workout_execution(phased_execution,'other');
+  if not public.can_finish_workout_without_full_recording(phased_execution) then raise exception 'Bloqueó el cierre del programa por fases.'; end if;
+  perform public.finish_workout_without_full_recording_idempotent(gen_random_uuid(),phased_execution,now(),60);
+  if not exists(select 1 from public.guided_program_follows where user_id=owner_id and program_id=phased and phase_index=0) then
+    raise exception 'Terminar una sesión hizo avanzar la fase sin confirmación.';
+  end if;
 
   execution := public.start_guided_program_session(guide,0,0,gen_random_uuid());
   select template_id into effective_template from public.workout_executions where id=execution;
@@ -133,13 +150,22 @@ begin
   exception when insufficient_privilege then null; end;
   perform public.abandon_workout_execution(execution,'other');
 
+  -- Una pauta normal del entrenador se puede terminar sin resultados completos.
+  execution := public.start_workout_execution(template);
+  reset role;
+  insert into public.scheduled_workouts(user_id,template_id,template_name,template_version,scheduled_date,source,execution_id,status)
+    values(owner_id,template,'Ensayo pauta normal',1,current_date,'coach',execution,'in_progress');
+  set local role authenticated;
+  if not public.can_finish_workout_without_full_recording(execution) then raise exception 'Bloqueó una pauta normal del entrenador.'; end if;
+  perform public.finish_workout_without_full_recording_idempotent(gen_random_uuid(),execution,now(),60);
+
   -- Una pauta protegida mantiene su contrato aunque reutilizase una plantilla pública.
   execution := public.start_workout_execution(template);
   reset role;
   insert into public.scheduled_workouts(user_id,template_id,template_name,template_version,scheduled_date,source,execution_id,status)
-    values(owner_id,template,'Ensayo protegido',1,current_date,'coach',execution,'in_progress');
+    values(owner_id,template,'Ensayo protegido',1,current_date,'algorithm',execution,'in_progress');
   set local role authenticated;
-  if public.can_finish_workout_without_full_recording(execution) then raise exception 'La pauta del preparador obtiene el permiso.'; end if;
+  if public.can_finish_workout_without_full_recording(execution) then raise exception 'La pauta adaptativa obtiene el permiso.'; end if;
   begin
     perform public.finish_workout_without_full_recording_idempotent(gen_random_uuid(),execution,now(),60);
     raise exception 'El servidor admitió una pauta protegida.';

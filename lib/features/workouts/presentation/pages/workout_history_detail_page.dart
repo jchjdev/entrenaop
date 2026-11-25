@@ -3,6 +3,10 @@ import 'package:workout_editor_ui/running_pace_chart.dart';
 import 'package:workout_editor_ui/device_recordings_panel.dart';
 
 import '../../domain/services/workout_result_review.dart';
+import '../../domain/services/workout_cue_service.dart';
+import '../../domain/services/workout_timer_store.dart';
+import '../widgets/workout_set_entry.dart';
+import '../widgets/workout_amrap_review.dart';
 
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 
@@ -23,9 +27,16 @@ import 'package:intl/intl.dart';
 import 'package:workout_core/performance_time.dart';
 
 class WorkoutHistoryDetailPage extends StatelessWidget {
-  const WorkoutHistoryDetailPage({this.resultAction, super.key});
+  const WorkoutHistoryDetailPage({
+    this.resultAction,
+    this.timerStore,
+    this.cueService,
+    super.key,
+  });
 
   final Widget? resultAction;
+  final WorkoutTimerStore? timerStore;
+  final WorkoutCueService? cueService;
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +66,8 @@ class WorkoutHistoryDetailPage extends StatelessWidget {
             execution: state.execution!,
             isCorrecting: state.isCorrecting,
             resultAction: resultAction,
+            timerStore: timerStore,
+            cueService: cueService,
           ),
         },
       ),
@@ -67,11 +80,15 @@ class _DetailContent extends StatefulWidget {
     required this.execution,
     required this.isCorrecting,
     this.resultAction,
+    this.timerStore,
+    this.cueService,
   });
 
   final WorkoutExecution execution;
   final bool isCorrecting;
   final Widget? resultAction;
+  final WorkoutTimerStore? timerStore;
+  final WorkoutCueService? cueService;
 
   @override
   State<_DetailContent> createState() => _DetailContentState();
@@ -81,6 +98,79 @@ class _DetailContentState extends State<_DetailContent> {
   final Set<String> _expanded = {};
   bool _onlyDifferences = false;
   WorkoutExecution get execution => widget.execution;
+
+  void _openPendingSet(WorkoutExecutionSet set) {
+    final cubit = context.read<WorkoutHistoryDetailCubit>();
+    final editor = (
+      initial: cubit.pendingDraft(set.id),
+      update: cubit.updatePendingDraft,
+      confirm: cubit.savePendingSet,
+    );
+    showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (context) =>
+          BlocBuilder<WorkoutHistoryDetailCubit, WorkoutHistoryDetailState>(
+            bloc: cubit,
+            builder: (context, state) => Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.viewInsetsOf(context).bottom,
+              ),
+              child: FractionallySizedBox(
+                heightFactor: .86,
+                child: SafeArea(
+                  top: false,
+                  child: Column(
+                    children: [
+                      if (state.correctionMessage case final message?)
+                        Text(message),
+                      Expanded(
+                        child: WorkoutSetEntry(
+                          set: set,
+                          executionId: execution.id,
+                          timerStore: widget.timerStore!,
+                          cueService: widget.cueService!,
+                          saving: state.isCorrecting,
+                          review: true,
+                          reviewEditor: editor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+    );
+  }
+
+  void _openPendingAmrap(_AmrapBlock block) {
+    final cubit = context.read<WorkoutHistoryDetailCubit>();
+    showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (context) =>
+          BlocBuilder<WorkoutHistoryDetailCubit, WorkoutHistoryDetailState>(
+            bloc: cubit,
+            builder: (context, state) => WorkoutAmrapReview(
+              executionId: execution.id,
+              sets: block.exercises,
+              onComplete: cubit.savePendingAmrap,
+              reviewEditor: (
+                initial: cubit.pendingAmrapDraft(block.blockOrder),
+                update: (draft) =>
+                    cubit.updatePendingAmrapDraft(block.blockOrder, draft),
+                saving: state.isCorrecting,
+                error: state.correctionMessage,
+              ),
+            ),
+          ),
+    );
+  }
 
   Future<void> _addEffort(BuildContext context) async {
     double? effort;
@@ -136,6 +226,19 @@ class _DetailContentState extends State<_DetailContent> {
         .map((s) => s.id)
         .toSet();
     final amrapBlocks = _groupAmrapBlocks(execution.sets);
+    final history = context.read<WorkoutHistoryDetailCubit>();
+    final pendingSets = widget.timerStore == null || widget.cueService == null
+        ? <WorkoutExecutionSet>[]
+        : execution.sets
+              .where(
+                (set) =>
+                    set.blockFormat != WorkoutBlockFormat.amrap &&
+                    history.canCompletePendingSet(set),
+              )
+              .toList();
+    final pendingAmrap = amrapBlocks
+        .where((block) => history.canCompletePendingAmrap(block.blockOrder))
+        .toList();
     final groups =
         _groupSets(
               execution.sets
@@ -191,7 +294,8 @@ class _DetailContentState extends State<_DetailContent> {
                   recordings: execution.deviceResults,
                   detailsIncomplete: execution.deviceDetailsIncomplete,
                 ),
-                if (execution.completedWithoutFullRecording)
+                if (execution.completedWithoutFullRecording &&
+                    execution.currentSet != null)
                   const Card(
                     child: ListTile(
                       leading: Icon(Icons.task_alt_rounded),
@@ -199,6 +303,39 @@ class _DetailContentState extends State<_DetailContent> {
                       subtitle: Text(
                         'Has terminado sin registrar todo. Conservamos los resultados confirmados; el resto queda sin registrar.',
                       ),
+                    ),
+                  ),
+                if (pendingSets.isNotEmpty || pendingAmrap.isNotEmpty)
+                  Card(
+                    child: ExpansionTile(
+                      leading: const Icon(Icons.edit_note_rounded),
+                      title: const Text('Completar registros pendientes'),
+                      children: [
+                        for (final set in pendingSets)
+                          ListTile(
+                            title: Text(set.exerciseName),
+                            subtitle: Text(
+                              '${set.blockName} · ${workoutPositionLabel(set)} · ${history.pendingDraft(set.id)?.endedAt != null
+                                  ? 'Realizada · datos por confirmar'
+                                  : history.pendingDraft(set.id)?.hasUnconfirmedData == true
+                                  ? 'Borrador por confirmar'
+                                  : 'Sin registrar'}',
+                            ),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: widget.isCorrecting
+                                ? null
+                                : () => _openPendingSet(set),
+                          ),
+                        for (final block in pendingAmrap)
+                          ListTile(
+                            title: Text(block.blockName),
+                            subtitle: const Text('Resultado AMRAP pendiente'),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: widget.isCorrecting
+                                ? null
+                                : () => _openPendingAmrap(block),
+                          ),
+                      ],
                     ),
                   ),
                 WorkoutTechniqueSection(execution: execution),

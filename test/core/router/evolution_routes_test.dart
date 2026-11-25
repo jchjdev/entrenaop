@@ -25,6 +25,8 @@ import 'package:entrenaop/features/workout_schedule/domain/usecases/workout_sche
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_history_query.dart';
 import 'package:entrenaop/features/workouts/domain/repositories/workout_repository.dart';
+import 'package:entrenaop/features/workouts/domain/services/workout_cue_service.dart';
+import 'package:entrenaop/features/workouts/domain/services/workout_timer_store.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/workout_execution_usecases.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_history_cubit.dart';
 import 'package:flutter/material.dart';
@@ -52,6 +54,8 @@ void main() {
     sl.registerSingleton<ProgramAssessmentRepository>(marks);
     sl.registerSingleton(GetRepeatableScheduledWorkoutUseCase(schedules));
     sl.registerSingleton(RepeatScheduledWorkoutUseCase(schedules));
+    sl.registerSingleton<WorkoutCueService>(_WorkoutCues());
+    sl.registerSingleton<WorkoutTimerStore>(_WorkoutTimers());
     sl.registerFactoryParam<WorkoutHistoryDetailCubit, String, void>((id, _) {
       final repository = _Sessions(auth.userId);
       return WorkoutHistoryDetailCubit(
@@ -262,6 +266,10 @@ void main() {
     },
   );
 }
+
+class _WorkoutCues extends Fake implements WorkoutCueService {}
+
+class _WorkoutTimers extends Fake implements WorkoutTimerStore {}
 
 class _Schedules extends Fake implements WorkoutScheduleRepository {
   _Schedules(this.auth);

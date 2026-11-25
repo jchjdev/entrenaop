@@ -1,5 +1,34 @@
 # Sesión, tiempo y ancho de Mi semana · UI-019/020 · 08/10/2026
 
+## Cierre con registros pendientes
+
+Desde 1.33.0, al acabar con datos pendientes, **Finalizar con registro parcial**
+aparece debajo de **Revisar series**. También está disponible al salir de una
+sesión elegible en curso. Abarca las sesiones de biblioteca, personales, las
+pautas normales del entrenador y las sesiones de programas por fases. El cierre
+registra el final del entrenamiento y conserva las marcas de tiempo y resultados
+confirmados. Las series sin confirmar permanecen pendientes y las omitidas
+conservan su estado. En los programas por fases el avance se confirma aparte.
+
+El detalle del historial permite **Completar registros pendientes**. Los
+borradores de series y AMRAP quedan vinculados a la cuenta y al intento en el
+dispositivo donde se escribieron. Los resultados que se confirmen después se
+guardan en el mismo entreno con las validaciones manuales habituales. Si hay una
+operación confirmada sin conexión, usa la cola de sincronización de la cuenta.
+
+El servidor comprueba la propiedad y excluye las pautas de preparación o del
+algoritmo, incluso al reutilizar una plantilla normal o repetir una pauta. Esas
+sesiones conservan los requisitos de su cierre habitual. Cerrar parcialmente un
+intento repetido conserva el resultado original de la cita en Mi semana.
+
+## Ajustes del descanso en curso
+
+Los descansos que se pueden saltar muestran **− 10 s** y **+ 10 s** junto al
+reloj. Cada toque ajusta la fecha de fin de ese descanso, que comparte la app con
+la pantalla bloqueada. **Saltar descanso** está disponible durante toda la
+cuenta atrás. Restar hasta cero termina el descanso. Los tiempos programados de
+los descansos futuros y los temporizadores de trabajo siguen la prescripción,+incluidas las series isométricas y la espera hasta el siguiente minuto de EMOM.
+
 ## Repetir una sesión pautada
 
 **Mi semana** ofrece **Repetir entrenamiento** debajo de **Ver resultado** al

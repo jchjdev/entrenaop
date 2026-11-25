@@ -1,5 +1,18 @@
 # Registro de decisiones vigentes
 
+**Cerrar el entreno con registros pendientes · 25/11/2026.** Javier confirma
+que las sesiones normales, incluidas las de programas por fases, se pueden
+finalizar con un registro parcial. Los borradores se conservan en el dispositivo
+y se pueden completar desde el historial. Las sesiones de preparación conservan
+los datos requeridos por el algoritmo y las fases se avanzan manualmente.
+[Contrato](SESSION_CONTROLS_2026_10_08.md#cierre-con-registros-pendientes).
+
+**Ajustar el descanso en curso · 25/11/2026.** Los descansos que se pueden
+saltar admiten ajustes de diez segundos. «Saltar descanso» sigue disponible
+durante toda la cuenta atrás. Los temporizadores de trabajo, incluidos los
+isométricos, terminan al alcanzar el tiempo pautado.
+[Contrato](SESSION_CONTROLS_2026_10_08.md#ajustes-del-descanso-en-curso).
+
 **Entreno de fuerza visible en el móvil · 25/11/2026.** Javier aprueba el
 control para mantener la pantalla encendida durante la sesión y la vista de
 la serie y el descanso en el bloqueo de iOS y Android. El ejecutor conserva

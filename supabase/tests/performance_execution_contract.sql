@@ -64,6 +64,16 @@ begin
   exception when insufficient_privilege then null; end;
   if has_function_privilege('anon','public.complete_performance_set_idempotent(uuid,uuid,jsonb)','execute') then
     raise exception 'RPC accesible anónimamente'; end if;
+  perform set_config('request.jwt.claim.sub',(select user_id::text from public.admin_permissions limit 1),true);
+  perform public.finish_workout_execution(e,5);
+  e:=public.start_workout_execution(t);
+  select * into s from public.workout_execution_sets where execution_id=e and performance_prescription->>'measurement'='DURATION' limit 1;
+  perform public.finish_workout_without_full_recording_idempotent(gen_random_uuid(),e,now(),0);
+  perform public.complete_performance_set_idempotent(gen_random_uuid(),s.id,'{"value":20,"technique_valid":true,"conditions_confirmed":true,"tolerated":true,"stop_reason":"none"}');
+  if not exists(select 1 from public.workout_execution_sets where id=s.id and status='completed' and actual_duration_seconds=20)
+    or not exists(select 1 from public.workout_executions where id=e and status='completed' and completed_without_full_recording) then
+    raise exception 'Registrar una medición desde el historial ha cambiado el cierre o perdido el resultado';
+  end if;
 end $$;
 select 'Doce mediciones, instantánea, esfuerzo ausente, corrección, reintento y permisos: OK' as result;
 rollback;

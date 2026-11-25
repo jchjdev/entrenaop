@@ -46,6 +46,15 @@ class ActiveWorkoutState extends Equatable {
   int get unconfirmedDraftCount =>
       drafts.values.where((d) => d.endedAt != null && !d.confirmed).length;
 
+  bool get canFinishWithPartialRecords =>
+      execution?.canFinishWithoutFullRecording == true &&
+      execution?.status == WorkoutExecutionStatus.inProgress &&
+      (execution?.currentSet != null ||
+          drafts.values.any((draft) => draft.hasUnconfirmedData) ||
+          amrapDrafts.values.any(
+            (draft) => draft.rounds != '0' || draft.hasPartial,
+          ));
+
   WorkoutExecutionSet? get latestUnconfirmedSet {
     WorkoutExecutionSet? latest;
     DateTime? endedAt;

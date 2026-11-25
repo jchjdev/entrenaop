@@ -34,7 +34,7 @@ begin
       values(v_item,0,case when v_index=1 then 30 else 10 end,0);
   end loop;
 
-  for v_scenario in 0..4 loop
+  for v_scenario in 0..5 loop
     perform set_config('request.jwt.claim.sub',v_owner::text,true);
     set local role authenticated;
     v_execution := public.start_workout_execution(v_template);
@@ -66,6 +66,9 @@ begin
       raise exception 'Permite guardar en otra cuenta';
     exception when insufficient_privilege then null; end;
     perform set_config('request.jwt.claim.sub',v_owner::text,true);
+    if v_scenario=5 then
+      perform public.finish_workout_without_full_recording_idempotent(gen_random_uuid(),v_execution,now(),0);
+    end if;
     v_operation := gen_random_uuid();
     -- Casos del iPhone: segundo ejercicio 13/30 y cuatro vueltas sin parcial.
     v_rounds := case when v_scenario=4 then 4 else 5 end;
@@ -84,6 +87,10 @@ begin
       or (select count(*) from public.workout_amrap_results a where a.execution_id=v_execution)<>1
       or (select count(*) from public.workout_execution_sets s where s.execution_id=v_execution and s.status='completed')<>3 then
       raise exception 'Resultado, parcial o reintento incorrectos';
+    end if;
+    if v_scenario=5 and not exists(select 1 from public.workout_executions e
+      where e.id=v_execution and e.status='completed' and e.completed_without_full_recording) then
+      raise exception 'Registrar el AMRAP desde el historial ha cambiado el cierre';
     end if;
     -- AMRAP resuelve el bloque mediante un agregado manual. Marcar sus filas
     -- como completadas exige la fuente, pero no inventa marcas individuales.
