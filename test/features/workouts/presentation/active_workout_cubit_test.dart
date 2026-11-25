@@ -52,7 +52,7 @@ import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 
 void main() {
   testWidgets(
-    'fuerza comparte el fin del descanso y recupera la siguiente serie al desbloquear',
+    'fuerza conserva el descanso al volver de otra app y avanza si venció',
     (tester) async {
       const screen = MethodChannel('es.entrenaop/clock_screen');
       final messenger = tester.binding.defaultBinaryMessenger;
@@ -73,7 +73,9 @@ void main() {
       );
       await tester.tap(find.byTooltip('Opciones de sesión'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Mantener pantalla encendida'));
+      await tester.tapAt(
+        tester.getCenter(find.text('Mantener pantalla encendida')),
+      );
       await tester.pumpAndSettle();
       expect(wakeChanges.last, isTrue);
       await cubit.completeCurrentSet(
@@ -93,15 +95,36 @@ void main() {
       expect(cubit.state.restSecondsRemaining, 25);
       expect(lockScreen.shown, shown);
 
-      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
-      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
-      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      void enterBackground() {
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.inactive,
+        );
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      }
+
+      void returnToWorkout() {
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.inactive,
+        );
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.resumed,
+        );
+      }
+
+      enterBackground();
       expect(wakeChanges.last, isFalse);
       expect(lockScreen.visible?.restEndsAt, deadline);
-      now = now.add(const Duration(seconds: 40));
-      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
-      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
-      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      now = now.add(const Duration(seconds: 12));
+      returnToWorkout();
+      expect(cubit.state.status, ActiveWorkoutStatus.resting);
+      expect(cubit.state.restSecondsRemaining, 13);
+      expect(lockScreen.visible?.restEndsAt, deadline);
+
+      enterBackground();
+      now = now.add(const Duration(seconds: 14));
+      returnToWorkout();
       await tester.pumpAndSettle();
       expect(wakeChanges.last, isTrue);
       expect(cubit.state.status, ActiveWorkoutStatus.ready);
