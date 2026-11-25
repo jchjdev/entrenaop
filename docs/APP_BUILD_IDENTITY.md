@@ -33,8 +33,10 @@ Este tramo no incorpora un servicio remoto de actualizaciones.
    número de compilación superior. El código y ambos números se guardan juntos.
 2. Compilar la revisión acordada para cada plataforma. En Android, comprobar el
    paquete, el código y el nombre de versión con `aapt dump badging`. En iOS,
-   comprobar `CFBundleShortVersionString` y `CFBundleVersion` de
-   `Runner.app/Info.plist` en el Mac. Para las pruebas internas, confirmar
+   ejecutar `bash tools/prepare_iphone_dev.sh` antes de Run en Xcode. Tras
+   actualizar Git, `ios/Flutter/Generated.xcconfig` puede conservar los números
+   anteriores. Comprobar después `CFBundleShortVersionString` y `CFBundleVersion`
+   de `Runner.app/Info.plist` en el Mac. Para las pruebas internas, confirmar
    también el entorno Dev.
 3. Actualizar por reemplazo para conservar la sesión y los borradores. Leer la
    versión y la compilación instaladas en cada móvil con ADB, Xcode o
