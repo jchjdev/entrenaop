@@ -201,9 +201,13 @@ void main() {
 
     final nav = find.byKey(const ValueKey('trainer-nav-/warmups'));
     expect(nav.hitTestable(), findsOneWidget);
-    final tileY = tester.getCenter(nav).dy;
-    expect(tileY, greaterThan(tester.getCenter(find.text('BIBLIOTECA')).dy));
-    expect(tileY, lessThan(tester.getCenter(find.text('SEGUIMIENTO')).dy));
+    final libraryOrder = [
+      find.text('BIBLIOTECA'),
+      for (final path in ['/exercises', '/warmups', '/workouts', '/programs'])
+        find.byKey(ValueKey('trainer-nav-$path')),
+      find.text('SEGUIMIENTO'),
+    ].map((item) => tester.getCenter(item).dy).toList();
+    expect(libraryOrder, orderedEquals([...libraryOrder]..sort()));
     await tester.tap(nav);
     await tester.pumpAndSettle();
     expect(tester.widget<ListTile>(nav).selected, isTrue);
@@ -221,6 +225,33 @@ void main() {
     await tester.pumpAndSettle();
     expect(router.routeInformationProvider.value.uri.path, '/warmups/new');
     expect(find.byType(TrainerWorkoutEditorPage), findsOneWidget);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('Sesiones conserva su sitio en la barra estrecha de Trainer', (
+    tester,
+  ) async {
+    final fixture = _PortalFixture();
+    await tester.runAsync(() => fixture.session('initial'));
+    addTearDown(() => tester.runAsync(fixture.client.dispose));
+    tester.binding.platformDispatcher.defaultRouteNameTestValue = '/warmups';
+    addTearDown(
+      tester.binding.platformDispatcher.clearDefaultRouteNameTestValue,
+    );
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(TrainerApp(client: fixture.client));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(TextButton, 'Sesiones'));
+    await tester.pumpAndSettle();
+    expect(find.byType(TrainerWorkoutLibraryPage), findsOneWidget);
+    await tester.tap(find.widgetWithText(TextButton, 'Más'));
+    await tester.pumpAndSettle();
+    for (final title in ['Ejercicios', 'Calentamientos', 'Programas']) {
+      expect(find.widgetWithText(ListTile, title), findsOneWidget);
+    }
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pumpAndSettle();
   });

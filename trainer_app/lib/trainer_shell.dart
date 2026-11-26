@@ -29,10 +29,10 @@ class TrainerShell extends StatefulWidget {
     ('/clients', 'Alumnos', Icons.people_outline),
     ('/self', 'Para mí', Icons.person_outline),
     ('/agenda', 'Agenda', Icons.calendar_month_outlined),
-    ('/workouts', 'Sesiones', Icons.fitness_center),
-    ('/programs', 'Programas', Icons.view_week_outlined),
     ('/exercises', 'Ejercicios', Icons.sports_gymnastics),
     ('/warmups', 'Calentamientos', Icons.wb_sunny_outlined),
+    ('/workouts', 'Sesiones', Icons.fitness_center),
+    ('/programs', 'Programas', Icons.view_week_outlined),
     ('/reviews', 'Revisiones', Icons.fact_check_outlined),
     ('/forms', 'Formularios', Icons.assignment_outlined),
     ('/assessments', 'Pruebas y simulacros', Icons.timer_outlined),
@@ -200,12 +200,13 @@ class _TrainerShellState extends State<TrainerShell>
   String get location => widget.location;
   Widget get child => widget.child;
   static const destinations = TrainerShell.destinations;
-  // Conserva los cuatro accesos habituales en pantallas estrechas. «Para mí»
-  // está en Más y no desplaza Sesiones al añadir una opción al escritorio.
-  static const compactDestinations = [0, 1, 3, 4];
+  static final compactDestinations = [
+    for (final path in const ['/home', '/clients', '/agenda', '/workouts'])
+      destinations.indexWhere((destination) => destination.$1 == path),
+  ];
   static const navigationSections = {
     '/home': 'TU ESPACIO',
-    '/workouts': 'BIBLIOTECA',
+    '/exercises': 'BIBLIOTECA',
     '/reviews': 'SEGUIMIENTO',
     '/groups': 'ORGANIZACIÓN',
     '/messages': 'SERVICIO',
@@ -279,18 +280,16 @@ class _TrainerShellState extends State<TrainerShell>
                 trailing: const ProfessionalThemeButton(),
                 onTap: () => Navigator.pop(sheetContext, -1),
               ),
-              for (final i in [
-                2,
-                for (var value = 5; value < destinations.length; value++) value,
-              ])
-                ListTile(
-                  leading: destinations[i].$1 == '/messages'
-                      ? _messageIcon(destinations[i].$3)
-                      : Icon(destinations[i].$3),
-                  title: Text(destinations[i].$2),
-                  selected: selected == i,
-                  onTap: () => Navigator.pop(sheetContext, i),
-                ),
+              for (final (i, destination) in destinations.indexed)
+                if (!compactDestinations.contains(i))
+                  ListTile(
+                    leading: destination.$1 == '/messages'
+                        ? _messageIcon(destination.$3)
+                        : Icon(destination.$3),
+                    title: Text(destination.$2),
+                    selected: selected == i,
+                    onTap: () => Navigator.pop(sheetContext, i),
+                  ),
             ],
           ),
         ),
