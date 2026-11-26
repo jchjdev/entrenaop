@@ -18,6 +18,10 @@ class WorkoutTemplateModel {
       description: json['description'] as String?,
       estimatedDurationMinutes: json['estimated_duration_minutes'] as int?,
       version: json['version'] as int,
+      warmupTemplateId: json['warmup_template_id'] as String?,
+      warmupName: json['warmup_name'] as String?,
+      warmupCanBeSkipped: json['warmup_can_be_skipped'] as bool? ?? true,
+      isPrivateWarmup: json['is_private_warmup'] == true,
       blocks: blocks.map((entry) => entry.value).toList(growable: false),
     );
   }
@@ -38,6 +42,7 @@ class WorkoutTemplateModel {
         rounds: json['rounds'] as int,
         timeCapSeconds: json['time_cap_seconds'] as int?,
         restAfterSeconds: json['rest_after_seconds'] as int,
+        attachedWarmup: json['attached_warmup'] as bool? ?? false,
         items: items.map((entry) => entry.value).toList(growable: false),
       ),
     );

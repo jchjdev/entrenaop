@@ -72,6 +72,7 @@ class WorkoutExecutionModel {
       blockOrder: json['block_order'] as int,
       blockName: json['block_name'] as String,
       blockFormat: _blockFormat(json['block_format'] as String?),
+      warmupCanBeSkipped: json['warmup_can_be_skipped'] as bool? ?? true,
       blockTimeCapSeconds: json['block_time_cap_seconds'] as int?,
       itemOrder: json['item_order'] as int,
       exerciseId: json['exercise_id'] as String,

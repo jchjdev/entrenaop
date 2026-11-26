@@ -470,7 +470,10 @@ class _ActiveWorkoutPageState extends State<ActiveWorkoutPage> {
                     : null,
                 onSave: (result) async {
                   await cubit.completeCurrentSet(result);
-                  return cubit.state.execution?.sets.singleOrNull?.status ==
+                  return cubit.state.execution?.sets
+                          .where((set) => set.id == phoneSet.id)
+                          .singleOrNull
+                          ?.status ==
                       WorkoutSetStatus.completed;
                 },
                 onManual: (totals) => _useManual(cubit, phoneSet.id, totals),

@@ -5,6 +5,11 @@ Map<String, dynamic> workoutDraftToJson(CreatePersonalWorkoutInput input) => {
   'name': input.name.trim(),
   'description': input.description?.trim(),
   'estimated_duration_minutes': input.estimatedDurationMinutes,
+  if (input.isPrivateWarmup) 'is_private_warmup': true,
+  if (input.warmupTemplateId != null) ...{
+    'warmup_template_id': input.warmupTemplateId,
+    'warmup_can_be_skipped': input.warmupCanBeSkipped,
+  },
   'blocks': input.blocks
       .map(
         (block) => {

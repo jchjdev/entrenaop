@@ -59,6 +59,7 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
       block_order,
       block_name,
       block_format,
+      warmup_can_be_skipped,
       block_time_cap_seconds,
       item_order,
       exercise_id,

@@ -119,6 +119,9 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
   bool _busy = false;
   bool _creatingExercise = false;
   bool _loadingWarmups = false;
+  String? _warmupTemplateId;
+  String? _warmupName;
+  bool _warmupCanBeSkipped = true;
   ExercisePreferencesController? _exercisePreferences;
   String? _error;
   WorkoutEditorWorkController? _work;
@@ -136,6 +139,11 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     'descriptionText': _description.text,
     'durationText': _duration.text,
     'running': _running,
+    if (_warmupTemplateId != null) ...{
+      'warmupTemplateId': _warmupTemplateId,
+      'warmupName': _warmupName,
+      'warmupCanBeSkipped': _warmupCanBeSkipped,
+    },
     'segments': [for (final v in _segments) v.raw],
     'blocks': [
       for (final b in _blocks)
@@ -189,6 +197,9 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     _description.text = raw['descriptionText'] as String;
     _duration.text = raw['durationText'] as String;
     _running = raw['running'] as bool;
+    _warmupTemplateId = raw['warmupTemplateId'] as String?;
+    _warmupName = raw['warmupName'] as String?;
+    _warmupCanBeSkipped = raw['warmupCanBeSkipped'] != false;
     for (final v in _segments) {
       v.dispose();
     }
@@ -420,6 +431,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     _description.text,
     _duration.text,
     _running,
+    _warmupTemplateId,
+    _warmupCanBeSkipped,
     widget.additionalStateStamp,
     for (final segment in _segments)
       [
@@ -603,15 +616,19 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     _name.text = template.name;
     _description.text = template.description ?? '';
     _duration.text = template.estimatedDurationMinutes?.toString() ?? '';
+    _warmupTemplateId = template.warmupTemplateId;
+    _warmupName = template.warmupName;
+    _warmupCanBeSkipped = template.warmupCanBeSkipped;
+    final mainBlocks = template.blocks.where((b) => !b.attachedWarmup).toList();
     _running =
-        template.blocks.length == 1 &&
-        template.blocks.single.format == WorkoutBlockFormat.running;
+        mainBlocks.length == 1 &&
+        mainBlocks.single.format == WorkoutBlockFormat.running;
     if (_running) {
       for (final segment in _segments) {
         segment.dispose();
       }
       _segments.clear();
-      for (final set in template.blocks.single.items.single.sets) {
+      for (final set in mainBlocks.single.items.single.sets) {
         if (_segments.isNotEmpty && _segments.last.matches(set)) {
           _segments.last.count.text =
               '${int.parse(_segments.last.count.text) + 1}';
@@ -625,7 +642,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
       }
       _blocks
         ..clear()
-        ..addAll(template.blocks.map(_StrengthBlock.fromBlock));
+        ..addAll(mainBlocks.map(_StrengthBlock.fromBlock));
     }
   }
 
@@ -1172,20 +1189,49 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
           const SizedBox(height: 8),
           fields,
         ],
-        if (!_running && !widget.warmup && widget.loadWarmups != null) ...[
+        if (!widget.warmup && widget.loadWarmups != null) ...[
           const SizedBox(height: 12),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: OutlinedButton.icon(
-              onPressed: _busy || _loadingWarmups ? null : _insertWarmup,
-              icon: const Icon(Icons.wb_sunny_outlined),
-              label: Text(
-                _loadingWarmups
-                    ? 'Cargando calentamientos…'
-                    : 'Insertar calentamiento',
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              OutlinedButton.icon(
+                onPressed: _busy || _loadingWarmups ? null : _insertWarmup,
+                icon: const Icon(Icons.wb_sunny_outlined),
+                label: Text(
+                  _loadingWarmups
+                      ? 'Cargando calentamientos…'
+                      : _warmupTemplateId == null
+                      ? 'Elegir calentamiento'
+                      : 'Cambiar calentamiento',
+                ),
               ),
-            ),
+              if (_warmupTemplateId != null)
+                TextButton(
+                  onPressed: _busy
+                      ? null
+                      : () => setState(() {
+                          _warmupTemplateId = null;
+                          _warmupName = null;
+                          _warmupCanBeSkipped = true;
+                        }),
+                  child: const Text('Quitar calentamiento'),
+                ),
+            ],
           ),
+          if (_warmupName case final name?) ...[
+            const SizedBox(height: 8),
+            Text(name),
+            SwitchListTile.adaptive(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Permitir omitir el calentamiento'),
+              value: _warmupCanBeSkipped,
+              onChanged: _busy
+                  ? null
+                  : (value) => setState(() => _warmupCanBeSkipped = value),
+            ),
+          ],
         ],
         const SizedBox(height: 20),
         if (_running)
@@ -2936,11 +2982,11 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
   }
 
   Future<void> _insertWarmup() async {
-    if (_busy || _running || _loadingWarmups) return;
+    if (_busy || _loadingWarmups) return;
     setState(() => _loadingWarmups = true);
     try {
       final recipes = await widget.loadWarmups!();
-      if (!mounted || _busy || _running) return;
+      if (!mounted || _busy) return;
       final available = _catalog
           .where((e) => e.selectable)
           .map((e) => e.id)
@@ -2960,14 +3006,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
       final chosen = await showDialog<WorkoutTemplate>(
         context: context,
         builder: (dialog) => SimpleDialog(
-          title: const Text('Calentamientos predeterminados'),
+          title: const Text('Elegir calentamiento'),
           children: [
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text(
-                'Se insertan al principio como bloques editables de esta sesión. El original de EntrenaOP se conserva.',
-              ),
-            ),
             if (options.isEmpty)
               const Padding(
                 padding: EdgeInsets.all(16),
@@ -2975,32 +3015,33 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                   'No hay calentamientos compatibles con los ejercicios disponibles.',
                 ),
               ),
-            for (final template in options)
-              SimpleDialogOption(
-                onPressed: () => Navigator.pop(dialog, template),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Text(template.name),
+            for (final private in [true, false])
+              if (options.any((t) => t.isPrivateWarmup == private)) ...[
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 12, 24, 4),
+                  child: Text(
+                    private ? 'Mis calentamientos' : 'EntrenaOP',
+                    style: Theme.of(dialog).textTheme.titleSmall,
+                  ),
                 ),
-              ),
+                for (final template in options.where(
+                  (t) => t.isPrivateWarmup == private,
+                ))
+                  SimpleDialogOption(
+                    onPressed: () => Navigator.pop(dialog, template),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Text(template.name),
+                    ),
+                  ),
+              ],
           ],
         ),
       );
-      if (chosen == null || !mounted || _busy || _running) return;
-      final blocks = chosen.blocks.map((source) {
-        final block = _StrengthBlock.fromBlock(source);
-        // Misma conversión que al editar el calentamiento en ADMIN; conserva
-        // el número de series de cada ejercicio, también cuando son distintos.
-        if (block.format == WorkoutBlockFormat.warmUp) {
-          block.format = WorkoutBlockFormat.straightSets;
-        }
-        block.name.text = 'Calentamiento · ${source.name}';
-        return block;
-      }).toList();
+      if (chosen == null || !mounted || _busy) return;
       setState(() {
-        _blocks.insertAll(0, blocks);
-        _expandedStrengthBlock = blocks.first;
-        _selectedStrengthExercise = blocks.first.exercises.first;
+        _warmupTemplateId = chosen.id;
+        _warmupName = chosen.name;
       });
     } catch (_) {
       if (mounted) {

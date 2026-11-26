@@ -1,5 +1,13 @@
 # Registro de decisiones vigentes
 
+**Calentamientos reutilizables · 26/11/2026.** Javier confirma el selector de
+calentamiento en el editor compartido de sesiones sueltas y de programa, con
+la opción de omitirlo activada al elegirlo. Trainer puede crear sus propios
+calentamientos y distinguirlos de EntrenaOP en el selector. El deportista puede
+seguir el guiado, calentar por su cuenta o empezar directamente cuando el
+preparador permite omitirlo. [Trainer](TRAINER_PRIVATE_PROGRAMS.md#calentamientos-reutilizables)
+· [ADMIN](PROGRAMAS_GUIADOS.md#calentamientos-reutilizables).
+
 **Verificar la versión móvil por plataforma · 25/11/2026.** Javier pide que
 la regla de versionado se aplique en todos los chats. El cambio funcional
 incluye el incremento de versión y compilación en `pubspec.yaml`. Si la entrega

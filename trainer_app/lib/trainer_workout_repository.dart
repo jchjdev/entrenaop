@@ -116,6 +116,7 @@ class TrainerAssignment {
 
 abstract class TrainerWorkoutRepository {
   Future<List<WorkoutTemplate>> warmups() async => [];
+  Future<List<WorkoutTemplate>> privateWarmups() async => [];
   Future<List<TrainerWorkout>> workouts({
     TrainerWorkout? before,
     String query = '',
@@ -157,8 +158,38 @@ class SupabaseTrainerWorkoutRepository implements TrainerWorkoutRepository {
   final SupabaseClient client;
   final String userId;
   @override
-  Future<List<WorkoutTemplate>> warmups() =>
-      SupabasePublishedWarmupCatalog(client, userId).load();
+  Future<List<WorkoutTemplate>> warmups() async {
+    final catalogs = await Future.wait([
+      privateWarmups(),
+      SupabasePublishedWarmupCatalog(client, userId).load(),
+    ]);
+    return [...catalogs.first, ...catalogs.last];
+  }
+
+  @override
+  Future<List<WorkoutTemplate>> privateWarmups() async {
+    _identity();
+    final result = <WorkoutTemplate>[];
+    const pageSize = 50;
+    for (var offset = 0; ; offset += pageSize) {
+      final rows = await client
+          .from('workout_templates')
+          .select(workoutTemplateSelect)
+          .eq('owner_user_id', userId)
+          .eq('origin', 'coach')
+          .eq('status', 'published')
+          .eq('is_private_warmup', true)
+          .isFilter('trashed_at', null)
+          .order('id')
+          .range(offset, offset + pageSize - 1);
+      _identity();
+      result.addAll(rows.map(WorkoutTemplateModel.fromJson));
+      if (rows.length < pageSize) break;
+    }
+    return result
+      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+  }
+
   void _identity() {
     if (client.auth.currentUser?.id != userId) {
       throw StateError('La cuenta ha cambiado.');

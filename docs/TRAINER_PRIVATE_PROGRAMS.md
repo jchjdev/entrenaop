@@ -1,5 +1,18 @@
 # Programas privados y agenda profesional · TRN-017 · 21/10/2026
 
+## Calentamientos reutilizables
+
+En **Sesiones → Mis calentamientos**, el preparador puede crear y revisar una
+receta privada con ejercicios propios o de EntrenaOP. En **Elegir calentamiento**
+del editor, las recetas propias aparecen con su origen, igual que las oficiales.
+La misma elección está disponible al crear una sesión suelta o desde un
+programa. Al guardar, la dosis se incorpora a la versión de sesión, de modo
+que una revisión futura de la receta reutilizable no cambia las pautas previas.
+
+Con **Permitir omitir el calentamiento**, el deportista puede seguir el guiado,
+calentar por su cuenta antes de continuar o saltar directamente a la parte
+principal. Calentar por su cuenta no genera registros del calentamiento guiado.
+
 ## Actualizar pautas de programas · 12/11/2026
 
 Al guardar una revisión, **Actualizar pautas…** permite seleccionar alumnos

@@ -244,6 +244,17 @@ class _TrainerWorkoutLibraryPageState extends State<TrainerWorkoutLibraryPage> {
           'Tu biblioteca profesional. Las sesiones solo se comparten con los alumnos a los que las pautes.',
         ),
         const SizedBox(height: 16),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: OutlinedButton.icon(
+            onPressed: _canCreate
+                ? () => context.push('/workouts/warmups')
+                : null,
+            icon: const Icon(Icons.wb_sunny_outlined),
+            label: const Text('Mis calentamientos'),
+          ),
+        ),
+        const SizedBox(height: 16),
         if (widget.workRepository != null &&
             (_busy ||
                 _works.isNotEmpty ||
@@ -436,11 +447,13 @@ class TrainerWorkoutEditorPage extends StatefulWidget {
     this.templateId,
     this.onCreateExercise,
     this.exercisePreferences,
+    this.warmup = false,
   });
   final TrainerWorkoutRepository repository;
   final String? templateId;
   final Future<WorkoutEditorExercise?> Function(BuildContext)? onCreateExercise;
   final ExerciseCatalogPreferences? exercisePreferences;
+  final bool warmup;
   @override
   State<TrainerWorkoutEditorPage> createState() =>
       _TrainerWorkoutEditorPageState();
@@ -466,7 +479,8 @@ class _TrainerWorkoutEditorPageState extends State<TrainerWorkoutEditorPage> {
       final value = widget.templateId == null
           ? null
           : await widget.repository.template(widget.templateId!);
-      if (widget.templateId != null && value == null) {
+      if (widget.templateId != null &&
+          (value == null || value.isPrivateWarmup != widget.warmup)) {
         throw StateError('Sesión no disponible.');
       }
       if (mounted) setState(() => _template = value);
@@ -481,7 +495,11 @@ class _TrainerWorkoutEditorPageState extends State<TrainerWorkoutEditorPage> {
   Widget build(BuildContext context) {
     if (_busy || _error != null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Sesión privada')),
+        appBar: AppBar(
+          title: Text(
+            widget.warmup ? 'Calentamiento privado' : 'Sesión privada',
+          ),
+        ),
         body: _busy
             ? const Center(child: CircularProgressIndicator())
             : _frame(context, [_retry(_error!, _load)]),
@@ -490,6 +508,7 @@ class _TrainerWorkoutEditorPageState extends State<TrainerWorkoutEditorPage> {
     final revision = widget.templateId != null;
     return WorkoutEditorPage(
       loadWarmups: widget.repository.warmups,
+      warmup: widget.warmup,
       onCreateExercise: widget.onCreateExercise,
       exercisePreferences: widget.exercisePreferences,
       loadExercises: () => widget.repository.exercises(
@@ -500,20 +519,94 @@ class _TrainerWorkoutEditorPageState extends State<TrainerWorkoutEditorPage> {
       ),
       onSave: (input) => widget.repository.save(
         _operationId,
-        input,
+        widget.warmup
+            ? CreatePersonalWorkoutInput(
+                name: input.name,
+                blocks: input.blocks,
+                description: input.description,
+                estimatedDurationMinutes: input.estimatedDurationMinutes,
+                isPrivateWarmup: true,
+              )
+            : input,
         previousId: widget.templateId,
       ),
-      onSaved: (id) => context.pop(id),
+      onSaved: (id) =>
+          context.canPop() ? context.pop(id) : context.go('/workouts/warmups'),
       originalTemplate: _template,
-      title: revision ? 'Revisar sesión privada' : 'Crear sesión privada',
+      title: widget.warmup
+          ? (revision ? 'Revisar calentamiento' : 'Crear calentamiento')
+          : (revision ? 'Revisar sesión privada' : 'Crear sesión privada'),
       heading: 'Biblioteca del preparador',
-      instructions: revision
+      instructions: widget.warmup
+          ? 'Guárdalo para usarlo en las sesiones que prepares.'
+          : revision
           ? 'Se guarda una nueva versión. Las pautas anteriores conservan el entrenamiento que recibieron.'
           : 'Guárdala en tu biblioteca y después asígnala a tus alumnos.',
-      saveLabel: revision ? 'Guardar nueva versión' : 'Guardar sesión privada',
+      saveLabel: revision
+          ? 'Guardar nueva versión'
+          : widget.warmup
+          ? 'Guardar calentamiento'
+          : 'Guardar sesión privada',
       saveErrorMessage: 'No se pudo confirmar el guardado. Conservamos tu entrenamiento: reintenta sin cambiarlo si la conexión falló.',
     );
   }
+}
+
+class TrainerWarmupLibraryPage extends StatefulWidget {
+  const TrainerWarmupLibraryPage({super.key, required this.repository});
+
+  final TrainerWorkoutRepository repository;
+
+  @override
+  State<TrainerWarmupLibraryPage> createState() =>
+      _TrainerWarmupLibraryPageState();
+}
+
+class _TrainerWarmupLibraryPageState extends State<TrainerWarmupLibraryPage> {
+  late Future<List<WorkoutTemplate>> _warmups = widget.repository
+      .privateWarmups();
+
+  void _refresh() =>
+      setState(() => _warmups = widget.repository.privateWarmups());
+
+  Future<void> _open(String path) async {
+    if (await context.push<String>(path) != null && mounted) _refresh();
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text('Mis calentamientos')),
+    body: FutureBuilder(
+      future: _warmups,
+      builder: (context, snapshot) => _frame(context, [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: FilledButton.icon(
+            onPressed: () => _open('/workouts/warmups/new'),
+            icon: const Icon(Icons.add),
+            label: const Text('Crear calentamiento'),
+          ),
+        ),
+        const SizedBox(height: 16),
+        if (snapshot.connectionState != ConnectionState.done)
+          const LinearProgressIndicator()
+        else if (snapshot.hasError)
+          _retry('No se pudieron cargar los calentamientos.', _refresh)
+        else if (snapshot.data!.isEmpty)
+          const Text('Aquí aparecerán tus calentamientos.'),
+        for (final warmup in snapshot.data ?? <WorkoutTemplate>[])
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.wb_sunny_outlined),
+              title: Text(warmup.name),
+              subtitle: Text('Versión ${warmup.version}'),
+              trailing: const Icon(Icons.edit_outlined),
+              onTap: () => _open('/workouts/warmups/${warmup.id}'),
+            ),
+          ),
+      ]),
+    ),
+  );
 }
 
 class TrainerWorkoutPreviewPage extends StatefulWidget {

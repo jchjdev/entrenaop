@@ -5,6 +5,10 @@ const workoutTemplateSelect = '''
   description,
   estimated_duration_minutes,
   version,
+  warmup_template_id,
+  warmup_name,
+  warmup_can_be_skipped,
+  is_private_warmup,
   workout_blocks (
     id,
     order_index,
@@ -13,6 +17,7 @@ const workoutTemplateSelect = '''
     rounds,
     time_cap_seconds,
     rest_after_seconds,
+    attached_warmup,
     workout_items (
       id,
       order_index,

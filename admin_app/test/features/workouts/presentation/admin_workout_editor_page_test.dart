@@ -377,6 +377,7 @@ void main() {
         find.textContaining('No se pudo guardar el borrador'),
         findsOneWidget,
       );
+      await _showSharedField(tester, _field('Nombre de la sesión'));
       expect(
         tester
             .widget<TextField>(_field('Nombre de la sesión'))
@@ -475,9 +476,12 @@ void main() {
       tester.widget<TextField>(_field('Ritmo (m:ss/km)')).keyboardType,
       TextInputType.number,
     );
+    await _showSharedField(tester, _field('Nombre de la sesión'));
     await tester.enterText(_field('Nombre de la sesión'), 'Ritmo manual');
+    await _showSharedField(tester, _field('Distancia (m)'));
     await tester.enterText(_field('Distancia (m)'), '400');
     await _chooseRunningPace(tester);
+    await _showSharedField(tester, _field('Ritmo (m:ss/km)'));
     await tester.enterText(_field('Ritmo (m:ss/km)'), '3:50');
     await tester.pumpAndSettle();
     await _showSharedField(tester, find.text('Guardar borrador'));

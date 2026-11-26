@@ -2028,17 +2028,23 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
-  testWidgets(
-    'omitir calentamiento pasa al trabajo sin resultados inventados',
-    (tester) async {
+  for (final choice in [
+    'Omitir calentamiento',
+    'Calentar por mi cuenta',
+    null,
+  ]) {
+    testWidgets('calentamiento: ${choice ?? 'guiado obligatorio'}', (
+      tester,
+    ) async {
       final repository = _Repository();
       repository.execution = repository.execution.copyWith(
-        sets: const [
+        sets: [
           WorkoutExecutionSet(
             id: 'warm-1',
             blockOrder: 0,
             blockName: 'Calentamiento',
             blockFormat: WorkoutBlockFormat.warmUp,
+            warmupCanBeSkipped: choice != null,
             itemOrder: 0,
             exerciseId: 'mobility',
             exerciseName: 'Movilidad',
@@ -2050,9 +2056,10 @@ void main() {
           ),
           WorkoutExecutionSet(
             id: 'warm-2',
-            blockOrder: 0,
+            blockOrder: 1,
             blockName: 'Calentamiento',
             blockFormat: WorkoutBlockFormat.warmUp,
+            warmupCanBeSkipped: choice != null,
             itemOrder: 1,
             exerciseId: 'mobility',
             exerciseName: 'Movilidad',
@@ -2061,9 +2068,9 @@ void main() {
             restAfterSeconds: 0,
             status: WorkoutSetStatus.pending,
           ),
-          WorkoutExecutionSet(
+          const WorkoutExecutionSet(
             id: 'work',
-            blockOrder: 1,
+            blockOrder: 2,
             blockName: 'Trabajo',
             itemOrder: 0,
             exerciseId: 'push',
@@ -2090,9 +2097,22 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('Omitir calentamiento'));
-      await tester.tap(find.text('Omitir calentamiento'));
+      if (choice == null) {
+        expect(find.text('Omitir calentamiento'), findsNothing);
+        expect(find.text('Calentar por mi cuenta'), findsNothing);
+        await cubit.skipWarmUp();
+        await cubit.skipCurrentSet();
+        expect(cubit.state.execution!.currentSet!.id, 'warm-1');
+        return;
+      }
+      await tester.ensureVisible(find.text(choice));
+      await tester.tap(find.text(choice));
       await tester.pumpAndSettle();
+      if (choice == 'Calentar por mi cuenta') {
+        expect(cubit.state.execution!.currentSet!.id, 'warm-1');
+        await tester.tap(find.text('Empezar parte principal'));
+        await tester.pumpAndSettle();
+      }
       expect(cubit.state.execution!.currentSet!.id, 'work');
       expect(
         cubit.state.execution!.sets
@@ -2103,8 +2123,8 @@ void main() {
       expect(repository.lastSetResult, isNull);
       expect(find.text('Terminar serie'), findsOneWidget);
       expect(find.byType(AlertDialog), findsNothing);
-    },
-  );
+    });
+  }
   Future<(_Repository, ActiveWorkoutCubit)> mountEffortSet(
     WidgetTester tester, {
     bool duration = false,

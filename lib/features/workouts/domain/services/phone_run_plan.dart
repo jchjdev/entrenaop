@@ -58,22 +58,24 @@ bool supportsPhoneRunSet(WorkoutExecutionSet set) =>
 
 bool supportsPhoneRun(WorkoutTemplate workout) =>
     workout.blocks.isNotEmpty &&
-    workout.blocks.every(
-      (block) =>
-          _runningFormat(block.format) &&
-          block.timeCapSeconds == null &&
-          block.items.isNotEmpty &&
-          block.items.every(
-            (item) =>
-                item.exerciseId == runningExerciseId &&
-                item.sets.isNotEmpty &&
-                item.sets.every(
-                  (set) =>
-                      set.targetReps == null &&
-                      set.performancePrescription == null,
-                ),
-          ),
-    );
+    workout.blocks
+        .where((block) => !block.attachedWarmup)
+        .every(
+          (block) =>
+              _runningFormat(block.format) &&
+              block.timeCapSeconds == null &&
+              block.items.isNotEmpty &&
+              block.items.every(
+                (item) =>
+                    item.exerciseId == runningExerciseId &&
+                    item.sets.isNotEmpty &&
+                    item.sets.every(
+                      (set) =>
+                          set.targetReps == null &&
+                          set.performancePrescription == null,
+                    ),
+              ),
+        );
 
 List<PhoneRunStep> phoneRunSteps(WorkoutExecution execution) {
   if (execution.status != WorkoutExecutionStatus.inProgress) return const [];

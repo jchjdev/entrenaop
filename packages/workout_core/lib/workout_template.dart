@@ -129,12 +129,18 @@ class CreatePersonalWorkoutInput extends Equatable {
     required this.blocks,
     this.description,
     this.estimatedDurationMinutes,
+    this.warmupTemplateId,
+    this.warmupCanBeSkipped = true,
+    this.isPrivateWarmup = false,
   });
 
   final String name;
   final String? description;
   final int? estimatedDurationMinutes;
   final List<WorkoutBlockDraft> blocks;
+  final String? warmupTemplateId;
+  final bool warmupCanBeSkipped;
+  final bool isPrivateWarmup;
 
   @override
   List<Object?> get props => [
@@ -142,6 +148,9 @@ class CreatePersonalWorkoutInput extends Equatable {
     description,
     estimatedDurationMinutes,
     blocks,
+    warmupTemplateId,
+    warmupCanBeSkipped,
+    isPrivateWarmup,
   ];
 }
 
@@ -188,6 +197,10 @@ class WorkoutTemplate extends Equatable {
     required this.estimatedDurationMinutes,
     required this.version,
     required this.blocks,
+    this.warmupTemplateId,
+    this.warmupName,
+    this.warmupCanBeSkipped = true,
+    this.isPrivateWarmup = false,
   });
 
   final String id;
@@ -196,6 +209,10 @@ class WorkoutTemplate extends Equatable {
   final int? estimatedDurationMinutes;
   final int version;
   final List<WorkoutBlock> blocks;
+  final String? warmupTemplateId;
+  final String? warmupName;
+  final bool warmupCanBeSkipped;
+  final bool isPrivateWarmup;
 
   @override
   List<Object?> get props => [
@@ -205,6 +222,10 @@ class WorkoutTemplate extends Equatable {
     estimatedDurationMinutes,
     version,
     blocks,
+    warmupTemplateId,
+    warmupName,
+    warmupCanBeSkipped,
+    isPrivateWarmup,
   ];
 }
 
@@ -217,6 +238,7 @@ class WorkoutBlock extends Equatable {
     required this.restAfterSeconds,
     required this.items,
     this.timeCapSeconds,
+    this.attachedWarmup = false,
   });
 
   final String id;
@@ -226,6 +248,7 @@ class WorkoutBlock extends Equatable {
   final int? timeCapSeconds;
   final int restAfterSeconds;
   final List<WorkoutItem> items;
+  final bool attachedWarmup;
 
   @override
   List<Object?> get props => [
@@ -236,6 +259,7 @@ class WorkoutBlock extends Equatable {
     timeCapSeconds,
     restAfterSeconds,
     items,
+    attachedWarmup,
   ];
 }
 

@@ -183,7 +183,11 @@ void main() {
           );
           if (format == WorkoutBlockFormat.running) {
             final header = find.byKey(const ValueKey('running-step-header-0'));
-            await t.ensureVisible(header);
+            await t.scrollUntilVisible(
+              header,
+              200,
+              scrollable: find.byType(Scrollable).first,
+            );
             await t.pumpAndSettle();
             await t.tap(header);
             await t.pumpAndSettle();

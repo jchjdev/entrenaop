@@ -1191,6 +1191,29 @@ class _TrainerAppState extends State<TrainerApp> {
                   ),
                 ),
                 GoRoute(
+                  path: 'warmups',
+                  builder: (_, _) =>
+                      TrainerWarmupLibraryPage(repository: workouts()),
+                  routes: [
+                    GoRoute(
+                      path: ':warmupId',
+                      onExit: (_, state) => exits.requestExit(state.pageKey),
+                      builder: (_, state) => guarded(
+                        state,
+                        TrainerWorkoutEditorPage(
+                          repository: workouts(),
+                          warmup: true,
+                          templateId: state.pathParameters['warmupId'] == 'new'
+                              ? null
+                              : state.pathParameters['warmupId'],
+                          onCreateExercise: createExercise,
+                          exercisePreferences: exercisePreferences,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                GoRoute(
                   path: 'new',
                   redirect: (_, _) => '/workouts/work/${newGuidedWorkId()}',
                 ),

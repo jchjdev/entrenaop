@@ -1996,6 +1996,21 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
                     const Text(
                       'Esta sesión ya incluye su propio calentamiento.',
                     ),
+                  if (hasWarmup && s.warmup != null)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton(
+                        onPressed: _busy
+                            ? null
+                            : () => setState(() {
+                                s.warmup = null;
+                                _changed();
+                              }),
+                        child: const Text(
+                          'Quitar el calentamiento adjunto anterior',
+                        ),
+                      ),
+                    ),
                   if (!hasWarmup)
                     _labeledControl(
                       'Calentamiento adjunto',

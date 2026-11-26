@@ -721,16 +721,22 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   /// Omitir el guiado no escribe resultados de capacidad ni omite trabajo.
   Future<void> skipWarmUp() async {
     final current = state.execution?.currentSet;
-    if (current?.blockFormat != WorkoutBlockFormat.warmUp ||
+    if (current == null ||
+        current.blockFormat != WorkoutBlockFormat.warmUp ||
+        !current.warmupCanBeSkipped ||
+        _draftBusy ||
         state.status == ActiveWorkoutStatus.saving) {
       return;
     }
-    final blockOrder = current!.blockOrder;
-    while (!isClosed &&
-        state.execution?.currentSet?.blockOrder == blockOrder &&
-        state.execution?.currentSet?.blockFormat == WorkoutBlockFormat.warmUp) {
+    while (!isClosed) {
+      final next = state.execution?.currentSet;
+      if (next == null ||
+          next.blockFormat != WorkoutBlockFormat.warmUp ||
+          !next.warmupCanBeSkipped) {
+        return;
+      }
       await skipCurrentSet();
-      if (state.status == ActiveWorkoutStatus.failure) return;
+      if (state.execution?.currentSet?.id == next.id) return;
     }
   }
 
@@ -738,7 +744,12 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     if (_draftBusy || state.status == ActiveWorkoutStatus.saving) return;
     final execution = state.execution;
     final currentSet = execution?.currentSet;
-    if (execution == null || currentSet == null) return;
+    if (execution == null ||
+        currentSet == null ||
+        (currentSet.blockFormat == WorkoutBlockFormat.warmUp &&
+            !currentSet.warmupCanBeSkipped)) {
+      return;
+    }
 
     _publish(
       ActiveWorkoutState(

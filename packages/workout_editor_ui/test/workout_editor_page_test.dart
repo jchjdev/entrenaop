@@ -295,7 +295,7 @@ void main() {
         final selector = t.getRect(find.byType(SegmentedButton<bool>));
         final warmup = t.getRect(
           find.ancestor(
-            of: find.text('Insertar calentamiento'),
+            of: find.text('Elegir calentamiento'),
             matching: find.byType(OutlinedButton),
           ),
         );
@@ -306,7 +306,7 @@ void main() {
   }
 
   testWidgets(
-    'inserta el calentamiento como copia y conserva receta y dosis diferentes',
+    'guarda el calentamiento privado opcional sin mezclarlo con los bloques principales',
     (t) async {
       final warmup = WorkoutTemplate(
         id: 'warmup',
@@ -314,6 +314,7 @@ void main() {
         description: null,
         estimatedDurationMinutes: 5,
         version: 1,
+        isPrivateWarmup: true,
         blocks: [
           WorkoutBlock(
             id: 'warm-block',
@@ -358,6 +359,14 @@ void main() {
           ),
         ],
       );
+      final official = WorkoutTemplate(
+        id: 'official-warmup',
+        name: 'Calentamiento de EntrenaOP',
+        description: null,
+        estimatedDurationMinutes: 5,
+        version: 1,
+        blocks: warmup.blocks,
+      );
       CreatePersonalWorkoutInput? result;
       await t.pumpWidget(
         _app(
@@ -366,27 +375,24 @@ void main() {
             return 'saved';
           },
           saved: (_) {},
-          warmups: () async => [warmup],
+          warmups: () async => [warmup, official],
         ),
       );
       await t.pumpAndSettle();
-      await t.ensureVisible(find.text('Insertar calentamiento'));
+      await t.ensureVisible(find.text('Elegir calentamiento'));
       await t.pumpAndSettle();
-      await t.tap(find.text('Insertar calentamiento'));
+      await t.tap(find.text('Elegir calentamiento'));
       await t.pumpAndSettle();
+      expect(find.text('Mis calentamientos'), findsOneWidget);
+      expect(find.text('EntrenaOP'), findsWidgets);
+      expect(find.text('Calentamiento de EntrenaOP'), findsOneWidget);
       await t.tap(find.text('Activación general'));
       await t.pumpAndSettle();
       await _save(t);
       expect(result, isNotNull);
-      expect(result!.blocks.length, 2);
-      expect(result!.blocks.first.name, 'Calentamiento · Movilidad');
-      expect(result!.blocks.first.exercises.first.sets.length, 2);
-      expect(result!.blocks.first.exercises[1].sets.length, 1);
-      expect(
-        result!.blocks.first.exercises.first.sets.map((e) => e.targetValue),
-        [8, 9],
-      );
-      expect(result!.blocks.last.name, 'Bloque principal');
+      expect(result!.warmupTemplateId, 'warmup');
+      expect(result!.warmupCanBeSkipped, isTrue);
+      expect(result!.blocks.single.name, 'Bloque principal');
       expect(warmup.blocks.single.format, WorkoutBlockFormat.warmUp);
       expect(warmup.blocks.single.items.first.sets.first.targetReps, 8);
       expect(t.takeException(), isNull);

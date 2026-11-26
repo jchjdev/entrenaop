@@ -179,12 +179,14 @@ class _GuidedPreviewState extends State<_GuidedPreview> {
         .program
         .phases[widget.entry.phaseIndex]
         .sessions[widget.entry.sessionIndex];
+    final workout = _cubit.state.workout;
     final warmup =
-        session.warmupId != null ||
-        (_cubit.state.workout?.blocks.any(
-              (b) => b.format == WorkoutBlockFormat.warmUp,
-            ) ??
-            false);
+        (workout?.warmupCanBeSkipped ?? true) &&
+        (session.warmupId != null ||
+            (workout?.blocks.any(
+                  (b) => b.format == WorkoutBlockFormat.warmUp,
+                ) ??
+                false));
     final input = TextEditingController(text: _restSeconds?.toString() ?? '');
     var includeWarmup = !_omitWarmup, useOriginal = _restSeconds == null;
     String? error;

@@ -1,5 +1,14 @@
 # Programas guiados oficiales
 
+## Calentamientos reutilizables
+
+En ADMIN, **Calentamientos** es la biblioteca oficial. El editor de sesiones de
+fuerza y carrera permite elegir uno al crear o revisar una sesión, también al
+editarla desde el interior de un programa. **Permitir omitir el calentamiento**
+está activado al elegirlo y se puede desactivar para esa versión de sesión.
+Los programas conservan su adjunto por posición cuando ya lo usan. Una sesión
+con calentamiento incorporado admite una sola receta de calentamiento.
+
 ## Terminar sin registrar todo · PRG-010 · 03/11/2026
 
 La ampliación del 25/11/2026 también permite el cierre de sesiones por fases

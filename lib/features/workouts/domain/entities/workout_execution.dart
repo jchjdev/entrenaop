@@ -317,6 +317,7 @@ class WorkoutExecutionSet extends Equatable {
     required this.blockName,
     this.blockFormat = WorkoutBlockFormat.straightSets,
     this.blockTimeCapSeconds,
+    this.warmupCanBeSkipped = true,
     required this.itemOrder,
     required this.exerciseId,
     required this.exerciseName,
@@ -362,6 +363,7 @@ class WorkoutExecutionSet extends Equatable {
   final String blockName;
   final WorkoutBlockFormat blockFormat;
   final int? blockTimeCapSeconds;
+  final bool warmupCanBeSkipped;
   final int itemOrder;
   final String exerciseId;
   final String exerciseName;
@@ -474,6 +476,7 @@ class WorkoutExecutionSet extends Equatable {
     blockName: blockName,
     blockFormat: blockFormat,
     blockTimeCapSeconds: blockTimeCapSeconds,
+    warmupCanBeSkipped: warmupCanBeSkipped,
     itemOrder: itemOrder,
     exerciseId: exerciseId,
     exerciseName: exerciseName,
@@ -546,6 +549,7 @@ class WorkoutExecutionSet extends Equatable {
     blockName,
     blockFormat,
     blockTimeCapSeconds,
+    warmupCanBeSkipped,
     itemOrder,
     exerciseId,
     exerciseName,

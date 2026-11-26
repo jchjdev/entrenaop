@@ -74,7 +74,7 @@ class PhoneRunCheckpoint {
 /// El rodaje fácil publicado es un único tramo de carrera por tiempo.
 /// Comprobar su forma evita depender del nombre traducido de la pauta.
 bool isContinuousPhoneRun(WorkoutTemplate workout) {
-  final block = workout.blocks.singleOrNull;
+  final block = workout.blocks.where((b) => !b.attachedWarmup).singleOrNull;
   if (block == null ||
       block.format != WorkoutBlockFormat.running ||
       block.rounds != 1 ||
@@ -100,9 +100,16 @@ bool isContinuousPhoneRun(WorkoutTemplate workout) {
 }
 
 WorkoutExecutionSet? continuousPhoneRunSet(WorkoutExecution execution) {
-  final set = execution.sets.singleOrNull;
+  final set = execution.sets
+      .where(
+        (s) =>
+            s.blockFormat != WorkoutBlockFormat.warmUp ||
+            s.exerciseId == runningExerciseId,
+      )
+      .singleOrNull;
   if (execution.status != WorkoutExecutionStatus.inProgress ||
       set == null ||
+      execution.currentSet?.id != set.id ||
       set.status != WorkoutSetStatus.pending ||
       set.blockFormat != WorkoutBlockFormat.running ||
       set.exerciseId != runningExerciseId ||

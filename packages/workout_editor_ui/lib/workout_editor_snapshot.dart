@@ -39,11 +39,18 @@ class WorkoutEditorSnapshot {
       'nameText',
       'descriptionText',
       'durationText',
+      'warmupTemplateId',
+      'warmupName',
+      'warmupCanBeSkipped',
       'segments',
       'blocks',
     ]);
     require(value['schema'] == 1 && value['running'] is bool);
     texts(value, ['nameText', 'descriptionText', 'durationText']);
+    if (value.containsKey('warmupTemplateId')) {
+      texts(value, ['warmupTemplateId', 'warmupName']);
+      require(value['warmupCanBeSkipped'] is bool);
+    }
     for (final s in rows(value, 'segments', 40)) {
       shape(s, [
         'stepKind',
@@ -147,6 +154,8 @@ CreatePersonalWorkoutInput projectWorkoutEditorSnapshot(
   final name = snapshot.value['nameText'] as String;
   final description = snapshot.value['descriptionText'] as String;
   final durationText = snapshot.value['durationText'] as String;
+  final warmupTemplateId = snapshot.value['warmupTemplateId'] as String?;
+  final warmupCanBeSkipped = snapshot.value['warmupCanBeSkipped'] != false;
   final segments = (snapshot.value['segments'] as List).map(
     (r) => _RawSegment(r as Map),
   );
@@ -218,6 +227,8 @@ CreatePersonalWorkoutInput projectWorkoutEditorSnapshot(
     final estimate = estimateRunningWorkout(sets);
     return CreatePersonalWorkoutInput(
       name: name.trim(),
+      warmupTemplateId: warmupTemplateId,
+      warmupCanBeSkipped: warmupCanBeSkipped,
       description: description.trim(),
       estimatedDurationMinutes: estimate.isComplete
           ? estimate.estimatedMinutes
@@ -389,6 +400,8 @@ CreatePersonalWorkoutInput projectWorkoutEditorSnapshot(
   }
   return CreatePersonalWorkoutInput(
     name: name.trim(),
+    warmupTemplateId: warmupTemplateId,
+    warmupCanBeSkipped: warmupCanBeSkipped,
     description: description.trim(),
     estimatedDurationMinutes: duration,
     blocks: blocks,
