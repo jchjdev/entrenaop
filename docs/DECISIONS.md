@@ -4,8 +4,9 @@
 calentamiento en el editor compartido de sesiones sueltas y de programa, con
 la opción de omitirlo activada al elegirlo. Trainer puede crear sus propios
 calentamientos y distinguirlos de EntrenaOP en el selector. El deportista puede
-seguir el guiado, calentar por su cuenta o empezar directamente cuando el
-preparador permite omitirlo. [Trainer](TRAINER_PRIVATE_PROGRAMS.md#calentamientos-reutilizables)
+seguir el guiado o pasar a la parte principal con **Omitir calentamiento**
+cuando el preparador lo permite. Javier retira la segunda acción para omitirlo.
+[Trainer](TRAINER_PRIVATE_PROGRAMS.md#calentamientos-reutilizables)
 · [ADMIN](PROGRAMAS_GUIADOS.md#calentamientos-reutilizables).
 
 **Verificar la versión móvil por plataforma · 25/11/2026.** Javier pide que

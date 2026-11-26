@@ -302,50 +302,19 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
     }
   }
 
-  Future<void> _warmUpOnMyOwn() async {
-    final finished = await showDialog<bool>(
-      context: context,
-      builder: (dialog) => AlertDialog(
-        title: const Text('Calienta por tu cuenta'),
-        content: const Text('Cuando estés listo, empieza la parte principal.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialog, false),
-            child: const Text('Volver al guiado'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialog, true),
-            child: const Text('Empezar parte principal'),
-          ),
-        ],
-      ),
-    );
-    if (finished == true && mounted) widget.onSkipWarmUp?.call();
-  }
-
-  Widget _warmupOptions() => Wrap(
-    alignment: WrapAlignment.center,
-    spacing: 8,
-    children: [
-      TextButton(
-        onPressed: widget.saving ? null : _warmUpOnMyOwn,
-        child: const Text('Calentar por mi cuenta'),
-      ),
-      TextButton(
-        onPressed: widget.saving ? null : widget.onSkipWarmUp,
-        child: const Text('Omitir calentamiento'),
-      ),
-    ],
-  );
-
   @override
   Widget build(BuildContext context) {
     final isWarmup = set.blockFormat == WorkoutBlockFormat.warmUp;
-    final showWarmupOptions =
+    final skipWarmup =
         isWarmup &&
-        !widget.review &&
-        set.warmupCanBeSkipped &&
-        widget.onSkipWarmUp != null;
+            !widget.review &&
+            set.warmupCanBeSkipped &&
+            widget.onSkipWarmUp != null
+        ? TextButton(
+            onPressed: widget.saving ? null : widget.onSkipWarmUp,
+            child: const Text('Omitir calentamiento'),
+          )
+        : null;
     final actualPace = set.blockFormat == WorkoutBlockFormat.running
         ? workoutActualPaceLabel(
             _distanceController.text,
@@ -372,7 +341,7 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 Text('Serie ${set.setOrder + 1}'),
-                if (showWarmupOptions) _warmupOptions(),
+                ?skipWarmup,
                 const SizedBox(height: 16),
                 PerformanceResultForm(
                   prescription: prescription,
@@ -553,7 +522,7 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
                 ),
               ),
             ],
-            if (showWarmupOptions) _warmupOptions(),
+            ?skipWarmup,
             if (set.runningStep?.completion == RunningStepCompletion.manual)
               const Text(
                 'Avanza cuando estés preparado. En el reloj, pulsa Lap.',

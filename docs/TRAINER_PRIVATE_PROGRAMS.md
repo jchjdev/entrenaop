@@ -9,9 +9,9 @@ La misma elección está disponible al crear una sesión suelta o desde un
 programa. Al guardar, la dosis se incorpora a la versión de sesión, de modo
 que una revisión futura de la receta reutilizable no cambia las pautas previas.
 
-Con **Permitir omitir el calentamiento**, el deportista puede seguir el guiado,
-calentar por su cuenta antes de continuar o saltar directamente a la parte
-principal. Calentar por su cuenta no genera registros del calentamiento guiado.
+El deportista puede seguir el guiado. Si el preparador activa **Permitir omitir
+el calentamiento**, **Omitir calentamiento** lleva a la parte principal y
+deja las series pendientes del calentamiento como omitidas.
 
 ## Actualizar pautas de programas · 12/11/2026
 

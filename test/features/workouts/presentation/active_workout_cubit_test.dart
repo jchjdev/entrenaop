@@ -2028,12 +2028,8 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
-  for (final choice in [
-    'Omitir calentamiento',
-    'Calentar por mi cuenta',
-    null,
-  ]) {
-    testWidgets('calentamiento: ${choice ?? 'guiado obligatorio'}', (
+  for (final canSkip in [true, false]) {
+    testWidgets('calentamiento ${canSkip ? 'opcional' : 'obligatorio'}', (
       tester,
     ) async {
       final repository = _Repository();
@@ -2044,7 +2040,7 @@ void main() {
             blockOrder: 0,
             blockName: 'Calentamiento',
             blockFormat: WorkoutBlockFormat.warmUp,
-            warmupCanBeSkipped: choice != null,
+            warmupCanBeSkipped: canSkip,
             itemOrder: 0,
             exerciseId: 'mobility',
             exerciseName: 'Movilidad',
@@ -2059,7 +2055,7 @@ void main() {
             blockOrder: 1,
             blockName: 'Calentamiento',
             blockFormat: WorkoutBlockFormat.warmUp,
-            warmupCanBeSkipped: choice != null,
+            warmupCanBeSkipped: canSkip,
             itemOrder: 1,
             exerciseId: 'mobility',
             exerciseName: 'Movilidad',
@@ -2097,22 +2093,19 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      if (choice == null) {
-        expect(find.text('Omitir calentamiento'), findsNothing);
-        expect(find.text('Calentar por mi cuenta'), findsNothing);
+      expect(find.text('Calentar por mi cuenta'), findsNothing);
+      final skipWarmup = find.text('Omitir calentamiento');
+      if (!canSkip) {
+        expect(skipWarmup, findsNothing);
         await cubit.skipWarmUp();
         await cubit.skipCurrentSet();
         expect(cubit.state.execution!.currentSet!.id, 'warm-1');
         return;
       }
-      await tester.ensureVisible(find.text(choice));
-      await tester.tap(find.text(choice));
+      expect(skipWarmup, findsOneWidget);
+      await tester.ensureVisible(skipWarmup);
+      await tester.tap(skipWarmup);
       await tester.pumpAndSettle();
-      if (choice == 'Calentar por mi cuenta') {
-        expect(cubit.state.execution!.currentSet!.id, 'warm-1');
-        await tester.tap(find.text('Empezar parte principal'));
-        await tester.pumpAndSettle();
-      }
       expect(cubit.state.execution!.currentSet!.id, 'work');
       expect(
         cubit.state.execution!.sets
