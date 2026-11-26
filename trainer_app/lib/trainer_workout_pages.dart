@@ -247,9 +247,7 @@ class _TrainerWorkoutLibraryPageState extends State<TrainerWorkoutLibraryPage> {
         Align(
           alignment: Alignment.centerLeft,
           child: OutlinedButton.icon(
-            onPressed: _canCreate
-                ? () => context.push('/workouts/warmups')
-                : null,
+            onPressed: _canCreate ? () => context.push('/warmups') : null,
             icon: const Icon(Icons.wb_sunny_outlined),
             label: const Text('Mis calentamientos'),
           ),
@@ -531,7 +529,7 @@ class _TrainerWorkoutEditorPageState extends State<TrainerWorkoutEditorPage> {
         previousId: widget.templateId,
       ),
       onSaved: (id) =>
-          context.canPop() ? context.pop(id) : context.go('/workouts/warmups'),
+          context.canPop() ? context.pop(id) : context.go('/warmups'),
       originalTemplate: _template,
       title: widget.warmup
           ? (revision ? 'Revisar calentamiento' : 'Crear calentamiento')
@@ -582,7 +580,7 @@ class _TrainerWarmupLibraryPageState extends State<TrainerWarmupLibraryPage> {
         Align(
           alignment: Alignment.centerLeft,
           child: FilledButton.icon(
-            onPressed: () => _open('/workouts/warmups/new'),
+            onPressed: () => _open('/warmups/new'),
             icon: const Icon(Icons.add),
             label: const Text('Crear calentamiento'),
           ),
@@ -601,7 +599,7 @@ class _TrainerWarmupLibraryPageState extends State<TrainerWarmupLibraryPage> {
               title: Text(warmup.name),
               subtitle: Text('Versión ${warmup.version}'),
               trailing: const Icon(Icons.edit_outlined),
-              onTap: () => _open('/workouts/warmups/${warmup.id}'),
+              onTap: () => _open('/warmups/${warmup.id}'),
             ),
           ),
       ]),

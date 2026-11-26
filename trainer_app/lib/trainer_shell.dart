@@ -32,6 +32,7 @@ class TrainerShell extends StatefulWidget {
     ('/workouts', 'Sesiones', Icons.fitness_center),
     ('/programs', 'Programas', Icons.view_week_outlined),
     ('/exercises', 'Ejercicios', Icons.sports_gymnastics),
+    ('/warmups', 'Calentamientos', Icons.wb_sunny_outlined),
     ('/reviews', 'Revisiones', Icons.fact_check_outlined),
     ('/forms', 'Formularios', Icons.assignment_outlined),
     ('/assessments', 'Pruebas y simulacros', Icons.timer_outlined),
@@ -202,6 +203,13 @@ class _TrainerShellState extends State<TrainerShell>
   // Conserva los cuatro accesos habituales en pantallas estrechas. «Para mí»
   // está en Más y no desplaza Sesiones al añadir una opción al escritorio.
   static const compactDestinations = [0, 1, 3, 4];
+  static const navigationSections = {
+    '/home': 'TU ESPACIO',
+    '/workouts': 'BIBLIOTECA',
+    '/reviews': 'SEGUIMIENTO',
+    '/groups': 'ORGANIZACIÓN',
+    '/messages': 'SERVICIO',
+  };
 
   @override
   Widget build(BuildContext context) => TrainerMessageInboxScope(
@@ -276,7 +284,7 @@ class _TrainerShellState extends State<TrainerShell>
                 for (var value = 5; value < destinations.length; value++) value,
               ])
                 ListTile(
-                  leading: i == 13
+                  leading: destinations[i].$1 == '/messages'
                       ? _messageIcon(destinations[i].$3)
                       : Icon(destinations[i].$3),
                   title: Text(destinations[i].$2),
@@ -324,23 +332,12 @@ class _TrainerShellState extends State<TrainerShell>
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   children: [
                     for (var i = 0; i < destinations.length; i++) ...[
-                      if (const {
-                        0: 'TU ESPACIO',
-                        4: 'BIBLIOTECA',
-                        7: 'SEGUIMIENTO',
-                        10: 'ORGANIZACIÓN',
-                        13: 'SERVICIO',
-                      }.containsKey(i))
+                      if (navigationSections[destinations[i].$1]
+                          case final heading?)
                         Padding(
                           padding: const EdgeInsets.fromLTRB(10, 14, 10, 7),
                           child: Text(
-                            const {
-                              0: 'TU ESPACIO',
-                              4: 'BIBLIOTECA',
-                              7: 'SEGUIMIENTO',
-                              10: 'ORGANIZACIÓN',
-                              13: 'SERVICIO',
-                            }[i]!,
+                            heading,
                             style: TextStyle(
                               fontSize: 10,
                               letterSpacing: .9,
@@ -364,7 +361,7 @@ class _TrainerShellState extends State<TrainerShell>
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        leading: i == 13
+                        leading: destinations[i].$1 == '/messages'
                             ? _messageIcon(destinations[i].$3)
                             : Icon(destinations[i].$3, size: 18),
                         title: Text(destinations[i].$2),

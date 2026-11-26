@@ -5,6 +5,7 @@ import 'package:entrenaop_trainer/main.dart';
 import 'package:entrenaop_trainer/trainer_catalog_trash_page.dart';
 import 'package:entrenaop_trainer/trainer_catalog_trash_repository.dart';
 import 'package:entrenaop_trainer/trainer_shell.dart';
+import 'package:entrenaop_trainer/trainer_workout_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -183,6 +184,47 @@ class _PortalFixture {
 }
 
 void main() {
+  testWidgets('Biblioteca abre Calentamientos y su creador desde el lateral', (
+    tester,
+  ) async {
+    final fixture = _PortalFixture();
+    await tester.runAsync(() => fixture.session('initial'));
+    addTearDown(() => tester.runAsync(fixture.client.dispose));
+    tester.binding.platformDispatcher.defaultRouteNameTestValue = '/workouts';
+    addTearDown(
+      tester.binding.platformDispatcher.clearDefaultRouteNameTestValue,
+    );
+    await tester.binding.setSurfaceSize(const Size(1440, 1100));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(TrainerApp(client: fixture.client));
+    await tester.pumpAndSettle();
+
+    final nav = find.byKey(const ValueKey('trainer-nav-/warmups'));
+    expect(nav.hitTestable(), findsOneWidget);
+    final tileY = tester.getCenter(nav).dy;
+    expect(tileY, greaterThan(tester.getCenter(find.text('BIBLIOTECA')).dy));
+    expect(tileY, lessThan(tester.getCenter(find.text('SEGUIMIENTO')).dy));
+    await tester.tap(nav);
+    await tester.pumpAndSettle();
+    expect(tester.widget<ListTile>(nav).selected, isTrue);
+    expect(find.text('Preparadores / Calentamientos'), findsOneWidget);
+    expect(find.byType(TrainerWarmupLibraryPage), findsOneWidget);
+    expect(find.byType(TrainerWorkoutLibraryPage), findsNothing);
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Crear calentamiento'));
+    await tester.pumpAndSettle();
+    expect(find.byType(TrainerWorkoutEditorPage), findsOneWidget);
+    expect(tester.widget<ListTile>(nav).selected, isTrue);
+
+    final router = GoRouter.of(tester.element(find.byType(TrainerShell)));
+    router.go('/workouts/warmups/new');
+    await tester.pumpAndSettle();
+    expect(router.routeInformationProvider.value.uri.path, '/warmups/new');
+    expect(find.byType(TrainerWorkoutEditorPage), findsOneWidget);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
+  });
+
   for (final kind in TrainerCatalogKind.values) {
     for (final delayed in [false, true]) {
       testWidgets(

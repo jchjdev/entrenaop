@@ -1170,6 +1170,29 @@ class _TrainerAppState extends State<TrainerApp> {
               ],
             ),
             GoRoute(
+              path: '/warmups',
+              builder: (_, _) =>
+                  TrainerWarmupLibraryPage(repository: workouts()),
+              routes: [
+                GoRoute(
+                  path: ':warmupId',
+                  onExit: (_, state) => exits.requestExit(state.pageKey),
+                  builder: (_, state) => guarded(
+                    state,
+                    TrainerWorkoutEditorPage(
+                      repository: workouts(),
+                      warmup: true,
+                      templateId: state.pathParameters['warmupId'] == 'new'
+                          ? null
+                          : state.pathParameters['warmupId'],
+                      onCreateExercise: createExercise,
+                      exercisePreferences: exercisePreferences,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            GoRoute(
               path: '/workouts',
               builder: (_, state) => TrainerWorkoutLibraryPage(
                 trashOpen: state.uri.path == '/workouts/trash',
@@ -1192,26 +1215,20 @@ class _TrainerAppState extends State<TrainerApp> {
                 ),
                 GoRoute(
                   path: 'warmups',
-                  builder: (_, _) =>
-                      TrainerWarmupLibraryPage(repository: workouts()),
-                  routes: [
-                    GoRoute(
-                      path: ':warmupId',
-                      onExit: (_, state) => exits.requestExit(state.pageKey),
-                      builder: (_, state) => guarded(
-                        state,
-                        TrainerWorkoutEditorPage(
-                          repository: workouts(),
-                          warmup: true,
-                          templateId: state.pathParameters['warmupId'] == 'new'
-                              ? null
-                              : state.pathParameters['warmupId'],
-                          onCreateExercise: createExercise,
-                          exercisePreferences: exercisePreferences,
-                        ),
-                      ),
-                    ),
-                  ],
+                  redirect: (_, state) =>
+                      state.uri.replace(path: '/warmups').toString(),
+                ),
+                GoRoute(
+                  path: 'warmups/:warmupId',
+                  redirect: (_, state) => state.uri
+                      .replace(
+                        pathSegments: [
+                          '',
+                          'warmups',
+                          state.pathParameters['warmupId']!,
+                        ],
+                      )
+                      .toString(),
                 ),
                 GoRoute(
                   path: 'new',

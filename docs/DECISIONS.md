@@ -3,7 +3,9 @@
 **Calentamientos reutilizables · 26/11/2026.** Javier confirma el selector de
 calentamiento en el editor compartido de sesiones sueltas y de programa, con
 la opción de omitirlo activada al elegirlo. Trainer puede crear sus propios
-calentamientos y distinguirlos de EntrenaOP en el selector. El deportista puede
+calentamientos y distinguirlos de EntrenaOP en el selector. Javier pide un
+acceso directo a **Calentamientos** en **Biblioteca**, con **Crear calentamiento**
+en la pantalla de entrada. El deportista puede
 seguir el guiado o pasar a la parte principal con **Omitir calentamiento**
 cuando el preparador lo permite. Javier retira la segunda acción para omitirlo.
 [Trainer](TRAINER_PRIVATE_PROGRAMS.md#calentamientos-reutilizables)

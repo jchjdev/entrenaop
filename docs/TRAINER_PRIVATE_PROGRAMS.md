@@ -2,8 +2,10 @@
 
 ## Calentamientos reutilizables
 
-En **Sesiones → Mis calentamientos**, el preparador puede crear y revisar una
-receta privada con ejercicios propios o de EntrenaOP. En **Elegir calentamiento**
+En **Biblioteca → Calentamientos**, el preparador puede pulsar **Crear
+calentamiento** y preparar una receta privada con ejercicios propios o de
+EntrenaOP. También puede abrir la biblioteca desde **Sesiones → Mis
+calentamientos**. En **Elegir calentamiento**
 del editor, las recetas propias aparecen con su origen, igual que las oficiales.
 La misma elección está disponible al crear una sesión suelta o desde un
 programa. Al guardar, la dosis se incorpora a la versión de sesión, de modo
